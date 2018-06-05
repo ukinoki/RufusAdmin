@@ -1,0 +1,128 @@
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin.
+
+RufusAdmin is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License,
+or any later version.
+
+RufusAdmin is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef MACROS_H
+#define MACROS_H
+
+#define VERSION_BASE                                41                  // version de la base de données
+
+// Les bases
+#define NOM_BASE_CONSULTS                           "rufus"
+#define NOM_BASE_COMPTA                             "ComptaMedicale"
+#define NOM_BASE_OPHTA                              "Ophtalmologie"
+#define NOM_BASE_IMAGES                             "Images"
+
+// Les tables
+
+#define NOM_TABLE_ARCHIVESBANQUE                    "ComptaMedicale.archivesbanques"
+#define NOM_TABLE_BANQUES                           "ComptaMedicale.banques"
+#define NOM_TABLE_COMPTES                           "ComptaMedicale.Comptes"
+#define NOM_TABLE_RECETTES                          "ComptaMedicale.lignesrecettes"
+#define NOM_TABLE_DEPENSES                          "ComptaMedicale.Depenses"
+#define NOM_TABLE_LIGNESCOMPTES                     "ComptaMedicale.lignescomptes"
+#define NOM_TABLE_REMISECHEQUES                     "ComptaMedicale.remisecheques"
+#define NOM_TABLE_VERROUCOMPTAACTES                 "ComptaMedicale.verrouscomptaactes"
+
+#define NOM_TABLE_DOCSASUPPRIMER                    "Images.DocsASupprimer"
+
+#define NOM_TABLE_ACTES                             "rufus.Actes"
+#define NOM_TABLE_APPAREILSCONNECTESCENTRE          "rufus.appareilsconnectescentre"
+#define NOM_TABLE_COTATIONS                         "rufus.cotations"
+#define NOM_TABLE_IMPRESSIONS                       "rufus.Impressions"
+#define NOM_TABLE_JOINTURESLIEUX                    "rufus.jointuresLieux"
+#define NOM_TABLE_LIEUXEXERCICE                     "rufus.LieuxExercice"
+#define NOM_TABLE_LISTEAPPAREILS                    "rufus.listeappareils"
+#define NOM_TABLE_MOTIFSRDV                         "rufus.MotifsRDV"
+#define NOM_TABLE_PARAMSYSTEME                      "rufus.ParametresSysteme"
+#define NOM_TABLE_PATIENTS                          "rufus.Patients"
+#define NOM_TABLE_SALLEDATTENTE                     "rufus.salledattente"
+#define NOM_TABLE_UTILISATEURS                      "rufus.utilisateurs"
+#define NOM_TABLE_USERSCONNECTES                    "rufus.UtilisateursConnectes"
+
+// Divers
+#define IMAGERIE                                    "Imagerie"
+#define DOCUMENTRECU                                "DocRecu"
+
+#define NOM_ADMINISTRATEURDOCS                      "Admin"
+#define NOM_POSTEIMPORTDOCS                         "posteimportdocs"
+
+
+// Les fichiers et répertoires divers
+#define NOMDIR_LIBS2                                "/Applications";
+#define NOMDIR_RESSOURCES                           "/Ressources"
+#define NOMDIR_RUFUSADMIN                           "/Documents/RufusAdmin"
+#define NOMDIR_RUFUS                                "/Documents/Rufus"
+#define NOMDIR_IMAGES                               "/Images"
+#define NOMDIR_VIDEOS                               "/Videos"
+#define NOMDIR_PROV                                 "/Prov"
+#define NOMDIR_ECHECSTRANSFERTS                     "/EchecsTransferts"
+#define NOMFIC_INI                                  "/Documents/RufusAdmin/RufusAdmin.ini"
+#define NOMFIC_INIRUFUS                             "/Documents/Rufus/Rufus.ini"
+#define SCRIPTBACKUPFILE    "/Documents/Rufus/RufusScriptBackup.sh"
+#define SCRIPTPLISTFILE     "/Library/LaunchAgents/rufus.bup.plist"
+
+// Variables mysql
+#define MAX_ALLOWED_PACKET                          "16"
+
+// le son d'alarme
+#define NOM_ALARME                                  "://goutte.wav"
+
+// la taille maximale des images
+#define TAILLEMAXIIMAGES                            262144
+
+// Constantes de statut salle d'attente  //+++++ATTENTION ces constantes servent dans des requêtes SQL - NE PAS METTRE DE CARACTERES SPECIAUX
+#define ARRIVE                                      "Arrivé"
+#define ENCOURS                                     "En cours"
+#define ENATTENTENOUVELEXAMEN                       "En attente de nouvel examen par "
+#define RETOURACCUEIL                               "Retour accueil"
+#define ENCOURSEXAMEN                               "En cours de consultation avec "
+
+#ifdef Q_OS_MACX
+#define POLICEPARDEFAUT         "Comic Sans MS"
+#define POINTPARDEFAUT          13
+#define PATH_SPEC_MAC "/../../.."
+#endif
+#ifdef Q_OS_LINUX
+#define POLICEPARDEFAUT         "Noto Sans MS"
+#define POINTPARDEFAUT          9
+#define LINUX "/../../.."
+#endif
+#ifdef Q_OS_WIN
+#define POLICEPARDEFAUT         "Comic Sans MS"
+#define POINTPARDEFAUT          13
+#endif
+
+#define OPHTALIBERAL            "ophlib"
+#define OPHTAREMPLACANT         "ophrmp"
+#define OPHTASALARIE            "ophsal"
+#define OPHTANOCOMPTA           "ophnocompta"
+#define OPHTAASSISTANT          "ophassistant"
+#define ORTHOLIBERAL            "ortholib"
+#define ORTHOREMPLACANT         "orthormp"
+#define ORTHOSALARIE            "orthosal"
+#define ORTHONOCOMPTA           "orthonocompta"
+#define ORTHOASSISTANT          "orthoassistant"
+#define AUTRESOIGNANTLIBERAL    "autresoignantlib"
+#define AUTRESOIGNANTREMPLACANT "autresoignantrmp"
+#define AUTRESOIGNANTSALARIE    "autresoignantsal"
+#define AUTRESOIGNANTNOCOMPTA   "autrenocompta"
+#define AUTRESOIGNANTASSISTANT  "autreassistant"
+#define AUTREFONCTION           "a"
+#define SECRETAIRE              "s"
+#define SOCIETECOMPTABLE        "SEL"
+
+#endif // MACROS_H
