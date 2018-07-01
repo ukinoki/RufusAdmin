@@ -21,7 +21,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusAdmin)
 {
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("29-05-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-07-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -39,13 +39,10 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     qApp->setStyleSheet(
         "QDialog{" + border + "}"
         "QGroupBox{font:bold;}"
-//        "QGroupBox:focus {border: 2px solid rgb(164, 205, 255); border-radius: 10px;"
-//                    "background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E0E0E0, stop: 1 #FFFFFF);}"
         "QLineEdit {background-color:white; border: 1px solid rgb(150,150,150);border-radius: 5px;}"
         "QLineEdit:focus {border: 1px solid rgb(164, 205, 255);border-radius: 5px;}"
         "QRadioButton::indicator {width: 18px; height: 18px;}"
         "QRadioButton::indicator::checked {image: url(://blueball.png);}"
-//        "QRadioButton:focus {border: 1px solid rgb(164, 205, 255);border-radius: 5px;}"
         "QScrollArea {background-color:rgb(237, 237, 237); border: 1px solid rgb(150,150,150);}"
         "QTabBar::tab:selected {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #fafafa, stop: 1.0 rgb(164, 205, 255));}"
         "QTabBar::tab:hover {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #fafafa, stop: 0.4 #f4f4f4,stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);}"

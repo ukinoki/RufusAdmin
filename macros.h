@@ -18,7 +18,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                41                  // version de la base de données
+#define VERSION_BASE                                42                  // version de la base de données
 
 // Les bases
 #define NOM_BASE_CONSULTS                           "rufus"
@@ -83,6 +83,10 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 // la taille maximale des images
 #define TAILLEMAXIIMAGES                            262144
+
+//les styles
+#define UPGROUBOXINACTIVE                           "UpGroupBox {font: bold; border: 1px solid rgb(164,164,164); border-radius: 10px;}"
+#define UPGROUBOXACTIVE                             "UpGroupBox {border: 2px solid rgb(164, 205, 255); border-radius: 10px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E0E0E0, stop: 1 #FFFFFF);}"
 
 // Constantes de statut salle d'attente  //+++++ATTENTION ces constantes servent dans des requêtes SQL - NE PAS METTRE DE CARACTERES SPECIAUX
 #define ARRIVE                                      "Arrivé"

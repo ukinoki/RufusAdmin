@@ -1,18 +1,18 @@
-/* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+/* (C) 2016 LAINE SERGE
+This file is part of Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+Rufus is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License,
-or any later version.
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+Rufus is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with Rufus. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "dlg_gestionusers.h"
@@ -23,6 +23,7 @@ dlg_gestionusers::dlg_gestionusers(int idUser, int idlieu, QSqlDatabase gdb, QMa
     ui(new Ui::dlg_gestionusers)
 {
     ui->setupUi(this);
+    setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     gmapIcons               = Icons;
 
     db                      = gdb;
@@ -54,6 +55,8 @@ dlg_gestionusers::dlg_gestionusers(int idUser, int idlieu, QSqlDatabase gdb, QMa
     globallay   ->insertLayout(0,play);
 
     ui->AdressgroupBox->setTitle(tr("Lieux de travail utilisés"));
+
+    //QButtonGroup *butgrp = new QButtonGroup;
     QVBoxLayout  *adresslay = new QVBoxLayout();
     UpRadioButton *box;
     QSqlQuery adrquer("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, db);
@@ -1063,12 +1066,25 @@ void dlg_gestionusers::SupprUser()
     UpPushButton *OKBouton = new UpPushButton;
     UpPushButton *AnnulBouton = new UpPushButton;
     QString vamourir = ui->ListUserstableWidget->selectedItems().at(1)->text();
-    msgbox.setText(tr("Suppression d'un utilisateur"));
-    msgbox.setInformativeText(tr("Etes vous bien sûr de vouloir supprimer ")
-                              + vamourir + "?");
-    msgbox.setIconPixmap(QPixmap("://killer.png").scaledToWidth(150));
-    OKBouton->setText(tr("Garder ") + vamourir);
-    AnnulBouton->setText(tr("Oui, supprimer ") + vamourir);
+    if (idUser == gidUserDepart)
+    {
+        msgbox.setText("Tentative de suicide");
+        msgbox.setInformativeText("Hum " + vamourir
+                                  + ", " + tr("êtes vous bien sûr de vouloir faire ça?\n"
+                                    "Si vous le faites, le programme se fermera immédiatement après votre disparition"));
+        msgbox.setIconPixmap(QPixmap("://suicide.png").scaledToWidth(150));
+        OKBouton->setText(tr("Non, vous avez raison, je vais rester encore un peu"));
+        AnnulBouton->setText(tr("Oui, je veux partir"));
+    }
+    else
+    {
+        msgbox.setText(tr("Suppression d'un utilisateur"));
+        msgbox.setInformativeText(tr("Etes vous bien sûr de vouloir supprimer ")
+                                  + vamourir + "?");
+        msgbox.setIconPixmap(QPixmap("://killer.png").scaledToWidth(150));
+        OKBouton->setText(tr("Garder ") + vamourir);
+        AnnulBouton->setText(tr("Oui, supprimer ") + vamourir);
+    }
     msgbox.addButton(AnnulBouton);
     msgbox.addButton(OKBouton);
     msgbox.exec();
@@ -1492,6 +1508,8 @@ void dlg_gestionusers::RemplirTableWidget(int iduser)
 {
     disconnect(ui->ListUserstableWidget, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)), this, SLOT(Slot_CompleteRenseignements(QTableWidgetItem*,QTableWidgetItem*)));
     QTableWidgetItem *pitem0, *pitem1;
+    QFontMetrics fm(qApp->font());
+
     ui->ListUserstableWidget->clearContents();
     ui->ListUserstableWidget->setColumnCount(2);
     ui->ListUserstableWidget->setColumnWidth(0,0);
@@ -1510,18 +1528,20 @@ void dlg_gestionusers::RemplirTableWidget(int iduser)
         pitem1 = new QTableWidgetItem;
         req = "select count(idActe) from Rufus.Actes where idUser = " + listusrquery.value(0).toString() + " or creepar = " + listusrquery.value(0).toString();
         QSqlQuery actesquer(req,db);
-        actesquer.first();
-        int nbactes = actesquer.value(0).toInt();
-        if (nbactes>0)
+        if (actesquer.size()>0)
         {
-            pitem0->setForeground(gcolor);
-            pitem1->setForeground(gcolor);
+            actesquer.first();
+            int nbactes = actesquer.value(0).toInt();
+            if (nbactes>0)
+            {
+                pitem0->setForeground(gcolor);
+                pitem1->setForeground(gcolor);
+            }
         }
         pitem0->setText(listusrquery.value(0).toString());
         pitem1->setText(listusrquery.value(1).toString());
         ui->ListUserstableWidget->setItem(i,0, pitem0);
         ui->ListUserstableWidget->setItem(i,1, pitem1);
-        QFontMetrics fm(qApp->font());
         ui->ListUserstableWidget->setRowHeight(i,fm.height()*1.3);
         listusrquery.next();
     }

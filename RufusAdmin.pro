@@ -65,7 +65,8 @@ SOURCES += \
     dlg_gestioncomptes.cpp \
     dlg_gestionlieux.cpp \
     dlg_gestionusers.cpp \
-    dlg_motifs.cpp
+    dlg_motifs.cpp \
+    upgroupbox.cpp
 
 HEADERS += \
         rufusadmin.h \
@@ -92,7 +93,8 @@ HEADERS += \
     dlg_gestioncomptes.h \
     dlg_gestionlieux.h \
     dlg_gestionusers.h \
-    dlg_motifs.h
+    dlg_motifs.h \
+    upgroupbox.h
 
 FORMS += \
         rufusadmin.ui \
