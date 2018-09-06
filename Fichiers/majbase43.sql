@@ -1,5 +1,7 @@
-USE `ComptaMedicale`;
+USE `rufus`;
+DROP PROCEDURE IF EXISTS MAJ42;
 
+USE `ComptaMedicale`;
 DROP PROCEDURE IF EXISTS MAJ43;
 DELIMITER |
     CREATE PROCEDURE MAJ43()
@@ -33,10 +35,14 @@ DELIMITER |
         IF tot=1
         THEN
             ALTER TABLE `autresrecettes`
-            CHANGE COLUMN `idCompte` `idRemise` INT(11) NULL DEFAULT NULL COMMENT 'id de la remise en cas de cheque';
+            CHANGE COLUMN `idCompte` `idRemise` INT(11) NULL DEFAULT NULL COMMENT 'id de la remise en cas de cheque',
+            ADD COLUMN `CompteVirement` INT(11) NULL DEFAULT NULL COMMENT 'idCompte credite en cas de virement' AFTER `Monnaie`,
+            ADD COLUMN `BanqueCheque` VARCHAR(25) NULL DEFAULT NULL COMMENT 'Banque emettrice en cas de cheque' AFTER `CompteVirement`,
+            ADD COLUMN `EnAttente` TINYINT(1) NULL DEFAULT NULL COMMENT 'cheque mis en attente encaissement' AFTER `idRemise`;
         END IF;
         update `autresrecettes` set idRemise = null;
     END|
 CALL MAJ43();
+DROP PROCEDURE IF EXISTS MAJ43;
 
 UPDATE `rufus`.`ParametresSysteme` SET VersionBase = 43;
