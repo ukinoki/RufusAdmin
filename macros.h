@@ -18,7 +18,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                43                  // version de la base de données
+#define VERSION_BASE                                44                  // version de la base de données
 
 // Les bases
 #define NOM_BASE_CONSULTS                           "rufus"
