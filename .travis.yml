@@ -11,7 +11,7 @@ before_install:
   - sudo apt-get update -qq
  
 install:
-  - sudo apt-get -y install qt510base qt510serialport qt510websockets qt510multimedia
+  - sudo apt-get -y install qt510base qt510websockets qt510multimedia
   - source /opt/qt510/bin/qt510-env.sh
   - sudo rm /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
   - wget https://www.rufusvision.org/uploads/9/8/0/3/98038824/libmysqlclient.so.18
@@ -31,7 +31,7 @@ script:
   - chmod a+x linuxdeployqt-continuous-x86_64.AppImage
   - unset LD_LIBRARY_PATH
   - export VERSION=$(git rev-parse --short HEAD)
-  - ./linuxdeployqt-continuous-x86_64.AppImage /home/travis/build/Ukinoki/Rufus.AppDir/Rufus -appimage
+  - ./linuxdeployqt-continuous-x86_64.AppImage /home/travis/build/Ukinoki/RufusAdmin.AppDir/RufusAdmin -appimage
 
  
 after_success:
