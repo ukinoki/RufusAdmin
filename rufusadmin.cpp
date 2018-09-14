@@ -34,7 +34,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
     splash->close();
     delete splash;
-
     QString border = "border-image: url(://wallpaper.jpg)";
     qApp->setStyleSheet(
         "QDialog{" + border + "}"
