@@ -24,7 +24,7 @@ install:
   - pushd poppler-0.67.0 && cmake -DCMAKE_BUILD_TYPE=Release && sudo make install && popd 
   
 script:
-  - qmake -unix PREFIX=/usr Rufus_travis.pro
+  - qmake -unix PREFIX=/usr RufusAdmin_travis.pro
   - make -j$(nproc) CXX=g++-7 CC=gcc-7
   - make install
   - wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
