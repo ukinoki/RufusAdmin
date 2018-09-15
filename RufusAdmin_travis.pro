@@ -30,7 +30,7 @@ linux-g++ {
     }
     target.path = /home/travis/build/Ukinoki/RufusAdmin.AppDir
     desktop.path = /home/travis/build/Ukinoki/RufusAdmin.AppDir
-    desktop.files += ./RufusAdmin.AppDir/RufusAdmin.desktop
+    desktop.files += ./RufusAdmin.AppDir/rufusadmin.desktop
     shortcutfiles.path = $$PREFIX/share/applications
     icon.path = /home/travis/build/Ukinoki/RufusAdmin.AppDir
     icon.files += ./RufusAdmin.AppDir/rufusadmin.png
@@ -120,5 +120,5 @@ LIBS += -Llibs/poppler -lpoppler-qt5
 QTPLUGIN += QSQLMYSQL
 
 DISTFILES += \
-    RufusAdmin.AppDir/RufusAdmin.desktop \
+    RufusAdmin.AppDir/rufusadmin.desktop \
     RufusAdmin.AppDir/rufusadmin.png
