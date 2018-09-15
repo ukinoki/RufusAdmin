@@ -3,5 +3,5 @@ Type=Application
 Name=RufusAdmin
 Exec=RufusAdmin
 Icon=rufusadmin
-Comment=Logiciel de gestion de cabinet d'Ophtalmologie
+Comment=Administration de RufusVision
 Categories=Office;
