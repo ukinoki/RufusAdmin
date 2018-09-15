@@ -11,6 +11,8 @@ before_install:
   - sudo apt-get update -qq
  
 install:
+  - sudo rm /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
+  - sudo cp ./Fichiers/libmysqlclient.so.18 /usr/lib/x86_64-linux-gnu/
   - sudo apt-get -y install qt510base qt510websockets qt510multimedia
   - source /opt/qt510/bin/qt510-env.sh
   - sudo rm /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
