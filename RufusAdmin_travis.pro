@@ -7,7 +7,7 @@
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 
-#    Rufus is distributed in the hope that it will be useful,
+#    RufusAdmin is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
-QT       += sql core gui network multimedia xml
+QT       += sql core gui network multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -33,7 +33,7 @@ linux-g++ {
     desktop.files += ./RufusAdmin.AppDir/RufusAdmin.desktop
     shortcutfiles.path = $$PREFIX/share/applications
     icon.path = /home/travis/build/Ukinoki/RufusAdmin.AppDir
-    icon.files += ./RufusAdmin.AppDir/rufus.png
+    icon.files += ./RufusAdmin.AppDir/rufusadmin.png
 
     INSTALLS += target
     INSTALLS += desktop

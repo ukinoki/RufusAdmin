@@ -2351,9 +2351,9 @@ void RufusAdmin::Message(QString mess, int pause, bool bottom)
     timer.setSingleShot(true);
     connect (&timer, &QTimer::timeout, [=] {ui->MessageupLabel->setText("");});
     timer.start(pause);
-//    QStringList listmsg;
-//    listmsg << mess;
-//    dlg_message(listmsg, pause, bottom);
+    QStringList listmsg;
+    listmsg << mess;
+    dlg_message(listmsg, pause, bottom);
 }
 
 void RufusAdmin::ModifParamBackup()

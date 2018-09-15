@@ -49,7 +49,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define RUFUSADMIN_H
 
 #include <QDebug>
-#include <QDomDocument>
+//#include <QDomDocument>
 #include <QFileDialog>
 #include <QHostInfo>
 #include <QMainWindow>
