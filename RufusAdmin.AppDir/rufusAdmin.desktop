@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Rufus
-Exec=Rufus
-Icon=rufus
+Name=RufusAdmin
+Exec=RufusAdmin
+Icon=rufusadmin
 Comment=Logiciel de gestion de cabinet d'Ophtalmologie
 Categories=Office;
