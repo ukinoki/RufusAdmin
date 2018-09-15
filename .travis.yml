@@ -36,7 +36,6 @@ script:
 after_success:
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
   - rm ./linuxdeployqt-continuous-x86_64.AppImage
-  - curl https://api.github.com/?access_token=ADMIN_TOKEN
   - bash upload.sh ./*.AppImage
  
 branches:
