@@ -18,7 +18,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                45                  // version de la base de données
+#define VERSION_BASE                                46                  // version de la base de données
 
 // Les bases
 #define NOM_BASE_CONSULTS                           "rufus"
@@ -52,6 +52,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_SALLEDATTENTE                     "rufus.salledattente"
 #define NOM_TABLE_UTILISATEURS                      "rufus.utilisateurs"
 #define NOM_TABLE_USERSCONNECTES                    "rufus.UtilisateursConnectes"
+#define NOM_TABLE_VILLES                            "rufus.Villes"
 
 // Divers
 #define IMAGERIE                                    "Imagerie"
@@ -60,11 +61,24 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_ADMINISTRATEURDOCS                      "Admin"
 #define NOM_POSTEIMPORTDOCS                         "posteimportdocs"
 
+//les TCP
+#define NOM_PORT_TCPSERVEUR                         "50885"
+#define TCPDelai_TestTCP                            "60000"
+#define TCPMSG_idUser                               "idUser"
+#define TCPMSG_MAJCorrespondants                    "MajCorrespondants"
+#define TCPMSG_MAJSalAttente                        "MajSalAttente"
+#define TCPMSG_MsgBAL                               "MsgRecuDansBAL"
+#define TCPMSG_Separator                            "triumphspeedtriple1050"
+#define TCPMSG_NonPrioritaire                       "ServeurNonPrioritaire"
+#define TCPMSG_DataSocket                           "DataSocket"
+#define TCPMSG_ListeSockets                         "ListeSockets"
+#define TCPMSG_SImposerCommeServeur                 "SImposerCommeServeur"
 
 // Les fichiers et répertoires divers
 #define NOMDIR_LIBS2                                "/Applications";
 #define NOMDIR_RESSOURCES                           "/Ressources"
 #define NOMDIR_RUFUSADMIN                           "/Documents/RufusAdmin"
+#define NOMDIR_LOGS                                 "/Logs"
 #define NOMDIR_RUFUS                                "/Documents/Rufus"
 #define NOMDIR_IMAGES                               "/Images"
 #define NOMDIR_VIDEOS                               "/Videos"
@@ -128,5 +142,24 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define AUTREFONCTION           "a"
 #define SECRETAIRE              "s"
 #define SOCIETECOMPTABLE        "SEL"
+
+//les TCP
+#define NOM_PORT_TCPSERVEUR                         "50885"
+#define TCPDelai_TestServer                         "15000"                                             /* délai entre 2 verifications du serveur enregistré dans la base */
+#define TCPDelai_TestSocket                         "10000"                                             /* délai entre 2 verifications de la continuité de la connexion - le statut QAbsractSocket::Connected n'est pas modifié en cas de rupture réseau ou mise en veille et ne suffit donc pas */
+#define TCPMSG_idUser                               "idUser"                                            /* nom du message founissant l'idUser */
+#define TCPMSG_MAJCorrespondants                    "MajCorrespondants"                                 /* fin du message invitant à mettre à jour la liste des correspondants */
+#define TCPMSG_MAJSalAttente                        "MajSalAttente"                                     /* fin du message invitant à mettre à jour la salle d'attente */
+#define TCPMSG_MsgBAL                               "MsgRecuDansBAL"                                    /* fin du message informant de la réception d'un message de messagerie instantanée */
+#define TCPMSG_Separator                            "triumphspeedtriple1050"                            /* separateur au sein d'un message */
+#define TCPMSG_DataSocket                           "DataSocket"                                        /* fin du message fournissant IP et MAC d'un client */
+#define TCPMSG_ListeSockets                         "ListeSockets"                                      /* fin du message informant le client que ce message contient la liste des TcpSockets */
+#define TCPMSG_SImposerCommeServeur                 "SImposerCommeServeur"
+#define TCPMSG_ChangementServeur                    "ChangementServeur"                                 /* fin du message informant que le TcpServer a changé */
+#define TCPMSG_FaireLAppelSocket                    "AppelListe"                                        /* fin du message demandant la verification de l'absence de sockets déconnectés dans la liste */
+#define TCPMSG_EnvoieListSocket                     "EnvoieListe"                                       /* fin du message demandant l'envoi de la liste des sockets à un client */
+#define TCPMSG_NouvelleConnexion                    "NouveauConnecte"                                   /* fin du message annonçant une nouvelle connexion */
+#define TCPMSG_Deconnexion                          "Deconnecte"                                        /* fin du message annonçant une deconnexion */
+#define TCPMSG_SocketOK                             "OKSocket"                                          /* message envoyé par le serveur pour confirmer que la connexion est toujours active */
 
 #endif // MACROS_H

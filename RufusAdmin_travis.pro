@@ -67,7 +67,9 @@ SOURCES += \
     dlg_gestionlieux.cpp \
     dlg_gestionusers.cpp \
     dlg_motifs.cpp \
-    upgroupbox.cpp
+    upgroupbox.cpp \
+    gestiontcpserver.cpp
+
 
 HEADERS += \
         rufusadmin.h \
@@ -95,7 +97,9 @@ HEADERS += \
     dlg_gestionlieux.h \
     dlg_gestionusers.h \
     dlg_motifs.h \
-    upgroupbox.h
+    upgroupbox.h \
+    gestiontcpserver.h
+
 
 FORMS += \
         rufusadmin.ui \

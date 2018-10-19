@@ -20,20 +20,12 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusAdmin)
 {
+    Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("15-09-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("18-10-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
-
-    QPixmap pixmap("://rufus3.jpg");
-    QSplashScreen *splash = new QSplashScreen(pixmap);
-    splash->show();
-    QTime dieTime= QTime::currentTime().addMSecs(1000);
-    while (QTime::currentTime() < dieTime)
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-    splash->close();
-    delete splash;
 
     QString border = "border-image: url(://wallpaper.jpg)";
     qApp->setStyleSheet(
@@ -95,7 +87,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         DirRufus.mkdir(NomDirRufus);
 
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
-    setMapDatas();
+    setMapDatas();    
 
     /*QString adressexml = QDir::homePath() + SCRIPTPLISTFILE;
     QFile xmldoc(adressexml);
@@ -159,7 +151,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     QSqlQuery usrquer(req, db);
     if (usrquer.size()==0)
     {
-        QSqlQuery("insert into " NOM_TABLE_UTILISATEURS " (UserNom) values ('" NOM_ADMINISTRATEURDOCS "')",db);
+        QSqlQuery("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')",db);
         usrquer.exec();
         QSqlQuery mdpquer("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,db);
         mdpquer.first();
@@ -167,7 +159,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
             QSqlQuery("update " NOM_TABLE_PARAMSYSTEME " set mdpadmin = '" +db.password() + "'", db);
     }
     usrquer.first();
-    idAdminDocs = usrquer.value(0).toInt();
+    UserAdmin = new User(DataBase::getInstance()->loadUserDatabyLogin(NOM_ADMINISTRATEURDOCS));
+    idAdminDocs = UserAdmin->id();
+    qDebug() <<QString::number(idAdminDocs);
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES
@@ -185,10 +179,27 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     else
         QSqlQuery("delete from " NOM_TABLE_USERSCONNECTES " where idUser = " + QString::number(idAdminDocs) + " and idlieu = " + QString::number(idlieuExercice), db);
 
+    // 5 mettre en place le TcpSocket
+    gIPadr      = Utils::getIpAdress();
+    gMacAdress  = Utils::getMACAdress();
+    currentmsg          = "";
+    erreurmsg           = "";
+    TcpServer           = new GestionTcPServer(this);
+    ServerTCP           = false;
+    TcPConnect          = new QTcpSocket(this);
+    gTimerVerifServeur  = new QTimer(this);
+    gTimerSocketOK      = new QTimer(this);
+    gTimerServeurOK     = new QTimer(this);
+
+    InitTCP();
+
     setPosteImportDocs(); // on prend la plce d'importateur des documents dans les utilisateurs connectés
     Slot_VerifPosteImport();
     Slot_VerifVersionBase();
     Slot_CalcExporteDocs();
+
+    currentmsg = "";
+    erreurmsg = "";
 
     gTimerUserConnecte  = new QTimer(this);
     gTimerVerifDivers   = new QTimer(this);
@@ -689,15 +700,10 @@ void RufusAdmin::ConnexionBase()
 {
     DlgParam = new dlg_paramconnexion();
     if (DlgParam->exec()>0)
-        db = DlgParam->getdatabase();
+        db = DataBase::getInstance()->getDataBase();
     else
         exit(0);
-    if (DlgParam->gMode == dlg_paramconnexion::Poste)
-        gMode = Poste;
-    else if (DlgParam->gMode == dlg_paramconnexion::ReseauLocal)
-        gMode = ReseauLocal;
-    else if (DlgParam->gMode == dlg_paramconnexion::Distant)
-        gMode = Distant;
+    gMode = DataBase::getInstance()->getMode();
 }
 
 /*-----------------------------------------------------------------------------------------------------------------
@@ -1639,21 +1645,7 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
             QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete,db);
             TraiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
             // on retire cet utilisateur de la table des utilisateurs connectés
-            QString req = "delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + Poste + "'";
-            QSqlQuery(req,db);
-            req = "SELECT MAX(NewidModifSalDat) From " NOM_TABLE_USERSCONNECTES;
-            QSqlQuery query (req, db);
-            TraiteErreurRequete(query,req,"");
-            QString Newid = "0";
-            if (query.size() > 0)
-            {
-                query.first();
-                Newid = QString::number(query.value(0).toInt() + 1);
-            }
-            req = "UPDATE " NOM_TABLE_USERSCONNECTES " SET NewiDModifSalDat = " + Newid;
-            QSqlQuery query2 (req, db);
-            TraiteErreurRequete(query2,req,"");
-            QSqlQuery("unlock tables",db);
+            QSqlQuery ("delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + verifoldquery.value(1).toString() + "'", db);
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
             verifoldquery.next();
         }
@@ -2808,5 +2800,285 @@ bool RufusAdmin::ImmediateBackup()
 
 
 
+bool RufusAdmin::isTcpServer()
+{
+    return ServerTCP;
+}
 
+void RufusAdmin::TraiteTCPMessage(QString msg)
+{
+    //qDebug() << msg + " - sur RufusAdmin::traitetcpmessage()";
+    //dlg_message(QStringList() << "gTimerSocket redémarré -> RufusAdmin::TraiteTCPMessage(QString msg)", 3000);
+     if (msg == TCPMSG_SocketOK)
+        gTimerSocketOK->start();
+    else if (msg.contains(TCPMSG_ListeSockets))
+    {
+        msg.remove("{}" TCPMSG_ListeSockets);
+        gListSockets.clear();
+        gListSockets = msg.split("{}");
+        qDebug() << "liste des clients connectés RufusAdmin.cpp - " + QTime::currentTime().toString("hh-mm-ss");
+        for (int i=0; i<gListSockets.size(); i++)
+        {
+            QString data = gListSockets.at(i);
+            data.replace(TCPMSG_Separator, " - ");
+            qDebug() << data;
+        }
+    }
+    else if (msg.contains(TCPMSG_ChangementServeur))
+    {
+        if (isTcpServer())
+            InitTcpServer(false);
+    }
+    else if (msg.contains(TCPMSG_NouvelleConnexion))
+    {
+        msg.remove(TCPMSG_NouvelleConnexion);
+        QString login = Datas::I()->users->getLoginById(msg.split(TCPMSG_Separator).at(0).toInt());
+        QString adress = msg.split(TCPMSG_Separator).at(3);
+        dlg_message(QStringList() << login + " " +  tr("vient de se connecter sur") + " " + adress, 3000);
+    }
+    else if (msg.contains(TCPMSG_Deconnexion))
+    {
+        msg.remove(TCPMSG_Deconnexion);
+        QString login = Datas::I()->users->getLoginById(msg.split(TCPMSG_Separator).at(0).toInt());
+        QString adress = msg.split(TCPMSG_Separator).at(1);
+        dlg_message(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
+    }
+}
+
+void RufusAdmin::envoieMessage(QString msg)
+{
+    currentmsg = msg;
+    QByteArray paquet   = currentmsg.toUtf8();
+    QByteArray size     = Utils::IntToArray(paquet.size());
+    if(TcPConnect->state() == QAbstractSocket::ConnectedState)
+    {
+        TcPConnect->write(size);                //envoie la taille du message
+        TcPConnect->write(paquet);              //envoie le message
+        TcPConnect->waitForBytesWritten(5000);
+    }
+}
+
+void RufusAdmin::envoieMessageA(QList<int> listidusr)
+{
+    QString listid;
+    for (int i=0; i<listidusr.size(); i++)
+    {
+        listid += QString::number(listidusr.at(i));
+        if (listidusr.at(i) < (listidusr.size()-1))
+            listid += ",";
+    }
+    QString msg = listid + TCPMSG_MsgBAL;
+    currentmsg = tr("courrier");
+    envoieMessage(msg);
+}
+
+void RufusAdmin::TraiteDonneesRecues()
+{
+    QString msg= "";
+    QByteArray *buffer = new QByteArray();
+    qint32 *s = new qint32(0);
+    qint32 size = *s;
+    while (TcPConnect->bytesAvailable() > 0)
+    {
+        buffer->append(TcPConnect->readAll());
+        while ((size == 0 && buffer->size() >= 4) || (size > 0 && buffer->size() >= size)) //While can process data, process it
+        {
+            if (size == 0 && buffer->size() >= 4) //if size of data has received completely, then store it on our global variable
+            {
+                size = Utils::ArrayToInt(buffer->mid(0, 4));
+                *s = size;
+                buffer->remove(0, 4);
+            }
+            if (size > 0 && buffer->size() >= size) // If data has received completely, then emit our SIGNAL with the data
+            {
+                QByteArray data = buffer->mid(0, size);
+                buffer->remove(0, size);
+                size = 0;
+                *s = size;
+                QString msg = QString::fromUtf8(data);
+                TraiteTCPMessage(msg);
+            }
+        }
+    }
+}
+
+void RufusAdmin::erreurSocket()
+{
+    QAbstractSocket::SocketError erreur = TcPConnect->error();
+    switch(erreur)
+    {
+        case QAbstractSocket::RemoteHostClosedError:
+            erreurmsg = tr("Le serveur TCP s'est déconnecté et va être remplacé");
+            break;
+        case QAbstractSocket::HostNotFoundError:
+            erreurmsg = tr("Le serveur TCP est introuvable et va être remplacé");
+            break;
+        case QAbstractSocket::SocketTimeoutError:
+            erreurmsg = tr("Le serveur TCP ne répond pas");
+            break;
+        default:
+            erreurmsg = tr("ERREUR : ") + TcPConnect->errorString();
+    }
+
+    if (erreur == QAbstractSocket::RemoteHostClosedError       /************** LE SERVER S'EST DÉCONNECTÉ ACCIDENTELLEMENT OU VOLONTAIREMENT *************************** */
+     || erreur == QAbstractSocket::HostNotFoundError           /************** LE SERVER NE RÉPOND PAS ************************** */
+     || erreur == QAbstractSocket::SocketTimeoutError)         /************** LE SERVER N'A PAS RÉPONDU À UN ENVOI ************************** */
+    {
+        dlg_message(QStringList() << erreurmsg, 3000, false);
+        VerifServeur();
+    }
+    else
+    {
+        dlg_message(QStringList() << erreurmsg + " - " + currentmsg + " - void RufusAdmin::erreurSocket(QAbstractSocket::SocketError erreur)", 180000, false);
+        return;
+    }
+}
+
+void RufusAdmin::ReinitialiseTCP()          // le client n'a rien reçu du serveur depuis au moins 3 cycles de test  on réinitialise tout
+{
+    InitTcpServer(false);
+    gTimerSocketOK          ->disconnect();
+    gTimerServeurOK         ->disconnect();
+    gTimerServeurOK         ->stop();
+    gTimerSocketOK          ->stop();
+
+    gTimerVerifServeur      ->disconnect();
+    TcPConnect->abort();
+    TcPConnect->disconnect();
+    TcPConnect = Q_NULLPTR;
+    AdresseTCPServer = "";
+    connect(gTimerVerifServeur, &QTimer::timeout,   this, &RufusAdmin::ReDemarreTCP);
+    return;
+}
+
+void RufusAdmin::ReDemarreTCP()
+{
+    if (DataBase::getInstance()->testconnexionbase())
+    {
+        gTimerVerifServeur->disconnect();
+        InitTCP();
+    }
+}
+
+void RufusAdmin::VerifServeur()
+{
+    /* Appelé par:
+        * le serveur sytématiquement toutes les 30 secondes pour vérifier qu'il n'a pas été remplacé
+        * le client qui n'est plus en contact avec le serveur
+        * une erreur sur une transmission
+
+     * On verrouille la table parce qu'en cas de défaillance brutale du serveur, ce sera un paquet de postes qui vont vouloir la modifier
+     * et se déclarer comme serveur en même temps ce qui mettrait un brave foutoir. Il faut donc qu'ils fassent cette vérification les uns après les autres.
+     * Il y a peut-être un système plus simple et plus léger mais je ne sais pas comment faire
+    */
+    qDebug() << "VerifServeur()";
+    QSqlQuery lockquery("SET AUTOCOMMIT = 0;", db);
+    QSqlQuery ("LOCK TABLES " NOM_TABLE_PARAMSYSTEME "WRITE; LOCK TABLES " NOM_TABLE_PARAMSYSTEME "READ; select AdresseTCPServeur from " NOM_TABLE_PARAMSYSTEME ";", db);
+    QSqlQuery ("LOCK TABLES " NOM_TABLE_PARAMSYSTEME "WRITE; LOCK TABLES " NOM_TABLE_PARAMSYSTEME "READ; select AdresseTCPServeur from " NOM_TABLE_PARAMSYSTEME ";", db);
+    QString req = "select AdresseTCPServeur from " NOM_TABLE_PARAMSYSTEME ";";
+    QSqlQuery TCPServerquer(req, db);
+    TCPServerquer.first();
+
+    // le serveur enregistré a changé
+    if (AdresseTCPServer != TCPServerquer.value(0).toString())
+    {
+        if (!TcpConnectToServer(TCPServerquer.value(0).toString()))
+            InitTcpServer(true);
+    }
+
+    // le poste n'est pas le serveur et il est déconnecté => on réinitialise tout
+    else if (!isTcpServer())
+        if (!TcpConnectToServer(AdresseTCPServer))
+            InitTcpServer(true);
+    QSqlQuery ("COMMIT;", db );
+    QSqlQuery ("UNLOCK TABLES;", db );
+    QSqlQuery ("SET AUTOCOMMIT = 1;", db );
+}
+
+void RufusAdmin::InitTcpServer(bool onoff)
+{
+    gTimerVerifServeur->disconnect();
+    if (TcpServer!= Q_NULLPTR)
+        TcpServer   ->close();
+    TcpServer   = Q_NULLPTR;
+    if (onoff)
+    {
+        TcpServer   = new GestionTcPServer(this);
+        TcpServer   ->start();
+        QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
+        TcpConnectToServer(gIPadr);
+        connect(gTimerVerifServeur, &QTimer::timeout,   this, &RufusAdmin::VerifServeur);
+    }
+    ServerTCP = onoff;
+    DisconnectTimers();
+    ConnectTimers();
+}
+
+void RufusAdmin::InitTCP()
+{
+    QString delaitest       = TCPDelai_TestServer;
+    QString delaitestskt    = TCPDelai_TestSocket;
+    gTimerVerifServeur      ->setInterval(delaitest.toInt());
+    gTimerSocketOK          ->setInterval((delaitestskt.toInt()*3)+1000);
+    gTimerServeurOK         ->setInterval(delaitestskt.toInt());
+    gTimerVerifServeur      ->start();
+    gTimerSocketOK          ->start();
+    gTimerServeurOK         ->start();
+    if ( ! TcpConnectToServer() )
+        InitTcpServer(true);
+}
+
+bool RufusAdmin::TcpConnectToServer(QString ipadrserver)
+{
+    gTimerSocketOK->disconnect();
+    gTimerServeurOK->disconnect();
+    if (TcPConnect!=Q_NULLPTR)
+    {
+        TcPConnect->abort();
+        TcPConnect->disconnect();
+        TcPConnect = Q_NULLPTR;
+    }
+    TcPConnect = new QTcpSocket(this);  // si on  ne réinitialise pas le TcpConnect, ça plante quand le serveur se déconnecte et je ne comprends pas pourquoi...
+    //TcPConnect->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+    AdresseTCPServer = ipadrserver;
+    if (ipadrserver == "")
+    {
+        QString req = "select AdresseTCPServeur from " NOM_TABLE_PARAMSYSTEME;
+        QSqlQuery TCPServerquer(req, db);
+        TCPServerquer.first();
+        AdresseTCPServer    = TCPServerquer.value(0).toString();
+    }
+    if (AdresseTCPServer == "")
+        return false;
+    QString port        = NOM_PORT_TCPSERVEUR;
+    PortTCPServer       = port.toUShort();
+
+    TcPConnect->connectToHost(AdresseTCPServer,PortTCPServer);      // On se connecte au serveur demandé
+    bool a = TcPConnect->waitForConnected(5000);
+    if (a)
+    {
+        connect(TcPConnect,                 &QTcpSocket::readyRead,                                              this,   &RufusAdmin::TraiteDonneesRecues);
+        connect(TcPConnect,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &RufusAdmin::erreurSocket);
+        envoieMessage(QString::number(idAdminDocs) + TCPMSG_idUser);
+        envoieMessage(gIPadr + TCPMSG_Separator + gMacAdress + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_DataSocket);
+        connect(gTimerSocketOK,             &QTimer::timeout,       this, [=] {ReinitialiseTCP();});
+        connect(gTimerServeurOK,            &QTimer::timeout,       this, [=] {envoieMessage(TCPMSG_SocketOK);});
+        return true;
+    }
+    else
+    {
+        dlg_message(QStringList() << "<b>" + tr("Le serveur enregistré dans la base ne répond pas.") + "</b><br/>" + tr("Ce poste va prendre la place de serveur TCP sur le réseau"), 5000, false);
+        return false;
+    }
+}
+
+void RufusAdmin::FermeTCP()
+{
+    TcPConnect      ->abort();
+    if (isTcpServer())
+    {
+        TcpServer->close();
+        QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db);
+    }
+}
 

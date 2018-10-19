@@ -55,6 +55,8 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMainWindow>
 #include <QSplashScreen>
 #include <QSystemTrayIcon>
+#include <QTcpSocket>
+#include "gestiontcpserver.h"
 #include <poppler-qt5.h>
 #include "dlg_banque.h"
 #include "dlg_gestionusers.h"
@@ -64,6 +66,13 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "dlg_paramconnexion.h"
 #include "importdocsexternesthread.h"
 #include "widgetbuttonframe.h"
+#include "utils.h"
+#include "gestiontcpserver.h"
+#include "gbl_datas.h"
+#include "cls_item.h"
+#include "database.h"
+#include "cls_user.h"
+#include <QTimer>
 
 namespace Ui {
 class RufusAdmin;
@@ -74,7 +83,7 @@ class RufusAdmin : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit RufusAdmin(QWidget *parent = 0);
+    explicit RufusAdmin(QWidget *parent = Q_NULLPTR);
     ~RufusAdmin();
 
 private:
@@ -96,6 +105,7 @@ private:
     QString                     gNouvMDP, gAncMDP, gConfirmMDP;
     QString                     Domaine;
     QString                     gNomLieuExercice;
+    QString                     gIPadr, gMacAdress;
     QStringList                 glistAppareils;
     QIcon                       giconBackup, giconCopy, giconErase, giconSunglasses, giconSortirDossier, giconOK, giconAnnul,
                                 giconEuro, giconEuroCount, giconFermeAppuye, giconFermeRelache, giconHelp, giconNull;
@@ -106,6 +116,7 @@ private:
     ImportDocsExternesThread    *ImportDocsExtThread;
     UpDialog                    *gAskAppareil, *gAskMDP;
     WidgetButtonFrame           *widgAppareils;
+    User                        *UserAdmin;
 
     double                      CalcBaseSize();
     int                         DetermineLieuExercice();
@@ -201,6 +212,37 @@ private:
     void                    DefinitScriptBackup(QString path, bool AvecImages= true, bool AvecVideos = true);
     QString                 getExpressionSize(double size);
     void                    ModifParamBackup();
+
+    // TCPServer, TCPSocket
+    QString             currentmsg, erreurmsg;
+    QStringList         gListSockets;
+    GestionTcPServer    *TcpServer;
+    QTcpSocket          *TcPConnect;
+    QStringList         ListclientsTCP;
+    QString             AdresseTCPServer;
+    quint16             PortTCPServer;
+    QTimer              *gTimerVerifServeur;
+    QTimer              *gTimerSocketOK;
+    QTimer              *gTimerServeurOK;
+    void                erreurSocket();                                 /* traitement des erreurs d'émission de message sur le socket */
+    bool                isTcpServer();
+    bool                ServerTCP;
+    void                TraiteTCPMessage(QString msg);                  /* traitement des messages reçus par les clients */
+    bool                TcpConnectToServer(QString ipadrserver = "");   /* Crée la connexion avec le TcpServer sur le réseau */
+    void                InitTcpServer(bool on = true);                  /* démarre ou arrête le TCPServer */
+    void                InitTCP();                                      /* Initialise le TCP */
+    void                FermeTCP();
+    void                ReinitialiseTCP();                         /* Le serveur est déconnecté et n'a plus envoyé de messages de confirmation de l'existence de la ligne au moins 3 fois de suite */
+    void                envoieMessage(QString msg);                     /* envoi d'un message au serveur pour être redispatché vers tous les clients */
+    void                envoieMessageA(QList<int> listidusr);           /* envoi d'un message à une liste d'utilisateurs */
+    void                TraiteDonneesRecues();                          /* decortiquage des messages reçus et renvoi vers rufus.cpp par le biais du signal tcpmsgfromserver(QString msg) */
+    void                VerifServeur();                                 /* vérifie que le tcpserver est toujours actif ou n'a pas été remplacé - géré par un timer
+                                                                         * ce problème se produit par exemple en cas de mise en veille.
+                                                                         * Si le serveur se met en veille avec arrêt du disque dur, les socket se déconnectent passent en SocketState::Unconnected
+                                                                         * le premier socket déconnecté prend la place de nouveau serveur.
+                                                                         * quand le serveur voit qu'il a été remplacé, il se ferme
+                                                                        */
+    void                ReDemarreTCP();
 };
 
 #endif // RUFUSADMIN_H

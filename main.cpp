@@ -21,6 +21,13 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    QPixmap pixmap("://rufus3.jpg");
+    QSplashScreen *splash = new QSplashScreen(pixmap);
+    splash->show();
+    Utils::Pause(1500);
+    splash->close();
+    delete splash;
     RufusAdmin w;
     w.show();
 

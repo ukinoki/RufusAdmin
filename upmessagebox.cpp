@@ -26,8 +26,8 @@ UpMessageBox::UpMessageBox(QWidget *parent) : UpDialog(parent)
     textlayout          = new QVBoxLayout();
     infolayout          = new QHBoxLayout();
     globallayout        = dynamic_cast<QVBoxLayout*>(layout());
-    ReponsSmallButton   = 0;
-    ReponsPushButton    = 0;
+    ReponsSmallButton   = Q_NULLPTR;
+    ReponsPushButton    = Q_NULLPTR;
     Textedt             ->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
     InfoTextedt         ->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
 

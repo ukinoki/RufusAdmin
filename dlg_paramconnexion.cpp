@@ -141,70 +141,83 @@ void dlg_paramconnexion::Slot_Verif()
 
 QSqlDatabase dlg_paramconnexion::getdatabase()
 {
-    return db;
+    return DataBase::getInstance()->getDataBase();
 }
 
 bool dlg_paramconnexion::TestConnexion()
 {
+    //TODO : SQL Mettre en place un compte generique pour l'accès à la base de données.
+
     if (!VerifFiche())
         return false;
-    else
+    Slot_MAJIP();
+    if(!AdresseValide)
+        return false;
+    QString error = "";
+    QString Base, server;
+    if (ui->PosteradioButton->isChecked())      {Base = "BDD_POSTE";    gMode = Poste;}
+    if (ui->LocalradioButton->isChecked())      {Base = "BDD_LOCAL";    gMode = ReseauLocal;}
+    if (ui->DistantradioButton->isChecked())    {Base = "BDD_DISTANT";  gMode = Distant;};
+    QString Login = NOM_ADMINISTRATEURDOCS;
+    if (ui->DistantradioButton->isChecked())
+        Login += "SSL";
+    QString Password = ui->MDPlineEdit->text();
+
+    if ( Password.isEmpty() ) {UpMessageBox::Watch(this,tr("Vous n'avez pas précisé votre mot de passe!"));   ui->MDPlineEdit->setFocus();    return 0;}
+
+    DataBase::getInstance()->initFromFirstConnexion(Base, gServeur, ui->PortcomboBox->currentText().toInt(), ui->DistantradioButton->isChecked());  //à mettre avant le connectToDataBase() sinon une restaurationp llante parce qu'elle n'a pas les renseignements
+    error = DataBase::getInstance()->connectToDataBase(NOM_BASE_CONSULTS, Login, Password);
+
+    if( error.size() )
     {
-        Slot_MAJIP();
-        if(!AdresseValide)
-            return false;
-        QString Login = NOM_ADMINISTRATEURDOCS;
-        if (ui->DistantradioButton->isChecked())
-            Login += "SSL";
-        db = QSqlDatabase::addDatabase("QMYSQL","Rufus");
-        db.setHostName(gServeur);
-        db.setUserName(Login);
-        db.setPassword(ui->MDPlineEdit->text());
-        db.setPort(ui->PortcomboBox->currentText().toInt());
-        QString  ConnectOptions = (ui->DistantradioButton->isChecked()?
-                                  "SSL_KEY=/etc/mysql/client-key.pem;"
-                                  "SSL_CERT=/etc/mysql/client-cert.pem;"
-                                  "SSL_CA=/etc/mysql/ca-cert.pem;"
-                                  "MYSQL_OPT_RECONNECT=1"
-                                     :
-                                  "MYSQL_OPT_RECONNECT=1");
-        db.setConnectOptions(ConnectOptions);
+        UpMessageBox::Watch(this, tr("Erreur sur le serveur MySQL"),
+                            tr("Impossible de se connecter au serveur avec le login ") + Login
+                            + tr(" et ce mot de passe") + "\n"
+                            + tr("Revoyez le réglage des paramètres de connexion dans le fichier rufus.ini.") + "\n"
+                            + error);
+        return false;
+    }
 
-
-        if (!db.open())
+    QString Client;
+    if (DataBase::getInstance()->getBase() == "BDD_DISTANT")
+        Client = "%";
+    else if (DataBase::getInstance()->getBase() == "BDD_LOCAL" && Utils::rgx_IPV4.exactMatch(DataBase::getInstance()->getServer()))
+    {
+        QStringList listIP = DataBase::getInstance()->getServer().split(".");
+        for (int i=0;i<listIP.size()-1;i++)
         {
-            UpMessageBox::Watch(this,tr("Paramètres non reconnus!") + "<br />"
-                                + tr("Serveur") + "\n\t-> " + gServeur + "<br />"
-                                + tr("Login") + "\n\t-> " NOM_ADMINISTRATEURDOCS "<br />"
-                                + tr("MDP") + "\n\t-> " + ui->MDPlineEdit->text() + "<br />"
-                                + tr("Port") + "\n\t-> " + ui->PortcomboBox->currentText() + "<br />"
-                                + tr("Connexion impossible.") + "<br />"
-                                + db.lastError().text());
+            Client += QString::number(listIP.at(i).toInt()) + ".";
+            if (i==listIP.size()-2)
+                Client += "%";
+        }
+    }
+    else
+        Client = DataBase::getInstance()->getServer();
 
-            return false;
-        }
-        QSqlQuery ("set global sql_mode = 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES';", db);
-        QSqlQuery ("SET GLOBAL event_scheduler = 1 ;", db);
-        QSqlQuery ("SET GLOBAL max_allowed_packet=" MAX_ALLOWED_PACKET "*1024*1024 ;", db);
+    db = DataBase::getInstance()->getDataBase();
+    QSqlQuery ("set global sql_mode = 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES';", db);
+    QSqlQuery ("SET GLOBAL event_scheduler = 1 ;", db);
+    QSqlQuery ("SET GLOBAL max_allowed_packet=" MAX_ALLOWED_PACKET "*1024*1024 ;", db);
 
-        QString req = "show grants for '" + Login + "'@'" + gClient + "'";
-        QSqlQuery grantsquery(req, db);
-        if (grantsquery.size()==0)
-        {
-            UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                                tr("Impossible de retrouver les droits de l'utilisateur ") + NOM_ADMINISTRATEURDOCS);
-            return false;
-        }
-        grantsquery.first();
-        QString reponse = grantsquery.value(0).toString();
-        if (reponse.left(9) != "GRANT ALL")
-        {
-            UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                                tr("L'utilisateur ") + NOM_ADMINISTRATEURDOCS + tr(" existe mais ne dispose pas "
-                                 "de toutes les autorisations pour modifier ou créer des données sur le serveur.\n"
-                                 "Choisissez un autre utilisateur ou modifiez les droits de cet utilisateur au niveau du serveur.\n"));
-            return false;
-        }
+    QString req = "show grants for '" + Login + (DataBase::getInstance()->getBase() == "BDD_DISTANT"? "SSL" : "")  + "'@'" + Client + "'";
+
+    QSqlQuery grantsquery(req, db);
+
+    if (grantsquery.size()==0)
+    {
+        UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
+                            tr("Impossible de retrouver les droits de l'utilisateur ") + NOM_ADMINISTRATEURDOCS);
+        return false;
+    }
+    grantsquery.first();
+    QString reponse = grantsquery.value(0).toString();
+    if (reponse.left(9) != "GRANT ALL")
+    {
+        UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
+                            tr("L'utilisateur ") + NOM_ADMINISTRATEURDOCS + tr(" existe mais ne dispose pas "
+                                                                               "de toutes les autorisations pour modifier ou créer des données sur le serveur.\n"
+                                                                               "Choisissez un autre utilisateur ou modifiez les droits de cet utilisateur au niveau du serveur.\n"));
+        return false;
     }
     return true;
 }
