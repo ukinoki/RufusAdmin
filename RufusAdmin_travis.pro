@@ -68,8 +68,16 @@ SOURCES += \
     dlg_gestionusers.cpp \
     dlg_motifs.cpp \
     upgroupbox.cpp \
-    gestiontcpserver.cpp
-
+    gestiontcpserver.cpp \
+    utils.cpp \
+    cls_item.cpp \
+    cls_user.cpp \
+    cls_users.cpp \
+    cls_villes.cpp \
+    database.cpp \
+    gbl_datas.cpp \
+    cls_compte.cpp \
+    cls_site.cpp
 
 HEADERS += \
         rufusadmin.h \
@@ -98,7 +106,18 @@ HEADERS += \
     dlg_gestionusers.h \
     dlg_motifs.h \
     upgroupbox.h \
-    gestiontcpserver.h
+    gestiontcpserver.h \
+    utils.h \
+    cls_item.h \
+    cls_user.h \
+    cls_users.h \
+    cls_villes.h \
+    database.h \
+    gbl_datas.h \
+    log.h \
+    cls_compte.h \
+    cls_site.h \
+    icons.h
 
 
 FORMS += \
