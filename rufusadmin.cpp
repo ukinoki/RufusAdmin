@@ -3002,6 +3002,7 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     }
     QSqlQuery (MAJreq, DataBase::getInstance()->getDataBase());
     DataBase::getInstance()->commit();
+    gflagSalDat = a;
 }
 
 void RufusAdmin::VerifSalleDAttenteEtCorrespondants()
