@@ -212,7 +212,6 @@ QJsonObject DataBase::loadUserDatabyLogin(QString login)
     QJsonObject userData{};
 
     QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" + login + "'";
-    qDebug() << req;
     QSqlQuery  query(req, getDataBase());
     if( traiteErreurRequete(query, req, tr("Impossible de retrouver les données de l'utilisateur")) )
         return userData;

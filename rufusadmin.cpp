@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("18-10-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("19-10-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -161,7 +161,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     usrquer.first();
     UserAdmin = new User(DataBase::getInstance()->loadUserDatabyLogin(NOM_ADMINISTRATEURDOCS));
     idAdminDocs = UserAdmin->id();
-    qDebug() <<QString::number(idAdminDocs);
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES
@@ -180,38 +179,38 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         QSqlQuery("delete from " NOM_TABLE_USERSCONNECTES " where idUser = " + QString::number(idAdminDocs) + " and idlieu = " + QString::number(idlieuExercice), db);
 
     // 5 mettre en place le TcpSocket
-    gIPadr      = Utils::getIpAdress();
-    gMacAdress  = Utils::getMACAdress();
-    currentmsg          = "";
-    erreurmsg           = "";
-    TcpServer           = new GestionTcPServer(this);
-    ServerTCP           = false;
-    TcPConnect          = new QTcpSocket(this);
-    gTimerVerifServeur  = new QTimer(this);
-    gTimerSocketOK      = new QTimer(this);
-    gTimerServeurOK     = new QTimer(this);
-
+    gIPadr                      = Utils::getIpAdress();
+    gMacAdress                  = Utils::getMACAdress();
+    TcpServer                   = new GestionTcPServer(this);
+    gTimerSalDatEtCorresp       = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants utilisé par
+                                                           le TCPServer pour verifier les modifications faites par les postes distants
+                                                        */
+    gTimerVerifVerrou           = new QTimer(this);     // utilisé par le TcpServer pour vérifier l'absence d'utilisateurs déconnectés dans la base
+    gTimerVerifServeur          = new QTimer(this);     // vérification de la persistance du serveur
     InitTCP();
 
-    setPosteImportDocs(); // on prend la plce d'importateur des documents dans les utilisateurs connectés
+    gTimerUserConnecte          = new QTimer(this);     // mise à jour de la connexion à la base de données
+    gTimerSupprDocs             = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
+    gTimerVerifDivers           = new QTimer(this);     // vérification du poste importateur des documents et e la version de la base
+    gTimerInactive              = new QTimer(this);     // reduction de la fenêtre dans la barre des taches
+    gTimerSupprDocs             = new QTimer(this);     // verification des documents à supprimer
+
+    setPosteImportDocs(); // on prend la place d'importateur des documents dans les utilisateurs connectés
     Slot_VerifPosteImport();
     Slot_VerifVersionBase();
     Slot_CalcExporteDocs();
 
-    currentmsg = "";
-    erreurmsg = "";
+    // Lancement du timer de vérification des verrous - +++ à lancer après le timer gTimerVerifGestDocs puisqu'il l'utilise
+    gTimerVerifVerrou->start(60000);// "toutes les 60 secondes"
 
-    gTimerUserConnecte  = new QTimer(this);
-    gTimerVerifDivers   = new QTimer(this);
-    gTimerUserConnecte  ->start(10000);
-    gTimerVerifDivers   ->start(30000);
+    gTimerSalDatEtCorresp   ->start(1000);
+    gTimerUserConnecte      ->start(10000);
+    gTimerVerifDivers       ->start(30000);
 
     dureeVeille = 60000;
-    gTimerInactive = new QTimer(this);
     gTimerInactive->setSingleShot(true);
     gTimerInactive->setInterval(dureeVeille);
 
-    gTimerSupprDocs = new QTimer(this);
     gTimerSupprDocs->start(60000);// "toutes les 60 secondes"
     gTimerDocsAExporter = new QTimer(this);
     gTimerDocsAExporter->start(60000);// "toutes les 60 secondes"
@@ -626,6 +625,9 @@ void RufusAdmin::ConnectTimers()
         connect (gTimerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     }
     connect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    connect (gTimerSalDatEtCorresp,     &QTimer::timeout,       this,   &RufusAdmin::VerifSalleDAttenteEtCorrespondants);
+    connect (gTimerVerifServeur,        &QTimer::timeout,       this,   &RufusAdmin::VerifServeur);
+    connect (gTimerVerifVerrou,         &QTimer::timeout,       this,   &RufusAdmin::VerifVerrouDossier);
 }
 
 void RufusAdmin::DisconnectTimers()
@@ -638,6 +640,9 @@ void RufusAdmin::DisconnectTimers()
     disconnect (gTimerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ExporteDocs()));
     disconnect (gTimerInactive,         SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    gTimerSalDatEtCorresp   ->disconnect();
+    gTimerVerifServeur      ->disconnect();
+    gTimerVerifVerrou       ->disconnect();
 }
 
 void RufusAdmin::ConnectTimerInactive()
@@ -736,7 +741,7 @@ int RufusAdmin::DetermineLieuExercice()
             boxlieux                ->setTitle(tr("D'où vous connectez-vous?"));
 
             QFontMetrics fm         = QFontMetrics(qApp->font());
-            int hauteurligne        = fm.height()*1.6;
+            int hauteurligne        = int(fm.height()*1.6);
             boxlieux                ->setFixedHeight(((lxquer.size() + 1)*hauteurligne)+5);
             QVBoxLayout *vbox       = new QVBoxLayout;
             for (int i=0; i<lxquer.size(); i++)
@@ -979,7 +984,7 @@ void RufusAdmin::Remplir_Table()
         ui->AppareilsConnectesupTableWidget->setCellWidget(i,col,widg);
         connect(dossbouton,       SIGNAL(clicked(bool)), this   ,SLOT(Slot_ChoixDossierStockageApp()));
 
-        ui->AppareilsConnectesupTableWidget->setRowHeight(i,fm.height()*1.3);
+        ui->AppareilsConnectesupTableWidget->setRowHeight(i,int(fm.height()*1.3));
         RemplirTableViewQuery.next();
     }
 
@@ -1068,10 +1073,10 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
     {
         QDir dockdir = dialog.directory();
         int row;
-        UpLineEdit *line = 0;
+        UpLineEdit *line = Q_NULLPTR;
         row = ui->AppareilsConnectesupTableWidget->findItems(QString::number(bout->getId()), Qt::MatchExactly).at(0)->row();
         line    = dynamic_cast<UpLineEdit*>(ui->AppareilsConnectesupTableWidget->cellWidget(row,4));
-        if (line!=NULL)
+        if (line!=Q_NULLPTR)
             line->setText(dockdir.path());
         gsettingsIni->setValue("DossierEchangeImagerie/" + exam, dockdir.path());
     }
@@ -1121,7 +1126,7 @@ void RufusAdmin::Slot_ModifDirImagerie()
 void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
 {
     UpLineEdit *line    = dynamic_cast<UpLineEdit*>(sender());
-    if (line==NULL) return;
+    if (line==Q_NULLPTR) return;
     if (!QDir(dir).exists() && dir != "")
     {
         QString textline = line->getValeurAvant();
@@ -1480,7 +1485,7 @@ void RufusAdmin::Slot_ExporteDocs()
             bapdf.append(exportpdfquer.value(4).toByteArray());
 
         Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
-        if (!document || document->isLocked() || document == 0)
+        if (!document || document->isLocked() || document == Q_NULLPTR)
         {
             Message(tr("Impossible de charger le document ") + NomFileDoc, 3000, false);
             QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer + ".txt";
@@ -1570,7 +1575,7 @@ void RufusAdmin::Slot_ImportDocsExternes()
     for (int row=0; row<ui->AppareilsConnectesupTableWidget->rowCount(); row++)
     {
         UpLineEdit *line    = dynamic_cast<UpLineEdit*>(ui->AppareilsConnectesupTableWidget->cellWidget(row,4));
-        if (line!=NULL)
+        if (line!=Q_NULLPTR)
             if (line->text() != "")
             {
                 verifdocs = true;
@@ -1738,7 +1743,7 @@ void RufusAdmin::Slot_RestaureBase()
                               "Ce processus est long et peut durer plusieurs minutes.\n"
                               "(environ 1' pour 2 Go)\n"));
     QString dir = QDir::homePath() + NOMDIR_RUFUSADMIN;
-    QFileDialog dialog(0,tr("Restaurer à partir du dossier") , dir);
+    QFileDialog dialog(Q_NULLPTR,tr("Restaurer à partir du dossier") , dir);
     dialog.setViewMode(QFileDialog::List);
     dialog.setFileMode(QFileDialog::DirectoryOnly);
     bool b = (dialog.exec()>0);
@@ -1755,7 +1760,7 @@ void RufusAdmin::Slot_RestaureBase()
     }
     if (dirtorestore.absolutePath().contains(" "))
     {
-        UpMessageBox::Watch(0, tr("Echec de la restauration"), tr("Le chemin vers le dossier ") + dirtorestore.absolutePath() + tr(" contient des espaces!"));
+        UpMessageBox::Watch(Q_NULLPTR, tr("Echec de la restauration"), tr("Le chemin vers le dossier ") + dirtorestore.absolutePath() + tr(" contient des espaces!"));
         ConnectTimers();
         return;
     }
@@ -1793,10 +1798,10 @@ void RufusAdmin::Slot_RestaureBase()
     NomDirStockageImagerie = dirquer.value(0).toString();
     if (!QDir(NomDirStockageImagerie).exists())
     {
-        UpMessageBox::Watch(0,tr("Pas de dossier de stockage valide"),
+        UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage valide"),
                             tr("Le dossier spécifié pour le stockage de l'imagerie n'est pas valide") + "\n"
                             + tr("Indiquez un dossier valide dans la boîte de dialogue qui suit"));
-        QFileDialog dialogimg(0,tr("Stocker les images dans le dossier") , QDir::homePath() + NOMDIR_RUFUS);
+        QFileDialog dialogimg(Q_NULLPTR,tr("Stocker les images dans le dossier") , QDir::homePath() + NOMDIR_RUFUS);
         dialogimg.setViewMode(QFileDialog::List);
         dialogimg.setFileMode(QFileDialog::DirectoryOnly);
         bool b = (dialogimg.exec()>0);
@@ -1814,7 +1819,7 @@ void RufusAdmin::Slot_RestaureBase()
         }
         if (NomDirStockageImagerie.contains(" "))
         {
-            UpMessageBox::Watch(0, tr("Echec de la restauration"), tr("Le chemin vers le dossier ") + NomDirStockageImagerie + tr(" contient des espaces!"));
+            UpMessageBox::Watch(Q_NULLPTR, tr("Echec de la restauration"), tr("Le chemin vers le dossier ") + NomDirStockageImagerie + tr(" contient des espaces!"));
             ConnectTimers();
             return;
         }
@@ -2681,7 +2686,7 @@ bool RufusAdmin::ImmediateBackup()
     if (postesquer.size() > 0)
     {
         postesquer.first();
-        UpMessageBox::Information(0, tr("Autres postes connectés!"),
+        UpMessageBox::Information(Q_NULLPTR, tr("Autres postes connectés!"),
                                      tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
                                      " si vous n'êtes pas le seul poste connecté.\n"
                                      "Le poste ") + postesquer.value(0).toString() + tr(" est aussi connecté"));
@@ -2800,18 +2805,10 @@ bool RufusAdmin::ImmediateBackup()
 
 
 
-bool RufusAdmin::isTcpServer()
-{
-    return ServerTCP;
-}
-
 void RufusAdmin::TraiteTCPMessage(QString msg)
 {
     //qDebug() << msg + " - sur RufusAdmin::traitetcpmessage()";
-    //dlg_message(QStringList() << "gTimerSocket redémarré -> RufusAdmin::TraiteTCPMessage(QString msg)", 3000);
-     if (msg == TCPMSG_SocketOK)
-        gTimerSocketOK->start();
-    else if (msg.contains(TCPMSG_ListeSockets))
+    if (msg.contains(TCPMSG_ListeSockets))
     {
         msg.remove("{}" TCPMSG_ListeSockets);
         gListSockets.clear();
@@ -2823,11 +2820,6 @@ void RufusAdmin::TraiteTCPMessage(QString msg)
             data.replace(TCPMSG_Separator, " - ");
             qDebug() << data;
         }
-    }
-    else if (msg.contains(TCPMSG_ChangementServeur))
-    {
-        if (isTcpServer())
-            InitTcpServer(false);
     }
     else if (msg.contains(TCPMSG_NouvelleConnexion))
     {
@@ -2842,121 +2834,6 @@ void RufusAdmin::TraiteTCPMessage(QString msg)
         QString login = Datas::I()->users->getLoginById(msg.split(TCPMSG_Separator).at(0).toInt());
         QString adress = msg.split(TCPMSG_Separator).at(1);
         dlg_message(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
-    }
-}
-
-void RufusAdmin::envoieMessage(QString msg)
-{
-    currentmsg = msg;
-    QByteArray paquet   = currentmsg.toUtf8();
-    QByteArray size     = Utils::IntToArray(paquet.size());
-    if(TcPConnect->state() == QAbstractSocket::ConnectedState)
-    {
-        TcPConnect->write(size);                //envoie la taille du message
-        TcPConnect->write(paquet);              //envoie le message
-        TcPConnect->waitForBytesWritten(5000);
-    }
-}
-
-void RufusAdmin::envoieMessageA(QList<int> listidusr)
-{
-    QString listid;
-    for (int i=0; i<listidusr.size(); i++)
-    {
-        listid += QString::number(listidusr.at(i));
-        if (listidusr.at(i) < (listidusr.size()-1))
-            listid += ",";
-    }
-    QString msg = listid + TCPMSG_MsgBAL;
-    currentmsg = tr("courrier");
-    envoieMessage(msg);
-}
-
-void RufusAdmin::TraiteDonneesRecues()
-{
-    QString msg= "";
-    QByteArray *buffer = new QByteArray();
-    qint32 *s = new qint32(0);
-    qint32 size = *s;
-    while (TcPConnect->bytesAvailable() > 0)
-    {
-        buffer->append(TcPConnect->readAll());
-        while ((size == 0 && buffer->size() >= 4) || (size > 0 && buffer->size() >= size)) //While can process data, process it
-        {
-            if (size == 0 && buffer->size() >= 4) //if size of data has received completely, then store it on our global variable
-            {
-                size = Utils::ArrayToInt(buffer->mid(0, 4));
-                *s = size;
-                buffer->remove(0, 4);
-            }
-            if (size > 0 && buffer->size() >= size) // If data has received completely, then emit our SIGNAL with the data
-            {
-                QByteArray data = buffer->mid(0, size);
-                buffer->remove(0, size);
-                size = 0;
-                *s = size;
-                QString msg = QString::fromUtf8(data);
-                TraiteTCPMessage(msg);
-            }
-        }
-    }
-}
-
-void RufusAdmin::erreurSocket()
-{
-    QAbstractSocket::SocketError erreur = TcPConnect->error();
-    switch(erreur)
-    {
-        case QAbstractSocket::RemoteHostClosedError:
-            erreurmsg = tr("Le serveur TCP s'est déconnecté et va être remplacé");
-            break;
-        case QAbstractSocket::HostNotFoundError:
-            erreurmsg = tr("Le serveur TCP est introuvable et va être remplacé");
-            break;
-        case QAbstractSocket::SocketTimeoutError:
-            erreurmsg = tr("Le serveur TCP ne répond pas");
-            break;
-        default:
-            erreurmsg = tr("ERREUR : ") + TcPConnect->errorString();
-    }
-
-    if (erreur == QAbstractSocket::RemoteHostClosedError       /************** LE SERVER S'EST DÉCONNECTÉ ACCIDENTELLEMENT OU VOLONTAIREMENT *************************** */
-     || erreur == QAbstractSocket::HostNotFoundError           /************** LE SERVER NE RÉPOND PAS ************************** */
-     || erreur == QAbstractSocket::SocketTimeoutError)         /************** LE SERVER N'A PAS RÉPONDU À UN ENVOI ************************** */
-    {
-        dlg_message(QStringList() << erreurmsg, 3000, false);
-        VerifServeur();
-    }
-    else
-    {
-        dlg_message(QStringList() << erreurmsg + " - " + currentmsg + " - void RufusAdmin::erreurSocket(QAbstractSocket::SocketError erreur)", 180000, false);
-        return;
-    }
-}
-
-void RufusAdmin::ReinitialiseTCP()          // le client n'a rien reçu du serveur depuis au moins 3 cycles de test  on réinitialise tout
-{
-    InitTcpServer(false);
-    gTimerSocketOK          ->disconnect();
-    gTimerServeurOK         ->disconnect();
-    gTimerServeurOK         ->stop();
-    gTimerSocketOK          ->stop();
-
-    gTimerVerifServeur      ->disconnect();
-    TcPConnect->abort();
-    TcPConnect->disconnect();
-    TcPConnect = Q_NULLPTR;
-    AdresseTCPServer = "";
-    connect(gTimerVerifServeur, &QTimer::timeout,   this, &RufusAdmin::ReDemarreTCP);
-    return;
-}
-
-void RufusAdmin::ReDemarreTCP()
-{
-    if (DataBase::getInstance()->testconnexionbase())
-    {
-        gTimerVerifServeur->disconnect();
-        InitTCP();
     }
 }
 
@@ -2980,38 +2857,17 @@ void RufusAdmin::VerifServeur()
     TCPServerquer.first();
 
     // le serveur enregistré a changé
-    if (AdresseTCPServer != TCPServerquer.value(0).toString())
-    {
-        if (!TcpConnectToServer(TCPServerquer.value(0).toString()))
-            InitTcpServer(true);
-    }
-
-    // le poste n'est pas le serveur et il est déconnecté => on réinitialise tout
-    else if (!isTcpServer())
-        if (!TcpConnectToServer(AdresseTCPServer))
-            InitTcpServer(true);
+    if (gIPadr != TCPServerquer.value(0).toString())
+            InitTcpServer();
     QSqlQuery ("COMMIT;", db );
     QSqlQuery ("UNLOCK TABLES;", db );
     QSqlQuery ("SET AUTOCOMMIT = 1;", db );
 }
 
-void RufusAdmin::InitTcpServer(bool onoff)
+void RufusAdmin::InitTcpServer()
 {
-    gTimerVerifServeur->disconnect();
-    if (TcpServer!= Q_NULLPTR)
-        TcpServer   ->close();
-    TcpServer   = Q_NULLPTR;
-    if (onoff)
-    {
-        TcpServer   = new GestionTcPServer(this);
-        TcpServer   ->start();
-        QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
-        TcpConnectToServer(gIPadr);
-        connect(gTimerVerifServeur, &QTimer::timeout,   this, &RufusAdmin::VerifServeur);
-    }
-    ServerTCP = onoff;
-    DisconnectTimers();
-    ConnectTimers();
+    TcpServer   ->start();
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
 }
 
 void RufusAdmin::InitTCP()
@@ -3019,66 +2875,147 @@ void RufusAdmin::InitTCP()
     QString delaitest       = TCPDelai_TestServer;
     QString delaitestskt    = TCPDelai_TestSocket;
     gTimerVerifServeur      ->setInterval(delaitest.toInt());
-    gTimerSocketOK          ->setInterval((delaitestskt.toInt()*3)+1000);
-    gTimerServeurOK         ->setInterval(delaitestskt.toInt());
     gTimerVerifServeur      ->start();
-    gTimerSocketOK          ->start();
-    gTimerServeurOK         ->start();
-    if ( ! TcpConnectToServer() )
-        InitTcpServer(true);
+    InitTcpServer();
+    gflagMG                 = GetflagMG();
+    gflagSalDat             = GetflagSalDat();
 }
 
-bool RufusAdmin::TcpConnectToServer(QString ipadrserver)
+/*--------------------------------------------------------------------------------------------------------------------------------------
+    -- Gestion du flag de mise à jour de l'affichage du médecin traitant -----------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------------------------------------*/
+int RufusAdmin::GetflagMG()
 {
-    gTimerSocketOK->disconnect();
-    gTimerServeurOK->disconnect();
-    if (TcPConnect!=Q_NULLPTR)
+    int flagMG = 0;
+    QSqlQuery quer("select MAJflagMG from " NOM_TABLE_FLAGS, db);
+    if (quer.size() > 0)
     {
-        TcPConnect->abort();
-        TcPConnect->disconnect();
-        TcPConnect = Q_NULLPTR;
+        quer.first();
+        flagMG = quer.value(0).toInt();
     }
-    TcPConnect = new QTcpSocket(this);  // si on  ne réinitialise pas le TcpConnect, ça plante quand le serveur se déconnecte et je ne comprends pas pourquoi...
-    //TcPConnect->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-    AdresseTCPServer = ipadrserver;
-    if (ipadrserver == "")
-    {
-        QString req = "select AdresseTCPServeur from " NOM_TABLE_PARAMSYSTEME;
-        QSqlQuery TCPServerquer(req, db);
-        TCPServerquer.first();
-        AdresseTCPServer    = TCPServerquer.value(0).toString();
-    }
-    if (AdresseTCPServer == "")
-        return false;
-    QString port        = NOM_PORT_TCPSERVEUR;
-    PortTCPServer       = port.toUShort();
+    return flagMG;
+}
 
-    TcPConnect->connectToHost(AdresseTCPServer,PortTCPServer);      // On se connecte au serveur demandé
-    bool a = TcPConnect->waitForConnected(5000);
-    if (a)
+/*--------------------------------------------------------------------------------------------------------------------------------------
+    -- Gestion du flag de mise à jour de l'affichage du médecin traitant -----------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------------------------------------*/
+int RufusAdmin::GetflagSalDat()
+{
+    int flagSalDat = 0;
+    QSqlQuery quer("select MAJflagSalDat from " NOM_TABLE_FLAGS, db);
+    if (quer.size() > 0)
     {
-        connect(TcPConnect,                 &QTcpSocket::readyRead,                                              this,   &RufusAdmin::TraiteDonneesRecues);
-        connect(TcPConnect,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &RufusAdmin::erreurSocket);
-        envoieMessage(QString::number(idAdminDocs) + TCPMSG_idUser);
-        envoieMessage(gIPadr + TCPMSG_Separator + gMacAdress + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_DataSocket);
-        connect(gTimerSocketOK,             &QTimer::timeout,       this, [=] {ReinitialiseTCP();});
-        connect(gTimerServeurOK,            &QTimer::timeout,       this, [=] {envoieMessage(TCPMSG_SocketOK);});
-        return true;
+        quer.first();
+        flagSalDat = quer.value(0).toInt();
     }
-    else
-    {
-        dlg_message(QStringList() << "<b>" + tr("Le serveur enregistré dans la base ne répond pas.") + "</b><br/>" + tr("Ce poste va prendre la place de serveur TCP sur le réseau"), 5000, false);
-        return false;
-    }
+    return flagSalDat;
 }
 
 void RufusAdmin::FermeTCP()
 {
-    TcPConnect      ->abort();
-    if (isTcpServer())
-    {
         TcpServer->close();
         QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db);
+}
+
+void RufusAdmin::VerifVerrouDossier()
+{
+    /* Cette fonction sert à déconnecter et lever les verrous d'un utilisateur qui se serait déconnecté accidentellement
+     *
+     on fait la liste des utilisateurs qui n'ont pas remis à jour leur connexion depuis plus de 60 secondes,
+     on retire les verrous qu'ils auraient pu poser et on les déconnecte*/
+    bool mettreajourlasalledattente = false;
+    QString VerifOldUserreq = "select idUser, NomPosteConnecte from  " NOM_TABLE_USERSCONNECTES " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60";
+    QSqlQuery verifoldquery (VerifOldUserreq, DataBase::getInstance()->getDataBase() );
+    //qDebug() << VerifOldUserreq;
+    DataBase::getInstance()->traiteErreurRequete(verifoldquery,VerifOldUserreq,"");
+
+    if (verifoldquery.size() > 0)
+    {
+        verifoldquery.first();
+        for (int i=0; i<verifoldquery.size();i++)
+        {
+            //on déverrouille les dossiers verrouillés par cet utilisateur et on les remet en salle d'attente
+            QString blabla              = ENCOURSEXAMEN;
+            int length                  = blabla.size();
+            int a                       = verifoldquery.value(0).toInt();
+            QString Poste               = verifoldquery.value(1).toString();
+            QString LibereVerrouRequete;
+            LibereVerrouRequete = "UPDATE " NOM_TABLE_SALLEDATTENTE " SET Statut = '" ARRIVE "', idUserEnCoursExam = null, PosteExamen = null"
+                                  " WhERE idUserEnCoursExam = " + QString::number(a) +
+                                  " AND PosteExamen = '" + Poste +
+                                  "' AND Left(Statut," + QString::number(length) + ") = '" ENCOURSEXAMEN "'";
+            QSqlQuery LibereVerrouRequeteQuery (LibereVerrouRequete, DataBase::getInstance()->getDataBase() );
+            DataBase::getInstance()->traiteErreurRequete(LibereVerrouRequeteQuery,LibereVerrouRequete,"");
+            //qDebug() << LibereVerrouRequete;
+            //on déverrouille les actes verrouillés en comptabilité par cet utilisateur
+            LibereVerrouRequete = "delete from " NOM_TABLE_VERROUCOMPTAACTES " where PosePar = " + QString::number(a);
+            QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete, DataBase::getInstance()->getDataBase() );
+            DataBase::getInstance()->traiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
+            // on retire cet utilisateur de la table des utilisateurs connectés
+            QString req = "delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + Poste + "'";
+            QSqlQuery(req, DataBase::getInstance()->getDataBase() );
+            mettreajourlasalledattente = true;
+            Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
+            verifoldquery.next();
+        }
+    }
+
+    // on donne le statut "arrivé" aux patients en salle d'attente dont le iduserencourssexam n'est plus present sur ce poste examen dans la liste des users connectes
+    QString req = "select iduserencoursexam, posteexamen, idpat from " NOM_TABLE_SALLEDATTENTE " where statut like '" ENCOURSEXAMEN "%'";
+    //qDebug() << req;
+    QSqlQuery querr(req, DataBase::getInstance()->getDataBase() );
+    for (int i=0; i<querr.size(); i++)
+    {
+        querr.seek(i);
+        req = "select iduser, nomposteconnecte from " NOM_TABLE_USERSCONNECTES " where iduser = " + querr.value(0).toString()  + " and nomposteconnecte = '" + querr.value(1).toString() + "'";
+        //qDebug() << req;
+        QSqlQuery squer(req, DataBase::getInstance()->getDataBase() );
+        if (squer.size()==0)
+        {
+            req = "update " NOM_TABLE_SALLEDATTENTE " set Statut = '" ARRIVE "', posteexamen = null, iduserencoursexam = null where idpat = " + querr.value(2).toString();
+            //qDebug() << req;
+            QSqlQuery(req,  DataBase::getInstance()->getDataBase() );
+        }
+        mettreajourlasalledattente = true;
+    }
+    if (mettreajourlasalledattente)
+        MAJTcpMsgEtFlagSalDat();
+}
+
+/*------------------------------------------------------------------------------------------------------------------------------------
+-- Modifier la table UtilisateursConnectes pour signifier aux autres utilisateurs que la salle d'attente vient d'être modifiée --------------------
+------------------------------------------------------------------------------------------------------------------------------------*/
+void RufusAdmin::MAJTcpMsgEtFlagSalDat()
+{
+    /* envoi du message de MAJ de la salle d'attente au serveur */
+    TcpServer->envoyerATous(TCPMSG_MAJSalAttente);;
+
+    /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
+    if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
+       return;
+    QSqlQuery quer("select MAJflagSalDat from " NOM_TABLE_FLAGS, DataBase::getInstance()->getDataBase());
+    QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagSalDat) VALUES (1)";
+    int a = 0;
+    if (quer.seek(0)) {
+        a = quer.value(0).toInt() + 1;
+        MAJreq = "update " NOM_TABLE_FLAGS " set MAJflagSalDat = " + QString::number(a);
+    }
+    QSqlQuery (MAJreq, DataBase::getInstance()->getDataBase());
+    DataBase::getInstance()->commit();
+}
+
+void RufusAdmin::VerifSalleDAttenteEtCorrespondants()
+{
+    if (gflagSalDat < GetflagSalDat())
+    {
+        gflagSalDat = GetflagSalDat();
+        TcpServer->envoyerATous(TCPMSG_MAJSalAttente);
+    }
+    if (gflagMG < GetflagMG())
+    {
+        gflagMG = GetflagMG();
+        TcpServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
 }
+
 
