@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("19-10-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("20-10-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2987,8 +2987,8 @@ void RufusAdmin::VerifVerrouDossier()
 ------------------------------------------------------------------------------------------------------------------------------------*/
 void RufusAdmin::MAJTcpMsgEtFlagSalDat()
 {
-    /* envoi du message de MAJ de la salle d'attente au serveur */
-    TcpServer->envoyerATous(TCPMSG_MAJSalAttente);;
+    /* envoi du message de MAJ de la salle d'attente aux clients */
+    TcpServer->envoyerATous(TCPMSG_MAJSalAttente);
 
     /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
     if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
@@ -3003,6 +3003,28 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     QSqlQuery (MAJreq, DataBase::getInstance()->getDataBase());
     DataBase::getInstance()->commit();
     gflagSalDat = a;
+}
+
+/*------------------------------------------------------------------------------------------------------------------------------------
+-- Signifier aux autres utilisateurs que la liste des correspondants vient d'être modifiée -------
+------------------------------------------------------------------------------------------------------------------------------------*/
+void RufusAdmin::MAJflagMG()
+{
+    /* envoi du message de MAJ de la liste des correpondants aux clients */
+    TcpServer->envoyerATous(TCPMSG_MAJCorrespondants);
+    /* mise à jour du flag en cas de non utilisation du TCP ou pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente  */
+    if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
+        return;
+    QSqlQuery quer("select MAJflagMG from " NOM_TABLE_FLAGS, DataBase::getInstance()->getDataBase());
+    QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagMG) VALUES (1)";
+    int a = 0;
+    if (quer.seek(0)) {
+        a = quer.value(0).toInt() + 1;
+        MAJreq = "update " NOM_TABLE_FLAGS " set MAJflagMG = " + QString::number(a);
+    }
+    QSqlQuery (MAJreq, DataBase::getInstance()->getDataBase());
+    DataBase::getInstance()->commit();
+    gflagMG = a;
 }
 
 void RufusAdmin::VerifSalleDAttenteEtCorrespondants()

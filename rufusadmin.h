@@ -232,6 +232,7 @@ private:
                                                                         */
     void                VerifSalleDAttenteEtCorrespondants();
     void                MAJTcpMsgEtFlagSalDat();
+    void                MAJflagMG();
     void                VerifVerrouDossier();
 
 };
