@@ -13,7 +13,7 @@ class GestionTcPServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit    GestionTcPServer(QObject *parent = nullptr);
+    explicit    GestionTcPServer(int id, QObject *parent = nullptr);
     bool        start();
     void        envoyerATous(QString msg, QTcpSocket *emetteurorigin = Q_NULLPTR);      /* envoi de message commun sur tous les sockets
                                                                                          emetteurorigin sera exclu de la liste des destinataires */
@@ -33,6 +33,7 @@ private:
     void                            envoyerA(QTcpSocket *tcl, QString msg);             /* envoi d'un message sur un QTcpSocket en particulier */
     void                            AfficheListeSockets(QString fonction = "");         /* utilisé pour le debugging seulement */
     QTcpSocket*                     SocketduServeur();                                  /* renvoie le Socket connecté sur le poste du seveur */
+    int                             idAdmin;
 private slots:
     void                            TraiteDonneesRecues();                              /* traduction des messages reçus*/
     void                            DeconnexionParLeSocket();                           /* deconnexion d'un socket de lui même */

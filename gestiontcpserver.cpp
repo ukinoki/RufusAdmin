@@ -1,8 +1,9 @@
 #include "gestiontcpserver.h"
 #include <QTcpSocket>
 
-GestionTcPServer::GestionTcPServer(QObject *parent) : QTcpServer(parent)
+GestionTcPServer::GestionTcPServer(int id, QObject *parent) : QTcpServer(parent)
 {
+    idAdmin = id;
 }
 
 bool GestionTcPServer::start()
@@ -165,7 +166,7 @@ void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
     else if (msg == TCPMSG_SocketOK)
         timersrcv.value(tcl)->start();
 
-    else if (msg.contains(TCPMSG_DataSocket))               // les datas reçues per le serveur du client qui vient de se connecter
+    else if (msg.contains(TCPMSG_DataSocket))               // les datas  du client qui vient de se connecter reçues par le serveur
     {
         msg.remove(TCPMSG_DataSocket);
         dataclients.insert(tcl,msg);
@@ -204,6 +205,7 @@ void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
 void GestionTcPServer::envoieListeSockets(QTcpSocket *tcl)
 {
     QString listclients;
+    listclients += Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(idAdmin) + "{}";
     for(QMap<QTcpSocket*, QString>::iterator itcl = dataclients.begin(); itcl != dataclients.end(); ++itcl )
     {
         QMap<QTcpSocket*, int>::iterator itid = idusers.find(itcl.key());

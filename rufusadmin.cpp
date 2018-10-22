@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("20-10-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("21-10-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -181,7 +181,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     // 5 mettre en place le TcpSocket
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
-    TcpServer                   = new GestionTcPServer(this);
+    TcpServer                   = new GestionTcPServer(idAdminDocs, this);
     gTimerSalDatEtCorresp       = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants utilisé par
                                                            le TCPServer pour verifier les modifications faites par les postes distants
                                                         */
