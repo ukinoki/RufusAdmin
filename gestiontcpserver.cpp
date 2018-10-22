@@ -130,7 +130,6 @@ QTcpSocket* GestionTcPServer::SocketduServeur()
 
 void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
 {
-//    qDebug() << "message reçu par le serveur - " + msg + " - expéditeur " + tcl->peerAddress().toString();
     if (msg.contains(TCPMSG_MsgBAL))
     {
         msg.remove(TCPMSG_MsgBAL);
