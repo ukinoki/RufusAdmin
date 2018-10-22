@@ -211,25 +211,18 @@ private:
     void                    ModifParamBackup();
 
     // TCPServer, TCPSocket
-    QStringList         gListSockets;
     GestionTcPServer    *TcpServer;
     QStringList         ListclientsTCP;
     quint16             PortTCPServer;
-    QTimer              *gTimerSalDatEtCorresp, *gTimerVerifServeur, *gTimerVerifVerrou;
+    QTimer              *gTimerSalDatEtCorresp, *gTimerVerifVerrou;
     int                 gflagMG, gflagSalDat;
     QString             gIPadr, gMacAdress;
     int                 GetflagMG();
     int                 GetflagSalDat();
-    void                TraiteTCPMessage(QString msg);                  /* traitement des messages reçus des clients */
     void                InitTcpServer();                                /* démarre ou arrête le TCPServer */
     void                InitTCP();                                      /* Initialise le TCP */
     void                FermeTCP();
-    void                VerifServeur();                                 /* vérifie que le tcpserver est toujours actif ou n'a pas été remplacé - géré par un timer
-                                                                         * ce problème se produit par exemple en cas de mise en veille.
-                                                                         * Si le serveur se met en veille avec arrêt du disque dur, les socket se déconnectent passent en SocketState::Unconnected
-                                                                         * le premier socket déconnecté prend la place de nouveau serveur.
-                                                                         * quand le serveur voit qu'il a été remplacé, il se ferme
-                                                                        */
+
     void                VerifSalleDAttenteEtCorrespondants();
     void                MAJTcpMsgEtFlagSalDat();
     void                MAJflagMG();

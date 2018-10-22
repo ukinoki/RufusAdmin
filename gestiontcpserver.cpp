@@ -28,30 +28,15 @@ void GestionTcPServer::nouvelleconnexion()
         sizes               .insert(tcl, new qint32(0));
         idusers             .insert(tcl, -1);
         dataclients         .insert(tcl, "");
-        timerssd            .insert(tcl, new QTimer(tcl));
         timersrcv           .insert(tcl, new QTimer(tcl));
         QString adress      = tcl->peerAddress().toString();
         QString delaitest   = TCPDelai_TestSocket;
-        timerssd.value(tcl) ->start(delaitest.toInt());
         timersrcv.value(tcl)->setInterval(delaitest.toInt()*3+1000);
         timersrcv.value(tcl)->start();
         connect(tcl,                    SIGNAL(readyRead()),    this, SLOT(TraiteDonneesRecues()));
         connect(tcl,                    SIGNAL(disconnected()), this, SLOT(DeconnexionParLeSocket()));
-        connect(timerssd.value(tcl),    SIGNAL(timeout()),      this, SLOT(envoieSocketOK()));
         connect(timersrcv.value(tcl),   SIGNAL(timeout()),      this, SLOT(DeconnexionParLeTimer()));
     }
-}
-
-void GestionTcPServer::envoieSocketOK()
-{
-    QTimer *tim = qobject_cast<QTimer*>(sender());
-    for(QMap<QTcpSocket*, QTimer*>::iterator ittimer = timerssd.begin(); ittimer != timerssd.end(); ++ittimer )
-        if (ittimer.value() == tim)
-        {
-            envoyerA(ittimer.key(), TCPMSG_SocketOK);
-            return;
-        }
-
 }
 
 void GestionTcPServer::TraiteDonneesRecues()
@@ -118,16 +103,14 @@ void GestionTcPServer::Deconnexion(QTcpSocket *tcl)     // est appelé 2 fois po
     QMap<QTcpSocket*, QString>::iterator itdata = dataclients.find(tcl);
     if (itdata != dataclients.end())
         adress = itdata.value().split(TCPMSG_Separator).at(2);
-    QString msgconnexion = QString::number(id) + TCPMSG_Separator + adress + TCPMSG_Deconnexion;
-    qDebug() << "deconnexion de " + msgconnexion;
-    if (SocketduServeur() != Q_NULLPTR)
-        envoyerA(SocketduServeur(),msgconnexion);       // le serveur affiche la deconnexion dans une fenêtre
+    QString msgconnexion = QString::number(id) + TCPMSG_Separator + adress;
+    QString login = Datas::I()->users->getLoginById(id);
+    dlg_message(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
 
     buffers     .remove(tcl);
     sizes       .remove(tcl);
     idusers     .remove(tcl);
     dataclients .remove(tcl);
-    timerssd    .remove(tcl);
     timersrcv   .remove(tcl);
     tcl         = Q_NULLPTR;
     envoieListeSockets();
@@ -174,17 +157,12 @@ void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
         QMap<QTcpSocket*, int>::iterator itid = idusers.find(tcl);
         if (itid != idusers.end())
             id = itid.value();
-        QString msgconnexion = QString::number(id)
-                            + TCPMSG_Separator + msg
-                            + TCPMSG_NouvelleConnexion;
-        if (SocketduServeur() != Q_NULLPTR)
-                envoyerA(SocketduServeur(),msgconnexion);   // le serveur affiche la nouvelle connexion dans une fenêtre
+        QString login = Datas::I()->users->getLoginById(id);
+        QString adress = msg.split(TCPMSG_Separator).at(3);
+        dlg_message(QStringList() << login + " " +  tr("vient de se connecter sur") + " " + adress, 3000);
         envoieListeSockets();
         AfficheListeSockets(TCPMSG_DataSocket);
     }
-
-    else if (msg.contains(TCPMSG_ChangementServeur))
-        envoyerATous(msg, tcl);
 
     else if (msg.contains(TCPMSG_FaireLAppelSocket))          // Vérifie que chaque client présent sur les listes du serveur eest toujours connecté - fait l'appel
     {
