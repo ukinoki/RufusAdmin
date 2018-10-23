@@ -2857,8 +2857,8 @@ void RufusAdmin::FermeTCP()
 void RufusAdmin::ResumeStatut()
 {
     QString statut;
-    QStringList ListSockets = TcpServer->ListeSockets().remove("{}" TCPMSG_ListeSockets).split("{}");
-    QStringList::const_iterator itsocket;
+    QString list = TcpServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);
+    QStringList ListSockets = list.split("{}");
     // le 1er item de gListSockets est le serveur
     QString Serveur = ListSockets.at(0);
     statut += tr("ServeurTCP") + "\n\t"
@@ -2869,9 +2869,9 @@ void RufusAdmin::ResumeStatut()
 
     ListSockets.removeFirst();
     statut += "\n" + tr("postes connectés") + "\n";
+    QStringList::const_iterator itsocket;
     for( itsocket = ListSockets.constBegin(); itsocket != ListSockets.constEnd(); ++itsocket )
     {
-        qDebug() << *itsocket;
         statut += "\t" + itsocket->split(TCPMSG_Separator).at(2) + " - "
                 + itsocket->split(TCPMSG_Separator).at(0) + " - "
                 + itsocket->split(TCPMSG_Separator).at(1) + " --- "

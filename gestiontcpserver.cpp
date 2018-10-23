@@ -148,7 +148,7 @@ void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
         if (itid != idusers.end())
             id = itid.value();
         QString login = Datas::I()->users->getLoginById(id);
-        QString adress = msg.split(TCPMSG_Separator).at(3);
+        QString adress = msg.split(TCPMSG_Separator).at(2);
         dlg_message(QStringList() << login + " " +  tr("vient de se connecter sur") + " " + adress, 3000);
         envoieListeSockets();
         AfficheListeSockets(TCPMSG_DataSocket);
@@ -181,10 +181,11 @@ void GestionTcPServer::envoieListeSockets(QTcpSocket *tcl)
         int id = itid.value();
         gListeSockets += itcl.value() + TCPMSG_Separator + QString::number(id) + "{}";
     }
+    gListeSockets += TCPMSG_ListeSockets;
     if (tcl == Q_NULLPTR)
-        envoyerATous(gListeSockets + TCPMSG_ListeSockets);
+        envoyerATous(gListeSockets);
     else
-        envoyerA(tcl, gListeSockets + TCPMSG_ListeSockets);
+        envoyerA(tcl, gListeSockets);
     emit ModifListeSockets();
 }
 
@@ -219,15 +220,15 @@ void GestionTcPServer::envoyerA(QTcpSocket * tcl, QString msg)
 
 void GestionTcPServer::AfficheListeSockets(QString fonction)
 {
-    qDebug() << "liste des connexions " + fonction + " " + QTime::currentTime().toString("hh-mm-ss");
-    for(QMap<QTcpSocket*, QString>::iterator itcl = dataclients.begin(); itcl != dataclients.end(); ++itcl )
-    {
-        QStringList listdata = itcl.value().split(TCPMSG_Separator);
-        QString msg;
-        QStringList::const_iterator itsocket;
-        for( itsocket = listdata.constBegin(); itsocket != listdata.constEnd(); ++itsocket )
-            if (*itsocket != "")
-                msg += *itsocket + " - ";
-        qDebug() << msg;
-    }
+//    qDebug() << "liste des connexions " + fonction + " " + QTime::currentTime().toString("hh-mm-ss");
+//    for(QMap<QTcpSocket*, QString>::iterator itcl = dataclients.begin(); itcl != dataclients.end(); ++itcl )
+//    {
+//        QStringList listdata = itcl.value().split(TCPMSG_Separator);
+//        QString msg;
+//        QStringList::const_iterator itsocket;
+//        for( itsocket = listdata.constBegin(); itsocket != listdata.constEnd(); ++itsocket )
+//            if (*itsocket != "")
+//                msg += *itsocket + " - ";
+//        qDebug() << msg;
+//    }
 }
