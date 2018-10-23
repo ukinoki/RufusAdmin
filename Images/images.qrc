@@ -41,5 +41,6 @@
         <file>Backup.png</file>
         <file>eraser.png</file>
         <file>copy.png</file>
+        <file>network.png</file>
     </qresource>
 </RCC>

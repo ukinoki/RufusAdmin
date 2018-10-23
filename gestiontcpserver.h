@@ -16,8 +16,9 @@ class GestionTcPServer : public QTcpServer
 public:
     explicit    GestionTcPServer(int id, QObject *parent = nullptr);
     bool        start();
-    void        envoyerATous(QString msg, QTcpSocket *emetteurorigin = Q_NULLPTR);      /* envoi de message commun sur tous les sockets
-                                                                                         emetteurorigin sera exclu de la liste des destinataires */
+    void        envoyerATous(QString msg, QTcpSocket *emetteurorigin = Q_NULLPTR);      /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
+    QString     ListeSockets();
+
 private:
     void                            nouvelleconnexion();
     void                            envoieListeSockets(QTcpSocket *tcl = Q_NULLPTR);    /* envoie la liste des sockets à tous les sockets */
@@ -33,11 +34,14 @@ private:
     void                            envoyerA(QTcpSocket *tcl, QString msg);             /* envoi d'un message sur un QTcpSocket en particulier */
     void                            AfficheListeSockets(QString fonction = "");         /* utilisé pour le debugging seulement */
     QTcpSocket*                     SocketduServeur();                                  /* renvoie le Socket connecté sur le poste du seveur */
+    QString                         gListeSockets;
     int                             idAdmin;
 private slots:
     void                            TraiteDonneesRecues();                              /* traduction des messages reçus*/
     void                            DeconnexionParLeSocket();                           /* deconnexion d'un socket de lui même */
     void                            DeconnexionParLeTimer();                            /* deconnexion d'un socket par le timer */
+signals:
+    void                            ModifListe();
 };
 
 #endif // GESTIONTCPSERVER_H

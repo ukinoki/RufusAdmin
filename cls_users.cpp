@@ -81,12 +81,12 @@ bool Users::addUser(User *usr)
  */
 User* Users::getUserById(int id, bool loadDetails)
 {
-    bool addToList = false;
+    bool addToList = loadDetails;
     QMap<int, User*>::const_iterator user = m_users->find(id);
     User *result;
     if( user == m_users->constEnd() )
     {
-        if( (addToList = loadDetails) )
+        if( (addToList) )
             result = new User();
         else
             return nullptr;
@@ -94,7 +94,7 @@ User* Users::getUserById(int id, bool loadDetails)
     else
         result = user.value();
 
-    if( loadDetails && !result->isAllLoaded() )
+    if(addToList && !result->isAllLoaded() )
     {
         QJsonObject jsonUser = DataBase::getInstance()->loadUserData(id);
         if( jsonUser.isEmpty() )
@@ -116,7 +116,7 @@ User* Users::getUserById(int id, bool loadDetails)
  */
 QString Users::getLoginById(int id)
 {
-    User* user = getUserById(id);
+    User* user = getUserById(id, true);
     if( user != nullptr)
         return user->getLogin();
 

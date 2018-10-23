@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("21-10-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("23-10-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -182,6 +182,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
     TcpServer                   = new GestionTcPServer(idAdminDocs, this);
+    connect(TcpServer,          &GestionTcPServer::ModifListe,      this,   &RufusAdmin::ResumeStatut);
+
     gTimerSalDatEtCorresp       = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants utilisé par
                                                            le TCPServer pour verifier les modifications faites par les postes distants
                                                         */
@@ -231,6 +233,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(ui->ParamMotifspushButton,          SIGNAL(clicked(bool)),              this,   SLOT(Slot_ParamMotifs()));
     connect(ui->RestaurBaseupPushButton,        SIGNAL(clicked(bool)),              this,   SLOT(Slot_RestaureBase()));
     connect(ui->StockageupPushButton,           SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifDirImagerie()));
+    connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(gSocketStatut);});
 
 
     widgAppareils = new WidgetButtonFrame(ui->AppareilsConnectesupTableWidget);
@@ -2849,6 +2852,61 @@ void RufusAdmin::FermeTCP()
 {
         TcpServer->close();
         QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db);
+}
+
+void RufusAdmin::ResumeStatut()
+{
+    QString statut;
+    QStringList ListSockets = TcpServer->ListeSockets().remove("{}" TCPMSG_ListeSockets).split("{}");
+    QStringList::const_iterator itsocket;
+    QString Serveur = ListSockets.at(0);
+    statut += tr("ServeurTCP") + "\n\t"
+            + Serveur.split(TCPMSG_Separator).at(2) + " - "
+            + gIPadr + " - "
+            + Serveur.split(TCPMSG_Separator).at(1) + " --- "
+            + Datas::I()->users->getLoginById(Serveur.split(TCPMSG_Separator).at(3).toInt());
+
+    ListSockets.removeFirst();
+    statut += "\n" + tr("postes connectés") + "\n";
+    for( itsocket = ListSockets.constBegin(); itsocket != ListSockets.constEnd(); ++itsocket )
+    {
+        qDebug() << *itsocket;
+        statut += "\t" + itsocket->split(TCPMSG_Separator).at(2) + " - "
+                + itsocket->split(TCPMSG_Separator).at(0) + " - "
+                + itsocket->split(TCPMSG_Separator).at(1) + " --- "
+                + Datas::I()->users->getLoginById(itsocket->split(TCPMSG_Separator).at(3).toInt()) + "\n";
+    }
+    gSocketStatut = statut;
+    emit ModifEdit(gSocketStatut);
+}
+
+void RufusAdmin::Edit(QString txt)
+{
+    UpDialog        *gAsk           = new UpDialog(this);
+    QVBoxLayout     *globallay      = dynamic_cast<QVBoxLayout*>(gAsk->layout());
+    UpTextEdit      *TxtEdit        = new UpTextEdit(gAsk);
+    int x = qApp->desktop()->availableGeometry().width();
+    int y = qApp->desktop()->availableGeometry().height();
+
+    gAsk->setModal(true);
+    gAsk->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint);
+
+    TxtEdit->setText(txt);
+    TxtEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+    connect(this,   &RufusAdmin::ModifEdit, TxtEdit, [=](QString txt) {TxtEdit->setText(txt);});
+
+    gAsk->setMaximumWidth(x);
+    gAsk->setMaximumHeight(y);
+
+    globallay->insertWidget(0,TxtEdit);
+
+    gAsk->AjouteLayButtons();
+    connect(gAsk->OKButton,SIGNAL(clicked(bool)),gAsk,SLOT(accept()));
+    gAsk->restoreGeometry(gsettingsIni->value("PositionsFiches/PositionEdit").toByteArray());
+
+    gAsk->exec();
+    gsettingsIni->setValue("PositionsFiches/PositionEdit",gAsk->saveGeometry());
+    delete gAsk;
 }
 
 void RufusAdmin::VerifVerrouDossier()

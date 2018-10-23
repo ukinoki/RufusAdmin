@@ -4,6 +4,7 @@
 GestionTcPServer::GestionTcPServer(int id, QObject *parent) : QTcpServer(parent)
 {
     idAdmin = id;
+    gListeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(idAdmin) + "{}" TCPMSG_ListeSockets;
 }
 
 bool GestionTcPServer::start()
@@ -14,8 +15,9 @@ bool GestionTcPServer::start()
         UpMessageBox::Watch(Q_NULLPTR, tr("Le serveur n'a pas pu être démarré. Raison :<br />"), errorString());        // le serveur n'a pas été démarré correctement
         return false;
     }
-    else        // le serveur a été démarré correctement
-        connect (this, &GestionTcPServer::newConnection,    this,   &GestionTcPServer::nouvelleconnexion);
+    // le serveur a été démarré correctement
+    connect (this, &GestionTcPServer::newConnection,    this,   &GestionTcPServer::nouvelleconnexion);
+    emit ModifListe();
     return true;
 }
 
@@ -181,18 +183,23 @@ void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
 
 void GestionTcPServer::envoieListeSockets(QTcpSocket *tcl)
 {
-    QString listclients;
-    listclients += Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(idAdmin) + "{}";
+    gListeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(idAdmin) + "{}";
     for(QMap<QTcpSocket*, QString>::iterator itcl = dataclients.begin(); itcl != dataclients.end(); ++itcl )
     {
         QMap<QTcpSocket*, int>::iterator itid = idusers.find(itcl.key());
         int id = itid.value();
-        listclients += itcl.value() + TCPMSG_Separator + QString::number(id) + "{}";
+        gListeSockets += itcl.value() + TCPMSG_Separator + QString::number(id) + "{}";
     }
     if (tcl == Q_NULLPTR)
-        envoyerATous(listclients + TCPMSG_ListeSockets);
+        envoyerATous(gListeSockets + TCPMSG_ListeSockets);
     else
-        envoyerA(tcl, listclients + TCPMSG_ListeSockets);
+        envoyerA(tcl, gListeSockets + TCPMSG_ListeSockets);
+    emit ModifListe();
+}
+
+QString GestionTcPServer::ListeSockets()
+{
+    return gListeSockets;
 }
 
 void GestionTcPServer::envoyerATous(QString msg, QTcpSocket *emetteurorigin)

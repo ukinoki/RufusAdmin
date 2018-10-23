@@ -1061,6 +1061,38 @@ des organismes bancaires</string>
             <number>5</number>
            </property>
            <item>
+            <widget class="UpPushButton" name="NetworkStatuspushButton">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>61</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>245</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="contextMenuPolicy">
+              <enum>Qt::NoContextMenu</enum>
+             </property>
+             <property name="text">
+              <string>Postes connectés</string>
+             </property>
+             <property name="icon">
+              <iconset resource="Images/images.qrc">
+               <normaloff>:/network.png</normaloff>:/network.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="UpPushButton" name="ExportImagespushButton">
              <property name="minimumSize">
               <size>
@@ -1293,7 +1325,6 @@ des organismes bancaires</string>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="Images/images.qrc"/>
   <include location="Images/images.qrc"/>
   <include location="Images/images.qrc"/>
  </resources>

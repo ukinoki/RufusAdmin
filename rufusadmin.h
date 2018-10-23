@@ -124,6 +124,7 @@ private:
     void                        AskAppareil();
     void                        ChoixMenuSystemTray(QString txt);
     void                        ConnexionBase();
+    void                        Edit(QString txt);
     QStringList                 DecomposeScriptSQL(QString nomficscript);
     QString                     getDossierDocuments(QString Appareil);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
@@ -212,21 +213,24 @@ private:
 
     // TCPServer, TCPSocket
     GestionTcPServer    *TcpServer;
-    QStringList         ListclientsTCP;
     quint16             PortTCPServer;
     QTimer              *gTimerSalDatEtCorresp, *gTimerVerifVerrou;
     int                 gflagMG, gflagSalDat;
     QString             gIPadr, gMacAdress;
+    QString             gSocketStatut;
     int                 GetflagMG();
     int                 GetflagSalDat();
     void                InitTcpServer();                                /* démarre ou arrête le TCPServer */
     void                InitTCP();                                      /* Initialise le TCP */
     void                FermeTCP();
+    void                ResumeStatut();
 
     void                VerifSalleDAttenteEtCorrespondants();
     void                MAJTcpMsgEtFlagSalDat();
     void                MAJflagMG();
     void                VerifVerrouDossier();
+signals:
+    void                ModifEdit(QString txt);
 
 };
 
