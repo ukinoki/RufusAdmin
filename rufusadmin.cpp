@@ -182,7 +182,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
     TcpServer                   = new GestionTcPServer(idAdminDocs, this);
-    connect(TcpServer,          &GestionTcPServer::ModifListe,      this,   &RufusAdmin::ResumeStatut);
+    connect(TcpServer,          &GestionTcPServer::ModifListeSockets,      this,   &RufusAdmin::ResumeStatut);
 
     gTimerSalDatEtCorresp       = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants utilisé par
                                                            le TCPServer pour verifier les modifications faites par les postes distants
@@ -2859,6 +2859,7 @@ void RufusAdmin::ResumeStatut()
     QString statut;
     QStringList ListSockets = TcpServer->ListeSockets().remove("{}" TCPMSG_ListeSockets).split("{}");
     QStringList::const_iterator itsocket;
+    // le 1er item de gListSockets est le serveur
     QString Serveur = ListSockets.at(0);
     statut += tr("ServeurTCP") + "\n\t"
             + Serveur.split(TCPMSG_Separator).at(2) + " - "

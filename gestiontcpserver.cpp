@@ -17,7 +17,7 @@ bool GestionTcPServer::start()
     }
     // le serveur a été démarré correctement
     connect (this, &GestionTcPServer::newConnection,    this,   &GestionTcPServer::nouvelleconnexion);
-    emit ModifListe();
+    emit ModifListeSockets();
     return true;
 }
 
@@ -119,17 +119,6 @@ void GestionTcPServer::Deconnexion(QTcpSocket *tcl)     // est appelé 2 fois po
     AfficheListeSockets("Deconnexion(QTcpSocket *tcl)");
 }
 
-QTcpSocket* GestionTcPServer::SocketduServeur()
-{
-    for(QMap<QTcpSocket*, QString>::iterator itcl = dataclients.begin(); itcl != dataclients.end(); ++itcl )
-    {
-        QString macadr = itcl.value().split(TCPMSG_Separator).at(1);
-        if (Utils::getMACAdress() == macadr)
-            return itcl.key();
-    }
-    return Q_NULLPTR;
-}
-
 void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
 {
     if (msg.contains(TCPMSG_MsgBAL))
@@ -183,7 +172,9 @@ void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
 
 void GestionTcPServer::envoieListeSockets(QTcpSocket *tcl)
 {
+    // le 1er item de gListeSockets est le serveur
     gListeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(idAdmin) + "{}";
+    // les suivants sont les clients
     for(QMap<QTcpSocket*, QString>::iterator itcl = dataclients.begin(); itcl != dataclients.end(); ++itcl )
     {
         QMap<QTcpSocket*, int>::iterator itid = idusers.find(itcl.key());
@@ -194,7 +185,7 @@ void GestionTcPServer::envoieListeSockets(QTcpSocket *tcl)
         envoyerATous(gListeSockets + TCPMSG_ListeSockets);
     else
         envoyerA(tcl, gListeSockets + TCPMSG_ListeSockets);
-    emit ModifListe();
+    emit ModifListeSockets();
 }
 
 QString GestionTcPServer::ListeSockets()

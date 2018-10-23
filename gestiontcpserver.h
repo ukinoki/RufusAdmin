@@ -33,15 +33,16 @@ private:
 
     void                            envoyerA(QTcpSocket *tcl, QString msg);             /* envoi d'un message sur un QTcpSocket en particulier */
     void                            AfficheListeSockets(QString fonction = "");         /* utilisé pour le debugging seulement */
-    QTcpSocket*                     SocketduServeur();                                  /* renvoie le Socket connecté sur le poste du seveur */
     QString                         gListeSockets;
     int                             idAdmin;
+
 private slots:
     void                            TraiteDonneesRecues();                              /* traduction des messages reçus*/
     void                            DeconnexionParLeSocket();                           /* deconnexion d'un socket de lui même */
     void                            DeconnexionParLeTimer();                            /* deconnexion d'un socket par le timer */
+
 signals:
-    void                            ModifListe();
+    void                            ModifListeSockets();
 };
 
 #endif // GESTIONTCPSERVER_H
