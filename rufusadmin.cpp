@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("23-10-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("24-10-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -208,7 +208,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gTimerUserConnecte      ->start(10000);
     gTimerVerifDivers       ->start(30000);
 
-    dureeVeille = 60000;
+    QString veille = MISE_EN_VEILLE;
+    dureeVeille = veille.toInt();
     gTimerInactive->setSingleShot(true);
     gTimerInactive->setInterval(dureeVeille);
 
@@ -2344,13 +2345,18 @@ void RufusAdmin::Message(QString mess, int pause, bool bottom)
     while (QTime::currentTime() < dieTime)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
     ui->MessageupLabel->setText(mess);
-    QTimer timer;
-    timer.setSingleShot(true);
-    connect (&timer, &QTimer::timeout, [=] {ui->MessageupLabel->setText("");});
-    timer.start(pause);
+    EffaceMessage();
     QStringList listmsg;
     listmsg << mess;
     dlg_message(listmsg, pause, bottom);
+}
+
+void RufusAdmin::EffaceMessage(int pause)
+{
+    QTimer timer;
+    timer.setSingleShot(true);
+    timer.start(pause);
+    connect (&timer, &QTimer::timeout, [=] {ui->MessageupLabel->setText("");});
 }
 
 void RufusAdmin::ModifParamBackup()
@@ -2812,7 +2818,6 @@ void RufusAdmin::InitTcpServer()
 
 void RufusAdmin::InitTCP()
 {
-    QString delaitestskt    = TCPDelai_TestSocket;
     InitTcpServer();
     gflagMG                 = GetflagMG();
     gflagSalDat             = GetflagSalDat();

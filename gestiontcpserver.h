@@ -26,7 +26,6 @@ private:
     QMap<QTcpSocket*, qint32*>     sizes;                                              // le stockage de la taille permet de savoir si le bloc a été reçu
     QMap<QTcpSocket*, int>         idusers;                                            // stocke l'id corresondant au user correspondant à la connexion - utilisé pour la messagerie
     QMap<QTcpSocket*, QString>     dataclients;                                        // stocke l'adresse IP et l'adresse MAC du client - utilisé pour le changement de TcpServer
-    QMap<QTcpSocket*, QTimer*>     timersrcv;                                          // le timer rattaché à chaque TcpSocket - reçoit le signal de persistance de la ligne
 
     void                            TraiteMessageRecu(QTcpSocket *tclient, QString msg);/* traitement des messages reçus*/
     void                            Deconnexion(QTcpSocket* tcl);                       /* deconnexion d'un socket */
@@ -39,7 +38,6 @@ private:
 private slots:
     void                            TraiteDonneesRecues();                              /* traduction des messages reçus*/
     void                            DeconnexionParLeSocket();                           /* deconnexion d'un socket de lui même */
-    void                            DeconnexionParLeTimer();                            /* deconnexion d'un socket par le timer */
 
 signals:
     void                            ModifListeSockets();

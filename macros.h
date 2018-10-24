@@ -64,7 +64,6 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 //les TCP
 #define NOM_PORT_TCPSERVEUR                         "50885"
-#define TCPDelai_TestTCP                            "60000"
 #define TCPMSG_idUser                               "idUser"
 #define TCPMSG_MAJCorrespondants                    "MajCorrespondants"
 #define TCPMSG_MAJSalAttente                        "MajSalAttente"
@@ -73,7 +72,6 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_NonPrioritaire                       "ServeurNonPrioritaire"
 #define TCPMSG_DataSocket                           "DataSocket"
 #define TCPMSG_ListeSockets                         "ListeSockets"
-#define TCPMSG_SImposerCommeServeur                 "SImposerCommeServeur"
 
 // Les fichiers et répertoires divers
 #define NOMDIR_LIBS2                                "/Applications";
@@ -92,6 +90,9 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 // Variables mysql
 #define MAX_ALLOWED_PACKET                          "16"
+
+// Durée mise en veille
+#define MISE_EN_VEILLE                              "180000"
 
 // le son d'alarme
 #define NOM_ALARME                                  "://goutte.wav"
@@ -150,13 +151,11 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_MsgBAL                               "MsgRecuDansBAL"                                    /* fin du message informant de la réception d'un message de messagerie instantanée */
 
 #define NOM_PORT_TCPSERVEUR                         "50885"
-#define TCPDelai_TestSocket                         "10000"                                             /* délai entre 2 verifications de la continuité de la connexion - le statut QAbsractSocket::Connected n'est pas modifié en cas de rupture réseau ou mise en veille et ne suffit donc pas */
 #define TCPMSG_idUser                               "idUser"                                            /* nom du message founissant l'idUser */
 #define TCPMSG_Separator                            "triumphspeedtriple1050"                            /* separateur au sein d'un message */
 #define TCPMSG_DataSocket                           "DataSocket"                                        /* fin du message fournissant IP et MAC d'un client */
 #define TCPMSG_ListeSockets                         "ListeSockets"                                      /* fin du message informant le client que ce message contient la liste des TcpSockets */
 #define TCPMSG_FaireLAppelSocket                    "AppelListe"                                        /* fin du message demandant la verification de l'absence de sockets déconnectés dans la liste */
 #define TCPMSG_EnvoieListSocket                     "EnvoieListe"                                       /* fin du message demandant l'envoi de la liste des sockets à un client */
-#define TCPMSG_SocketOK                             "OKSocket"                                          /* message envoyé par le serveur pour confirmer que la connexion est toujours active */
 
 #endif // MACROS_H

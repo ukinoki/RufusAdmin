@@ -18,7 +18,7 @@ bool GestionTcPServer::start()
     // le serveur a été démarré correctement
     connect (this, &GestionTcPServer::newConnection,    this,   &GestionTcPServer::nouvelleconnexion);
     emit ModifListeSockets();
-    return true;
+return true;
 }
 
 void GestionTcPServer::nouvelleconnexion()
@@ -30,14 +30,8 @@ void GestionTcPServer::nouvelleconnexion()
         sizes               .insert(tcl, new qint32(0));
         idusers             .insert(tcl, -1);
         dataclients         .insert(tcl, "");
-        timersrcv           .insert(tcl, new QTimer(tcl));
-        QString adress      = tcl->peerAddress().toString();
-        QString delaitest   = TCPDelai_TestSocket;
-        timersrcv.value(tcl)->setInterval(delaitest.toInt()*3+1000);
-        timersrcv.value(tcl)->start();
-        connect(tcl,                    SIGNAL(readyRead()),    this, SLOT(TraiteDonneesRecues()));
-        connect(tcl,                    SIGNAL(disconnected()), this, SLOT(DeconnexionParLeSocket()));
-        connect(timersrcv.value(tcl),   SIGNAL(timeout()),      this, SLOT(DeconnexionParLeTimer()));
+        connect(tcl,        SIGNAL(readyRead()),    this, SLOT(TraiteDonneesRecues()));
+        connect(tcl,        SIGNAL(disconnected()), this, SLOT(DeconnexionParLeSocket()));
     }
 }
 
@@ -71,32 +65,16 @@ void GestionTcPServer::TraiteDonneesRecues()
     }
 }
 
-void GestionTcPServer::DeconnexionParLeTimer()      // le serveur n'a rien reçu du client depuis au moins 3 cycles de test
-{
-    qDebug() << "deconnexion appelée par le timer";
-    QTimer *tim = qobject_cast<QTimer*>(sender());
-    for(QMap<QTcpSocket*, QTimer*>::iterator ittimer = timersrcv.begin(); ittimer != timersrcv.end(); ++ittimer )
-        if (ittimer.value() == tim)
-        {
-            Deconnexion(ittimer.key());
-            return;
-        }
-}
-
 void GestionTcPServer::DeconnexionParLeSocket()     // le client de déconnectee spontanément
 {
     qDebug() << "deconnexion appelée par le client";
     QTcpSocket *tcl = qobject_cast<QTcpSocket*>(sender());
-    Deconnexion(tcl);
+    if (tcl)
+        Deconnexion(tcl);
 }
 
 void GestionTcPServer::Deconnexion(QTcpSocket *tcl)     // est appelé 2 fois pour la même déconnexion et je ne sais pas pourquoi d'où les Q_NULLPTR plutôt que deletelater
 {
-    if (tcl == Q_NULLPTR)
-    {
-        tcl->deleteLater();
-        return;
-    }
     int id = -1;
     QString adress = "";
     QMap<QTcpSocket*, int>::iterator itid = idusers.find(tcl);
@@ -113,8 +91,8 @@ void GestionTcPServer::Deconnexion(QTcpSocket *tcl)     // est appelé 2 fois po
     sizes       .remove(tcl);
     idusers     .remove(tcl);
     dataclients .remove(tcl);
-    timersrcv   .remove(tcl);
-    tcl         = Q_NULLPTR;
+    //timersrcv   .remove(tcl);
+    tcl->deleteLater();
     envoieListeSockets();
     AfficheListeSockets("Deconnexion(QTcpSocket *tcl)");
 }
@@ -136,9 +114,6 @@ void GestionTcPServer::TraiteMessageRecu(QTcpSocket *tcl,  QString msg)
         msg.remove(TCPMSG_idUser);
         idusers.insert(tcl,msg.toInt());
     }
-    else if (msg == TCPMSG_SocketOK)
-        timersrcv.value(tcl)->start();
-
     else if (msg.contains(TCPMSG_DataSocket))               // les datas  du client qui vient de se connecter reçues par le serveur
     {
         msg.remove(TCPMSG_DataSocket);
