@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("24-10-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-10-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -181,14 +181,19 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     // 5 mettre en place le TcpSocket
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
-    TcpServer                   = new GestionTcPServer(idAdminDocs, this);
+    TcpServer                   = GestionTcPServer::getInstance();
+    TcpServer                   ->setId(idAdminDocs);
+    TcpServer                   ->start();
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
+    gflagMG                     = GetflagMG();
+    gflagSalDat                 = GetflagSalDat();
+
     connect(TcpServer,          &GestionTcPServer::ModifListeSockets,      this,   &RufusAdmin::ResumeStatut);
 
-    gTimerSalDatEtCorresp       = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants utilisé par
-                                                           le TCPServer pour verifier les modifications faites par les postes distants
+    gTimerSalDatCorrespMsg      = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants et de l'arrivée de nouveaux messages utilisé par
+                                                           pour verifier les modifications faites par les postes distants
                                                         */
     gTimerVerifVerrou           = new QTimer(this);     // utilisé par le TcpServer pour vérifier l'absence d'utilisateurs déconnectés dans la base
-    InitTCP();
 
     gTimerUserConnecte          = new QTimer(this);     // mise à jour de la connexion à la base de données
     gTimerSupprDocs             = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
@@ -200,11 +205,16 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Slot_VerifPosteImport();
     Slot_VerifVersionBase();
     Slot_CalcExporteDocs();
+    QSqlQuery msgquer("select max(creele) from " NOM_TABLE_MESSAGES, db);
+    if (!msgquer.first())
+        gDateDernierMessage = QDateTime::currentDateTime();
+    else
+        gDateDernierMessage = msgquer.value(0).toDateTime();
 
     // Lancement du timer de vérification des verrous - +++ à lancer après le timer gTimerVerifGestDocs puisqu'il l'utilise
     gTimerVerifVerrou->start(60000);// "toutes les 60 secondes"
 
-    gTimerSalDatEtCorresp   ->start(1000);
+    gTimerSalDatCorrespMsg  ->start(1000);
     gTimerUserConnecte      ->start(10000);
     gTimerVerifDivers       ->start(30000);
 
@@ -623,12 +633,11 @@ void RufusAdmin::ConnectTimers()
     if (gMode != Distant)
     {
         connect (gTimerUserConnecte,    SIGNAL(timeout()),      this,   SLOT(Slot_ExporteDocs()));
-        connect (gTimerUserConnecte,    SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
         connect (gTimerSupprDocs,       SIGNAL(timeout()),      this,   SLOT(Slot_SupprimerDocs()));
         connect (gTimerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     }
     connect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
-    connect (gTimerSalDatEtCorresp,     &QTimer::timeout,       this,   &RufusAdmin::VerifSalleDAttenteEtCorrespondants);
+    connect (gTimerSalDatCorrespMsg,    &QTimer::timeout,       this,   &RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages);
     connect (gTimerVerifVerrou,         &QTimer::timeout,       this,   &RufusAdmin::VerifVerrouDossier);
 }
 
@@ -642,7 +651,7 @@ void RufusAdmin::DisconnectTimers()
     disconnect (gTimerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ExporteDocs()));
     disconnect (gTimerInactive,         SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
-    gTimerSalDatEtCorresp   ->disconnect();
+    gTimerSalDatCorrespMsg  ->disconnect();
     gTimerVerifVerrou       ->disconnect();
 }
 
@@ -2809,20 +2818,6 @@ bool RufusAdmin::ImmediateBackup()
     return true;
 }
 
-
-void RufusAdmin::InitTcpServer()
-{
-    TcpServer   ->start();
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
-}
-
-void RufusAdmin::InitTCP()
-{
-    InitTcpServer();
-    gflagMG                 = GetflagMG();
-    gflagSalDat             = GetflagSalDat();
-}
-
 /*--------------------------------------------------------------------------------------------------------------------------------------
     -- Gestion du flag de mise à jour de l'affichage du médecin traitant -----------------------------------------------------------------------------
     ------------------------------------------------------------------------------------------------------------------------------------*/
@@ -2986,7 +2981,7 @@ void RufusAdmin::VerifVerrouDossier()
 void RufusAdmin::MAJTcpMsgEtFlagSalDat()
 {
     /* envoi du message de MAJ de la salle d'attente aux clients */
-    TcpServer->envoyerATous(TCPMSG_MAJSalAttente);
+    TcpServer->envoyerATous(TCPMSG_MAJSalAttente);                      // le slot verifverroudossier a déconnecté un tutilisateur et modifié la salle d'attente si des patients étaient verrouillés
 
     /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
     if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
@@ -3025,7 +3020,13 @@ void RufusAdmin::MAJflagMG()
     gflagMG = a;
 }
 
-void RufusAdmin::VerifSalleDAttenteEtCorrespondants()
+void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
+/* Utilisé pour vérifier
+ *      des modifs de la salle d'attente
+ *      des modifs de la liste des correspondants
+ *      ou l'arrivée de nouveaux  messages
+ *  effectués par des postes distants
+ */
 {
     if (gflagSalDat < GetflagSalDat())
     {
@@ -3037,6 +3038,38 @@ void RufusAdmin::VerifSalleDAttenteEtCorrespondants()
         gflagMG = GetflagMG();
         TcpServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
+
+    QString req =
+        "select mess.idMessage, iddestinataire, creele from "
+        NOM_TABLE_MESSAGES " mess left outer join " NOM_TABLE_MESSAGESJOINTURES " joint on mess.idmessage = joint.idmessage \n"
+        " where Creele > '" + gDateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
+        + "' and asupprimer is null"
+        + " order by creele";
+    /*
+    select mess.idMessage, iddestinataire, Creele, iddestinataire from Rufus.Messagerie mess left outer join Rufus.MessagerieJointures joint on mess.idmessage = joint.idmessage
+    where iddestinataire = 1
+    or (idemetteur = 1 and asupprimer is null)
+    order by creele
+    */
+    QSqlQuery quer(req, DataBase::getInstance()->getDataBase());
+    int TotalNvxMessages = quer.size();
+    QHash<int,int> mapmessages;
+    if (TotalNvxMessages>0)
+    {
+        quer.first();
+        for (int i=0; i<TotalNvxMessages; i++)
+        {
+            QHash<int,int>::const_iterator itm = mapmessages.find(quer.value(1).toInt());
+            if (itm != mapmessages.constEnd())
+                mapmessages[itm.key()] = itm.value()+1;
+            else
+                mapmessages[quer.value(1).toInt()] = 1;
+            quer.next();
+        }
+        gDateDernierMessage = quer.value(2).toDateTime();
+    }
+    for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
+        TcpServer->envoyerA(itmsg.key(), TCPMSG_MsgBAL);
 }
 
 

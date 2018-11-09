@@ -47,6 +47,8 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_JOINTURESLIEUX                    "rufus.jointuresLieux"
 #define NOM_TABLE_LIEUXEXERCICE                     "rufus.LieuxExercice"
 #define NOM_TABLE_LISTEAPPAREILS                    "rufus.listeappareils"
+#define NOM_TABLE_MESSAGES                          "rufus.Messagerie"
+#define NOM_TABLE_MESSAGESJOINTURES                 "rufus.MessagerieJointures"
 #define NOM_TABLE_MOTIFSRDV                         "rufus.MotifsRDV"
 #define NOM_TABLE_PARAMSYSTEME                      "rufus.ParametresSysteme"
 #define NOM_TABLE_PATIENTS                          "rufus.Patients"
@@ -67,6 +69,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_idUser                               "idUser"
 #define TCPMSG_MAJCorrespondants                    "MajCorrespondants"
 #define TCPMSG_MAJSalAttente                        "MajSalAttente"
+#define TCPMSG_MAJDocsExternes                      "MajDocsExternes"                                   /* fin du message invitant à mettre à jour la liste des documents externes pour un patient */
 #define TCPMSG_MsgBAL                               "MsgRecuDansBAL"
 #define TCPMSG_Separator                            "triumphspeedtriple1050"
 #define TCPMSG_NonPrioritaire                       "ServeurNonPrioritaire"

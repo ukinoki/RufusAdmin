@@ -1,10 +1,23 @@
 #include "gestiontcpserver.h"
 #include <QTcpSocket>
 
-GestionTcPServer::GestionTcPServer(int id, QObject *parent) : QTcpServer(parent)
+GestionTcPServer* GestionTcPServer::instance = Q_NULLPTR;
+
+GestionTcPServer* GestionTcPServer::getInstance()
 {
-    idAdmin = id;
-    gListeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(idAdmin) + "{}" TCPMSG_ListeSockets;
+    if( !instance )
+        instance = new GestionTcPServer();
+    return instance;
+}
+
+GestionTcPServer::GestionTcPServer()
+{
+}
+
+void GestionTcPServer::setId(int id)
+{
+    m_id = id;
+    gListeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(m_id) + "{}" TCPMSG_ListeSockets;
 }
 
 bool GestionTcPServer::start()
@@ -18,7 +31,7 @@ bool GestionTcPServer::start()
     // le serveur a été démarré correctement
     connect (this, &GestionTcPServer::newConnection,    this,   &GestionTcPServer::nouvelleconnexion);
     emit ModifListeSockets();
-return true;
+    return true;
 }
 
 void GestionTcPServer::nouvelleconnexion()
@@ -65,7 +78,7 @@ void GestionTcPServer::TraiteDonneesRecues()
     }
 }
 
-void GestionTcPServer::DeconnexionParLeSocket()     // le client de déconnectee spontanément
+void GestionTcPServer::DeconnexionParLeSocket()     // le client s'est déconnecté spontanément
 {
     qDebug() << "deconnexion appelée par le client";
     QTcpSocket *tcl = qobject_cast<QTcpSocket*>(sender());
@@ -73,7 +86,7 @@ void GestionTcPServer::DeconnexionParLeSocket()     // le client de déconnectee
         Deconnexion(tcl);
 }
 
-void GestionTcPServer::Deconnexion(QTcpSocket *tcl)     // est appelé 2 fois pour la même déconnexion et je ne sais pas pourquoi d'où les Q_NULLPTR plutôt que deletelater
+void GestionTcPServer::Deconnexion(QTcpSocket *tcl)
 {
     int id = -1;
     QString adress = "";
@@ -91,7 +104,6 @@ void GestionTcPServer::Deconnexion(QTcpSocket *tcl)     // est appelé 2 fois po
     sizes       .remove(tcl);
     idusers     .remove(tcl);
     dataclients .remove(tcl);
-    //timersrcv   .remove(tcl);
     tcl->deleteLater();
     envoieListeSockets();
     AfficheListeSockets("Deconnexion(QTcpSocket *tcl)");
@@ -191,6 +203,16 @@ void GestionTcPServer::envoyerA(QTcpSocket * tcl, QString msg)
         tcl->write(paquet);
         tcl->waitForBytesWritten();
     }
+}
+
+void GestionTcPServer::envoyerA(int iduser, QString msg)
+{
+    for(QMap<QTcpSocket*, int>::const_iterator itusr = idusers.begin(); itusr != idusers.end(); ++itusr )
+     {
+         QTcpSocket *tcl = const_cast<QTcpSocket*>(itusr.key());
+         if (iduser == idusers.value(tcl))
+              envoyerA(tcl, msg);
+     }
 }
 
 void GestionTcPServer::AfficheListeSockets(QString fonction)

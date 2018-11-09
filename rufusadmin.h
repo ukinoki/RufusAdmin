@@ -215,18 +215,17 @@ private:
     // TCPServer, TCPSocket
     GestionTcPServer    *TcpServer;
     quint16             PortTCPServer;
-    QTimer              *gTimerSalDatEtCorresp, *gTimerVerifVerrou;
+    QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;
     int                 gflagMG, gflagSalDat;
     QString             gIPadr, gMacAdress;
     QString             gSocketStatut;
+    QDateTime           gDateDernierMessage;
     int                 GetflagMG();
     int                 GetflagSalDat();
-    void                InitTcpServer();                                /* démarre ou arrête le TCPServer */
-    void                InitTCP();                                      /* Initialise le TCP */
     void                FermeTCP();
     void                ResumeStatut();
 
-    void                VerifSalleDAttenteEtCorrespondants();
+    void                VerifModifsSalledAttenteCorrespondantsetNouveauxMessages();
     void                MAJTcpMsgEtFlagSalDat();
     void                MAJflagMG();
     void                VerifVerrouDossier();

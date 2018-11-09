@@ -29,6 +29,7 @@ ImportDocsExternesThread::ImportDocsExternesThread(QSqlDatabase dbg, int iduser,
     EnCours         = false;
     gnomFichIni     = QDir::homePath() + NOMFIC_INI;
     gsettingsIni    = new QSettings(gnomFichIni, QSettings::IniFormat);
+    TCPS            = GestionTcPServer::getInstance();
     RapatrieDocumentsThread();
     thread          ->exit();
 }
@@ -499,6 +500,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread()
                             out << Titredoc << " - " << nomdoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                             jnaltrsfer.close();
                         }
+                        TCPS->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
                         if (FichierImage.remove())
                         {
                             QString msg = tr("Enregistrement d'un cliché") + " <font color=\"red\"><b>" + Titredoc + "</b></font>"
@@ -559,6 +561,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread()
                             out << Titredoc << " - " << nomdoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                             jnaltrsfer.close();
                         }
+                        TCPS->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
                         if (FichierImage.remove())
                         {
                             QString msg = tr("Enregistrement d'un cliché") + " <font color=\"red\"><b>" + Titredoc + "</b></font>"
