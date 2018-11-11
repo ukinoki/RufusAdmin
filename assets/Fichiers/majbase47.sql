@@ -21,7 +21,7 @@ DELIMITER |
                 ALTER TABLE `flags`
                 ADD COLUMN `MAJflagMessages` INT(11) NULL DEFAULT NULL AFTER `MAJflagSalDat`;
             END IF;
-        UPDATE `rufus`.`utilisateurs` SET `UserDroits`='Admin' WHERE `idUser`='100';
+        UPDATE `rufus`.`utilisateurs` SET `UserLogin`='Admin' WHERE `UserNom`='Admin';
     END|
     UPDATE `ParametresSysteme` SET VersionBase = 47;
 CALL MAJ47();
