@@ -92,6 +92,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ConnexionBase();
     if (!VerifBase())
         exit(0);
+
     idlieuExercice = DetermineLieuExercice();
     gNomLieuExercice = "";
     QSqlQuery lieuquer("select nomlieu from " NOM_TABLE_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), db);
