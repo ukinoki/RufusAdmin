@@ -89,52 +89,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
     setMapDatas();    
 
-    /*QString adressexml = QDir::homePath() + SCRIPTPLISTFILE;
-    QFile xmldoc(adressexml);
-    if (xmldoc.open(QIODevice::ReadOnly))
-    {
-        QDomDocument *docxml = new QDomDocument();
-        docxml->setContent(&xmldoc);
-        QString info;
-        QDomNode n = docxml->firstChild();
-        while(!n.isNull()) {
-            QDomElement e = n.toElement(); // try to convert the node to an element.
-            if(!e.isNull()) {
-                info += "Nom de la balise\t" + e.tagName()+"\n"; // the node really is an element.
-                QDomNode n1 = n.firstChild();
-                while(!n1.isNull()) {
-                    QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-                    if(!e1.isNull()){
-                        info += "Nom de la balise\t" + e1.tagName()+"\n"; // the node really is an element.
-                        QDomNode n2 = n.firstChild();
-                        while(!n2.isNull()) {
-                            QDomElement e2 = n2.toElement(); // try to convert the node to an element.
-                            if(!e2.isNull()){
-                                info += "Nom de la balise\t" + e2.tagName()+"\n"; // the node really is an element.
-                            }
-                            n2 = n2.nextSibling();
-                        }
-                    }
-                    n1 = n1.nextSibling();
-                }
-            }
-            n = n.nextSibling();
-        }
-
-        UpDialog        *gAsk           = new UpDialog();
-        QVBoxLayout     *globallay      = dynamic_cast<QVBoxLayout*>(gAsk->layout());
-        QTextEdit *gTxtEdit              = new QTextEdit(gAsk);
-        gAsk->setModal(true);
-        gTxtEdit->setText(info);
-
-        globallay->insertWidget(0,gTxtEdit);
-
-        gAsk->AjouteLayButtons();
-        connect(gAsk->OKButton,SIGNAL(clicked(bool)),gAsk,SLOT(accept()));
-
-        gAsk->exec();
-        delete gAsk;
-    }*/
     ConnexionBase();
     if (!VerifBase())
         exit(0);
