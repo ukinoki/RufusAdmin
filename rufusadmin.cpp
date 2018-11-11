@@ -102,11 +102,19 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     //recherche de l'idUser du compte AdminDocs
     idAdminDocs = 0;
-    QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserNom = '" NOM_ADMINISTRATEURDOCS "'";
+    QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
     QSqlQuery usrquer(req, db);
     if (usrquer.size()==0)
     {
-        QSqlQuery("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')",db);
+        req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserNom = '" NOM_ADMINISTRATEURDOCS "'";
+        QSqlQuery quer(req,db);
+        if (quer.size()>0)
+        {
+            quer.first();
+            QSqlQuery("update " NOM_TABLE_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'",db);
+        }
+        else
+            QSqlQuery("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')",db);
         usrquer.exec();
         QSqlQuery mdpquer("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,db);
         mdpquer.first();
