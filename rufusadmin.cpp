@@ -355,6 +355,7 @@ void RufusAdmin::closeEvent(QCloseEvent *)
                   " and idlieu = " + QString::number(idlieuExercice);
     QSqlQuery qer(req,db);
     TraiteErreurRequete(qer,req,"");
+
 }
 
 void RufusAdmin::AskAppareil()
@@ -1585,10 +1586,11 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
                               " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                               " and idlieu = " + QString::number(idlieuExercice);
     else
-       MAJConnexionRequete = "insert into " NOM_TABLE_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, idlieu)"
+       MAJConnexionRequete = "insert into " NOM_TABLE_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, MACAdressePosteConnecte, idlieu)"
                                " VALUES(NOW()," +
                                QString::number(idAdminDocs) + ", -1, -1, -1, '" +
-                               QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', " +
+                               QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', '" +
+                               Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "', " +
                                QString::number(idlieuExercice) + ")";
     //qDebug() << MAJConnexionRequete;
     QSqlQuery MAJConnexionQuery (MAJConnexionRequete, db);
@@ -2064,10 +2066,12 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
         setPosteImportDocs(false);
         // on retire Admin de la table des utilisateurs connectés
         QString req = "delete from " NOM_TABLE_USERSCONNECTES
-                      " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
+                      " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
                       " and idlieu = " + QString::number(idlieuExercice);
         QSqlQuery qer(req,db);
         TraiteErreurRequete(qer,req,"");
+        FermeTCP();
+        setPosteImportDocs(false);
         exit(0);
     }
 }
