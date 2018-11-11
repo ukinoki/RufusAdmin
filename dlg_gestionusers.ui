@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1180</width>
+    <width>1220</width>
     <height>610</height>
    </rect>
   </property>
@@ -30,13 +30,13 @@
     <rect>
      <x>200</x>
      <y>15</y>
-     <width>960</width>
+     <width>1002</width>
      <height>540</height>
     </rect>
    </property>
    <property name="minimumSize">
     <size>
-     <width>960</width>
+     <width>1000</width>
      <height>530</height>
     </size>
    </property>
@@ -71,7 +71,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="leftMargin">
        <number>0</number>
@@ -83,7 +83,7 @@
        <widget class="QWidget" name="Socialwidget" native="true">
         <property name="minimumSize">
          <size>
-          <width>450</width>
+          <width>485</width>
           <height>470</height>
          </size>
         </property>
@@ -123,7 +123,7 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>392</y>
+           <y>414</y>
            <width>149</width>
            <height>16</height>
           </rect>
@@ -138,7 +138,7 @@
         <widget class="UpLineEdit" name="NomuplineEdit">
          <property name="geometry">
           <rect>
-           <x>110</x>
+           <x>160</x>
            <y>110</y>
            <width>170</width>
            <height>21</height>
@@ -163,7 +163,7 @@
          </property>
          <property name="geometry">
           <rect>
-           <x>110</x>
+           <x>160</x>
            <y>10</y>
            <width>121</width>
            <height>21</height>
@@ -180,7 +180,7 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>424</y>
+           <y>444</y>
            <width>149</width>
            <height>16</height>
           </rect>
@@ -211,9 +211,9 @@
         <widget class="Line" name="line_2">
          <property name="geometry">
           <rect>
-           <x>10</x>
-           <y>380</y>
-           <width>410</width>
+           <x>20</x>
+           <y>400</y>
+           <width>450</width>
            <height>3</height>
           </rect>
          </property>
@@ -252,7 +252,7 @@
         <widget class="UpComboBox" name="TitreupcomboBox">
          <property name="geometry">
           <rect>
-           <x>108</x>
+           <x>158</x>
            <y>82</y>
            <width>104</width>
            <height>26</height>
@@ -268,8 +268,8 @@
         <widget class="UpLineEdit" name="PortableuplineEdit">
          <property name="geometry">
           <rect>
-           <x>110</x>
-           <y>388</y>
+           <x>160</x>
+           <y>410</y>
            <width>170</width>
            <height>21</height>
           </rect>
@@ -284,7 +284,7 @@
         <widget class="UpLineEdit" name="PrenomuplineEdit">
          <property name="geometry">
           <rect>
-           <x>110</x>
+           <x>160</x>
            <y>138</y>
            <width>170</width>
            <height>21</height>
@@ -309,7 +309,7 @@
         <widget class="UpLineEdit" name="MDPuplineEdit">
          <property name="geometry">
           <rect>
-           <x>110</x>
+           <x>160</x>
            <y>34</y>
            <width>121</width>
            <height>21</height>
@@ -347,9 +347,9 @@
         <widget class="UpLineEdit" name="MailuplineEdit">
          <property name="geometry">
           <rect>
-           <x>110</x>
-           <y>420</y>
-           <width>321</width>
+           <x>160</x>
+           <y>440</y>
+           <width>316</width>
            <height>21</height>
           </rect>
          </property>
@@ -366,7 +366,7 @@
          </property>
          <property name="geometry">
           <rect>
-           <x>370</x>
+           <x>420</x>
            <y>10</y>
            <width>41</width>
            <height>21</height>
@@ -388,7 +388,7 @@
          </property>
          <property name="geometry">
           <rect>
-           <x>320</x>
+           <x>370</x>
            <y>12</y>
            <width>45</width>
            <height>16</height>
@@ -406,7 +406,7 @@
           <rect>
            <x>10</x>
            <y>70</y>
-           <width>411</width>
+           <width>450</width>
            <height>3</height>
           </rect>
          </property>
@@ -424,19 +424,6 @@
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-        <widget class="QGroupBox" name="AdressgroupBox">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>170</y>
-           <width>445</width>
-           <height>200</height>
-          </rect>
-         </property>
-         <property name="title">
-          <string/>
          </property>
         </widget>
         <widget class="UpLabel" name="ModifMDPUserupLabel">
@@ -461,10 +448,44 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>:/password.png</pixmap>
+          <pixmap resource="assets/Images/images.qrc">:/password.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="UpPushButton" name="GestLieuxpushButton">
+         <property name="geometry">
+          <rect>
+           <x>155</x>
+           <y>345</y>
+           <width>181</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Gestion des
+lieux d'activité</string>
+         </property>
+         <property name="icon">
+          <iconset resource="assets/Images/images.qrc">
+           <normaloff>:/address-book.png</normaloff>:/address-book.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+        <widget class="UpTableWidget" name="AdressupTableWidget">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>170</y>
+           <width>451</width>
+           <height>171</height>
+          </rect>
          </property>
         </widget>
        </widget>
@@ -505,14 +526,11 @@
          <widget class="QGroupBox" name="ComptagroupBox">
           <property name="geometry">
            <rect>
-            <x>0</x>
+            <x>5</x>
             <y>5</y>
             <width>170</width>
             <height>140</height>
            </rect>
-          </property>
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
           </property>
           <property name="contextMenuPolicy">
            <enum>Qt::NoContextMenu</enum>
@@ -631,11 +649,14 @@
          <widget class="UpRadioButton" name="AGAupRadioButton">
           <property name="geometry">
            <rect>
-            <x>10</x>
-            <y>159</y>
+            <x>13</x>
+            <y>152</y>
             <width>151</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::StrongFocus</enum>
           </property>
           <property name="contextMenuPolicy">
            <enum>Qt::NoContextMenu</enum>
@@ -775,7 +796,7 @@ pour l'enregistrement des actes</string>
          <property name="geometry">
           <rect>
            <x>95</x>
-           <y>242</y>
+           <y>245</y>
            <width>145</width>
            <height>21</height>
           </rect>
@@ -797,7 +818,7 @@ pour l'enregistrement des actes</string>
          <property name="geometry">
           <rect>
            <x>50</x>
-           <y>245</y>
+           <y>248</y>
            <width>45</width>
            <height>16</height>
           </rect>
@@ -810,6 +831,19 @@ pour l'enregistrement des actes</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+        <widget class="Line" name="line_6">
+         <property name="geometry">
+          <rect>
+           <x>35</x>
+           <y>200</y>
+           <width>220</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
         <widget class="Line" name="line">
@@ -841,7 +875,7 @@ pour l'enregistrement des actes</string>
          <property name="geometry">
           <rect>
            <x>95</x>
-           <y>215</y>
+           <y>218</y>
            <width>145</width>
            <height>21</height>
           </rect>
@@ -863,7 +897,7 @@ pour l'enregistrement des actes</string>
          <property name="geometry">
           <rect>
            <x>320</x>
-           <y>125</y>
+           <y>120</y>
            <width>125</width>
            <height>3</height>
           </rect>
@@ -881,6 +915,9 @@ pour l'enregistrement des actes</string>
            <height>22</height>
           </rect>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::StrongFocus</enum>
+         </property>
          <property name="contextMenuPolicy">
           <enum>Qt::NoContextMenu</enum>
          </property>
@@ -895,7 +932,7 @@ pour l'enregistrement des actes</string>
          <property name="geometry">
           <rect>
            <x>50</x>
-           <y>218</y>
+           <y>221</y>
            <width>45</width>
            <height>16</height>
           </rect>
@@ -916,11 +953,8 @@ pour l'enregistrement des actes</string>
            <x>294</x>
            <y>170</y>
            <width>180</width>
-           <height>61</height>
+           <height>56</height>
           </rect>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
          </property>
          <property name="contextMenuPolicy">
           <enum>Qt::NoContextMenu</enum>
@@ -989,7 +1023,7 @@ pour l'enregistrement des actes</string>
         <widget class="QGroupBox" name="FonctiongroupBox">
          <property name="geometry">
           <rect>
-           <x>0</x>
+           <x>5</x>
            <y>0</y>
            <width>280</width>
            <height>205</height>
@@ -1167,9 +1201,6 @@ pour l'enregistrement des actes</string>
            <height>105</height>
           </rect>
          </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
          <property name="contextMenuPolicy">
           <enum>Qt::NoContextMenu</enum>
          </property>
@@ -1244,10 +1275,13 @@ pour l'enregistrement des actes</string>
          <property name="geometry">
           <rect>
            <x>304</x>
-           <y>240</y>
+           <y>229</y>
            <width>169</width>
            <height>22</height>
           </rect>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::StrongFocus</enum>
          </property>
          <property name="contextMenuPolicy">
           <enum>Qt::NoContextMenu</enum>
@@ -1378,6 +1412,11 @@ pour l'enregistrement des actes</string>
    <header>upsmallbutton.h</header>
   </customwidget>
   <customwidget>
+   <class>UpLabel</class>
+   <extends>QLabel</extends>
+   <header>uplabel.h</header>
+  </customwidget>
+  <customwidget>
    <class>UpLineEdit</class>
    <extends>QLineEdit</extends>
    <header>uplineedit.h</header>
@@ -1388,14 +1427,14 @@ pour l'enregistrement des actes</string>
    <header>upcombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>UpLabel</class>
-   <extends>QLabel</extends>
-   <header>uplabel.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpRadioButton</class>
    <extends>QRadioButton</extends>
    <header>upradiobutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header location="global">uptablewidget.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -1431,6 +1470,8 @@ pour l'enregistrement des actes</string>
   <tabstop>ResponsableupRadioButton</tabstop>
   <tabstop>AssistantupRadioButton</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="assets/Images/images.qrc"/>
+ </resources>
  <connections/>
 </ui>

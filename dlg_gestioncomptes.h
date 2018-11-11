@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+Rufus is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+Rufus is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef DLG_GESTIONCOMPTES_H
@@ -22,8 +22,10 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "ui_dlg_banque.h"
 #include "upcombobox.h"
 #include <QRadioButton>
-#include <QGroupBox>
+#include "cls_user.h"
 #include "functormajpremierelettre.h"
+#include "database.h"
+#include "cls_compte.h"
 
 /* sert à gérer les comptes bancaires des utilisateurs
  * IDENTIQUE POUR RUFUS ET RUFUSADMIN*/
@@ -37,19 +39,16 @@ class dlg_gestioncomptes : public UpDialog
     Q_OBJECT
 
 public:
-    explicit dlg_gestioncomptes(QMap<QString, QVariant> DataUser, QSqlDatabase gdb,
-                                QMap<QString,QIcon> Icons, bool societe, bool AfficheLeSolde = true, QWidget *parent = Q_NULLPTR);
+    explicit dlg_gestioncomptes(User *DataUser,
+                                bool societe, bool AfficheLeSolde = true, QWidget *parent = Q_NULLPTR);
     ~dlg_gestioncomptes();
 
 private:
-    FunctorMAJPremiereLettre fMAJPremiereLettre;
     Ui::dlg_gestioncomptes  *ui;
-    QIcon                   giconEuro;
-    QSqlDatabase            db;
-    QMap<QString,QVariant>  gDataUser;
-    QMap<QString,QIcon>     gmapIcons;
-    QIcon                   giconHelp, giconNull;
-    QStringList             gListBanques;
+    DataBase                *db;
+    User                    *gDataUser;
+    Comptes                 *comptesusr;
+    Compte                  *CompteEnCours;
     dlg_banque              *Dlg_Banq;
     bool                    createurducompte;
     bool                    gAfficheLeSolde;
@@ -64,7 +63,6 @@ private:
     QString                 CorrigeApostrophe(QString RechAp);
     void                    MetAJourListeBanques();
     void                    RemplirTableView(int idcompte = -1);
-    bool                    TraiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage = "");
     bool                    VerifCompte();
     WidgetButtonFrame       *widgButtons;
     UpSmallButton           *NouvBanqupPushButton;

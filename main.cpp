@@ -15,6 +15,13 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+ * Première initisialization de la classe Icons
+*/
+#include "icons.h"
+QMap<QString,QPixmap> Icons::m_mapPixmap = QMap<QString,QPixmap>();
+QMap<QString,QIcon> Icons::m_mapIcon = QMap<QString,QIcon>();
+
 #include "rufusadmin.h"
 #include <QApplication>
 
@@ -22,7 +29,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    QPixmap pixmap("://rufus3.jpg");
+    QPixmap pixmap("://rufusadmin.jpg");
     QSplashScreen *splash = new QSplashScreen(pixmap);
     splash->show();
     Utils::Pause(1500);

@@ -1,18 +1,18 @@
-/* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+/* (C) 2016 LAINE SERGE
+This file is part of Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+Rufus is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License,
-or any later version.
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+Rufus is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef DLG_GESTIONUSERS_H
@@ -26,12 +26,16 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSqlDatabase>
 
 #include "dlg_gestioncomptes.h"
+#include "dlg_gestionlieux.h"
 #include "uplineedit.h"
 #include "uptextedit.h"
 #include "widgetbuttonframe.h"
-#include "functordatauser.h"
 #include "functormajpremierelettre.h"
 #include "macros.h"
+#include "icons.h"
+#include "utils.h"
+#include "cls_user.h"
+#include "upheaderview.h"
 
 /* sert à gérer les comptes utilisateurs
  * IDENTIQUE POUR RUFUS ET RUFUSADMIN*/
@@ -45,14 +49,26 @@ class dlg_gestionusers : public UpDialog
     Q_OBJECT
 
 public:
-    explicit dlg_gestionusers(int idUser, int idlieu, QSqlDatabase db, QMap<QString,QIcon> Icons, QWidget *parent = Q_NULLPTR);
+    explicit dlg_gestionusers(int idUser, int idlieu, QSqlDatabase db, bool mdpverified=true, QWidget *parent = Q_NULLPTR);
+    /*
+     * la variable mdpverified est utilisée pour l'appel de la fiche dlg_gestionlieux
+     * Cette fiche est parfois appelée alors que le mdp administrateur a déjà eté vérifié, parfois non
+     */
     ~dlg_gestionusers();
-    Ui::dlg_gestionusers        *ui;
+    Ui::dlg_gestionusers    *ui;
     int                     Mode;
     enum                    Mode {PREMIERUSER, ADMIN, MODIFUSER};
+    /* correspond aux 3 modes d'utilisation de la fiche
+     * PREMIERUSER -> la fiche est appelée au premier lancement du programme pour créer le premier utilisateur -> on peut tout modifier
+     * MODIFUSER   -> appelé par l'utilisateur dans le premier onglet de la fiche dlg_param -> on ne peut modifier que les données d'identité, geographiques et bancaires
+     * ADMIN       -> appelé par l'administrateur, on peut tout modidier, y compris le statut
+    */
     void                    setConfig(enum Mode);
+    bool                    isMDPverified();
 
 private:
+    bool                    MDPverified;
+
     bool                    ophtalmo;
     bool                    orthoptist;
     bool                    autresoignant;
@@ -69,23 +85,20 @@ private:
     bool                    respliberal;
     bool                    soigntnonrplct;
 
-    FunctorDataUser         fdatauser;
     FunctorMAJPremiereLettre fMAJPremiereLettre;
     dlg_gestioncomptes      *Dlg_GestComptes;
     UpDialog                *gAsk;
     QSqlDatabase            db;
     QBrush                  gcolor;
-    QMap<QString,QIcon>     gmapIcons;
     int                     gMode;
         enum gMode          {Creer, Modifier, PremierUsr};
     int                     gidUserDepart;
     int                     gidLieu;
-    QMap<QString,QVariant>  OtherUser;
+    User                    *OtherUser;
     QString                 gLoginupLineEdit, gMDPupLineEdit, gConfirmMDPupLineEdit;
     QString                 gLibActiv, gNoLibActiv;
     QString                 gNouvMDP, gAncMDP, gConfirmMDP;
     QStringList             gListBanques;
-    QRegExp                 rx, rxMail, rxTel;
     UpDialog                *gAskMDP;
     void                    ActualiseRsgnmtBanque(bool soccomptable);
     bool                    AfficheParamUser(int idUser);
@@ -97,11 +110,12 @@ private:
     QString                 Edit(QString txt, QString titre = "");
     bool                    ExisteEmployeur(int iduser);
     void                    RemplirTableWidget(int iduser);
+    void                    ReconstruitListeLieuxExercice();
     bool                    TraiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage = "");
     bool                    VerifFiche();
 
     bool                    setDataUser(int id);
-    QMap<QString,QVariant>  DataUser();
+    User*                   DataUser();
     WidgetButtonFrame       *widgButtons;
     void                    CreerUser();
     void                    ModifUser();
@@ -109,12 +123,12 @@ private:
 
 private slots:
     void                    Slot_Annulation();
-    void                    Slot_CompleteRenseignements(QTableWidgetItem*,QTableWidgetItem*);
     void                    Slot_EnableOKpushButton();
     void                    Slot_EnregistreNouvMDP();
     void                    Slot_EnregistreUser();
     void                    Slot_FermeFiche();
     void                    Slot_GestionComptes();
+    void                    Slot_GestLieux();
     void                    Slot_ModifMDP();
     void                    Slot_RegleAffichage();
     void                    Slot_EnregistreNouvUser();

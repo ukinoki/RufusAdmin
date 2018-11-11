@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("02-10-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("11-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -182,13 +182,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
     TcpServer                   = GestionTcPServer::getInstance();
+    connect(TcpServer,          &GestionTcPServer::ModifListeSockets,      this,   &RufusAdmin::ResumeStatut);
     TcpServer                   ->setId(idAdminDocs);
     TcpServer                   ->start();
     QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
-    gflagMG                     = GetflagMG();
+    gflagCorrespdts             = GetflagCorrespdts();
     gflagSalDat                 = GetflagSalDat();
 
-    connect(TcpServer,          &GestionTcPServer::ModifListeSockets,      this,   &RufusAdmin::ResumeStatut);
 
     gTimerSalDatCorrespMsg      = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants et de l'arrivée de nouveaux messages utilisé par
                                                            pour verifier les modifications faites par les postes distants
@@ -1546,7 +1546,7 @@ void RufusAdmin::Slot_ExporteDocs()
 void RufusAdmin::Slot_GestionBanques()
 {
     DisconnectTimerInactive();
-    Dlg_Banq = new dlg_banque(db, MapIcons(), this);
+    Dlg_Banq = new dlg_banque(this);
     Dlg_Banq->exec();
     ConnectTimerInactive();
 }
@@ -1567,7 +1567,7 @@ void RufusAdmin::Slot_GestUser()
     if (listusrquery.size()>0)
         listusrquery.first();
     int iduser = listusrquery.value(0).toInt();
-    Dlg_GestUsr = new dlg_gestionusers(iduser, ui->EmplacementServeurupComboBox->currentData().toInt(), db, MapIcons(), this);
+    Dlg_GestUsr = new dlg_gestionusers(iduser, ui->EmplacementServeurupComboBox->currentData().toInt(), db, true, this);
     Dlg_GestUsr->setWindowTitle(tr("Gestion des utilisateurs"));
     Dlg_GestUsr->setConfig(dlg_gestionusers::ADMIN);
     if(Dlg_GestUsr->exec()>0)
@@ -1622,10 +1622,10 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
                               " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                               " and idlieu = " + QString::number(idlieuExercice);
     else
-       MAJConnexionRequete = "insert into " NOM_TABLE_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, LastidModifSalDat, idlieu)"
+       MAJConnexionRequete = "insert into " NOM_TABLE_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, idlieu)"
                                " VALUES(NOW()," +
                                QString::number(idAdminDocs) + ", -1, -1, -1, '" +
-                               QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', 0, " +
+                               QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', " +
                                QString::number(idlieuExercice) + ")";
     //qDebug() << MAJConnexionRequete;
     QSqlQuery MAJConnexionQuery (MAJConnexionRequete, db);
@@ -2272,14 +2272,6 @@ bool RufusAdmin::VerifBase()
             }
             if (result!=1)
                 return false;
-            if (Version == 40)
-            {
-                QSqlQuery mdpquer("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,db);
-                mdpquer.first();
-                QString mdp = (mdpquer.value(0).toString() != ""? mdpquer.value(0).toString() : db.password());
-                QSqlQuery ("create user if not exists '" NOM_ADMINISTRATEURDOCS "SSL'@'%' identified by '" + mdp + "' REQUIRE SSL",db);
-                QSqlQuery ("grant all on *.* to '" NOM_ADMINISTRATEURDOCS "SSL'@'%' identified by '" + mdp + "' with grant option",db);
-            }
         }
     }
     return true;
@@ -2819,9 +2811,9 @@ bool RufusAdmin::ImmediateBackup()
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------
-    -- Gestion du flag de mise à jour de l'affichage du médecin traitant -----------------------------------------------------------------------------
+    -- Gestion du flag de mise à jour de la liste des correspondants -----------------------------------------------------------------------------
     ------------------------------------------------------------------------------------------------------------------------------------*/
-int RufusAdmin::GetflagMG()
+int RufusAdmin::GetflagCorrespdts()
 {
     int flagMG = 0;
     QSqlQuery quer("select MAJflagMG from " NOM_TABLE_FLAGS, db);
@@ -2834,7 +2826,22 @@ int RufusAdmin::GetflagMG()
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------
-    -- Gestion du flag de mise à jour de l'affichage du médecin traitant -----------------------------------------------------------------------------
+    -- Gestion du flag de mise à jour de l'arrivée de nouveaux messages -----------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------------------------------------*/
+int RufusAdmin::GetflagMessages()
+{
+    int flagMessages = 0;
+    QSqlQuery quer("select MAJflagMessages from " NOM_TABLE_FLAGS, db);
+    if (quer.size() > 0)
+    {
+        quer.first();
+        flagMessages = quer.value(0).toInt();
+    }
+    return flagMessages;
+}
+
+/*--------------------------------------------------------------------------------------------------------------------------------------
+    -- Gestion du flag de mise à jour de la salle d'attente -----------------------------------------------------------------------------
     ------------------------------------------------------------------------------------------------------------------------------------*/
 int RufusAdmin::GetflagSalDat()
 {
@@ -3017,7 +3024,7 @@ void RufusAdmin::MAJflagMG()
     }
     QSqlQuery (MAJreq, DataBase::getInstance()->getDataBase());
     DataBase::getInstance()->commit();
-    gflagMG = a;
+    gflagCorrespdts = a;
 }
 
 void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
@@ -3033,43 +3040,42 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
         gflagSalDat = GetflagSalDat();
         TcpServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
-    if (gflagMG < GetflagMG())
+    if (gflagCorrespdts < GetflagCorrespdts())
     {
-        gflagMG = GetflagMG();
+        gflagCorrespdts = GetflagCorrespdts();
         TcpServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
 
-    QString req =
-        "select mess.idMessage, iddestinataire, creele from "
-        NOM_TABLE_MESSAGES " mess left outer join " NOM_TABLE_MESSAGESJOINTURES " joint on mess.idmessage = joint.idmessage \n"
-        " where Creele > '" + gDateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
-        + "' and asupprimer is null"
-        + " order by creele";
-    /*
-    select mess.idMessage, iddestinataire, Creele, iddestinataire from Rufus.Messagerie mess left outer join Rufus.MessagerieJointures joint on mess.idmessage = joint.idmessage
-    where iddestinataire = 1
-    or (idemetteur = 1 and asupprimer is null)
-    order by creele
-    */
-    QSqlQuery quer(req, DataBase::getInstance()->getDataBase());
-    int TotalNvxMessages = quer.size();
-    QHash<int,int> mapmessages;
-    if (TotalNvxMessages>0)
+    if (gflagMessages < GetflagMessages())
     {
-        quer.first();
-        for (int i=0; i<TotalNvxMessages; i++)
+        gflagMessages = GetflagMessages();
+
+        QString req =
+                "select mess.idMessage, iddestinataire, creele from "
+                NOM_TABLE_MESSAGES " mess left outer join " NOM_TABLE_MESSAGESJOINTURES " joint on mess.idmessage = joint.idmessage \n"
+                " where Creele > '" + gDateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
+                + "' and asupprimer is null"
+                + " order by creele";
+        QSqlQuery quer(req, DataBase::getInstance()->getDataBase());
+        int TotalNvxMessages = quer.size();
+        QHash<int,int> mapmessages;
+        if (TotalNvxMessages>0)
         {
-            QHash<int,int>::const_iterator itm = mapmessages.find(quer.value(1).toInt());
-            if (itm != mapmessages.constEnd())
-                mapmessages[itm.key()] = itm.value()+1;
-            else
-                mapmessages[quer.value(1).toInt()] = 1;
-            quer.next();
+            quer.first();
+            for (int i=0; i<TotalNvxMessages; i++)
+            {
+                QHash<int,int>::const_iterator itm = mapmessages.find(quer.value(1).toInt());
+                if (itm != mapmessages.constEnd())
+                    mapmessages[itm.key()] = itm.value()+1;
+                else
+                    mapmessages[quer.value(1).toInt()] = 1;
+                quer.next();
+            }
+            gDateDernierMessage = quer.value(2).toDateTime();
         }
-        gDateDernierMessage = quer.value(2).toDateTime();
+        for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
+            TcpServer->envoyerA(itmsg.key(), TCPMSG_MsgBAL);
     }
-    for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
-        TcpServer->envoyerA(itmsg.key(), TCPMSG_MsgBAL);
 }
 
 

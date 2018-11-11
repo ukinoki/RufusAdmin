@@ -216,11 +216,12 @@ private:
     GestionTcPServer    *TcpServer;
     quint16             PortTCPServer;
     QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;
-    int                 gflagMG, gflagSalDat;
+    int                 gflagCorrespdts, gflagSalDat, gflagMessages;
     QString             gIPadr, gMacAdress;
     QString             gSocketStatut;
     QDateTime           gDateDernierMessage;
-    int                 GetflagMG();
+    int                 GetflagCorrespdts();
+    int                 GetflagMessages();
     int                 GetflagSalDat();
     void                FermeTCP();
     void                ResumeStatut();

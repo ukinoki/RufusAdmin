@@ -730,7 +730,7 @@ la base</string>
 de passe administrateur</string>
              </property>
              <property name="icon">
-              <iconset resource="Images/images.qrc">
+              <iconset resource="assets/Images/images.qrc">
                <normaloff>:/password.ico</normaloff>:/password.ico</iconset>
              </property>
              <property name="iconSize">
@@ -892,7 +892,7 @@ de passe administrateur</string>
               <string>Gestion des utilisateurs</string>
              </property>
              <property name="icon">
-              <iconset resource="Images/images.qrc">
+              <iconset resource="assets/Images/images.qrc">
                <normaloff>:/chgtuser.png</normaloff>:/chgtuser.png</iconset>
              </property>
              <property name="iconSize">
@@ -925,7 +925,7 @@ de passe administrateur</string>
 les motifs de consultation</string>
              </property>
              <property name="icon">
-              <iconset resource="Images/images.qrc">
+              <iconset resource="assets/Images/images.qrc">
                <normaloff>:/list_all_participants.png</normaloff>:/list_all_participants.png</iconset>
              </property>
              <property name="iconSize">
@@ -958,7 +958,7 @@ les motifs de consultation</string>
 des organismes bancaires</string>
              </property>
              <property name="icon">
-              <iconset resource="Images/images.qrc">
+              <iconset resource="assets/Images/images.qrc">
                <normaloff>:/euro.ico</normaloff>:/euro.ico</iconset>
              </property>
              <property name="iconSize">
@@ -990,7 +990,7 @@ des organismes bancaires</string>
               <string>Gestion des lieux d'activité</string>
              </property>
              <property name="icon">
-              <iconset resource="Images/images.qrc">
+              <iconset resource="assets/Images/images.qrc">
                <normaloff>:/address-book.png</normaloff>:/address-book.png</iconset>
              </property>
              <property name="iconSize">
@@ -1081,7 +1081,7 @@ des organismes bancaires</string>
               <string>Postes connectés</string>
              </property>
              <property name="icon">
-              <iconset resource="Images/images.qrc">
+              <iconset resource="assets/Images/images.qrc">
                <normaloff>:/network.png</normaloff>:/network.png</iconset>
              </property>
              <property name="iconSize">
@@ -1113,7 +1113,7 @@ des organismes bancaires</string>
               <string>Exporter les donnéees</string>
              </property>
              <property name="icon">
-              <iconset resource="Images/images.qrc">
+              <iconset resource="assets/Images/images.qrc">
                <normaloff>:/Valide.png</normaloff>:/Valide.png</iconset>
              </property>
              <property name="iconSize">
@@ -1247,7 +1247,7 @@ des organismes bancaires</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="Images/images.qrc">
+           <iconset resource="assets/Images/images.qrc">
             <normaloff>:/shutdown.png</normaloff>:/shutdown.png</iconset>
           </property>
           <property name="iconSize">
@@ -1299,6 +1299,11 @@ des organismes bancaires</string>
    <header>upsmallbutton.h</header>
   </customwidget>
   <customwidget>
+   <class>UpLabel</class>
+   <extends>QLabel</extends>
+   <header>uplabel.h</header>
+  </customwidget>
+  <customwidget>
    <class>UpLineEdit</class>
    <extends>QLineEdit</extends>
    <header>uplineedit.h</header>
@@ -1309,24 +1314,18 @@ des organismes bancaires</string>
    <header>upcombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>UpTableWidget</class>
-   <extends>QTableWidget</extends>
-   <header>uptablewidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>UpLabel</class>
-   <extends>QLabel</extends>
-   <header>uplabel.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpRadioButton</class>
    <extends>QRadioButton</extends>
    <header>upradiobutton.h</header>
   </customwidget>
+  <customwidget>
+   <class>UpTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header location="global">uptablewidget.h</header>
+  </customwidget>
  </customwidgets>
  <resources>
-  <include location="Images/images.qrc"/>
-  <include location="Images/images.qrc"/>
+  <include location="assets/Images/images.qrc"/>
  </resources>
  <connections/>
 </ui>

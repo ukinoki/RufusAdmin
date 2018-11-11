@@ -56,6 +56,13 @@ void Utils::Pause(int msec)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
 }
 
+/*!
+ *  \brief convertHTML
+ *
+ *  Methode qui permet de convertir un QString en html
+ *  on écrit le QString dans un QtextEdit et on récupère le html avec QTextEdit::toHtml()
+ *
+ */
 QString Utils::convertHTML(QString text)
 {
     UpTextEdit textprov;
@@ -121,7 +128,6 @@ QString Utils::trim(QString text, bool end)
         newText += c;
         lastChar = c;
     }
-
     return newText;
 }
 
@@ -196,3 +202,42 @@ QString Utils::getMACAdress()
     //qDebug() << "MacAdress = " + MACAddress;
     return MACAddress;
 }
+
+/*------------------------------------------------------------------------------------------------------------------------------------
+-- Faire précéder l'apostrophe d'un caractère d'échappement pour les requêtes SQL - voir commentaire dans rufus.h --------------------
+------------------------------------------------------------------------------------------------------------------------------------*/
+QString Utils::CorrigeApostrophe(QString RechAp)
+{
+    RechAp.replace("\\","\\\\");
+    return RechAp.replace("'","\\'");
+}
+
+/*---------------------------------------------------------------------------------------------------------------------
+    -- VÉRIFICATION DE MDP --------------------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------------------------*/
+bool Utils::VerifMDP(QString MDP, QString Msg, bool mdpverified)
+{
+    if (mdpverified)
+        return true;
+    QInputDialog quest;
+    quest.setCancelButtonText("Annuler");
+    quest.setLabelText(Msg);
+    quest.setInputMode(QInputDialog::TextInput);
+    quest.setTextEchoMode(QLineEdit::Password);
+    QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
+    for (int i=0;i<list.size();i++)
+        list.at(0)->setAlignment(Qt::AlignCenter);
+    QList<QLabel*> listlab = quest.findChildren<QLabel*>();
+    for (int i=0;i<listlab.size();i++)
+        listlab.at(0)->setAlignment(Qt::AlignCenter);
+    quest.setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+    if (quest.exec() > 0)
+    {
+        if (quest.textValue() == MDP)
+            return true;
+        else
+            UpMessageBox::Watch(Q_NULLPTR, "Mot de passe invalide!");
+    }
+    return false;
+}
+

@@ -1,32 +1,34 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+Rufus is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+Rufus is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "dlg_banque.h"
 #include "ui_dlg_banque.h"
+#include "icons.h"
+#include "utils.h"
+#include "database.h"
 
-dlg_banque::dlg_banque(QSqlDatabase gdb, QMap<QString, QIcon> Icons, QWidget *parent, QString nouvbanqueabrege) :
+dlg_banque::dlg_banque(QWidget *parent, QString nouvbanqueabrege) :
     UpDialog(parent),
     ui(new Ui::dlg_banque)
 {
     ui->setupUi(this);
+    setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
-    db                      = gdb;
-
-    giconEuro               = Icons["Euro"];
+    db                      = DataBase::getInstance();
 
     gFermeApresValidation   = (nouvbanqueabrege != "");
     setWindowTitle(tr("Enregistrer une nouvelle banque"));
@@ -45,7 +47,7 @@ dlg_banque::dlg_banque(QSqlDatabase gdb, QMap<QString, QIcon> Icons, QWidget *pa
     {
         int larg    = 350;
         int ncolvis = 12;
-        int hautrow = QFontMetrics(qApp->font()).height()*1.3;
+        int hautrow = int(QFontMetrics(qApp->font()).height()*1.3);
         int haut    = hautrow * ncolvis;
         uptablebanq = new UpTableWidget();
         uptablebanq->setFixedWidth(larg);
@@ -62,7 +64,7 @@ dlg_banque::dlg_banque(QSqlDatabase gdb, QMap<QString, QIcon> Icons, QWidget *pa
         uptablebanq->setColumnHidden(0,true);
         uptablebanq->setColumnWidth(1,uptablebanq->width()-2);
         uptablebanq->setHorizontalHeaderItem(0, new QTableWidgetItem(""));
-        uptablebanq->setHorizontalHeaderItem(1, new QTableWidgetItem(giconEuro,"Banques"));
+        uptablebanq->setHorizontalHeaderItem(1, new QTableWidgetItem(Icons::icEuro(),"Banques"));
         uptablebanq->horizontalHeader()->setVisible(true);
         uptablebanq->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignCenter);
         uptablebanq->horizontalHeader()->setIconSize(QSize(25,25));
@@ -109,8 +111,7 @@ dlg_banque::dlg_banque(QSqlDatabase gdb, QMap<QString, QIcon> Icons, QWidget *pa
     connect(ui->AnnulModifupSmallButton,    &QPushButton::clicked,    [=] {AnnuleModifBanque();});
     connect(ui->OKModifupSmallButton,       &QPushButton::clicked,    [=] {ValideModifBanque();});
 
-    QRegExp rx              = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùÙçÇ'a-zA-ZŒœ -]*");
-    ui->NomBanqueupLineEdit ->setValidator(new QRegExpValidator(rx));
+    ui->NomBanqueupLineEdit ->setValidator(new QRegExpValidator(Utils::rgx_rx));
     QRegExp val             = QRegExp("[A-Z]*");
     ui->NomAbregeupLineEdit ->setValidator(new QRegExpValidator(val));
 }
@@ -124,22 +125,23 @@ void dlg_banque::AfficheBanque()
 {
     UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
     int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
-    QString req = "select idBanque, NomBanque, idBanqueAbrege from \n"
-                  NOM_TABLE_BANQUES " where  idBanque = " + QString::number(idBanque);
-    QSqlQuery quer(req,db);
-    TraiteErreurRequete(quer,req,"");
-    if (quer.size()>0)
+    bool ok = true;
+    QList<QList<QVariant>> listbanques = db->SelectRecordsFromTable(QStringList() << "NomBanque" << "idBanqueAbrege" << "idbanque",
+                                                                    NOM_TABLE_BANQUES, ok,
+                                                                    "where idBanque = " + QString::number(idBanque));
+    if (listbanques.size()>0)
     {
-        quer.first();
-        ui->NomBanqueupLineEdit->setText(quer.value(1).toString());
-        ui->NomAbregeupLineEdit->setText(quer.value(2).toString());
+        QList<QVariant> banque = listbanques.at(0);
+        ui->NomBanqueupLineEdit->setText(banque.at(0).toString());
+        ui->NomAbregeupLineEdit->setText(banque.at(1).toString());
     }
     widgButtons->moinsBouton->setEnabled(true);
-    req = "select idBanque from " NOM_TABLE_COMPTES " where idBanque = " + quer.value(0).toString();
-    QSqlQuery quer1(req,db);
-    if (quer1.size()>0)
+    QList<QList<QVariant>> listcomptes = db->SelectRecordsFromTable(QStringList() << "idBanque",
+                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    "where idBanque = " + listbanques.at(0).at(2).toString());
+    if (listcomptes.size()>0)
         widgButtons->moinsBouton->setEnabled(false);
-    lbl = 0;
+    lbl = Q_NULLPTR;
     delete lbl;
 }
 
@@ -201,27 +203,25 @@ void dlg_banque::SupprBanque()
     UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
     int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
     UpMessageBox msgbox;
-    UpSmallButton *OKBouton = new UpSmallButton();
-    OKBouton->setText(tr("Supprimer"));
-    UpSmallButton *NoBouton = new UpSmallButton();
-    NoBouton->setText(tr("Annuler"));
+    UpSmallButton OKBouton(tr("Supprimer"));
+    UpSmallButton NoBouton(tr("Annuler"));
     msgbox.setText(tr("Supprimer la banque ") + lbl->text() + "?");
     msgbox.setIcon(UpMessageBox::Warning);
-    msgbox.addButton(NoBouton, UpSmallButton::CANCELBUTTON);
-    msgbox.addButton(OKBouton, UpSmallButton::STARTBUTTON);
+    msgbox.addButton(&NoBouton, UpSmallButton::CANCELBUTTON);
+    msgbox.addButton(&OKBouton, UpSmallButton::STARTBUTTON);
     msgbox.exec();
-    if (msgbox.clickedButton() != OKBouton)
+    if (msgbox.clickedButton() != &OKBouton)
        return;
-    delete OKBouton;
-    delete NoBouton;
-    if (QSqlQuery("select idcompte from " NOM_TABLE_COMPTES " where idbanque = " + QString::number(idBanque), db).size()>0)
+    bool ok = true;
+    QList<QList<QVariant>> listcomptes = db->SelectRecordsFromTable(QStringList() << "idBanque",
+                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    "where idBanque = " + QString::number(idBanque));
+    if (listcomptes.size()>0)
     {
         UpMessageBox::Watch(this, tr("Impossible de supprimer la banque ") + lbl->text(), tr("Elle est utilisée par d'autres utilisateurs"));
         return;
     }
-    QString rq = "delete from " NOM_TABLE_BANQUES " where idbanque = " + QString::number(idBanque);
-    QSqlQuery quer(rq,db);
-    TraiteErreurRequete(quer,rq,"");
+    db->SupprRecordFromTable(idBanque,"idBanque",NOM_TABLE_BANQUES);
     RemplirTableView();
     AfficheBanque();
 }
@@ -251,36 +251,29 @@ void dlg_banque::ValideModifBanque()
                 return;
             }
         }
-        req = "select idbanqueabrege from " NOM_TABLE_BANQUES;
-        QSqlQuery quer1(req,db);
-        TraiteErreurRequete(quer1,req,"");
-        if (quer1.size()>0)
-        {
-            quer1.first();
-            for (int i=0; i<quer1.size(); i++)
-            {
-                if (quer1.value(0).toString() == ui->NomAbregeupLineEdit->text())
+        bool ok = true;
+        QList<QList<QVariant>> listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege", NOM_TABLE_COMPTES, ok);
+        if (listabreges.size()>0)
+            for (int i=0; i<listabreges.size(); i++)
+                if (listabreges.at(i).at(0).toString() == ui->NomAbregeupLineEdit->text())
                 {
                     msg = tr("il y a déjà un organisme bancaire enregistré avec cette abréviation");
                     UpMessageBox::Watch(this,msg);
                     return;
                 }
-                quer1.next();
-            }
-        }
-        req = " select idbanqueabrege from " NOM_TABLE_BANQUES " where idbanqueabrege = " + ui->NomAbregeupLineEdit->text();
-        QSqlQuery quer(req,db);
-        if(quer.size()>0)
+        listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
+                                                                      NOM_TABLE_COMPTES, ok,
+                                                                      "where idbanqueabrege = " + ui->NomAbregeupLineEdit->text());
+        if(listabreges.size()>0)
         {
             UpMessageBox::Watch(this,tr("Cette abréviation est déjà utilisée!"));
             ui->NomAbregeupLineEdit->setFocus();
             return;
         }
-        req = "insert into " NOM_TABLE_BANQUES " (idbanqueabrege, nombanque) values ("
-                "'" + ui->NomAbregeupLineEdit->text() + "', "
-                "'" + CorrigeApostrophe(nombanque) + "')";
-        QSqlQuery quer0(req,db);
-        TraiteErreurRequete(quer0,req,"");
+        QHash<QString, QString> listsets;
+        listsets.insert("idbanqueabrege",   ui->NomAbregeupLineEdit->text());
+        listsets.insert("nombanque",        nombanque);
+        db->InsertIntoTable(NOM_TABLE_BANQUES, listsets);
         if (gFermeApresValidation)
         {
             UpMessageBox::Watch(this,tr("La banque ") + nombanque + tr(" a été enregistrée"));
@@ -292,46 +285,35 @@ void dlg_banque::ValideModifBanque()
     {
         UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
         int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
-        req = "select nombanque from " NOM_TABLE_BANQUES " where idbanque <> " + QString::number(idBanque);
-        QSqlQuery quer0(req,db);
-        TraiteErreurRequete(quer0,req,"");
-        if (quer0.size()>0)
-        {
-            quer0.first();
-            for (int i=0; i<quer0.size(); i++)
-            {
-                if (quer0.value(0).toString().toUpper() == nombanque.toUpper())
+        bool ok = true;
+        QList<QList<QVariant>> listabreges = db->SelectRecordsFromTable(QStringList() << "nombanque",
+                                                                                             NOM_TABLE_BANQUES, ok,
+                                                                                             "where idbanque <> " + QString::number(idBanque));
+        if (listabreges.size()>0)
+            for (int i=0; i<listabreges.size(); i++)
+                if (listabreges.at(i).at(0).toString().toUpper() == nombanque.toUpper())
                 {
                     msg = tr("il y a déjà un organisme bancaire enregistré avec ce nom");
                     UpMessageBox::Watch(this,msg);
                     return;
                 }
-                quer0.next();
-            }
-        }
-        req = "select idbanqueabrege from " NOM_TABLE_BANQUES " where idbanque <> " + QString::number(idBanque);
-        QSqlQuery quer1(req,db);
-        TraiteErreurRequete(quer1,req,"");
-        if (quer1.size()>0)
-        {
-            quer1.first();
-            for (int i=0; i<quer1.size(); i++)
-            {
-                if (quer1.value(0).toString() == ui->NomAbregeupLineEdit->text())
+        listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
+                                                                      NOM_TABLE_BANQUES, ok,
+                                                                      "where idbanque <> " + QString::number(idBanque));
+        if (listabreges.size()>0)
+            for (int i=0; i<listabreges.size(); i++)
+                if (listabreges.at(i).at(0).toString() == ui->NomAbregeupLineEdit->text())
                 {
                     msg = tr("il y a déjà un organisme bancaire enregistré avec cette abréviation");
                     UpMessageBox::Watch(this,msg);
                     return;
                 }
-                quer1.next();
-            }
-        }
-        req = "update " NOM_TABLE_BANQUES " set "
-              " nombanque = '" + CorrigeApostrophe(nombanque) + "', " +
-                " idbanqueabrege = '" + ui->NomAbregeupLineEdit->text() + "'"
-                " where idBanque = " + QString::number(idBanque);
-        QSqlQuery quer2(req,db);
-        TraiteErreurRequete(quer2,req,"");
+        QHash<QString, QString> listsets;
+        listsets.insert("nombanque",      nombanque);
+        listsets.insert("idbanqueabrege", ui->NomAbregeupLineEdit->text());
+        DataBase:: getInstance()->UpdateTable(NOM_TABLE_BANQUES,
+                                              listsets,
+                                              "where idBanque = " + QString::number(idBanque));
     }
     RemplirTableView();
     UpLabel *lbl;
@@ -344,7 +326,7 @@ void dlg_banque::ValideModifBanque()
             break;
         }
     }
-    lbl = 0;
+    lbl = Q_NULLPTR;
     delete lbl;
     AfficheBanque();
     RemetEnNorm();
@@ -364,43 +346,24 @@ void dlg_banque::RemplirTableView()
 {
     QTableWidgetItem    *pitem0;
     UpLabel             *label1;
-    QString req = "select idBanque, NomBanque from " NOM_TABLE_BANQUES " order by nomBanque";
-    QSqlQuery quer(req,db);
-    TraiteErreurRequete(quer,req,"");
-    if (quer.size() > 0)
+    bool ok = true;
+    QList<QList<QVariant>> listbanques = db->SelectRecordsFromTable(QStringList() << "idbanque" << "nombanque",
+                                                                                         NOM_TABLE_BANQUES, ok,
+                                                                                         "",
+                                                                                         "order by nomBanque");
+    if (listbanques.size() > 0)
     {
-        uptablebanq->setRowCount(quer.size());
-        quer.first();
-        for (int i=0; i<quer.size(); i++)
+        uptablebanq->setRowCount(listbanques.size());
+        for (int i=0; i<listbanques.size(); i++)
         {
             pitem0 = new QTableWidgetItem;
             label1 = new UpLabel;
-            pitem0->setText(quer.value(0).toString());
-            label1->setText(quer.value(1).toString());
+            pitem0->setText(listbanques.at(i).at(0).toString());
+            label1->setText(listbanques.at(i).at(1).toString());
             label1->setRow(i);
             uptablebanq->setItem(i,0,pitem0);
             uptablebanq->setCellWidget(i,1,label1);
-            uptablebanq->setRowHeight(i,QFontMetrics(qApp->font()).height()*1.3);
-            quer.next();
+            uptablebanq->setRowHeight(i,int(QFontMetrics(qApp->font()).height()*1.3));
         }
     }
 }
-
-QString dlg_banque::CorrigeApostrophe(QString RechAp)
-{
-    return RechAp.replace("'","\\'");
-}
-
-/*-----------------------------------------------------------------------------------------------------------------
-    -- Traite et affiche le signal d'erreur d'une requete -------------------------------------------------------------
-    -----------------------------------------------------------------------------------------------------------------*/
-bool dlg_banque::TraiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage)
-{
-    if (query.lastError().type() != QSqlError::NoError)
-    {
-        UpMessageBox::Watch(0, ErrorMessage, tr("\nErreur\n") + query.lastError().text() +  tr("\nrequete = ") + requete);
-        return true;
-    }
-    else return false;
-}
-

@@ -91,7 +91,7 @@ border-radius: 5px;
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="Images/images.qrc">
+     <iconset resource="assets/Images/images.qrc">
       <normaloff>:/Supprime.png</normaloff>:/Supprime.png</iconset>
     </property>
     <property name="iconSize">
@@ -126,7 +126,7 @@ border-radius: 5px;
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="Images/images.qrc">
+     <iconset resource="assets/Images/images.qrc">
       <normaloff>:/start.png</normaloff>:/start.png</iconset>
     </property>
     <property name="iconSize">
@@ -217,21 +217,21 @@ border-radius: 5px;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>UpLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>uplineedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpSmallButton</class>
    <extends>QPushButton</extends>
    <header>upsmallbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>uplineedit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>NomAbregeupLineEdit</tabstop>
  </tabstops>
  <resources>
-  <include location="Images/images.qrc"/>
+  <include location="assets/Images/images.qrc"/>
  </resources>
  <connections/>
 </ui>

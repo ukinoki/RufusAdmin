@@ -18,7 +18,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                46                  // version de la base de données
+#define VERSION_BASE                                47                  // version de la base de données
 
 // Les bases
 #define NOM_BASE_CONSULTS                           "rufus"
@@ -34,13 +34,17 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_RECETTES                          "ComptaMedicale.lignesrecettes"
 #define NOM_TABLE_DEPENSES                          "ComptaMedicale.Depenses"
 #define NOM_TABLE_LIGNESCOMPTES                     "ComptaMedicale.lignescomptes"
+#define NOM_TABLE_LIGNESPAIEMENTS                   "ComptaMedicale.lignespaiements"
 #define NOM_TABLE_REMISECHEQUES                     "ComptaMedicale.remisecheques"
+#define NOM_TABLE_RUBRIQUES2035                     "ComptaMedicale.rubriques2035"
+#define NOM_TABLE_TYPEPAIEMENTACTES                 "ComptaMedicale.typepaiementactes"
 #define NOM_TABLE_VERROUCOMPTAACTES                 "ComptaMedicale.verrouscomptaactes"
 
 #define NOM_TABLE_DOCSASUPPRIMER                    "Images.DocsASupprimer"
 
 #define NOM_TABLE_ACTES                             "rufus.Actes"
 #define NOM_TABLE_APPAREILSCONNECTESCENTRE          "rufus.appareilsconnectescentre"
+#define NOM_TABLE_CORRESPONDANTS                    "rufus.correspondants"
 #define NOM_TABLE_COTATIONS                         "rufus.cotations"
 #define NOM_TABLE_FLAGS                             "rufus.flags"
 #define NOM_TABLE_IMPRESSIONS                       "rufus.Impressions"
@@ -52,7 +56,9 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_MOTIFSRDV                         "rufus.MotifsRDV"
 #define NOM_TABLE_PARAMSYSTEME                      "rufus.ParametresSysteme"
 #define NOM_TABLE_PATIENTS                          "rufus.Patients"
+#define NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS    "rufus.renseignementsmedicauxpatients"
 #define NOM_TABLE_SALLEDATTENTE                     "rufus.salledattente"
+#define NOM_TABLE_SPECIALITES                       "rufus.specialitesmedicales"
 #define NOM_TABLE_UTILISATEURS                      "rufus.utilisateurs"
 #define NOM_TABLE_USERSCONNECTES                    "rufus.UtilisateursConnectes"
 #define NOM_TABLE_VILLES                            "rufus.Villes"
@@ -62,6 +68,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define DOCUMENTRECU                                "DocRecu"
 
 #define NOM_ADMINISTRATEURDOCS                      "Admin"
+#define NOM_MDPADMINISTRATEUR                       "bob"
 #define NOM_POSTEIMPORTDOCS                         "posteimportdocs"
 
 //les TCP

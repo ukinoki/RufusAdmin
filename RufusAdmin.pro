@@ -68,14 +68,9 @@ SOURCES += \
     upgroupbox.cpp \
     gestiontcpserver.cpp \
     utils.cpp \
-    cls_item.cpp \
-    cls_user.cpp \
-    cls_users.cpp \
-    cls_villes.cpp \
     database.cpp \
     gbl_datas.cpp \
-    cls_compte.cpp \
-    cls_site.cpp
+    upheaderview.cpp
 
 HEADERS += \
         rufusadmin.h \
@@ -106,16 +101,11 @@ HEADERS += \
     upgroupbox.h \
     gestiontcpserver.h \
     utils.h \
-    cls_item.h \
-    cls_user.h \
-    cls_users.h \
-    cls_villes.h \
     database.h \
     gbl_datas.h \
     log.h \
-    cls_compte.h \
-    cls_site.h \
-    icons.h
+    icons.h \
+    upheaderview.h
 
 FORMS += \
         rufusadmin.ui \
@@ -126,9 +116,14 @@ FORMS += \
     dlg_motifs.ui
 
 RESOURCES += \
-    Sons/sons.qrc \
-    Images/images.qrc \
-    Fichiers/fichiers.qrc
+    assets/Images/images.qrc \
+    assets/Sons/sons.qrc \
+    assets/Fichiers/Fichiers.qrc \
+
+#--------------------
+# INCLUDE
+#--------------------
+include(Items/items.pri)
 
 ICON = Sunglasses.icns
 
