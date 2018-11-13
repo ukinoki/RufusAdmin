@@ -759,6 +759,12 @@ void dlg_gestionusers::Slot_EnregistreNouvUser()
         msg = tr("Vous avez oublié d'indiquer le login");
         Loginline->setFocus();
     }
+    if (Loginline->text() == NOM_ADMINISTRATEURDOCS)
+    {
+        msg = tr("Ce login est réservé");
+        Loginline->setFocus();
+        QTimer::singleShot(0, Loginline, &QLineEdit::selectAll);
+    }
     if (MDPline->text() == "")
     {
         msg = tr("Vous avez oublié d'indiquer le mot de passe");
@@ -1438,8 +1444,8 @@ QString dlg_gestionusers::Edit(QString txt, QString titre)
     UpDialog        *gAsk           = new UpDialog();
     QVBoxLayout     *globallay      = dynamic_cast<QVBoxLayout*>(gAsk->layout());
     UpTextEdit* gTxtEdit            = new UpTextEdit(gAsk);
-    int x = qApp->desktop()->availableGeometry().width();
-    int y = qApp->desktop()->availableGeometry().height();
+    int x = qApp->screens().at(0)->availableGeometry().width();
+    int y = qApp->screens().at(0)->availableGeometry().height();
 
     gAsk->setModal(true);
     gTxtEdit->setText(txt);

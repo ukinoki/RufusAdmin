@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("11-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("13-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2062,6 +2062,8 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     }
     else if (txt == tr("Quitter RufusAdmin"))
     {
+        if (!VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
+            return;
         // on retire le poste de la variable posteimportdocs SQL
         setPosteImportDocs(false);
         // on retire Admin de la table des utilisateurs connectés

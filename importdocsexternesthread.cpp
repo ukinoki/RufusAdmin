@@ -81,13 +81,13 @@ void ImportDocsExternesThread::RapatrieDocumentsThread()
                 QString commentechec;
 
                 FichierImage.setFileName(CheminFichierImage);
-                QString datetimecreation = QFileInfo(FichierImage).created().toString("yyyyMMdd-HHmmss");
+                QString datetimecreation = QFileInfo(FichierImage).birthTime().toString("yyyyMMdd-HHmmss");
 
                  // Date et type du document------------------------------------------------------------------------------------------------------------------------------------------------
                 QString datestring  = "";
                 if (Appareil == "TOPCON ALADDIN")
                 {
-                    QDateTime datefic   = QFileInfo(FichierImage).created();
+                    QDateTime datefic   = QFileInfo(FichierImage).birthTime();
                     datestring          = datefic.toString("yyyyMMdd");
                     Titredoc            = "Biométrie - Aladdin";
                     Typedoc             = "Biométrie";
