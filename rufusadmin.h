@@ -65,7 +65,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "importdocsexternesthread.h"
 #include "widgetbuttonframe.h"
 #include "utils.h"
-#include "gestiontcpserver.h"
+#include "tcpserver.h"
 #include "gbl_datas.h"
 #include "cls_item.h"
 #include "database.h"
@@ -213,7 +213,7 @@ private:
     void                    ModifParamBackup();
 
     // TCPServer, TCPSocket
-    GestionTcPServer    *TcpServer;
+    TcpServer           *TCPServer;
     quint16             PortTCPServer;
     QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;
     int                 gflagCorrespdts, gflagSalDat, gflagMessages;

@@ -24,9 +24,9 @@ QMap<QString,QIcon> Icons::m_mapIcon = QMap<QString,QIcon>();
 
 #include "rufusadmin.h"
 #include <QApplication>
-
 int main(int argc, char *argv[])
 {
+    qRegisterMetaType<qintptr>("qintptr");
     QApplication a(argc, argv);
 
     QPixmap pixmap("://rufusadmin.jpg");

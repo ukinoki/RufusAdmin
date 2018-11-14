@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("13-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("14-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -144,10 +144,10 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     // 5 mettre en place le TcpSocket
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
-    TcpServer                   = GestionTcPServer::getInstance();
-    connect(TcpServer,          &GestionTcPServer::ModifListeSockets,      this,   &RufusAdmin::ResumeStatut);
-    TcpServer                   ->setId(idAdminDocs);
-    TcpServer                   ->start();
+    TCPServer                   = TcpServer::getInstance();
+    TCPServer                   ->setId(idAdminDocs);
+    connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeStatut);
+    TCPServer                   ->start();
     QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
     gflagCorrespdts             = GetflagCorrespdts();
     gflagSalDat                 = GetflagSalDat();
@@ -2050,7 +2050,22 @@ void RufusAdmin::Slot_TrayIconMenu()
     }
     QString txt = tr("Quitter RufusAdmin");
     QAction *pAction_QuitAppli = trayIconMenu->addAction(txt);
-    connect (pAction_QuitAppli, &QAction::triggered, [=] {ChoixMenuSystemTray(txt);});
+    connect (pAction_QuitAppli, &QAction::triggered, [=] {
+        if (VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
+        {
+        // on retire le poste de la variable posteimportdocs SQL
+        setPosteImportDocs(false);
+        // on retire Admin de la table des utilisateurs connectés
+        QString req = "delete from " NOM_TABLE_USERSCONNECTES
+                      " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
+                      " and idlieu = " + QString::number(idlieuExercice);
+        QSqlQuery qer(req,db);
+        TraiteErreurRequete(qer,req,"");
+        FermeTCP();
+        setPosteImportDocs(false);
+        exit(0);
+    }
+    });
 }
 
 void RufusAdmin::ChoixMenuSystemTray(QString txt)
@@ -2826,24 +2841,24 @@ int RufusAdmin::GetflagSalDat()
 
 void RufusAdmin::FermeTCP()
 {
-        TcpServer->close();
+        TCPServer->close();
         QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db);
 }
 
 void RufusAdmin::ResumeStatut()
 {
     QString statut;
-    QString list = TcpServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);
-    QStringList ListSockets = list.split("{}");
-    // le 1er item de gListSockets est le serveur
-    QString Serveur = ListSockets.at(0);
-    statut += tr("ServeurTCP") + "\n\t"
-            + Serveur.split(TCPMSG_Separator).at(2) + " - "
-            + gIPadr + " - "
-            + Serveur.split(TCPMSG_Separator).at(1) + " --- "
-            + Datas::I()->users->getLoginById(Serveur.split(TCPMSG_Separator).at(3).toInt());
+        QString list = TCPServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);
+        QStringList ListSockets = list.split("{}");
+        // le 1er item de gListSockets est le serveur
+        QString Serveur = ListSockets.at(0);
+        statut += tr("ServeurTCP") + "\n\t"
+                + Serveur.split(TCPMSG_Separator).at(2) + " - "
+                + gIPadr + " - "
+                + Serveur.split(TCPMSG_Separator).at(1) + " --- "
+                + Datas::I()->users->getLoginById(Serveur.split(TCPMSG_Separator).at(3).toInt());
 
-    ListSockets.removeFirst();
+        ListSockets.removeFirst();
     statut += "\n" + tr("postes connectés") + "\n";
     QStringList::const_iterator itsocket;
     for( itsocket = ListSockets.constBegin(); itsocket != ListSockets.constEnd(); ++itsocket )
@@ -2957,7 +2972,7 @@ void RufusAdmin::VerifVerrouDossier()
 void RufusAdmin::MAJTcpMsgEtFlagSalDat()
 {
     /* envoi du message de MAJ de la salle d'attente aux clients */
-    TcpServer->envoyerATous(TCPMSG_MAJSalAttente);                      // le slot verifverroudossier a déconnecté un tutilisateur et modifié la salle d'attente si des patients étaient verrouillés
+    //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);                      // le slot verifverroudossier a déconnecté un tutilisateur et modifié la salle d'attente si des patients étaient verrouillés
 
     /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
     if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
@@ -2980,7 +2995,7 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
 void RufusAdmin::MAJflagMG()
 {
     /* envoi du message de MAJ de la liste des correpondants aux clients */
-    TcpServer->envoyerATous(TCPMSG_MAJCorrespondants);
+    //TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
     /* mise à jour du flag en cas de non utilisation du TCP ou pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente  */
     if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
         return;
@@ -3007,12 +3022,12 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
     if (gflagSalDat < GetflagSalDat())
     {
         gflagSalDat = GetflagSalDat();
-        TcpServer->envoyerATous(TCPMSG_MAJSalAttente);
+        //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
     if (gflagCorrespdts < GetflagCorrespdts())
     {
         gflagCorrespdts = GetflagCorrespdts();
-        TcpServer->envoyerATous(TCPMSG_MAJCorrespondants);
+        //TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
 
     if (gflagMessages < GetflagMessages())
@@ -3042,8 +3057,8 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
             }
             gDateDernierMessage = quer.value(2).toDateTime();
         }
-        for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
-            TcpServer->envoyerA(itmsg.key(), TCPMSG_MsgBAL);
+//        for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
+//            TCPServer->envoyerA(itmsg.key(), TCPMSG_MsgBAL);
     }
 }
 

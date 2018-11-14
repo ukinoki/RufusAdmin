@@ -29,7 +29,7 @@ ImportDocsExternesThread::ImportDocsExternesThread(QSqlDatabase dbg, int iduser,
     EnCours         = false;
     gnomFichIni     = QDir::homePath() + NOMFIC_INI;
     gsettingsIni    = new QSettings(gnomFichIni, QSettings::IniFormat);
-    TCPS            = GestionTcPServer::getInstance();
+    TCPServer       = TcpServer::getInstance();
     RapatrieDocumentsThread();
     thread          ->exit();
 }
@@ -81,13 +81,13 @@ void ImportDocsExternesThread::RapatrieDocumentsThread()
                 QString commentechec;
 
                 FichierImage.setFileName(CheminFichierImage);
-                QString datetimecreation = QFileInfo(FichierImage).birthTime().toString("yyyyMMdd-HHmmss");
+                QString datetimecreation = QFileInfo(FichierImage).created().toString("yyyyMMdd-HHmmss");
 
                  // Date et type du document------------------------------------------------------------------------------------------------------------------------------------------------
                 QString datestring  = "";
                 if (Appareil == "TOPCON ALADDIN")
                 {
-                    QDateTime datefic   = QFileInfo(FichierImage).birthTime();
+                    QDateTime datefic   = QFileInfo(FichierImage).created();
                     datestring          = datefic.toString("yyyyMMdd");
                     Titredoc            = "Biométrie - Aladdin";
                     Typedoc             = "Biométrie";
@@ -500,7 +500,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread()
                             out << Titredoc << " - " << nomdoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                             jnaltrsfer.close();
                         }
-                        TCPS->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
+                        TCPServer->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
                         if (FichierImage.remove())
                         {
                             QString msg = tr("Enregistrement d'un cliché") + " <font color=\"red\"><b>" + Titredoc + "</b></font>"
@@ -561,7 +561,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread()
                             out << Titredoc << " - " << nomdoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                             jnaltrsfer.close();
                         }
-                        TCPS->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
+                        TCPServer->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
                         if (FichierImage.remove())
                         {
                             QString msg = tr("Enregistrement d'un cliché") + " <font color=\"red\"><b>" + Titredoc + "</b></font>"

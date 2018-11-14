@@ -30,7 +30,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "functormessage.h"
 #include "functormajpremierelettre.h"
 #include "upmessagebox.h"
-#include "gestiontcpserver.h"
+#include "tcpserver.h"
 
 /* Cette classe tourne en tache de fond et importe les documents d'imagerie dans la base de données
  * DIFFERENTE POUR RUFUS ET RUFUSADMIN
@@ -55,7 +55,7 @@ private:
     FunctorMAJPremiereLettre    fMAJPremLettre;
     QSqlDatabase                db;
     QThread                     *thread;
-    GestionTcPServer            *TCPS;
+    TcpServer                   *TCPServer;
 
     int                         Acces;
     enum Acces                  {Local, Distant};
