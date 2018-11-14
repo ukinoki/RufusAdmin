@@ -41,74 +41,46 @@ linux-g++ {
     INSTALLS += icon
 }
 
-
 SOURCES += \
         main.cpp \
         rufusadmin.cpp \
-    upcheckbox.cpp \
-    upcombobox.cpp \
-    updialog.cpp \
-    uplabel.cpp \
-    uppushbutton.cpp \
-    upsmallbutton.cpp \
-    uplineedit.cpp \
-    uptablewidget.cpp \
     dlg_paramconnexion.cpp \
-    upmessagebox.cpp \
     widgetbuttonframe.cpp \
     importdocsexternesthread.cpp \
     functormajpremierelettre.cpp \
     functormessage.cpp \
-    uptextedit.cpp \
     functordatauser.cpp \
-    upradiobutton.cpp \
     dlg_message.cpp \
     dlg_banque.cpp \
     dlg_gestioncomptes.cpp \
     dlg_gestionlieux.cpp \
     dlg_gestionusers.cpp \
     dlg_motifs.cpp \
-    upgroupbox.cpp \
-    gestiontcpserver.cpp \
     utils.cpp \
     database.cpp \
-    gbl_datas.cpp \
-    upheaderview.cpp
+    gbl_datas.cpp
 
 HEADERS += \
         rufusadmin.h \
-    upcheckbox.h \
-    upcombobox.h \
     macros.h \
-    updialog.h \
-    uplabel.h \
-    uppushbutton.h \
-    upsmallbutton.h \
-    uplineedit.h \
-    uptablewidget.h \
     dlg_paramconnexion.h \
-    upmessagebox.h \
     widgetbuttonframe.h \
     importdocsexternesthread.h \
     functormajpremierelettre.h \
     functormessage.h \
-    uptextedit.h \
     functordatauser.h \
     dlg_banque.h \
-    upradiobutton.h \
     dlg_message.h \
     dlg_gestioncomptes.h \
     dlg_gestionlieux.h \
     dlg_gestionusers.h \
     dlg_motifs.h \
-    upgroupbox.h \
-    gestiontcpserver.h \
     utils.h \
     database.h \
     gbl_datas.h \
     log.h \
     icons.h \
-    upheaderview.h
+    tcpserver.h
 
 FORMS += \
         rufusadmin.ui \
@@ -127,6 +99,8 @@ RESOURCES += \
 # INCLUDE
 #--------------------
 include(Items/items.pri)
+include(Components/components.pri)
+include(TcpServer/tcpserver.pri)
 
 ICON += \
     Sunglasses.icns
