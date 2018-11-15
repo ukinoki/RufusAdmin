@@ -1,7 +1,7 @@
 #include "tcpthread.h"
+#include <QTimer>
 
-TcpThread::TcpThread(qintptr ID, QObject *parent) :
-    QThread(parent)
+TcpThread::TcpThread(qintptr ID, QObject *parent) : QThread(parent)
 {
     this->socketDescriptor = ID;
 }
@@ -21,9 +21,12 @@ void TcpThread::run()
     // note - Qt::DirectConnection is used because it's multithreaded
     //        This makes the slot to be invoked immediately, when the signal is emitted.
 
-    connect(socket, SIGNAL(readyRead()), this, SLOT(TraiteDonneesRecues()), Qt::DirectConnection);
-    connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-
+    connect(socket, SIGNAL(readyRead()),                            this, SLOT(TraiteDonneesRecues()), Qt::DirectConnection);
+    connect(socket, SIGNAL(disconnected()),                         this, SLOT(disconnected()));
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),    this, SLOT(erreurSocket(QAbstractSocket::SocketError)));
+    QTimer tim;
+    tim.start(10000);
+    connect(&tim,   SIGNAL(timeout),                                this, SLOT(Test()));
     exec();
 }
 
@@ -31,6 +34,12 @@ QAbstractSocket::SocketState TcpThread::state()
 {
     return socket->state();
 }
+
+void TcpThread::Test()
+{
+    envoyerMessage("Test");
+}
+
 
 void TcpThread::TraiteDonneesRecues()
 {
@@ -63,6 +72,7 @@ void TcpThread::TraiteDonneesRecues()
 
 void TcpThread::envoyerMessage(QString msg)
 {
+    qDebug() << msg + QString::number(++a);
         QByteArray paquet = msg.toUtf8();
         //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
         if(socket->state() == QAbstractSocket::ConnectedState)
@@ -75,7 +85,14 @@ void TcpThread::envoyerMessage(QString msg)
 
 void TcpThread::disconnected()
 {
-    emit deconnexion(socketDescriptor);
+    qDebug() << "deconnexion du client";
     socket->deleteLater();
+    emit deconnexion(socketDescriptor);
     exit(0);
+}
+
+void TcpThread::erreurSocket(QAbstractSocket::SocketError erreur)
+{
+    qDebug() << "le cient ne répond plus";
+    qDebug() << socket->errorString();
 }

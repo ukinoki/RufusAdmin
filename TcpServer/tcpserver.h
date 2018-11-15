@@ -33,9 +33,6 @@ private:
     QMap<qintptr, int>              idusers;                                            // stocke l'id corresondant au user correspondant à la connexion - utilisé pour la messagerie
     QMap<qintptr, QString>          dataclients;                                        // stocke l'adresse IP et l'adresse MAC du client - utilisé pour le changement de TcpServer
 
-    void                            TraiteMessageRecu(qintptr sktdescriptor, QString msg);/* traitement des messages reçus*/
-    void                            Deconnexion(qintptr sktdescriptor);                 /* deconnexion d'un socket */
-
     void                            AfficheListeSockets(QString fonction = "");         /* utilisé pour le debugging seulement */
     QString                         gListeSockets;
     int                             idAdmin;
@@ -43,6 +40,10 @@ private:
 
 signals:
     void                            ModifListeSockets();
+
+private slots:
+    void                            TraiteMessageRecu(qintptr sktdescriptor, QString msg);/* traitement des messages reçus*/
+    void                            Deconnexion(qintptr sktdescriptor);                 /* deconnexion d'un socket */
 
 protected:
     void                            incomingConnection(qintptr socketDescriptor);

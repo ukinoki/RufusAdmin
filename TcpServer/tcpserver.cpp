@@ -37,11 +37,10 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
 
     TcpThread *thread = new TcpThread(socketDescriptor, this);
-
     // once a thread is not needed, it will be beleted later
-    connect(thread,     SIGNAL(finished()),         thread, SLOT(deleteLater()));
-    connect(thread,     &TcpThread::emitmsg,        this,   [=](qintptr sktdescriptor, QString msg) {TraiteMessageRecu(sktdescriptor, msg);});
-    connect(thread,     &TcpThread::deconnexion,    this,   [=](qintptr sktdescriptor) {Deconnexion(sktdescriptor);});
+    connect(thread,     SIGNAL(finished()),                 thread, SLOT(deleteLater()));
+    connect(thread,     SIGNAL(emimsg(qintptr, QString)),   this,   SLOT(TraiteMessageRecu(qintptr, QString)));
+    connect(thread,     SIGNAL(deconnexion(qintptr)),       this,   SLOT(Deconnexion(qintptr)));
 
     thread->start();
     socketthreads  .insert(socketDescriptor, thread);
@@ -49,6 +48,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
 void TcpServer::Deconnexion(qintptr sktdescriptor)
 {
+    qDebug() << "deconnexion";
     int id = -1;
     QString adress = "";
     QMap<qintptr, int>::iterator itid = idusers.find(sktdescriptor);
@@ -182,7 +182,7 @@ void TcpServer::envoyerA(int iduser, QString msg)
 
 void TcpServer::AfficheListeSockets(QString fonction)
 {
-//    qDebug() << "liste des connexions " + fonction + " " + QTime::currentTime().toString("hh-mm-ss");
+    qDebug() << "liste des connexions " + fonction + " " + QTime::currentTime().toString("hh-mm-ss");
 //    for(QMap<qintptr,QString>::iterator itcl = dataclients.begin(); itcl != dataclients.end(); ++itcl )
 //    {
 //        QStringList listdata = itcl.value().split(TCPMSG_Separator);
