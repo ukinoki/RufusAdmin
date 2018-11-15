@@ -73,11 +73,13 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
     if (msg.contains(TCPMSG_MsgBAL))
     {
         msg.remove(TCPMSG_MsgBAL);
-        QStringList listid = msg.split(",");
+        QString listdest = msg.split(TCPMSG_Separator).at(0);
+        QString nbmsg = msg.split(TCPMSG_Separator).at(1);
+        QStringList listid = listdest.split(",");
         for(QMap<qintptr, int>::iterator itcl = idusers.begin(); itcl != idusers.end(); ++itcl )
         {
             if (listid.contains(QString::number(itcl.value())))
-                envoyerA(itcl.value(),  TCPMSG_MsgBAL);
+                envoyerA(itcl.value(),  TCPMSG_Separator + nbmsg + TCPMSG_MsgBAL);
         }
     }
     else if (msg.contains(TCPMSG_idUser))

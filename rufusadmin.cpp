@@ -3057,8 +3057,8 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
             }
             gDateDernierMessage = quer.value(2).toDateTime();
         }
-//        for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
-//            TCPServer->envoyerA(itmsg.key(), TCPMSG_MsgBAL);
+        for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
+            TCPServer->envoyerA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);
     }
 }
 
