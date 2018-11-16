@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("14-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("16-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2936,7 +2936,7 @@ void RufusAdmin::VerifVerrouDossier()
             QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete, DataBase::getInstance()->getDataBase() );
             DataBase::getInstance()->traiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
             // on retire cet utilisateur de la table des utilisateurs connectés
-            QString req = "delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + Poste + "'";
+            QString req = "delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + Poste + "' and idUser = " + QString::number(a);
             QSqlQuery(req, DataBase::getInstance()->getDataBase() );
             mettreajourlasalledattente = true;
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);

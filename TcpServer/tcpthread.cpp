@@ -26,7 +26,7 @@ void TcpThread::run()
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),    this, SLOT(erreurSocket(QAbstractSocket::SocketError)));
     QTimer tim;
     tim.start(10000);
-    connect(&tim,   SIGNAL(timeout),                                this, SLOT(Test()));
+    connect(&tim,   SIGNAL(timeout()),                                this, SLOT(Test()));
     exec();
 }
 

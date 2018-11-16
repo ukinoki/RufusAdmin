@@ -39,7 +39,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     TcpThread *thread = new TcpThread(socketDescriptor, this);
     // once a thread is not needed, it will be beleted later
     connect(thread,     SIGNAL(finished()),                 thread, SLOT(deleteLater()));
-    connect(thread,     SIGNAL(emimsg(qintptr, QString)),   this,   SLOT(TraiteMessageRecu(qintptr, QString)));
+    connect(thread,     SIGNAL(emitmsg(qintptr, QString)),  this,   SLOT(TraiteMessageRecu(qintptr, QString)));
     connect(thread,     SIGNAL(deconnexion(qintptr)),       this,   SLOT(Deconnexion(qintptr)));
 
     thread->start();
