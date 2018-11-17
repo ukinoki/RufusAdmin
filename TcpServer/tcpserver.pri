@@ -4,9 +4,9 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
-    $$PWD/tcpthread.h \
-    $$PWD/tcpserver.h
+    $$PWD/tcpserver.h \
+    $$PWD/tcpsocket.h
 
 SOURCES += \
-    $$PWD/tcpthread.cpp \
-    $$PWD/tcpserver.cpp
+    $$PWD/tcpserver.cpp \
+    $$PWD/tcpsocket.cpp

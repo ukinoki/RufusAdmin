@@ -7,9 +7,8 @@
 #include "dlg_message.h"
 #include "utils.h"
 #include <QTime>
-#include <QTimer>
 #include "gbl_datas.h"
-#include "tcpthread.h"
+#include "tcpsocket.h"
 
 class TcpServer : public QTcpServer
 {
@@ -26,17 +25,13 @@ private:
     static TcpServer*        instance;
     TcpServer();
 
-    int                             m_id;
-    void                            envoieListeSockets(qintptr sktdescriptor = 0);      /* envoie la liste des sockets à tous les socketdescriptors */
-    QMap<QTcpSocket*, QByteArray*>  buffers;                                            // le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
-    QMap<qintptr, TcpThread*>       socketthreads;                                      // le mapping des thread à partir des scoketdescriptor
-    QMap<qintptr, int>              idusers;                                            // stocke l'id corresondant au user correspondant à la connexion - utilisé pour la messagerie
-    QMap<qintptr, QString>          dataclients;                                        // stocke l'adresse IP et l'adresse MAC du client - utilisé pour le changement de TcpServer
+    QMap<qintptr, TcpSocket*>       socketdescriptors;                                  // le mapping des sockets à partir des scoketdescriptor
 
     void                            AfficheListeSockets(QString fonction = "");         /* utilisé pour le debugging seulement */
+    void                            envoieListeSockets(qintptr sktdescriptor = 0);      /* envoie la liste des sockets à tous les socketdescriptors */
     QString                         gListeSockets;
     int                             idAdmin;
-    TcpThread*                      getThreadFromDescriptor(qintptr socketdescriptor);
+    TcpSocket*                      SocketFromDescriptor(qintptr socketdescriptor);
 
 signals:
     void                            ModifListeSockets();

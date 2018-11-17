@@ -27,6 +27,7 @@ QMap<QString,QIcon> Icons::m_mapIcon = QMap<QString,QIcon>();
 int main(int argc, char *argv[])
 {
     qRegisterMetaType<qintptr>("qintptr");
+    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QApplication a(argc, argv);
 
     QPixmap pixmap("://rufusadmin.jpg");

@@ -18,7 +18,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                47                  // version de la base de données
+#define VERSION_BASE                                48                  // version de la base de données
 
 // Les bases
 #define NOM_BASE_CONSULTS                           "rufus"
@@ -165,7 +165,6 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_Separator                            "triumphspeedtriple1050"                            /* separateur au sein d'un message */
 #define TCPMSG_DataSocket                           "DataSocket"                                        /* fin du message fournissant IP et MAC d'un client */
 #define TCPMSG_ListeSockets                         "ListeSockets"                                      /* fin du message informant le client que ce message contient la liste des TcpSockets */
-#define TCPMSG_FaireLAppelSocket                    "AppelListe"                                        /* fin du message demandant la verification de l'absence de sockets déconnectés dans la liste */
 #define TCPMSG_EnvoieListSocket                     "EnvoieListe"                                       /* fin du message demandant l'envoi de la liste des sockets à un client */
 
 #endif // MACROS_H
