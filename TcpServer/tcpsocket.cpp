@@ -14,7 +14,7 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
     tim.start(10000);
     connect(&tim,   SIGNAL(timeout()),                                this, SLOT(Test()));
 
-    socket = new QTcpSocket();
+    socket = new QTcpSocket(this);
     if(!socket->setSocketDescriptor(ID))
     {
         emit error(socket->error());
@@ -32,7 +32,6 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
 
 TcpSocket::~TcpSocket()
 {
-    thread.quit();
     thread.wait();
 }
 
@@ -94,8 +93,8 @@ void TcpSocket::envoyerMessage(QString msg)
 
 void TcpSocket::Deconnexion()
 {
-    emit deconnexion(sktdescriptor);
-    thread.exit(0);
+    emit deconnexion(sktdescriptor, this);
+    thread.quit();
 }
 
 void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)

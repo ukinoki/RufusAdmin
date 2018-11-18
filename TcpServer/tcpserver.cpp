@@ -39,12 +39,12 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     TcpSocket *socket = new TcpSocket(socketDescriptor);
 
     connect(socket,     SIGNAL(emitmsg(qintptr, QString)),  this,   SLOT(TraiteMessageRecu(qintptr, QString)));
-    connect(socket,     SIGNAL(deconnexion(qintptr)),       this,   SLOT(Deconnexion(qintptr)));
+    connect(socket,     SIGNAL(deconnexion(qintptr, TcpSocket*)),       this,   SLOT(Deconnexion(qintptr, TcpSocket*)));
 
     socketdescriptors  .insert(socketDescriptor, socket);
 }
 
-void TcpServer::Deconnexion(qintptr sktdescriptor)
+void TcpServer::Deconnexion(qintptr sktdescriptor, TcpSocket* skt)
 {
     if (SocketFromDescriptor(sktdescriptor) == Q_NULLPTR)
         return;
@@ -52,6 +52,7 @@ void TcpServer::Deconnexion(qintptr sktdescriptor)
     QString login = Datas::I()->users->getLoginById(SocketFromDescriptor(sktdescriptor)->idUser());
     dlg_message(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
     socketdescriptors   .remove(sktdescriptor);
+    skt->deleteLater();
     envoieListeSockets();
     AfficheListeSockets("Deconnexion(qintptr sktdesciptor)");
 }

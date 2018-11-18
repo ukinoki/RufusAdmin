@@ -16,19 +16,19 @@ class TcpServer : public QTcpServer
 public:
     static      TcpServer* getInstance();
     bool        start();
-    void        envoyerATous(QString msg, qintptr emetteurorigin = 0);        /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
+    void        envoyerATous(QString msg, qintptr emetteurorigin = 0);                      /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
     QString     ListeSockets();
     void        setId(int id);
-    void        envoyerA(int iduser, QString msg);                                      /* envoi d'un message sur un QTcpSocket en particulier */
+    void        envoyerA(int iduser, QString msg);                                          /* envoi d'un message sur un QTcpSocket en particulier */
 
 private:
     static TcpServer*        instance;
     TcpServer();
 
-    QMap<qintptr, TcpSocket*>       socketdescriptors;                                  // le mapping des sockets à partir des scoketdescriptor
+    QMap<qintptr, TcpSocket*>       socketdescriptors;                                      // le mapping des sockets à partir des scoketdescriptor
 
-    void                            AfficheListeSockets(QString fonction = "");         /* utilisé pour le debugging seulement */
-    void                            envoieListeSockets(qintptr sktdescriptor = 0);      /* envoie la liste des sockets à tous les socketdescriptors */
+    void                            AfficheListeSockets(QString fonction = "");             /* utilisé pour le debugging seulement */
+    void                            envoieListeSockets(qintptr sktdescriptor = 0);          /* envoie la liste des sockets à tous les socketdescriptors */
     QString                         gListeSockets;
     int                             idAdmin;
     TcpSocket*                      SocketFromDescriptor(qintptr socketdescriptor);
@@ -37,8 +37,8 @@ signals:
     void                            ModifListeSockets();
 
 private slots:
-    void                            TraiteMessageRecu(qintptr sktdescriptor, QString msg);/* traitement des messages reçus*/
-    void                            Deconnexion(qintptr sktdescriptor);                 /* deconnexion d'un socket */
+    void                            TraiteMessageRecu(qintptr sktdescriptor, QString msg);  /* traitement des messages reçus*/
+    void                            Deconnexion(qintptr sktdescriptor, TcpSocket* skt);     /* deconnexion d'un socket */
 
 protected:
     void                            incomingConnection(qintptr socketDescriptor);

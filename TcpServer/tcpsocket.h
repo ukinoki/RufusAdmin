@@ -25,7 +25,7 @@ public:
 signals:
     void            error(QTcpSocket::SocketError socketerror);
     void            emitmsg(qintptr sktdescriptor, QString msg);
-    void            deconnexion(qintptr sktdescriptor);
+    void            deconnexion(qintptr sktdescriptor, TcpSocket * skt);
 
 public slots:
     void            TraiteDonneesRecues();
