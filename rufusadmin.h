@@ -224,6 +224,7 @@ private:
     int                 GetflagMessages();
     int                 GetflagSalDat();
     void                FermeTCP();
+    void                KillSocket(QStringList Data);
     void                ResumeStatut();
 
     void                VerifModifsSalledAttenteCorrespondantsetNouveauxMessages();

@@ -1596,8 +1596,8 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
     QSqlQuery MAJConnexionQuery (MAJConnexionRequete, db);
     TraiteErreurRequete(MAJConnexionQuery, MAJConnexionRequete,"");
 
-    // Deconnecter les users dabranchés accidentellement
-    QString VerifOldUserreq = "select idUser, NomPosteConnecte from  " NOM_TABLE_USERSCONNECTES " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60";
+    // Deconnecter les users débranchés accidentellement
+    QString VerifOldUserreq = "select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60";
     QSqlQuery verifoldquery (VerifOldUserreq,db);
     //qDebug() << VerifOldUserreq;
     TraiteErreurRequete(verifoldquery,VerifOldUserreq,"");
@@ -1624,6 +1624,8 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
             LibereVerrouRequete = "delete from " NOM_TABLE_VERROUCOMPTAACTES " where PosePar = " + QString::number(a);
             QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete,db);
             TraiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
+            // on détruit le socket de cet utilisateur
+            KillSocket(QStringList() << verifoldquery.value(0).toString() << verifoldquery.value(2).toString().split(" - ").at(0));
             // on retire cet utilisateur de la table des utilisateurs connectés
             QSqlQuery ("delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + verifoldquery.value(1).toString() + "'", db);
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
@@ -2050,22 +2052,7 @@ void RufusAdmin::Slot_TrayIconMenu()
     }
     QString txt = tr("Quitter RufusAdmin");
     QAction *pAction_QuitAppli = trayIconMenu->addAction(txt);
-    connect (pAction_QuitAppli, &QAction::triggered, [=] {
-        if (VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
-        {
-        // on retire le poste de la variable posteimportdocs SQL
-        setPosteImportDocs(false);
-        // on retire Admin de la table des utilisateurs connectés
-        QString req = "delete from " NOM_TABLE_USERSCONNECTES
-                      " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
-                      " and idlieu = " + QString::number(idlieuExercice);
-        QSqlQuery qer(req,db);
-        TraiteErreurRequete(qer,req,"");
-        FermeTCP();
-        setPosteImportDocs(false);
-        exit(0);
-    }
-    });
+    connect (pAction_QuitAppli, &QAction::triggered, [=] {ChoixMenuSystemTray(txt);});
 }
 
 void RufusAdmin::ChoixMenuSystemTray(QString txt)
@@ -2908,41 +2895,6 @@ void RufusAdmin::VerifVerrouDossier()
      on fait la liste des utilisateurs qui n'ont pas remis à jour leur connexion depuis plus de 60 secondes,
      on retire les verrous qu'ils auraient pu poser et on les déconnecte*/
     bool mettreajourlasalledattente = false;
-    QString VerifOldUserreq = "select idUser, NomPosteConnecte from  " NOM_TABLE_USERSCONNECTES " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60";
-    QSqlQuery verifoldquery (VerifOldUserreq, DataBase::getInstance()->getDataBase() );
-    //qDebug() << VerifOldUserreq;
-    DataBase::getInstance()->traiteErreurRequete(verifoldquery,VerifOldUserreq,"");
-
-    if (verifoldquery.size() > 0)
-    {
-        verifoldquery.first();
-        for (int i=0; i<verifoldquery.size();i++)
-        {
-            //on déverrouille les dossiers verrouillés par cet utilisateur et on les remet en salle d'attente
-            QString blabla              = ENCOURSEXAMEN;
-            int length                  = blabla.size();
-            int a                       = verifoldquery.value(0).toInt();
-            QString Poste               = verifoldquery.value(1).toString();
-            QString LibereVerrouRequete;
-            LibereVerrouRequete = "UPDATE " NOM_TABLE_SALLEDATTENTE " SET Statut = '" ARRIVE "', idUserEnCoursExam = null, PosteExamen = null"
-                                  " WhERE idUserEnCoursExam = " + QString::number(a) +
-                                  " AND PosteExamen = '" + Poste +
-                                  "' AND Left(Statut," + QString::number(length) + ") = '" ENCOURSEXAMEN "'";
-            QSqlQuery LibereVerrouRequeteQuery (LibereVerrouRequete, DataBase::getInstance()->getDataBase() );
-            DataBase::getInstance()->traiteErreurRequete(LibereVerrouRequeteQuery,LibereVerrouRequete,"");
-            //qDebug() << LibereVerrouRequete;
-            //on déverrouille les actes verrouillés en comptabilité par cet utilisateur
-            LibereVerrouRequete = "delete from " NOM_TABLE_VERROUCOMPTAACTES " where PosePar = " + QString::number(a);
-            QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete, DataBase::getInstance()->getDataBase() );
-            DataBase::getInstance()->traiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
-            // on retire cet utilisateur de la table des utilisateurs connectés
-            QString req = "delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + Poste + "' and idUser = " + QString::number(a);
-            QSqlQuery(req, DataBase::getInstance()->getDataBase() );
-            mettreajourlasalledattente = true;
-            Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
-            verifoldquery.next();
-        }
-    }
 
     // on donne le statut "arrivé" aux patients en salle d'attente dont le iduserencourssexam n'est plus present sur ce poste examen dans la liste des users connectes
     QString req = "select iduserencoursexam, posteexamen, idpat from " NOM_TABLE_SALLEDATTENTE " where statut like '" ENCOURSEXAMEN "%'";
@@ -2988,6 +2940,14 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     DataBase::getInstance()->commit();
     gflagSalDat = a;
 }
+
+void RufusAdmin::KillSocket(QStringList datas)
+{
+    int idUserAEliminer = datas.at(0).toInt();
+    QString MACAdressUserAEliminer = datas.at(1);
+    TCPServer->Deconnexion(idUserAEliminer, MACAdressUserAEliminer);
+}
+
 
 /*------------------------------------------------------------------------------------------------------------------------------------
 -- Signifier aux autres utilisateurs que la liste des correspondants vient d'être modifiée -------

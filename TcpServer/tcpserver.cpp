@@ -1,3 +1,20 @@
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin.
+
+RufusAdmin is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+RufusAdmin is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "tcpserver.h"
 #include <QTcpSocket>
 
@@ -42,6 +59,17 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     connect(socket,     SIGNAL(deconnexion(qintptr, TcpSocket*)),       this,   SLOT(Deconnexion(qintptr, TcpSocket*)));
 
     socketdescriptors  .insert(socketDescriptor, socket);
+}
+
+void TcpServer::Deconnexion(int iduser, QString MACAdress)
+{
+    for(QMap<qintptr, TcpSocket*>::iterator itthr = socketdescriptors.begin(); itthr != socketdescriptors.end(); ++itthr )
+        if (itthr.value()->idUser() == iduser)
+            if (itthr.value()->getData().split(TCPMSG_Separator).at(1) == MACAdress)
+            {
+                itthr.value()->envoyerMessage(TCPMSG_Disconnect);
+                break;
+            }
 }
 
 void TcpServer::Deconnexion(qintptr sktdescriptor, TcpSocket* skt)

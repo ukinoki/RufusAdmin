@@ -1,3 +1,20 @@
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin.
+
+RufusAdmin is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+RufusAdmin is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "tcpsocket.h"
 #include <QTimer>
 
@@ -10,11 +27,8 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
     buffer = new QByteArray();
     sizedata = new qint32(0);
     a = 0;
-    QTimer tim;
-    tim.start(10000);
-    connect(&tim,   SIGNAL(timeout()),                                this, SLOT(Test()));
 
-    socket = new QTcpSocket(this);
+    socket = new QTcpSocket();
     if(!socket->setSocketDescriptor(ID))
     {
         emit error(socket->error());
@@ -45,11 +59,6 @@ QAbstractSocket::SocketState TcpSocket::state()
     return socket->state();
 }
 
-void TcpSocket::Test()
-{
-    envoyerMessage("Test");
-}
-
 void TcpSocket::TraiteDonneesRecues()
 {
     qint32 *s = sizedata;
@@ -73,7 +82,10 @@ void TcpSocket::TraiteDonneesRecues()
                 *s = size;
                 QString messageRecu = QString::fromUtf8(data);
                 //qDebug() << socketDescriptor << " Data in: " << buffer << " message = " << messageRecu;
-                emit emitmsg(sktdescriptor, messageRecu);
+                if (messageRecu.contains(TCPMSG_Disconnect))
+                    Deconnexion();
+                else
+                    emit emitmsg(sktdescriptor, messageRecu);
             }
         }
     }
