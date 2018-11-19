@@ -55,7 +55,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
     TcpSocket *socket = new TcpSocket(socketDescriptor);
 
-    connect(socket,     SIGNAL(emitmsg(qintptr, QString)),  this,   SLOT(TraiteMessageRecu(qintptr, QString)));
+    connect(socket,     SIGNAL(emitmsg(qintptr, QString)),              this,   SLOT(TraiteMessageRecu(qintptr, QString)));
     connect(socket,     SIGNAL(deconnexion(qintptr, TcpSocket*)),       this,   SLOT(Deconnexion(qintptr, TcpSocket*)));
 
     socketdescriptors  .insert(socketDescriptor, socket);
@@ -67,7 +67,7 @@ void TcpServer::Deconnexion(int iduser, QString MACAdress)
         if (itthr.value()->idUser() == iduser)
             if (itthr.value()->getData().split(TCPMSG_Separator).at(1) == MACAdress)
             {
-                itthr.value()->envoyerMessage(TCPMSG_Disconnect);
+                itthr.value()->envoyerMessage(TCPMSG_Disconnect); // la valse des signaux permet de commander l'arrêt du thread depuis l'intérieur - pas trouvé mieux
                 break;
             }
 }

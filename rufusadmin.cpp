@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("18-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("19-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -336,6 +336,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gRufusAdminTrayIcon->setVisible(true);
     connect(trayIconMenu, SIGNAL(aboutToShow()), this,  SLOT(Slot_TrayIconMenu()));
     ui->MessageupLabel->setText("");
+
+    ImportDocsExtThread = new ImportDocsExternesThread(idAdminDocs, idlieuExercice, gMode != Distant);
 
     installEventFilter(this);
 }
@@ -1556,10 +1558,7 @@ void RufusAdmin::Slot_ImportDocsExternes()
                 break;
             }
     }
-    if (!verifdocs)
-        return;
-    bool acces = (gMode != Distant? true : false);
-    ImportDocsExtThread = new ImportDocsExternesThread(db, idAdminDocs, idlieuExercice, acces);
+    ImportDocsExtThread->StartImport(verifdocs);
 }
 
 void RufusAdmin::Slot_MasqueAppli()

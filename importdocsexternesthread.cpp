@@ -17,12 +17,11 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "importdocsexternesthread.h"
 
-ImportDocsExternesThread::ImportDocsExternesThread(QSqlDatabase dbg, int iduser, int idlieu, bool local)
+ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool local)
 {
     thread          = new QThread;
-    thread          ->start();
     moveToThread(thread);
-    db              = dbg;
+    db              = DataBase::getInstance()->getDataBase();
     idAdminDocs     = iduser;
     idLieuExercice  = idlieu;
     Acces           = (local? Local : Distant);
@@ -30,12 +29,28 @@ ImportDocsExternesThread::ImportDocsExternesThread(QSqlDatabase dbg, int iduser,
     gnomFichIni     = QDir::homePath() + NOMFIC_INI;
     gsettingsIni    = new QSettings(gnomFichIni, QSettings::IniFormat);
     TCPServer       = TcpServer::getInstance();
-    RapatrieDocumentsThread();
-    thread          ->exit();
+    tim             = new QTimer();
+    connect(tim,    SIGNAL(timeout()),  this,   SLOT(RapatrieDocumentsThread()));
+    tim             ->setInterval(5000);
+    connect(thread, SIGNAL(started()),  tim,    SLOT(start()));
+    thread          ->start();
+    a = 0;
+}
+
+void ImportDocsExternesThread::StartImport(bool start)
+{
+    if (start != tim->isActive())
+    {
+        if (start)
+            tim->start();
+        else
+            tim->stop();
+    }
 }
 
 void ImportDocsExternesThread::RapatrieDocumentsThread()
 {
+    qDebug() << "OK import " + QString::number(++a);
     if (EnCours)
         return;
     EnCours = true;
@@ -45,11 +60,17 @@ void ImportDocsExternesThread::RapatrieDocumentsThread()
     //qDebug()<< req;
     QSqlQuery docsquer(req, db);
     if (docsquer.size()==0)
+    {
+        EnCours = false;
         return;
+    }
 
     datetransfer            = QDate::currentDate().toString("yyyy-MM-dd");
     if (!DefinitDossiers())
+    {
+        EnCours = false;
         return;
+    }
 
     docsquer.first();
     for (int itr=0; itr<docsquer.size(); itr++)

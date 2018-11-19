@@ -31,6 +31,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "functormajpremierelettre.h"
 #include "upmessagebox.h"
 #include "tcpserver.h"
+#include "database.h"
 
 /* Cette classe tourne en tache de fond et importe les documents d'imagerie dans la base de données
  * DIFFERENTE POUR RUFUS ET RUFUSADMIN
@@ -40,11 +41,12 @@ class ImportDocsExternesThread : public QObject
 {
     Q_OBJECT
 public:
-    explicit ImportDocsExternesThread(QSqlDatabase gdb, int iduser, int idlieu, bool local = true);
+    explicit ImportDocsExternesThread(int iduser, int idlieu, bool local = true);
+    void                        StartImport(bool start);
 private:
     int                         idAdminDocs;
     int                         idLieuExercice;
-    void                        RapatrieDocumentsThread();
+    int                         a;
     void                        EchecImport(QString txt);
     bool                        EnCours;
     QString                     gnomFichIni;
@@ -56,6 +58,7 @@ private:
     QSqlDatabase                db;
     QThread                     *thread;
     TcpServer                   *TCPServer;
+    QTimer                      *tim;
 
     int                         Acces;
     enum Acces                  {Local, Distant};
@@ -64,6 +67,8 @@ private:
     QString                     datetransfer, CheminEchecTransfrDir;
     QStringList                 listmsg;
     QFile                       FichierImage;
+public slots:
+    void                        RapatrieDocumentsThread();
 };
 
 #endif // IMPORTDOCSEXTERNESTHREAD_H

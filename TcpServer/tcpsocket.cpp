@@ -16,7 +16,6 @@ along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tcpsocket.h"
-#include <QTimer>
 
 TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
 {
@@ -37,10 +36,10 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
     // note - Qt::DirectConnection is used because it's multithreaded
     //        This makes the slot to be invoked immediately, when the signal is emitted.
 
-    connect(&thread, SIGNAL(finished()), socket, SLOT(deleteLater()));
-    connect(socket, SIGNAL(readyRead()),                            this, SLOT(TraiteDonneesRecues()), Qt::DirectConnection);
-    connect(socket, SIGNAL(disconnected()),                         this, SLOT(Deconnexion()));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),    this, SLOT(erreurSocket(QAbstractSocket::SocketError)));
+    connect(&thread,    SIGNAL(finished()),                             socket, SLOT(deleteLater()));
+    connect(socket,     SIGNAL(readyRead()),                            this,   SLOT(TraiteDonneesRecues()), Qt::DirectConnection);
+    connect(socket,     SIGNAL(disconnected()),                         this,   SLOT(Deconnexion()));
+    connect(socket,     SIGNAL(error(QAbstractSocket::SocketError)),    this,   SLOT(erreurSocket(QAbstractSocket::SocketError)));
     thread.start();
 }
 
