@@ -50,7 +50,7 @@ void ImportDocsExternesThread::StartImport(bool start)
 
 void ImportDocsExternesThread::RapatrieDocumentsThread()
 {
-    qDebug() << "OK import " + QString::number(++a);
+    //qDebug() << "OK import " + QString::number(++a);
     if (EnCours)
         return;
     EnCours = true;
