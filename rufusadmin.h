@@ -110,6 +110,7 @@ private:
     QSqlDatabase                db;
     QSystemTrayIcon             *gRufusAdminTrayIcon;
     QTimer                      *gTimerUserConnecte, *gTimerVerifDivers, *gTimerInactive, *gTimerSupprDocs, *gTimerDocsAExporter;
+    QTimer                      tim;
     ImportDocsExternesThread    *ImportDocsExtThread;
     UpDialog                    *gAskAppareil, *gAskMDP;
     WidgetButtonFrame           *widgAppareils;
@@ -145,6 +146,7 @@ private:
     void                        DisconnectTimerInactive();
 
 private slots:
+    void                        ListeAppareils();
     void                        Slot_CalcExporteDocs();
     void                        Slot_ChoixButtonFrame(int);
     void                        Slot_ChoixDossierStockageApp();

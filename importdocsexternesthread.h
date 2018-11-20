@@ -42,7 +42,6 @@ class ImportDocsExternesThread : public QObject
     Q_OBJECT
 public:
     explicit ImportDocsExternesThread(int iduser, int idlieu, bool local = true);
-    void                        StartImport(bool start);
 private:
     int                         idAdminDocs;
     int                         idLieuExercice;
@@ -58,7 +57,6 @@ private:
     QSqlDatabase                db;
     QThread                     *thread;
     TcpServer                   *TCPServer;
-    QTimer                      *tim;
 
     int                         Acces;
     enum Acces                  {Local, Distant};
@@ -68,7 +66,7 @@ private:
     QStringList                 listmsg;
     QFile                       FichierImage;
 public slots:
-    void                        RapatrieDocumentsThread();
+    void                        RapatrieDocumentsThread(QSqlQuery docsquer);
 };
 
 #endif // IMPORTDOCSEXTERNESTHREAD_H

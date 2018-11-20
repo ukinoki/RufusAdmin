@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("19-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("20-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -338,6 +338,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->MessageupLabel->setText("");
 
     ImportDocsExtThread = new ImportDocsExternesThread(idAdminDocs, idlieuExercice, gMode != Distant);
+    connect(&tim,    SIGNAL(timeout()),  this,   SLOT(ListeAppareils()));
+    tim             .setInterval(5000);
+    Slot_ImportDocsExternes();
 
     installEventFilter(this);
 }
@@ -345,6 +348,16 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 RufusAdmin::~RufusAdmin()
 {
     delete ui;
+}
+
+void RufusAdmin::ListeAppareils()
+{
+    QString req = "select distinct list.TitreExamen, list.NomAPPareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon, " NOM_TABLE_LISTEAPPAREILS " list"
+          " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(idlieuExercice);
+    //qDebug()<< req;
+    QSqlQuery docsquer(req, db);
+    if (docsquer.size()>0)
+        ImportDocsExtThread->RapatrieDocumentsThread(docsquer);
 }
 
 void RufusAdmin::closeEvent(QCloseEvent *)
@@ -1558,7 +1571,13 @@ void RufusAdmin::Slot_ImportDocsExternes()
                 break;
             }
     }
-    ImportDocsExtThread->StartImport(verifdocs);
+    if (verifdocs != tim.isActive())
+    {
+        if (verifdocs)
+            tim.start();
+        else
+            tim.stop();
+    }
 }
 
 void RufusAdmin::Slot_MasqueAppli()
@@ -2978,20 +2997,22 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
  *  effectués par des postes distants
  */
 {
-    if (gflagSalDat < GetflagSalDat())
+    int flag = GetflagSalDat();
+    if (gflagSalDat < flag)
     {
-        gflagSalDat = GetflagSalDat();
+        gflagSalDat = flag;
         //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
-    if (gflagCorrespdts < GetflagCorrespdts())
+    flag = GetflagCorrespdts();
+    if (gflagCorrespdts < flag)
     {
-        gflagCorrespdts = GetflagCorrespdts();
+        gflagCorrespdts = flag;
         //TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
-
-    if (gflagMessages < GetflagMessages())
+    flag = GetflagMessages();
+    if (gflagMessages < flag)
     {
-        gflagMessages = GetflagMessages();
+        gflagMessages = flag;
 
         QString req =
                 "select mess.idMessage, iddestinataire, creele from "

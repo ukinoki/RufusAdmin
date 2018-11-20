@@ -29,41 +29,17 @@ ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool 
     gnomFichIni     = QDir::homePath() + NOMFIC_INI;
     gsettingsIni    = new QSettings(gnomFichIni, QSettings::IniFormat);
     TCPServer       = TcpServer::getInstance();
-    tim             = new QTimer();
-    connect(tim,    SIGNAL(timeout()),  this,   SLOT(RapatrieDocumentsThread()));
-    tim             ->setInterval(5000);
-    connect(thread, SIGNAL(started()),  tim,    SLOT(start()));
-    thread          ->start();
     a = 0;
+    thread          ->start();
 }
 
-void ImportDocsExternesThread::StartImport(bool start)
+void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)
 {
-    if (start != tim->isActive())
-    {
-        if (start)
-            tim->start();
-        else
-            tim->stop();
-    }
-}
-
-void ImportDocsExternesThread::RapatrieDocumentsThread()
-{
-    //qDebug() << "OK import " + QString::number(++a);
+    qDebug() << "OK import " + QString::number(++a);
     if (EnCours)
         return;
     EnCours = true;
     // INCORPORATION DES FICHIERS IMAGE DANS LA BASE ============================================================================================================================================================
-    QString req = "select distinct list.TitreExamen, list.NomAPPareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon, " NOM_TABLE_LISTEAPPAREILS " list"
-          " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(idLieuExercice);
-    //qDebug()<< req;
-    QSqlQuery docsquer(req, db);
-    if (docsquer.size()==0)
-    {
-        EnCours = false;
-        return;
-    }
 
     datetransfer            = QDate::currentDate().toString("yyyy-MM-dd");
     if (!DefinitDossiers())
