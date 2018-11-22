@@ -73,8 +73,7 @@ HEADERS += \
     database.h \
     gbl_datas.h \
     log.h \
-    icons.h \
-    tcpserver.h
+    icons.h
 
 FORMS += \
         rufusadmin.ui \
