@@ -229,7 +229,7 @@ void dlg_banque::SupprBanque()
 void dlg_banque::ValideModifBanque()
 {
     QString msg = "";
-    QString nombanque = fMAJPremiereLettre(ui->NomBanqueupLineEdit->text());
+    QString nombanque = Utils::capitilize(ui->NomBanqueupLineEdit->text());
     QString req;
     if (ui->NomBanqueupLineEdit->text() == "")
         msg = tr("le nom de la banque");

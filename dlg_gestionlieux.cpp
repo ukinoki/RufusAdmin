@@ -144,14 +144,14 @@ void dlg_GestionLieux::Slot_EnregNouvLieu()
     if (ValidationFiche())
     {
         QString req = "insert into " NOM_TABLE_LIEUXEXERCICE "(NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax)  values("
-                        "'" + CorrigeApostrophe(fmaj(leditnom->text())) + "', "
-                        "'" + CorrigeApostrophe(fmaj(leditadr1->text())) + "', "
-                        "'" + CorrigeApostrophe(fmaj(leditadr2->text())) + "', "
-                        "'" + CorrigeApostrophe(fmaj(leditadr3->text())) + "', "
-                        ""  + CorrigeApostrophe(fmaj(leditcp->text())) + ", "
-                        "'" + CorrigeApostrophe(fmaj(leditville->text())) + "', "
-                        "'" + CorrigeApostrophe(fmaj(ledittel->text())) + "', "
-                        "'" + CorrigeApostrophe(fmaj(leditfax->text())) + "')";
+                        "'" + CorrigeApostrophe(Utils::capitilize(leditnom->text())) + "', "
+                        "'" + CorrigeApostrophe(Utils::capitilize(leditadr1->text())) + "', "
+                        "'" + CorrigeApostrophe(Utils::capitilize(leditadr2->text())) + "', "
+                        "'" + CorrigeApostrophe(Utils::capitilize(leditadr3->text())) + "', "
+                        ""  + CorrigeApostrophe(Utils::capitilize(leditcp->text())) + ", "
+                        "'" + CorrigeApostrophe(Utils::capitilize(leditville->text())) + "', "
+                        "'" + CorrigeApostrophe(Utils::capitilize(ledittel->text())) + "', "
+                        "'" + CorrigeApostrophe(Utils::capitilize(leditfax->text())) + "')";
         //qDebug() << req;
         QSqlQuery(req,db);
         delete tabModel;
@@ -290,14 +290,14 @@ void dlg_GestionLieux::Slot_ModifLieu()
     if (ValidationFiche())
     {
         QString req = "update " NOM_TABLE_LIEUXEXERCICE " set "
-                        "NomLieu = '"       + CorrigeApostrophe(fmaj(leditnom->text())) + "', "
-                        "LieuAdresse1 = '"  + CorrigeApostrophe(fmaj(leditadr1->text())) + "', "
-                        "LieuAdresse2 = '"  + CorrigeApostrophe(fmaj(leditadr2->text())) + "', "
-                        "LieuAdresse3 = '"  + CorrigeApostrophe(fmaj(leditadr3->text())) + "', "
-                        "LieuCodePostal = " + CorrigeApostrophe(fmaj(leditcp->text())) + ", "
-                        "LieuVille = '"     + CorrigeApostrophe(fmaj(leditville->text())) + "', "
-                        "LieuTelephone = '" + CorrigeApostrophe(fmaj(ledittel->text())) + "', "
-                        "LieuFax = '"       + CorrigeApostrophe(fmaj(leditfax->text())) + "' " +
+                        "NomLieu = '"       + CorrigeApostrophe(Utils::capitilize(leditnom->text())) + "', "
+                        "LieuAdresse1 = '"  + CorrigeApostrophe(Utils::capitilize(leditadr1->text())) + "', "
+                        "LieuAdresse2 = '"  + CorrigeApostrophe(Utils::capitilize(leditadr2->text())) + "', "
+                        "LieuAdresse3 = '"  + CorrigeApostrophe(Utils::capitilize(leditadr3->text())) + "', "
+                        "LieuCodePostal = " + CorrigeApostrophe(Utils::capitilize(leditcp->text())) + ", "
+                        "LieuVille = '"     + CorrigeApostrophe(Utils::capitilize(leditville->text())) + "', "
+                        "LieuTelephone = '" + CorrigeApostrophe(Utils::capitilize(ledittel->text())) + "', "
+                        "LieuFax = '"       + CorrigeApostrophe(Utils::capitilize(leditfax->text())) + "' " +
                         "where idLieu = "   + QString::number(idLieuAModifier);
         //qDebug() << req;
         QSqlQuery(req,db);

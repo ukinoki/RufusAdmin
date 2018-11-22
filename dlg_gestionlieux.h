@@ -25,7 +25,6 @@ along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTableView>
 #include <QSqlQuery>
 #include "dlg_message.h"
-#include "functormajpremierelettre.h"
 #include "macros.h"
 #include "updialog.h"
 #include "uplabel.h"
@@ -52,7 +51,6 @@ private slots:
     void                    Slot_ModifLieu();
 
 private:
-    FunctorMAJPremiereLettre fmaj;
     QSqlDatabase            db;
     QTableView              *tabLM;
     UpDialog                *gLieuDialog;

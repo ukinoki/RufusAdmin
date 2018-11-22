@@ -30,7 +30,6 @@ along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "uplineedit.h"
 #include "uptextedit.h"
 #include "widgetbuttonframe.h"
-#include "functormajpremierelettre.h"
 #include "macros.h"
 #include "icons.h"
 #include "utils.h"
@@ -85,7 +84,6 @@ private:
     bool                    respliberal;
     bool                    soigntnonrplct;
 
-    FunctorMAJPremiereLettre fMAJPremiereLettre;
     dlg_gestioncomptes      *Dlg_GestComptes;
     UpDialog                *gAsk;
     QSqlDatabase            db;

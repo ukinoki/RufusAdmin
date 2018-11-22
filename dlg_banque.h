@@ -29,8 +29,6 @@ along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "database.h"
 #include "utils.h"
 
-#include "functormajpremierelettre.h"
-
 /* sert à gérer les noms des organismes bancaires
  * IDENTIQUE POUR RUFUS ET RUFUSADMIN*/
 
@@ -55,7 +53,6 @@ private:
     QStringList                             gListBanques;
     DataBase                                *db;
     WidgetButtonFrame                       *widgButtons;
-    FunctorMAJPremiereLettre                fMAJPremiereLettre;
 
     void            RemetEnNorm();
     void            RemplirTableView();
