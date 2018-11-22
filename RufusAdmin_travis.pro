@@ -47,9 +47,6 @@ SOURCES += \
     dlg_paramconnexion.cpp \
     widgetbuttonframe.cpp \
     importdocsexternesthread.cpp \
-    functormajpremierelettre.cpp \
-    functormessage.cpp \
-    functordatauser.cpp \
     dlg_message.cpp \
     dlg_banque.cpp \
     dlg_gestioncomptes.cpp \
@@ -66,9 +63,6 @@ HEADERS += \
     dlg_paramconnexion.h \
     widgetbuttonframe.h \
     importdocsexternesthread.h \
-    functormajpremierelettre.h \
-    functormessage.h \
-    functordatauser.h \
     dlg_banque.h \
     dlg_message.h \
     dlg_gestioncomptes.h \
