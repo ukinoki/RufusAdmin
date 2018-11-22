@@ -152,7 +152,6 @@ QString Utils::capitilize(QString text)
         newText += c;
         lastChar = c;
     }
-
     return newText;
 }
 

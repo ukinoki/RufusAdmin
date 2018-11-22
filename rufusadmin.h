@@ -146,6 +146,7 @@ private:
     void                        DisconnectTimerInactive();
 
 private slots:
+    void                        AfficheMessageImport(QStringList listmsg, int pause, bool bottom=true);
     void                        ListeAppareils();
     void                        Slot_CalcExporteDocs();
     void                        Slot_ChoixButtonFrame(int);

@@ -27,11 +27,9 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QThread>
 #include <QMessageBox>
 #include "macros.h"
-#include "functormessage.h"
-#include "functormajpremierelettre.h"
 #include "upmessagebox.h"
-#include "tcpserver.h"
 #include "database.h"
+#include "utils.h"
 
 /* Cette classe tourne en tache de fond et importe les documents d'imagerie dans la base de données
  * DIFFERENTE POUR RUFUS ET RUFUSADMIN
@@ -42,6 +40,12 @@ class ImportDocsExternesThread : public QObject
     Q_OBJECT
 public:
     explicit ImportDocsExternesThread(int iduser, int idlieu, bool local = true);
+    void                        RapatrieDocumentsThread(QSqlQuery docsquer);
+
+signals:
+    void                        emitmsg(QStringList listmsg, int pause, bool bottom);
+    void                        emitmsg(QString msg);
+
 private:
     int                         idAdminDocs;
     int                         idLieuExercice;
@@ -52,11 +56,8 @@ private:
     QSettings                   *gsettingsIni;
     QString                     getDossierDocuments(QString Appareil);
     bool                        DefinitDossiers();
-    FunctorMessage              fmessage;
-    FunctorMAJPremiereLettre    fMAJPremLettre;
     QSqlDatabase                db;
     QThread                     *thread;
-    TcpServer                   *TCPServer;
 
     int                         Acces;
     enum Acces                  {Local, Distant};
@@ -65,8 +66,6 @@ private:
     QString                     datetransfer, CheminEchecTransfrDir;
     QStringList                 listmsg;
     QFile                       FichierImage;
-public slots:
-    void                        RapatrieDocumentsThread(QSqlQuery docsquer);
 };
 
 #endif // IMPORTDOCSEXTERNESTHREAD_H

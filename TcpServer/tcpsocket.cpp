@@ -93,7 +93,7 @@ void TcpSocket::TraiteDonneesRecues()
 void TcpSocket::envoyerMessage(QString msg)
 {
     QByteArray paquet = msg.toUtf8();
-    qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
+    //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
     if(socket->state() == QAbstractSocket::ConnectedState)
     {
         socket->write(Utils::IntToArray(paquet.size()));
@@ -110,7 +110,7 @@ void TcpSocket::Deconnexion()
 
 void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
 {
-    qDebug() << "le cient ne répond plus - " << erreur << " - " << socket->errorString();
+    //qDebug() << "le cient ne répond plus - " << erreur << " - " << socket->errorString();
 
     /*
         le cient ne répond plus

@@ -28,19 +28,18 @@ ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool 
     EnCours         = false;
     gnomFichIni     = QDir::homePath() + NOMFIC_INI;
     gsettingsIni    = new QSettings(gnomFichIni, QSettings::IniFormat);
-    TCPServer       = TcpServer::getInstance();
     a = 0;
     thread          ->start();
 }
 
-void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)
+void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     // INCORPORATION DES FICHIERS IMAGE DANS LA BASE  =====
+
 {
     qDebug() << "OK import " + QString::number(++a);
     if (EnCours)
         return;
     EnCours = true;
-    // INCORPORATION DES FICHIERS IMAGE DANS LA BASE ============================================================================================================================================================
-
+    listmsg.clear();
     datetransfer            = QDate::currentDate().toString("yyyy-MM-dd");
     if (!DefinitDossiers())
     {
@@ -343,11 +342,11 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)
                 QString req(""), idPatient("");
                 if (Appareil == "TOPCON ALADDIN")   {
                     QStringList listn = nomdoc.split("_");
-                    QString nom     = fMAJPremLettre(listn.at(0));
-                    QString prenom  = fMAJPremLettre(listn.at(1));
-                    QString jour    = fMAJPremLettre(listn.at(2));
-                    QString mois    = fMAJPremLettre(listn.at(3));
-                    QString annee   = fMAJPremLettre(listn.at(4));
+                    QString nom     = Utils::capitilize(listn.at(0));
+                    QString prenom  = Utils::capitilize(listn.at(1));
+                    QString jour    = Utils::capitilize(listn.at(2));
+                    QString mois    = Utils::capitilize(listn.at(3));
+                    QString annee   = Utils::capitilize(listn.at(4));
                     req             = "select idpat from " NOM_TABLE_PATIENTS
                                       " where patnom like '" + nom + "'"
                                       " and patprenom like '" + prenom  + "'"
@@ -497,7 +496,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)
                             out << Titredoc << " - " << nomdoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                             jnaltrsfer.close();
                         }
-                        TCPServer->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
+                        emit emitmsg(idPatient + TCPMSG_MAJDocsExternes);
                         if (FichierImage.remove())
                         {
                             QString msg = tr("Enregistrement d'un cliché") + " <font color=\"red\"><b>" + Titredoc + "</b></font>"
@@ -558,7 +557,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)
                             out << Titredoc << " - " << nomdoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                             jnaltrsfer.close();
                         }
-                        TCPServer->envoyerATous(idPatient + TCPMSG_Separator TCPMSG_MAJDocsExternes);
+                        emit emitmsg(idPatient + TCPMSG_MAJDocsExternes);
                         if (FichierImage.remove())
                         {
                             QString msg = tr("Enregistrement d'un cliché") + " <font color=\"red\"><b>" + Titredoc + "</b></font>"
@@ -590,7 +589,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)
     }
 
     if (listmsg.size()>0)
-        fmessage(listmsg, 3000, true);  // on shunte le thread de dlg_message parce qu'on est déjà dans un thread
+        emit emitmsg(listmsg, 3000, true);
     EnCours = false;
 }
 
@@ -599,7 +598,7 @@ void ImportDocsExternesThread::EchecImport(QString txt)
     QString msg = tr("Impossible d'enregistrer le fichier ") + "<font color=\"red\"><b>" + QFileInfo(FichierImage).fileName() + "</b></font>" + tr(" dans la base de données");
     QStringList listmsg;
     listmsg << msg;
-    fmessage(listmsg, 3000, false);  // on shunte le thread de dlg_message
+    emit emitmsg(listmsg, 3000, false);
 
     QString CheminEchecTransfrDoc   = CheminEchecTransfrDir + "/" + QFileInfo(FichierImage).fileName();
     FichierImage.copy(CheminEchecTransfrDoc);
@@ -624,7 +623,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
         msg += "<br />" + tr("Renseignez un dossier valide dans") + " <font color=\"green\"><b>" + tr("Emplacement de stockage des documents archivés") + "</b></font>";
         QStringList listmsg;
         listmsg << msg;
-        fmessage(listmsg, 6000, false);  // on shunte le thread de dlg_message
+        emit emitmsg(listmsg, 6000, false);
         return false;
     }
     NomDirStockageProv      = NomDirStockageImagerie + NOMDIR_PROV;
@@ -635,7 +634,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + NomDirStockageProv + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            fmessage(listmsg, 3000, false);  // on shunte le thread de dlg_message
+            emit emitmsg(listmsg, 3000, false);
             return false;
         }
     CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_IMAGES;
@@ -646,7 +645,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            fmessage(listmsg, 3000, false);  // on shunte le thread de dlg_message
+            emit emitmsg(listmsg, 3000, false);
             return false;
         }
     CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer;
@@ -656,7 +655,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            fmessage(listmsg, 3000, false);  // on shunte le thread de dlg_message
+            emit emitmsg(listmsg, 3000, false);
             return false;
         }
     CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
@@ -667,7 +666,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            fmessage(listmsg, 3000, false);  // on shunte le thread de dlg_message
+            emit emitmsg(listmsg, 3000, false);
             return false;
         }
 
@@ -681,7 +680,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDirOrigin + "</b></font>" + tr(" invalide");
                 QStringList listmsg;
                 listmsg << msg;
-                fmessage(listmsg, 3000, false);  // on shunte le thread de dlg_message
+                emit emitmsg(listmsg, 3000, false);
                 return false;
             }
         CheminOKTransfrDirOrigin    = CheminOKTransfrDirOrigin + "/" + datetransfer;
@@ -691,7 +690,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDirOrigin + "</b></font>" + tr(" invalide");
                 QStringList listmsg;
                 listmsg << msg;
-                fmessage(listmsg, 3000, false);  // on shunte le thread de dlg_message
+                emit emitmsg(listmsg, 3000, false);
                 return false;
             }
     }

@@ -92,6 +92,16 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
         return;
     if (msg.contains(TCPMSG_MsgBAL))
     {
+        /* un message de BAL reçu par le tcpserver a la struture
+                * QString contenant la liste des id de destianataires séparés par de virgules
+                * TCPMSG_Separator
+                * QString le nombre de messages
+                * TCPMSG_Separator
+                * TCPMSG_MsgBAL
+         * un message est renvoyé sur chaque id de destinataire avec la structure
+                * QString le nombre de messages
+                * TCPMSG_MsgBAL
+        */
         msg.remove(TCPMSG_MsgBAL);
         QString listdest = msg.split(TCPMSG_Separator).at(0);
         QString nbmsg = msg.split(TCPMSG_Separator).at(1);
@@ -99,7 +109,7 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
         for(QMap<qintptr, TcpSocket*>::iterator itthr = socketdescriptors.begin(); itthr != socketdescriptors.end(); ++itthr )
         {
             if (listid.contains(QString::number(itthr.value()->idUser())))
-                envoyerA(itthr.value()->idUser(),  TCPMSG_Separator + nbmsg + TCPMSG_MsgBAL);
+                envoyerA(itthr.value()->idUser(), nbmsg + TCPMSG_MsgBAL);
         }
     }
     else if (msg.contains(TCPMSG_idUser))

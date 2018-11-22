@@ -33,7 +33,6 @@ class TcpServer : public QTcpServer
 public:
     static      TcpServer* getInstance();
     bool        start();
-    void        envoyerATous(QString msg, qintptr emetteurorigin = 0);                      /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
     QString     ListeSockets();
     void        setId(int id);
     void        envoyerA(int iduser, QString msg);                                          /* envoi d'un message sur un QTcpSocket en particulier */
@@ -57,6 +56,9 @@ signals:
 private slots:
     void                            TraiteMessageRecu(qintptr sktdescriptor, QString msg);  /* traitement des messages reçus*/
     void                            Deconnexion(qintptr sktdescriptor, TcpSocket* skt);     /* deconnexion d'un socket */
+
+public slots:
+    void                            envoyerATous(QString msg, qintptr emetteurorigin = 0);                      /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
 
 protected:
     void                            incomingConnection(qintptr socketDescriptor);
