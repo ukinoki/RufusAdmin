@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("22-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("26-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -338,7 +338,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->MessageupLabel->setText("");
 
     ImportDocsExtThread = new ImportDocsExternesThread(idAdminDocs, idlieuExercice, gMode != Distant);
-    connect(ImportDocsExtThread, SIGNAL(emitmsg(QStringList)),  this,       SLOT(AfficheMessageImport(QStringList)));
+    connect(ImportDocsExtThread, SIGNAL(emitmsg(QStringList, int, bool)),  this,       SLOT(AfficheMessageImport(QStringList, int, bool)));
     connect(ImportDocsExtThread, SIGNAL(emitmsg(QString)),      TCPServer,  SLOT(envoyerATous(QString)));
     connect(&tim,    SIGNAL(timeout()),  this,   SLOT(ListeAppareils()));
     tim             .setInterval(5000);

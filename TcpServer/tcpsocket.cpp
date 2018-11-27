@@ -23,8 +23,8 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
     sktdescriptor = ID;
     iduser = -1;
     datasclient = "";
-    buffer = new QByteArray();
-    sizedata = new qint32(0);
+    buffer.clear();
+    sizedata = 0;
     a = 0;
 
     socket = new QTcpSocket();
@@ -33,10 +33,10 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
         emit error(socket->error());
         return;
     }
-    // note - Qt::DirectConnection is used because it's multithreaded
-    //        This makes the slot to be invoked immediately, when the signal is emitted.
 
     connect(&thread,    SIGNAL(finished()),                             socket, SLOT(deleteLater()));
+    // note - Qt::DirectConnection is used because it's multithreaded
+    //        This makes the slot to be invoked immediately, when the signal is emitted.
     connect(socket,     SIGNAL(readyRead()),                            this,   SLOT(TraiteDonneesRecues()), Qt::DirectConnection);
     connect(socket,     SIGNAL(disconnected()),                         this,   SLOT(Deconnexion()));
     connect(socket,     SIGNAL(error(QAbstractSocket::SocketError)),    this,   SLOT(erreurSocket(QAbstractSocket::SocketError)));
@@ -60,31 +60,27 @@ QAbstractSocket::SocketState TcpSocket::state()
 
 void TcpSocket::TraiteDonneesRecues()
 {
-    qint32 *s = sizedata;
-    qint32 size = *s;
     while (socket->bytesAvailable() > 0)
     {
-        buffer->append(socket->readAll());
-        while ((size == 0 && buffer->size() >= 4) || (size > 0 && buffer->size() >= size)) //While can process data, process it
+        buffer.append(socket->readAll());
+        while ((sizedata == 0 && buffer.size() >= 4) || (sizedata > 0 && buffer.size() >= sizedata)) // on n'a toujours pas la teille du message ou on n'a pas le message complet
         {
-            if (size == 0 && buffer->size() >= 4) //if size of data has received completely, then store it on our global variable
+            if (sizedata == 0 && buffer.size() >= 4)                // on a les 4 premiers caractères => on a la taille du message
             {
-                size = Utils::ArrayToInt(buffer->mid(0, 4));
-                *s = size;
-                buffer->remove(0, 4);
+                sizedata = Utils::ArrayToInt(buffer.mid(0, 4));
+                buffer.remove(0, 4);
             }
-            if (size > 0 && buffer->size() >= size) // toutes les données ont été reçues
+            if (sizedata > 0 && buffer.size() >= sizedata)          // le message est complet
             {
-                QByteArray data = buffer->mid(0, size);
-                buffer->remove(0, size);
-                size = 0;
-                *s = size;
-                QString messageRecu = QString::fromUtf8(data);
-                //qDebug() << socketDescriptor << " Data in: " << buffer << " message = " << messageRecu;
-                if (messageRecu.contains(TCPMSG_Disconnect))
+                QByteArray data = buffer.mid(0, sizedata);
+                buffer.clear();                                     // on remet à 0 buffer et sizedata
+                sizedata = 0;
+                QString msg = QString::fromUtf8(data);              // traitement du message
+                //qDebug() << socketDescriptor << " Data in: " << buffer << " message = " << msg;
+                if (msg.contains(TCPMSG_Disconnect))
                     Deconnexion();
                 else
-                    emit emitmsg(sktdescriptor, messageRecu);
+                    emit emitmsg(sktdescriptor, msg);
             }
         }
     }

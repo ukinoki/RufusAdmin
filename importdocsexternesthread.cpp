@@ -623,7 +623,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
         msg += "<br />" + tr("Renseignez un dossier valide dans") + " <font color=\"green\"><b>" + tr("Emplacement de stockage des documents archivés") + "</b></font>";
         QStringList listmsg;
         listmsg << msg;
-        emit emitmsg(listmsg, 6000, false);
+        emit emitmsg(listmsg, 6000, true);
         return false;
     }
     NomDirStockageProv      = NomDirStockageImagerie + NOMDIR_PROV;
@@ -634,7 +634,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + NomDirStockageProv + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            emit emitmsg(listmsg, 3000, false);
+            emit emitmsg(listmsg, 3000, true);
             return false;
         }
     CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_IMAGES;
@@ -645,7 +645,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            emit emitmsg(listmsg, 3000, false);
+            emit emitmsg(listmsg, 3000, true);
             return false;
         }
     CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer;
@@ -655,7 +655,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            emit emitmsg(listmsg, 3000, false);
+            emit emitmsg(listmsg, 3000, true);
             return false;
         }
     CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
@@ -666,7 +666,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
             QStringList listmsg;
             listmsg << msg;
-            emit emitmsg(listmsg, 3000, false);
+            emit emitmsg(listmsg, 3000, true);
             return false;
         }
 
@@ -680,7 +680,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDirOrigin + "</b></font>" + tr(" invalide");
                 QStringList listmsg;
                 listmsg << msg;
-                emit emitmsg(listmsg, 3000, false);
+                emit emitmsg(listmsg, 3000, true);
                 return false;
             }
         CheminOKTransfrDirOrigin    = CheminOKTransfrDirOrigin + "/" + datetransfer;
@@ -690,7 +690,7 @@ bool ImportDocsExternesThread::DefinitDossiers()
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDirOrigin + "</b></font>" + tr(" invalide");
                 QStringList listmsg;
                 listmsg << msg;
-                emit emitmsg(listmsg, 3000, false);
+                emit emitmsg(listmsg, 3000, true);
                 return false;
             }
     }

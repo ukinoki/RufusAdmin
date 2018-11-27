@@ -87,7 +87,7 @@ void TcpServer::Deconnexion(qintptr sktdescriptor, TcpSocket* skt)
 
 void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
 {
-    qDebug() << msg;
+    //qDebug() << msg;
     if (SocketFromDescriptor(sktdescriptor) == Q_NULLPTR)
         return;
     if (msg.contains(TCPMSG_MsgBAL))
@@ -130,6 +130,8 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
 
     else if (msg == TCPMSG_EnvoieListSocket)          // un client a demandé la liste mise à jour des sockets
         envoieListeSockets(sktdescriptor);
+    else if (msg.contains(TCPMSG_MAJDocsExternes))
+        envoyerATous(msg);
     else
         envoyerATous(msg, sktdescriptor);
 }
