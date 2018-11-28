@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("26-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("27-11-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -161,8 +161,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gTimerUserConnecte          = new QTimer(this);     // mise à jour de la connexion à la base de données
     gTimerSupprDocs             = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
     gTimerVerifDivers           = new QTimer(this);     // vérification du poste importateur des documents et e la version de la base
-    gTimerInactive              = new QTimer(this);     // reduction de la fenêtre dans la barre des taches
     gTimerSupprDocs             = new QTimer(this);     // verification des documents à supprimer
+    gTimerProgressBar           = new QTimer(this);     // progression de la progressbar - quand la progressbar est au maximum, la fiche est cachée
 
     setPosteImportDocs(); // on prend la place d'importateur des documents dans les utilisateurs connectés
     Slot_VerifPosteImport();
@@ -183,9 +183,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     QString veille = MISE_EN_VEILLE;
     dureeVeille = veille.toInt();
-    gTimerInactive->setSingleShot(true);
-    gTimerInactive->setInterval(dureeVeille);
-
+    ui->MiseEnVeilleprogressBar->setMinimum(0);
+    ui->MiseEnVeilleprogressBar->setMaximum(dureeVeille);
+    ui->MiseEnVeilleprogressBar->setInvertedAppearance(true);
+    connect(gTimerProgressBar, &QTimer::timeout, this, [=] {ui->MiseEnVeilleprogressBar->setValue(ui->MiseEnVeilleprogressBar->value()-1);});
+    gTimerProgressBar->start(1);
     gTimerSupprDocs->start(60000);// "toutes les 60 secondes"
     gTimerDocsAExporter = new QTimer(this);
     gTimerDocsAExporter->start(60000);// "toutes les 60 secondes"
@@ -207,7 +209,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(ui->ParamMotifspushButton,          SIGNAL(clicked(bool)),              this,   SLOT(Slot_ParamMotifs()));
     connect(ui->RestaurBaseupPushButton,        SIGNAL(clicked(bool)),              this,   SLOT(Slot_RestaureBase()));
     connect(ui->StockageupPushButton,           SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifDirImagerie()));
-    connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(gSocketStatut);});
+    connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(gSocketStatut, 20000);});
 
 
     widgAppareils = new WidgetButtonFrame(ui->AppareilsConnectesupTableWidget);
@@ -240,6 +242,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->AppareilsConnectesupTableWidget->FixLargeurTotale();
     widgAppareils->widgButtonParent()->setFixedWidth(ui->AppareilsConnectesupTableWidget->width());
     QVBoxLayout *applay = new QVBoxLayout();
+    applay      ->addWidget(ui->MiseEnVeilleprogressBar);
     QHBoxLayout *Stocklay = new QHBoxLayout();
     Stocklay    ->addWidget(ui->StockageupLabel);
     Stocklay    ->addWidget(ui->StockageupLineEdit);
@@ -382,7 +385,7 @@ void RufusAdmin::closeEvent(QCloseEvent *)
 
 void RufusAdmin::AskAppareil()
 {
-    disconnect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    DisconnectTimerInactive();
     gAskAppareil = new UpDialog(this);
     gAskAppareil->setModal(true);
     gAskAppareil->move(QPoint(x()+width()/2,y()+height()/2));
@@ -406,7 +409,7 @@ void RufusAdmin::AskAppareil()
     connect(gAskAppareil->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreAppareil()));
     gAskAppareil->exec();
     upCombo->showPopup();
-    connect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    ConnectTimerInactive();
 }
 
 QString RufusAdmin::getExpressionSize(double size)
@@ -622,7 +625,7 @@ void RufusAdmin::ConnectTimers()
         connect (gTimerSupprDocs,       SIGNAL(timeout()),      this,   SLOT(Slot_SupprimerDocs()));
         connect (gTimerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     }
-    connect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    ConnectTimerInactive();
     connect (gTimerSalDatCorrespMsg,    &QTimer::timeout,       this,   &RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages);
     connect (gTimerVerifVerrou,         &QTimer::timeout,       this,   &RufusAdmin::VerifVerrouDossier);
 }
@@ -636,19 +639,23 @@ void RufusAdmin::DisconnectTimers()
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
     disconnect (gTimerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ExporteDocs()));
-    disconnect (gTimerInactive,         SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    DisconnectTimerInactive();
     gTimerSalDatCorrespMsg  ->disconnect();
     gTimerVerifVerrou       ->disconnect();
 }
 
 void RufusAdmin::ConnectTimerInactive()
 {
-    connect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    connect(ui->MiseEnVeilleprogressBar, &QProgressBar::valueChanged, this, [=]
+    {
+        if (ui->MiseEnVeilleprogressBar->value() == ui->MiseEnVeilleprogressBar->minimum())
+            Slot_MasqueAppli();
+    });
 }
 
 void RufusAdmin::DisconnectTimerInactive()
 {
-    disconnect (gTimerInactive,         SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    ui->MiseEnVeilleprogressBar->disconnect();
 }
 
 double RufusAdmin::CalcBaseSize()
@@ -727,7 +734,7 @@ int RufusAdmin::DetermineLieuExercice()
         }
         else if (lxquer.size()>1)
         {
-            disconnect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+            DisconnectTimerInactive();
             UpDialog *gAskLieux     = new UpDialog();
             gAskLieux               ->AjouteLayButtons();
             QVBoxLayout *globallay  = dynamic_cast<QVBoxLayout*>(gAskLieux->layout());
@@ -787,7 +794,7 @@ int RufusAdmin::DetermineLieuExercice()
                 if (listbutt.at(j)->isChecked())
                     idLieu = listbutt.at(j)->accessibleName().toInt();
             delete gAskLieux;
-            connect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+            ConnectTimerInactive();
         }
     }
     else
@@ -808,30 +815,13 @@ int RufusAdmin::DetermineLieuExercice()
     }
     return idLieu;
 }
-/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Interception des évènements internes -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-QDebug operator<<(QDebug str, const QEvent * ev)
-{
-   static int eventEnumIndex = QEvent::staticMetaObject
-         .indexOfEnumerator("Type");
-   str << "QEvent";
-   if (ev) {
-      QString name = QEvent::staticMetaObject
-            .enumerator(eventEnumIndex).valueToKey(ev->type());
-      if (!name.isEmpty()) str << name; else str << ev->type();
-   } else {
-      str << (void*)ev;
-   }
-   return str.maybeSpace();
-}
 
 bool RufusAdmin::eventFilter(QObject *obj, QEvent *event)
 {
-    if (!event->spontaneous())
+    if (!event->spontaneous() && event->type() != QEvent::UpdateRequest)
     {
         //qDebug() << "event = " << event;
-        gTimerInactive->start();
+        ui->MiseEnVeilleprogressBar->setValue(dureeVeille);
     }
     return QWidget::eventFilter(obj, event);
 }
@@ -1589,7 +1579,9 @@ void RufusAdmin::Slot_ImportDocsExternes()
 
 void RufusAdmin::Slot_MasqueAppli()
 {
-    foreach (QDialog* d , findChildren<QMessageBox*>())
+    qDebug() << "masque";
+    setEnabled(false);
+    foreach (QDialog* d , findChildren<QDialog*>())
         d->hide();
     hide();
 }
@@ -1650,7 +1642,7 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
             QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete,db);
             TraiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
             // on détruit le socket de cet utilisateur
-            KillSocket(QStringList() << verifoldquery.value(0).toString() << verifoldquery.value(2).toString().split(" - ").at(0));
+            // KillSocket(QStringList() << verifoldquery.value(0).toString() << verifoldquery.value(2).toString().split(" - ").at(0));
             // on retire cet utilisateur de la table des utilisateurs connectés
             QSqlQuery ("delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + verifoldquery.value(1).toString() + "'", db);
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
@@ -1662,7 +1654,7 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
 
 void RufusAdmin::Slot_ModifMDP()
 {
-    disconnect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    DisconnectTimerInactive();
     gAskMDP    = new UpDialog(this);
     gAskMDP    ->setModal(true);
     gAskMDP    ->move(QPoint(x()+width()/2,y()+height()/2));
@@ -1709,7 +1701,7 @@ void RufusAdmin::Slot_ModifMDP()
     globallay->setSizeConstraint(QLayout::SetFixedSize);
 
     gAskMDP->exec();
-    connect (gTimerInactive,            SIGNAL(timeout()),      this,   SLOT(Slot_MasqueAppli()));
+    ConnectTimerInactive();
 }
 
 void RufusAdmin::Slot_ParamMotifs()
@@ -2067,7 +2059,6 @@ void RufusAdmin::Slot_SupprimerDocs()
 
 void RufusAdmin::Slot_TrayIconMenu()
 {
-    setFocus();
     trayIconMenu->clear();
     if (! isVisible())
     {
@@ -2082,15 +2073,20 @@ void RufusAdmin::Slot_TrayIconMenu()
 
 void RufusAdmin::ChoixMenuSystemTray(QString txt)
 {
-    if (txt == tr("Ouvir RufusAdmin"))
+    // il faut montrer la fiche d'abord sinon la fermeture du QInputDialog de VerifMDP()
+    // provoque la fermeture du programme quoiqu'il arrive (???)
+    bool visible = isVisible();
+    if (!visible)
+        showNormal();
+    if (!VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
     {
-        if (VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
-            showNormal();
+        if (!visible)
+            Slot_MasqueAppli();
+        return;
     }
-    else if (txt == tr("Quitter RufusAdmin"))
+
+    if (txt == tr("Quitter RufusAdmin"))
     {
-        if (!VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
-            return;
         // on retire le poste de la variable posteimportdocs SQL
         setPosteImportDocs(false);
         // on retire Admin de la table des utilisateurs connectés
@@ -2103,6 +2099,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
         setPosteImportDocs(false);
         exit(0);
     }
+    setEnabled(true);
 }
 
 void RufusAdmin::Slot_VerifPosteImport()
@@ -2278,27 +2275,28 @@ bool RufusAdmin::VerifBase()
     -----------------------------------------------------------------------------------------------------------------*/
 bool RufusAdmin::VerifMDP(QString MDP, QString Msg)
 {
-    setFocus();
-    QInputDialog *quest = new QInputDialog();
-    quest->setCancelButtonText("Annuler");
-    quest->setLabelText(Msg);
-    quest->setInputMode(QInputDialog::TextInput);
-    quest->setTextEchoMode(QLineEdit::Password);
-    QList<QLineEdit*> list = quest->findChildren<QLineEdit*>();
+    DisconnectTimerInactive();
+    QInputDialog quest;
+    quest.setCancelButtonText("Annuler");
+    quest.setLabelText(Msg);
+    quest.setInputMode(QInputDialog::TextInput);
+    quest.setTextEchoMode(QLineEdit::Password);
+    QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
     for (int i=0;i<list.size();i++)
         list.at(0)->setAlignment(Qt::AlignCenter);
-    QList<QLabel*> listlab = quest->findChildren<QLabel*>();
+    QList<QLabel*> listlab = quest.findChildren<QLabel*>();
     for (int i=0;i<listlab.size();i++)
         listlab.at(0)->setAlignment(Qt::AlignCenter);
-    quest->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-    if (quest->exec() > 0)
+    quest.setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+    int a = quest.exec();
+    ConnectTimerInactive();
+    if (a > 0)
     {
-        if (quest->textValue() == MDP)
+        if (quest.textValue() == MDP)
             return true;
         else
             UpMessageBox::Watch(this,tr("Mot de passe invalide!"));
     }
-    delete quest;
     return false;
 }
 
@@ -2884,7 +2882,7 @@ void RufusAdmin::ResumeStatut()
     emit ModifEdit(gSocketStatut);
 }
 
-void RufusAdmin::Edit(QString txt)
+void RufusAdmin::Edit(QString txt, int delaieffacement)
 {
     UpDialog        *gAsk           = new UpDialog(this);
     QVBoxLayout     *globallay      = dynamic_cast<QVBoxLayout*>(gAsk->layout());
@@ -2907,6 +2905,14 @@ void RufusAdmin::Edit(QString txt)
     gAsk->AjouteLayButtons();
     connect(gAsk->OKButton,SIGNAL(clicked(bool)),gAsk,SLOT(accept()));
     gAsk->restoreGeometry(gsettingsIni->value("PositionsFiches/PositionEdit").toByteArray());
+
+    if (delaieffacement > 0)
+    {
+        QTimer *tim = new QTimer(gAsk);
+        tim->setSingleShot(true);
+        connect(tim, &QTimer::timeout, gAsk, &UpDialog::accept);
+        tim->start(delaieffacement);
+    }
 
     gAsk->exec();
     gsettingsIni->setValue("PositionsFiches/PositionEdit",gAsk->saveGeometry());
@@ -2973,28 +2979,6 @@ void RufusAdmin::KillSocket(QStringList datas)
     TCPServer->Deconnexion(idUserAEliminer, MACAdressUserAEliminer);
 }
 
-
-/*------------------------------------------------------------------------------------------------------------------------------------
--- Signifier aux autres utilisateurs que la liste des correspondants vient d'être modifiée -------
-------------------------------------------------------------------------------------------------------------------------------------*/
-void RufusAdmin::MAJflagMG()
-{
-    /* envoi du message de MAJ de la liste des correpondants aux clients */
-    //TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
-    /* mise à jour du flag en cas de non utilisation du TCP ou pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente  */
-    if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
-        return;
-    QSqlQuery quer("select MAJflagMG from " NOM_TABLE_FLAGS, DataBase::getInstance()->getDataBase());
-    QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagMG) VALUES (1)";
-    int a = 0;
-    if (quer.seek(0)) {
-        a = quer.value(0).toInt() + 1;
-        MAJreq = "update " NOM_TABLE_FLAGS " set MAJflagMG = " + QString::number(a);
-    }
-    QSqlQuery (MAJreq, DataBase::getInstance()->getDataBase());
-    DataBase::getInstance()->commit();
-    gflagCorrespdts = a;
-}
 
 void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
 /* Utilisé pour vérifier

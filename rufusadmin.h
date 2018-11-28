@@ -16,7 +16,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
- * L'application RufusAdmin sert 3 taches:
+ * L'application RufusAdmin sert 4 taches:
  * 1. programmer les sauvegardes de la base de données et des fichiers d'images.
        Cette programmation n'est possible que si le pogramme est éxécuté sur la machine qui héberge le serveur pour des raisons techniques liés à Linux (cron table) et OSX (launchctl)
  * 2. enregistrer dans la base de données les liens vers les fichiers d'imagerie au fur et à mesure de leur création par les appareils d'imagerie
@@ -43,6 +43,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
       Ces tables sont alimentées à la demande avec les images de ce patient au fur et à mesure que le programme les demande
       la table est détruite quand le dossier patient est fermé
       Un timer lance une routine qui détruit les images des patients qui ne sont plus en consultation.
+ * 4. ëtre le serveur TCP du réseau local
 */
 
 #ifndef RUFUSADMIN_H
@@ -109,7 +110,7 @@ private:
     QSettings                   *gsettingsIni;
     QSqlDatabase                db;
     QSystemTrayIcon             *gRufusAdminTrayIcon;
-    QTimer                      *gTimerUserConnecte, *gTimerVerifDivers, *gTimerInactive, *gTimerSupprDocs, *gTimerDocsAExporter;
+    QTimer                      *gTimerUserConnecte, *gTimerVerifDivers, *gTimerSupprDocs, *gTimerDocsAExporter, *gTimerProgressBar;
     QTimer                      tim;
     ImportDocsExternesThread    *ImportDocsExtThread;
     UpDialog                    *gAskAppareil, *gAskMDP;
@@ -125,7 +126,7 @@ private:
     void                        AskAppareil();
     void                        ChoixMenuSystemTray(QString txt);
     void                        ConnexionBase();
-    void                        Edit(QString txt);
+    void                        Edit(QString txt, int delaieffacement=0);
     QStringList                 DecomposeScriptSQL(QString nomficscript);
     QString                     getDossierDocuments(QString Appareil);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
@@ -232,7 +233,6 @@ private:
 
     void                VerifModifsSalledAttenteCorrespondantsetNouveauxMessages();
     void                MAJTcpMsgEtFlagSalDat();
-    void                MAJflagMG();
     void                VerifVerrouDossier();
 signals:
     void                ModifEdit(QString txt);

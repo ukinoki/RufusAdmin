@@ -245,6 +245,9 @@
      </property>
     </widget>
     <widget class="QRadioButton" name="LocalradioButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>5</x>
@@ -264,6 +267,9 @@
      </property>
     </widget>
     <widget class="QLineEdit" name="IPlineEdit">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>177</x>
@@ -283,6 +289,9 @@
      </property>
     </widget>
     <widget class="QLabel" name="IPlabel">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>13</x>
@@ -302,6 +311,9 @@
      </property>
     </widget>
     <widget class="QRadioButton" name="DistantradioButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>5</x>
@@ -315,6 +327,9 @@
      </property>
     </widget>
     <widget class="QLineEdit" name="DistantlineEdit">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>70</x>
@@ -325,6 +340,9 @@
      </property>
     </widget>
     <widget class="QLabel" name="DistantLabel">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>10</x>
