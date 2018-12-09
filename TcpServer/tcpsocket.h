@@ -23,6 +23,12 @@ along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
 #include <QDebug>
 #include "utils.h"
 
+/*les règles non écrites
+ * pas de classe héritée de thread
+ * pas de slot appelé dans un thread depuis l'extérieur autrement que par un signal
+
+ */
+
 class TcpSocket : public QObject
 {
     Q_OBJECT
@@ -31,7 +37,6 @@ public:
     ~TcpSocket();
     QThread         thread;
     qintptr         sktdescriptor;
-    void            run();
     void            envoyerMessage(QString msg);
     QAbstractSocket::SocketState state();
     void            setIdUser(int id);
@@ -53,7 +58,7 @@ private:
     QTcpSocket      *socket;
     QByteArray      buffer;                                                 // le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
     qint32          sizedata;                                               // le stockage de la taille permet de savoir si le bloc a été reçu
-    int             iduser;                                                 // stocke l'id corresondant au user correspondant à la connexion - utilisé pour la messagerie
+    int             iduser;                                                 // stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
     QString         datasclient;                                            // stocke l'adresse IP et l'adresse MAC du client
 
 private slots:

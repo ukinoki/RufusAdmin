@@ -1,18 +1,18 @@
-/* (C) 2016 LAINE SERGE
-This file is part of Rufus.
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin.
 
-Rufus is free software: you can redistribute it and/or modify
+RufusAdmin is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+the Free Software Foundation, either version 3 of the License,
+or any later version.
 
-Rufus is distributed in the hope that it will be useful,
+RufusAdmin is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Rufus. If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "database.h"
@@ -212,9 +212,9 @@ void dlg_gestionusers::Slot_Annulation()
 {
     if (gMode == Creer)
     {
-        QString req = "delete from " NOM_TABLE_UTILISATEURS " where idUser = " + ui->idUseruplineEdit->text();
+        QString req = "delete from " NOM_TABLE_UTILISATEURS " where idUser = " + QString::number(DataUser()->id());
         QSqlQuery (req,db);
-        req = "delete from " NOM_TABLE_COMPTES " where iduser = " + ui->idUseruplineEdit->text();
+        req = "delete from " NOM_TABLE_COMPTES " where iduser = " + QString::number(DataUser()->id());
         QSqlQuery (req,db);
         int b = (QSqlQuery("select idUser from " NOM_TABLE_UTILISATEURS " where iduser = " + QString::number(gidUserDepart),db).size() == 0?
                      -1:
@@ -829,7 +829,17 @@ void dlg_gestionusers::Slot_FermeFiche()
         msgbox.addButton(&OKBouton, UpSmallButton::STARTBUTTON);
         msgbox.exec();
         if (msgbox.clickedButton()==&OKBouton)
-            emit ui->OKupSmallButton->click();
+        {
+            if (VerifFiche())
+            {
+                emit ui->OKupSmallButton->click();
+                reject();
+            }
+            else
+                return;
+        }
+        else
+            return;
     }
     reject();
 }
@@ -1073,12 +1083,12 @@ void dlg_gestionusers::SupprUser()
             for (int i=0; i<quercpt.size();i++)
             {
                 QString icpt = quercpt.value(0).toString();
-                if (QSqlQuery ("select idcompte from " NOM_TABLE_RECETTES       " where comptevirement = "    + icpt, db).size()==0
-                 && QSqlQuery ("select idcompte from " NOM_TABLE_ARCHIVESBANQUE " where idcompte = "          + icpt, db).size()==0
-                 && QSqlQuery ("select idcompte from " NOM_TABLE_DEPENSES       " where compte = "            + icpt, db).size()==0
-                 && QSqlQuery ("select idcompte from " NOM_TABLE_REMISECHEQUES  " where idcompte = "          + icpt, db).size()==0
-                 && QSqlQuery ("select idcompte from " NOM_TABLE_LIGNESCOMPTES  " where idcompte = "          + icpt, db).size()==0)
-                    QSqlQuery ("delete from " NOM_TABLE_COMPTES " where idcompte = " + icpt, db);
+                if (QSqlQuery ("select idrecette from " NOM_TABLE_RECETTES " where comptevirement = " + icpt, db).size()==0)
+                    if (QSqlQuery ("select idligne from " NOM_TABLE_ARCHIVESBANQUE " where idcompte = " + icpt, db).size()==0)
+                        if (QSqlQuery ("select iddep from " NOM_TABLE_DEPENSES " where compte = " + icpt, db).size()==0)
+                            if (QSqlQuery ("select idremcheq from " NOM_TABLE_REMISECHEQUES " where idcompte = " + icpt, db).size()==0)
+                                if (QSqlQuery ("select idligne from " NOM_TABLE_LIGNESCOMPTES " where idcompte = " + icpt, db).size()==0)
+                                    QSqlQuery ("delete from " NOM_TABLE_COMPTES " where idcompte = " + icpt, db);
                 quercpt.next();
             }
         }

@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("27-11-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("9-12-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2972,7 +2972,7 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     gflagSalDat = a;
 }
 
-void RufusAdmin::KillSocket(QStringList datas)
+void RufusAdmin::KillSocket(QStringList datas)  //TODO marche mal quand le client se reconnecte, ça ne marche plus - accesoirement, ça marche parfaitement quand on ne s'en sert pas
 {
     int idUserAEliminer = datas.at(0).toInt();
     QString MACAdressUserAEliminer = datas.at(1);
