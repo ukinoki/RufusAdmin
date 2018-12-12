@@ -57,7 +57,7 @@ private:
 public:
     explicit Motifs();
 
-    QMap<int, Motif *> motifs() const;
+    QMap<int, Motif *> *motifs() const;
 
     void addMotif(Motif *Motif);
     void addMotif(QList<Motif*> listMotifs);

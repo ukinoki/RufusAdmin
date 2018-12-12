@@ -51,9 +51,9 @@ Motifs::Motifs()
     m_motifs = new QMap<int, Motif*>();
 }
 
-QMap<int, Motif *> Motifs::motifs() const
+QMap<int, Motif *> *Motifs::motifs() const
 {
-    return *m_motifs;
+    return m_motifs;
 }
 
 void Motifs::addMotif(Motif *Motif)

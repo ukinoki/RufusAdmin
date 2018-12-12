@@ -53,7 +53,7 @@ private:
     void                SupprimMotif();
     void                CreeMotif();
     WidgetButtonFrame   *widgButtons;
-    QMap<int,Motif*>    m_motifs;
+    QMap<int,Motif*>    *m_motifs;
     Motif*              getMotifFromRow(int row);
     void                SetMotifToRow(Motif *mtf, int row);
 
