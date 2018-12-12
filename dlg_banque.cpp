@@ -252,7 +252,7 @@ void dlg_banque::ValideModifBanque()
             }
         }
         bool ok = true;
-        QList<QList<QVariant>> listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege", NOM_TABLE_COMPTES, ok);
+        QList<QList<QVariant>> listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege", NOM_TABLE_BANQUES, ok);
         if (listabreges.size()>0)
             for (int i=0; i<listabreges.size(); i++)
                 if (listabreges.at(i).at(0).toString() == ui->NomAbregeupLineEdit->text())
@@ -262,7 +262,7 @@ void dlg_banque::ValideModifBanque()
                     return;
                 }
         listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
-                                                                      NOM_TABLE_COMPTES, ok,
+                                                                      NOM_TABLE_BANQUES, ok,
                                                                       "where idbanqueabrege = " + ui->NomAbregeupLineEdit->text());
         if(listabreges.size()>0)
         {

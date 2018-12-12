@@ -43,6 +43,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_depense.h"
 #include "cls_villes.h"
 #include "cls_docexterne.h"
+#include "cls_motif.h"
 #include "log.h"
 #include "utils.h"
 
@@ -135,12 +136,17 @@ public:
     QList<Archive*> loadArchiveByDate(QDate date, Compte *compte, int intervalle); //! charge les archives contenues entre 6 mois avant date et date pour le compte donné
 
     /*
+     * Motifs
+    */
+    QList<Motif*>   loadMotifs();
+
+    /*
      * Sites
     */
-    QList<Site*> loadSitesByUser(int idUser);
-    QList<Site*> loadSitesAll();
+    QList<Site*>    loadSitesByUser(int idUser);
+    QList<Site*>    loadSitesAll();
 private:
-    QList<Site*> loadSites(QString req);
+    QList<Site*>    loadSites(QString req);
 
 public:
     /*

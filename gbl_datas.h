@@ -20,6 +20,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QObject>
 #include <cls_users.h>
+#include "cls_motif.h"
 
 class Datas : public QObject
 {
@@ -32,6 +33,7 @@ public:
     static Datas *I();
 
     User *userConnected;
+    Motifs *motifs;       //!< tous les motifs d'actes
     Users *users;         //!< Les users
 };
 

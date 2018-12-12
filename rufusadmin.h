@@ -130,6 +130,7 @@ private:
     QStringList                 DecomposeScriptSQL(QString nomficscript);
     QString                     getDossierDocuments(QString Appareil);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
+    void                        initListeMotifs();
     void                        EffaceMessage(int pause = 1000);
     void                        NouvAppareil();
     void                        Remplir_Table();

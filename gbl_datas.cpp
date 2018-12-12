@@ -27,8 +27,9 @@ Datas* Datas::I()
 }
 Datas::Datas()
 {
-    userConnected = nullptr;
-    users = new Users();
+    userConnected   = Q_NULLPTR;
+    users           = new Users();
+    motifs          = new Motifs();
 }
 
 
