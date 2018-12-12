@@ -66,6 +66,7 @@ private:
 
     void            AnnuleModifBanque();
     void            AfficheBanque();
+    void            MAJBanques();               // met à jour la liste des banques
     void            ValideModifBanque();
     void            ChoixButtonFrame(int);
 };

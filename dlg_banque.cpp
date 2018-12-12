@@ -224,6 +224,21 @@ void dlg_banque::SupprBanque()
     AfficheBanque();
 }
 
+void dlg_banque::MAJBanques()
+{
+    for(QMap<int, Banque*>::const_iterator itbq = m_banques->constBegin(); itbq != m_banques->constEnd(); ++itbq )
+    {
+        Banque *bq = const_cast<Banque*>(*itbq);
+        Datas::I()->banques->removeBanque( bq );
+    }
+    QList<Banque*> listbanques = DataBase::getInstance()->loadBanques();
+    for(QList<Banque*>::const_iterator itbq = listbanques.constBegin(); itbq != listbanques.constEnd(); ++itbq )
+    {
+        Banque *bq = const_cast<Banque*>(*itbq);
+        Datas::I()->banques->addBanque( bq );
+    }
+}
+
 void dlg_banque::ValideModifBanque()
 {
     QString msg = "";
@@ -273,6 +288,7 @@ void dlg_banque::ValideModifBanque()
         listsets.insert("idbanqueabrege",   ui->NomAbregeupLineEdit->text());
         listsets.insert("nombanque",        nombanque);
         db->InsertIntoTable(NOM_TABLE_BANQUES, listsets);
+        MAJBanques();
         if (gFermeApresValidation)
         {
             UpMessageBox::Watch(this,tr("La banque ") + nombanque + tr(" a été enregistrée"));
@@ -314,6 +330,7 @@ void dlg_banque::ValideModifBanque()
         DataBase:: getInstance()->UpdateTable(NOM_TABLE_BANQUES,
                                               listsets,
                                               "where idBanque = " + QString::number(idBanque));
+        MAJBanques();
     }
     RemplirTableView();
     UpLabel *lbl;

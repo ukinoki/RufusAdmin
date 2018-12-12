@@ -1528,7 +1528,6 @@ void RufusAdmin::Slot_GestionBanques()
     Dlg_Banq = new dlg_banque(this);
     Dlg_Banq->exec();
     ConnectTimerInactive();
-    initListeBanques();
 }
 
 void RufusAdmin::Slot_GestLieux()
@@ -1536,6 +1535,16 @@ void RufusAdmin::Slot_GestLieux()
     DisconnectTimerInactive();
     dlg_GestionLieux *gestLieux = new dlg_GestionLieux(db, this);
     gestLieux->exec();
+    ConnectTimerInactive();
+}
+
+void RufusAdmin::Slot_GestionMotifs()
+{
+    DisconnectTimerInactive();
+    Dlg_motifs = new dlg_motifs(this);
+    Dlg_motifs->setWindowTitle(tr("Motifs de consultations"));
+    Dlg_motifs->exec();
+    delete Dlg_motifs;
     ConnectTimerInactive();
 }
 
@@ -1706,17 +1715,6 @@ void RufusAdmin::Slot_ModifMDP()
 
     gAskMDP->exec();
     ConnectTimerInactive();
-}
-
-void RufusAdmin::Slot_GestionMotifs()
-{
-    DisconnectTimerInactive();
-    Dlg_motifs = new dlg_motifs(this);
-    Dlg_motifs->setWindowTitle(tr("Motifs de consultations"));
-    Dlg_motifs->exec();
-    delete Dlg_motifs;
-    ConnectTimerInactive();
-    initListeMotifs();
 }
 
 void RufusAdmin::Slot_RestaureBase()
