@@ -17,9 +17,6 @@ along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "dlg_banque.h"
 #include "ui_dlg_banque.h"
-#include "icons.h"
-#include "utils.h"
-#include "database.h"
 
 dlg_banque::dlg_banque(QWidget *parent, QString nouvbanqueabrege) :
     UpDialog(parent),
@@ -29,6 +26,7 @@ dlg_banque::dlg_banque(QWidget *parent, QString nouvbanqueabrege) :
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
     db                      = DataBase::getInstance();
+    m_banques               = Datas::I()->banques->banques();
 
     gFermeApresValidation   = (nouvbanqueabrege != "");
     setWindowTitle(tr("Enregistrer une nouvelle banque"));
@@ -243,9 +241,10 @@ void dlg_banque::ValideModifBanque()
 
     if (gMode == Nouv)
     {
-        for (int i = 0; i<gListBanques.size(); i++)
+        for (QMap<int, Banque*>::const_iterator itbanq = m_banques->constBegin(); itbanq != m_banques->constEnd(); ++itbanq)
         {
-            if (gListBanques.at(i).toUpper() == ui->NomBanqueupLineEdit->text().toUpper())
+            Banque *bq = const_cast<Banque*>(itbanq.value());
+            if (bq->NomBanque().toUpper() == ui->NomBanqueupLineEdit->text().toUpper())
             {
                 UpMessageBox::Watch(this,tr("Cette banque est déjà enregistrée!"));
                 return;
@@ -263,7 +262,7 @@ void dlg_banque::ValideModifBanque()
                 }
         listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
                                                                       NOM_TABLE_BANQUES, ok,
-                                                                      "where idbanqueabrege = " + ui->NomAbregeupLineEdit->text());
+                                                                      "where idbanqueabrege = '" + ui->NomAbregeupLineEdit->text() + "'");
         if(listabreges.size()>0)
         {
             UpMessageBox::Watch(this,tr("Cette abréviation est déjà utilisée!"));
@@ -278,6 +277,7 @@ void dlg_banque::ValideModifBanque()
         {
             UpMessageBox::Watch(this,tr("La banque ") + nombanque + tr(" a été enregistrée"));
             accept();
+            return;
         }
     }
 

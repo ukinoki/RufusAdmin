@@ -3,16 +3,16 @@ This file is part of RufusAdmin.
 
 RufusAdmin is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License,
-or any later version.
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 RufusAdmin is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "database.h"
@@ -864,6 +864,74 @@ QList<Archive*> DataBase::loadArchiveByDate(QDate date, Compte *compte, int inte
     return archives;
 }
 
+/*
+ * Banques
+*/
+QList<Banque*> DataBase::loadBanques()
+{
+    QList<Banque*> banques;
+    QString req = "SELECT idBanque, idBanqueAbrege, NomBanque, CodeBanque FROM " NOM_TABLE_BANQUES;
+    QSqlQuery query(req, getDataBase() );
+    if( traiteErreurRequete(query, req) || !query.first())
+        return banques;
+    do
+    {
+        QJsonObject jData{};
+        jData["id"] = query.value(0).toInt();
+        jData["idbanqueabrege"] = query.value(1).toString();
+        jData["nombanque"] = query.value(2).toString();
+        jData["codebanque"] = query.value(3).toInt();
+        Banque *bq = new Banque(jData);
+        banques << bq;
+    } while( query.next() );
+    return banques;
+}
+
+/*
+ * Tiers
+*/
+QList<Tiers*> DataBase::loadTiersPayants()
+{
+    QList<Tiers*> listetiers;
+    QString req = "SELECT idtIERS, Nomtiers, AdresseTiers, Codepostaltiers, Villetiers, Telephonetiers, FaxTiers from " NOM_TABLE_TIERS;
+    QSqlQuery query(req, getDataBase() );
+    if( traiteErreurRequete(query, req) || !query.first())
+        return listetiers;
+    do
+    {
+        QJsonObject jData{};
+        jData["id"] = query.value(0).toInt();
+        jData["nomtiers"] = query.value(1).toInt();
+        jData["adressetiers"] = query.value(2).toString();
+        jData["codepostaltiers"] = query.value(3).toString();
+        jData["villetiers"] = query.value(4).toString();
+        jData["telephonetiers"] = query.value(5).toString();
+        jData["faxtiers"] = query.value(5).toString();
+        Tiers *tiers = new Tiers(jData);
+        listetiers << tiers;
+    } while( query.next() );
+
+    return listetiers;
+}
+
+QList<TypeTiers*> DataBase::loadTypesTiers()
+{
+    QList<TypeTiers*> types;
+    QString req = "SELECT Tiers FROM " NOM_TABLE_LISTETIERS;
+    QSqlQuery query(req, getDataBase() );
+    if( traiteErreurRequete(query, req) || !query.first())
+        return types;
+    do
+    {
+        QJsonObject jData{};
+        jData["typetiers"] = query.value(0).toString();
+        TypeTiers *type = new TypeTiers(jData);
+        types << type;
+    } while( query.next() );
+    return types;
+}
+
+
 /*******************************************************************************************************************************************************************
  ***** FIN COMPTABILITÊ ********************************************************************************************************************************************
 ********************************************************************************************************************************************************************/
@@ -1045,7 +1113,7 @@ QString DataBase::createActeRequest(int idActe, int idPat)
     QString requete = "SELECT act.idActe, act.idPat, act.idUser, "
                         " act.ActeDate, act.ActeMotif, act.ActeTexte, act.ActeConclusion, "
                         " act.ActeCourrierAFaire, act.ActeCotation, act.ActeMontant, act.ActeMonnaie, "
-                        " act.CreePar, "
+                        " act.CreePar, act.UserComptable, act.UserParent, "
                         " pat.PatDDN, ll2.rank, ll.idActeMin, ll.idActeMax, ll.total, "
                         " tpm.TypePaiement, tpm.Tiers "
                       " FROM " NOM_TABLE_ACTES " act "
@@ -1078,26 +1146,28 @@ QJsonObject DataBase::extractActeData(QSqlQuery query)
     data["montant"] = query.value(9).toDouble();
     data["monnaie"] = query.value(10).toString();
     data["idCreatedBy"] = query.value(11).toInt();
+    data["idUserComptable"] = query.value(12).toInt();
+    data["idUserParent"] = query.value(13).toInt();
 
-    if( query.value(12).isNull() )
+    if( query.value(14).isNull() )
         data["agePatient"] = -1;
     else
-        data["agePatient"] = QDateTime(query.value(12).toDate()).toMSecsSinceEpoch();
+        data["agePatient"] = QDateTime(query.value(14).toDate()).toMSecsSinceEpoch();
 
-    data["noActe"] = query.value(13).toInt();
-    data["idActeMin"] = query.value(14).toInt();
-    data["idActeMax"] = query.value(15).toInt();
-    data["nbActes"] = query.value(16).toInt();
+    data["noActe"] = query.value(15).toInt();
+    data["idActeMin"] = query.value(16).toInt();
+    data["idActeMax"] = query.value(17).toInt();
+    data["nbActes"] = query.value(18).toInt();
 
-    if( query.value(17).isNull() )
+    if( query.value(19).isNull() )
         data["paiementType"] = "";
     else
-        data["paiementType"] = query.value(17).toString();
+        data["paiementType"] = query.value(19).toString();
 
-    if( query.value(18).isNull() )
+    if( query.value(20).isNull() )
         data["paiementTiers"] = "";
     else
-        data["paiementTiers"] = query.value(18).toString();
+        data["paiementTiers"] = query.value(20).toString();
 
     return data;
 }

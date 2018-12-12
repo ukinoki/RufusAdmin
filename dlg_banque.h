@@ -28,6 +28,10 @@ along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "widgetbuttonframe.h"
 #include "database.h"
 #include "utils.h"
+#include "icons.h"
+#include "utils.h"
+#include "database.h"
+#include "gbl_datas.h"
 
 /* sert à gérer les noms des organismes bancaires
  * IDENTIQUE POUR RUFUS ET RUFUSADMIN*/
@@ -50,7 +54,7 @@ private:
     int                                     gMode;
     bool                                    gFermeApresValidation;
     enum gMode                              {Norm, Modif, Nouv, Suppr};
-    QStringList                             gListBanques;
+    QMap<int, Banque*>                      *m_banques;
     DataBase                                *db;
     WidgetButtonFrame                       *widgButtons;
 

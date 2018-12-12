@@ -37,6 +37,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_LIGNESPAIEMENTS                   "ComptaMedicale.lignespaiements"
 #define NOM_TABLE_REMISECHEQUES                     "ComptaMedicale.remisecheques"
 #define NOM_TABLE_RUBRIQUES2035                     "ComptaMedicale.rubriques2035"
+#define NOM_TABLE_TIERS                             "ComptaMedicale.tiers"
 #define NOM_TABLE_TYPEPAIEMENTACTES                 "ComptaMedicale.typepaiementactes"
 #define NOM_TABLE_VERROUCOMPTAACTES                 "ComptaMedicale.verrouscomptaactes"
 
@@ -51,6 +52,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_JOINTURESLIEUX                    "rufus.jointuresLieux"
 #define NOM_TABLE_LIEUXEXERCICE                     "rufus.LieuxExercice"
 #define NOM_TABLE_LISTEAPPAREILS                    "rufus.listeappareils"
+#define NOM_TABLE_LISTETIERS                        "rufus.listetiers"
 #define NOM_TABLE_MESSAGES                          "rufus.Messagerie"
 #define NOM_TABLE_MESSAGESJOINTURES                 "rufus.MessagerieJointures"
 #define NOM_TABLE_MOTIFSRDV                         "rufus.MotifsRDV"

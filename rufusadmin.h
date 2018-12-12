@@ -130,6 +130,7 @@ private:
     QStringList                 DecomposeScriptSQL(QString nomficscript);
     QString                     getDossierDocuments(QString Appareil);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
+    void                        initListeBanques();
     void                        initListeMotifs();
     void                        EffaceMessage(int pause = 1000);
     void                        NouvAppareil();
@@ -160,13 +161,13 @@ private slots:
     void                        Slot_EnregistreNouvMDPAdmin();
     void                        Slot_ExporteDocs();
     void                        Slot_GestionBanques();
+    void                        Slot_GestionMotifs();
     void                        Slot_GestLieux();
     void                        Slot_GestUser();
     void                        Slot_MasqueAppli();
     void                        Slot_MetAJourLaConnexion();
     void                        Slot_ModifMDP();
     void                        Slot_ImportDocsExternes();
-    void                        Slot_ParamMotifs();
     void                        Slot_RestaureBase();
     void                        Slot_SupprimerDocs();
     void                        Slot_TrayIconMenu();

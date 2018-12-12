@@ -30,6 +30,7 @@ Datas::Datas()
     userConnected   = Q_NULLPTR;
     users           = new Users();
     motifs          = new Motifs();
+    banques         = new Banques();
 }
 
 

@@ -204,9 +204,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(ui->FermepushButton,                SIGNAL(clicked(bool)),              this,   SLOT(Slot_MasqueAppli()));
     connect(ui->GestionBanquespushButton,       SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestionBanques()));
     connect(ui->GestLieuxpushButton,            SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestLieux()));
+    connect(ui->GestionMotifspushButton,        SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestionMotifs()));
     connect(ui->GestUserpushButton,             SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestUser()));
     connect(ui->InitMDPAdminpushButton,         SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifMDP()));;
-    connect(ui->ParamMotifspushButton,          SIGNAL(clicked(bool)),              this,   SLOT(Slot_ParamMotifs()));
     connect(ui->RestaurBaseupPushButton,        SIGNAL(clicked(bool)),              this,   SLOT(Slot_RestaureBase()));
     connect(ui->StockageupPushButton,           SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifDirImagerie()));
     connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(gSocketStatut, 20000);});
@@ -347,6 +347,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     tim             .setInterval(5000);
     Slot_ImportDocsExternes();
 
+    initListeBanques();
     initListeMotifs();
 
     installEventFilter(this);
@@ -1527,6 +1528,7 @@ void RufusAdmin::Slot_GestionBanques()
     Dlg_Banq = new dlg_banque(this);
     Dlg_Banq->exec();
     ConnectTimerInactive();
+    initListeBanques();
 }
 
 void RufusAdmin::Slot_GestLieux()
@@ -1706,7 +1708,7 @@ void RufusAdmin::Slot_ModifMDP()
     ConnectTimerInactive();
 }
 
-void RufusAdmin::Slot_ParamMotifs()
+void RufusAdmin::Slot_GestionMotifs()
 {
     DisconnectTimerInactive();
     Dlg_motifs = new dlg_motifs(this);
@@ -1714,6 +1716,7 @@ void RufusAdmin::Slot_ParamMotifs()
     Dlg_motifs->exec();
     delete Dlg_motifs;
     ConnectTimerInactive();
+    initListeMotifs();
 }
 
 void RufusAdmin::Slot_RestaureBase()
@@ -2974,6 +2977,22 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     gflagSalDat = a;
 }
 
+
+/*!
+ * \brief RufusAdmin::initListeBanques
+ * Charge l'ensemble des banques
+ * et les ajoute à la classe Banques
+ */
+void RufusAdmin::initListeBanques()
+{
+    QList<Banque*> listbanques = DataBase::getInstance()->loadBanques();
+    QList<Banque*>::const_iterator itbq;
+    for( itbq = listbanques.constBegin(); itbq != listbanques.constEnd(); ++itbq )
+    {
+        Banque *bq = const_cast<Banque*>(*itbq);
+        Datas::I()->banques->addBanque( bq );
+    }
+}
 /*!
  * \brief RufusAdmin::initListeMotifs
  * Charge l'ensemble des motifs d'actes

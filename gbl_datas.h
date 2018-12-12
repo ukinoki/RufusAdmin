@@ -21,6 +21,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QObject>
 #include <cls_users.h>
 #include "cls_motif.h"
+#include "cls_banque.h"
 
 class Datas : public QObject
 {
@@ -35,6 +36,7 @@ public:
     User *userConnected;
     Motifs *motifs;       //!< tous les motifs d'actes
     Users *users;         //!< Les users
+    Banques *banques;     //!< toutes les banques
 };
 
 #endif // GBL_DATAS_H

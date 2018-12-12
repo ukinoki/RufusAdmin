@@ -3,16 +3,16 @@ This file is part of RufusAdmin.
 
 RufusAdmin is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License,
-or any later version.
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 RufusAdmin is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef DataBase_H
@@ -40,9 +40,11 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_patient.h"
 #include "cls_user.h"
 #include "cls_correspondant.h"
+#include "cls_banque.h"
 #include "cls_depense.h"
 #include "cls_villes.h"
 #include "cls_docexterne.h"
+#include "cls_tiers.h"
 #include "cls_motif.h"
 #include "log.h"
 #include "utils.h"
@@ -134,19 +136,22 @@ public:
     QList<Depense*> VerifExistDepense(QHash<int, Depense*> m_listDepenses, QDate date, QString objet, double montant, int iduser, enum comparateur = Egal);
     int             getMaxLigneBanque();
     QList<Archive*> loadArchiveByDate(QDate date, Compte *compte, int intervalle); //! charge les archives contenues entre 6 mois avant date et date pour le compte donné
+    QList<Banque*>  loadBanques();
+    QList<Tiers*>   loadTiersPayants();
+    QList<TypeTiers*>  loadTypesTiers();
 
     /*
      * Motifs
     */
-    QList<Motif*>   loadMotifs();
+    QList<Motif*> loadMotifs();
 
     /*
      * Sites
     */
-    QList<Site*>    loadSitesByUser(int idUser);
-    QList<Site*>    loadSitesAll();
+    QList<Site*> loadSitesByUser(int idUser);
+    QList<Site*> loadSitesAll();
 private:
-    QList<Site*>    loadSites(QString req);
+    QList<Site*> loadSites(QString req);
 
 public:
     /*

@@ -917,7 +917,7 @@ de passe administrateur</string>
             </widget>
            </item>
            <item>
-            <widget class="UpPushButton" name="ParamMotifspushButton">
+            <widget class="UpPushButton" name="GestionMotifspushButton">
              <property name="minimumSize">
               <size>
                <width>0</width>
