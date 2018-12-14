@@ -38,8 +38,7 @@ class dlg_gestioncomptes : public UpDialog
     Q_OBJECT
 
 public:
-    explicit dlg_gestioncomptes(User *DataUser,
-                                bool societe, bool AfficheLeSolde = true, QWidget *parent = Q_NULLPTR);
+    explicit dlg_gestioncomptes(User *DataUser, QWidget *parent = Q_NULLPTR);
     ~dlg_gestioncomptes();
 
 private:
@@ -49,9 +48,6 @@ private:
     Comptes                 *comptesusr;
     Compte                  *CompteEnCours;
     dlg_banque              *Dlg_Banq;
-    bool                    createurducompte;
-    bool                    gAfficheLeSolde;
-    bool                    gSociete;
     bool                    gVisible;
     int                     gidUser, gMode;
     int                     gidCompteParDefaut;

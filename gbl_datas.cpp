@@ -31,6 +31,7 @@ Datas::Datas()
     users           = new Users();
     motifs          = new Motifs();
     banques         = new Banques();
+    comptes         = new Comptes();
 }
 
 

@@ -1592,7 +1592,6 @@ void RufusAdmin::Slot_ImportDocsExternes()
 
 void RufusAdmin::Slot_MasqueAppli()
 {
-    qDebug() << "masque";
     setEnabled(false);
     foreach (QDialog* d , findChildren<QDialog*>())
         d->hide();

@@ -94,25 +94,6 @@ border-radius: 5px;
    <property name="frameShadow">
     <enum>QFrame::Raised</enum>
    </property>
-   <widget class="QLabel" name="Soldelabel">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>13</x>
-      <y>115</y>
-      <width>151</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">border: 0px;</string>
-    </property>
-    <property name="text">
-     <string>Solde sur dernier relevé</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="NomAbregelabel">
     <property name="enabled">
      <bool>true</bool>
@@ -149,25 +130,6 @@ border-radius: 5px;
     </property>
     <property name="text">
      <string>id Compte</string>
-    </property>
-   </widget>
-   <widget class="UpLineEdit" name="SoldeuplineEdit">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>253</x>
-      <y>111</y>
-      <width>81</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="maxLength">
-     <number>15</number>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="IBANlabel">
@@ -473,19 +435,19 @@ compte factice</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>UpSmallButton</class>
-   <extends>QPushButton</extends>
-   <header>upsmallbutton.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpLineEdit</class>
    <extends>QLineEdit</extends>
    <header>uplineedit.h</header>
   </customwidget>
   <customwidget>
+   <class>UpSmallButton</class>
+   <extends>QPushButton</extends>
+   <header>upsmallbutton.h</header>
+  </customwidget>
+  <customwidget>
    <class>UpTableWidget</class>
    <extends>QTableWidget</extends>
-   <header location="global">uptablewidget.h</header>
+   <header>uptablewidget.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -494,7 +456,6 @@ compte factice</string>
   <tabstop>IntituleCompteuplineEdit</tabstop>
   <tabstop>IBANuplineEdit</tabstop>
   <tabstop>NomCompteAbregeuplineEdit</tabstop>
-  <tabstop>SoldeuplineEdit</tabstop>
   <tabstop>idCompteupLineEdit</tabstop>
   <tabstop>OKModifupSmallButton</tabstop>
   <tabstop>AnnulModifupSmallButton</tabstop>

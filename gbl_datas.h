@@ -19,9 +19,10 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define GBL_DATAS_H
 
 #include <QObject>
-#include <cls_users.h>
-#include "cls_motif.h"
 #include "cls_banque.h"
+#include "cls_compte.h"
+#include "cls_motif.h"
+#include <cls_users.h>
 
 class Datas : public QObject
 {
@@ -37,6 +38,7 @@ public:
     Motifs *motifs;       //!< tous les motifs d'actes
     Users *users;         //!< Les users
     Banques *banques;     //!< toutes les banques
+    Comptes *comptes;     //!< tous les comptes d'un utilisateur
 };
 
 #endif // GBL_DATAS_H
