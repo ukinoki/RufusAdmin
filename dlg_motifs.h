@@ -30,6 +30,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "widgetbuttonframe.h"
 #include "database.h"
 #include "gbl_datas.h"
+#include "utils.h"
 #include <QSqlQuery>
 
 namespace Ui {

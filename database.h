@@ -1,20 +1,3 @@
-/* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
-
-RufusAdmin is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-RufusAdmin is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #ifndef DataBase_H
 #define DataBase_H
 
@@ -37,15 +20,17 @@ along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
 
 #include "cls_acte.h"
 #include "cls_archivebanque.h"
-#include "cls_patient.h"
-#include "cls_user.h"
-#include "cls_correspondant.h"
 #include "cls_banque.h"
+#include "cls_correspondant.h"
+#include "cls_cotation.h"
 #include "cls_depense.h"
-#include "cls_villes.h"
 #include "cls_docexterne.h"
-#include "cls_tiers.h"
 #include "cls_motif.h"
+#include "cls_patient.h"
+#include "cls_tiers.h"
+#include "cls_user.h"
+#include "cls_villes.h"
+
 #include "log.h"
 #include "utils.h"
 
@@ -107,9 +92,9 @@ public:
      * Users
     */
     QJsonObject login(QString login, QString password);
-    QJsonObject loadUserDatabyLogin(QString login);
     QJsonObject loadUserData(int idUser);
     QList<User*> loadUsersAll();
+    QJsonObject loadUserDatabyLogin(QString login);
 
     /*
      * Correspondants
@@ -139,6 +124,13 @@ public:
     QList<Banque*>  loadBanques();
     QList<Tiers*>   loadTiersPayants();
     QList<TypeTiers*>  loadTypesTiers();
+
+    /*
+     * Cotations
+    */
+    QList<Cotation*> loadCotations();
+    QStringList loadTypesCotations();
+    QList<Cotation*> loadCotationsByUser(int iduser);
 
     /*
      * Motifs

@@ -593,8 +593,8 @@ void dlg_motifs::Slot_EnregistreMotifs()
             if (UpchkFromTableW(ui->MotifsupTableWidget,j,0)->isChecked())
                 a = "1";
         req += a + ",";
-        req += "'" + ui->MotifsupTableWidget->item(j,1)->text() +"',";
-        req += "'" + ui->MotifsupTableWidget->item(j,2)->text() +"',";
+        req += "'" + Utils::correctquoteSQL(ui->MotifsupTableWidget->item(j,1)->text()) +"',";
+        req += "'" + Utils::correctquoteSQL(ui->MotifsupTableWidget->item(j,2)->text()) +"',";
         req += "'" + ui->MotifsupTableWidget->item(j,4)->text() +"',";
         a = "NULL";
         if (UpchkFromTableW(ui->MotifsupTableWidget,j,6)!=Q_NULLPTR)

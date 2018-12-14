@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("12-12-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("14-12-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1533,7 +1533,7 @@ void RufusAdmin::Slot_GestionBanques()
 void RufusAdmin::Slot_GestLieux()
 {
     DisconnectTimerInactive();
-    dlg_GestionLieux *gestLieux = new dlg_GestionLieux(db, this);
+    dlg_GestionLieux *gestLieux = new dlg_GestionLieux(this);
     gestLieux->exec();
     ConnectTimerInactive();
 }
@@ -1556,7 +1556,7 @@ void RufusAdmin::Slot_GestUser()
     if (listusrquery.size()>0)
         listusrquery.first();
     int iduser = listusrquery.value(0).toInt();
-    Dlg_GestUsr = new dlg_gestionusers(iduser, ui->EmplacementServeurupComboBox->currentData().toInt(), db, true, this);
+    Dlg_GestUsr = new dlg_gestionusers(iduser, ui->EmplacementServeurupComboBox->currentData().toInt(), true, this);
     Dlg_GestUsr->setWindowTitle(tr("Gestion des utilisateurs"));
     Dlg_GestUsr->setConfig(dlg_gestionusers::ADMIN);
     if(Dlg_GestUsr->exec()>0)

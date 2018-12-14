@@ -19,14 +19,14 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "dlg_gestionusers.h"
 #include "ui_dlg_gestionusers.h"
 
-dlg_gestionusers::dlg_gestionusers(int idUser, int idlieu, QSqlDatabase gdb, bool mdpverified, QWidget *parent) :
+dlg_gestionusers::dlg_gestionusers(int idUser, int idlieu, bool mdpverified, QWidget *parent) :
     UpDialog(QDir::homePath() + NOMFIC_INI, "PositionsFiches/PositionGestionUsers", parent),
     ui(new Ui::dlg_gestionusers)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
-    db                      = gdb;
+    db                      = DataBase::getInstance()->getDataBase();
     gMode                   = Modifier;
     MDPverified             = mdpverified;
 
@@ -415,13 +415,13 @@ void dlg_gestionusers::Slot_EnregistreNouvMDP()
 void dlg_gestionusers::Slot_EnregistreUser()
 {
     if (!VerifFiche()) return;
-    QString titre = (ui->OPHupRadioButton->isChecked()?       "'" + CorrigeApostrophe(ui->TitreupcomboBox->currentText()) + "'" : "null");
+    QString titre = (ui->OPHupRadioButton->isChecked()?       "'" + Utils::correctquoteSQL(ui->TitreupcomboBox->currentText()) + "'" : "null");
     QString actif = (ui->InactivUsercheckBox->isChecked()?  "1" : "null");
     QString req = "update "         NOM_TABLE_UTILISATEURS
-            " set userNom = '"      + CorrigeApostrophe(ui->NomuplineEdit->text())        + "',\n"
-            " userPrenom = "        + (ui->SocieteComptableupRadioButton->isChecked()? "null" : "'" + CorrigeApostrophe(ui->PrenomuplineEdit->text()) + "'") + ",\n"
-            " UserPortable = '"     + CorrigeApostrophe(ui->PortableuplineEdit->text())   + "',\n"
-            " UserMail = '"         + CorrigeApostrophe(ui->MailuplineEdit->text())       + "',\n"
+            " set userNom = '"      + Utils::correctquoteSQL(ui->NomuplineEdit->text())        + "',\n"
+            " userPrenom = "        + (ui->SocieteComptableupRadioButton->isChecked()? "null" : "'" + Utils::correctquoteSQL(ui->PrenomuplineEdit->text()) + "'") + ",\n"
+            " UserPortable = '"     + Utils::correctquoteSQL(ui->PortableuplineEdit->text())   + "',\n"
+            " UserMail = '"         + Utils::correctquoteSQL(ui->MailuplineEdit->text())       + "',\n"
             " UserPoliceEcran = '" POLICEPARDEFAUT "',\n"
             " UserPoliceAttribut = 'Regular',\n"
             " UserTitre = "         + titre + ",\n"
@@ -433,8 +433,8 @@ void dlg_gestionusers::Slot_EnregistreUser()
                " UserNoSpecialite = 15,\n"
                " Soignant = 1,\n"
                " Medecin = 1,\n"
-               " UserNumCO = '" + CorrigeApostrophe(ui->NumCOupLineEdit->text()) +"',\n "
-               " UserNumPS = '" + CorrigeApostrophe(ui->RPPSupLineEdit->text()) +"',\n "
+               " UserNumCO = '" + Utils::correctquoteSQL(ui->NumCOupLineEdit->text()) +"',\n "
+               " UserNumPS = '" + Utils::correctquoteSQL(ui->RPPSupLineEdit->text()) +"',\n "
                " ResponsableActes = ";
         if (ui->ResponsableupRadioButton->isChecked())
             req += "1,\n";
@@ -497,7 +497,7 @@ void dlg_gestionusers::Slot_EnregistreUser()
                " Soignant = 2,\n"
                " Medecin = null,\n"
                " UserNumCO = null,\n "
-               " UserNumPS = '" + CorrigeApostrophe(ui->RPPSupLineEdit->text()) +"',\n"
+               " UserNumPS = '" + Utils::correctquoteSQL(ui->RPPSupLineEdit->text()) +"',\n"
                " ResponsableActes = ";
         if (ui->ResponsableupRadioButton->isChecked())
             req += "1,\n";
@@ -554,13 +554,13 @@ void dlg_gestionusers::Slot_EnregistreUser()
     }
     else if (ui->AutreSoignantupRadioButton->isChecked())
     {
-        req += " UserFonction = '" + ui->AutreSoignantupLineEdit->text() + "',\n"
-               " UserSpecialite = '" + ui->AutreSoignantupLineEdit->text() + "',\n"
+        req += " UserFonction = '" + Utils::correctquoteSQL(ui->AutreSoignantupLineEdit->text()) + "',\n"
+               " UserSpecialite = '" + Utils::correctquoteSQL(ui->AutreSoignantupLineEdit->text()) + "',\n"
                " UserNoSpecialite = null,\n"
                " Soignant = 3,\n"
                " Medecin = " + (ui->MedecincheckBox->isChecked()? "1" : "null") + ",\n"
-               " UserNumCO = " + (ui->MedecincheckBox->isChecked()? ((CorrigeApostrophe(ui->NumCOupLineEdit->text())=="")? "null" : "'" + CorrigeApostrophe(ui->NumCOupLineEdit->text()) + "'") : "null") + ",\n "
-               " UserNumPS = " + ((CorrigeApostrophe(ui->RPPSupLineEdit->text())=="")? "null" : "'" + CorrigeApostrophe(ui->RPPSupLineEdit->text()) + "'") + ",\n"
+               " UserNumCO = " + (ui->MedecincheckBox->isChecked()? ((Utils::correctquoteSQL(ui->NumCOupLineEdit->text())=="")? "null" : "'" + Utils::correctquoteSQL(ui->NumCOupLineEdit->text()) + "'") : "null") + ",\n "
+               " UserNumPS = " + ((Utils::correctquoteSQL(ui->RPPSupLineEdit->text())=="")? "null" : "'" + Utils::correctquoteSQL(ui->RPPSupLineEdit->text()) + "'") + ",\n"
                " ResponsableActes = ";
         if (ui->ResponsableupRadioButton->isChecked())
             req += "1,\n";
@@ -794,7 +794,7 @@ void dlg_gestionusers::Slot_EnregistreNouvUser()
     }
     gAsk->accept();
     gMode                       = Creer;
-    QString req = "insert into " NOM_TABLE_UTILISATEURS " (UserLogin, UserMDP) VALUES ('" + login + "', '" + MDP + "')";
+    QString req = "insert into " NOM_TABLE_UTILISATEURS " (UserLogin, UserMDP) VALUES ('" + Utils::correctquoteSQL(login) + "', '" + Utils::correctquoteSQL(MDP) + "')";
     QSqlQuery(req,db);
     req = "select idUser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" + login + "' and UserMDP = '" + MDP + "'";
     QSqlQuery idquery(req,db);
@@ -901,7 +901,7 @@ void dlg_gestionusers::Slot_GestLieux()
     MDPverified = Utils::VerifMDP(DataBase::getInstance()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), MDPverified );
     if (!MDPverified)
             return;
-    dlg_GestionLieux *gestLieux = new dlg_GestionLieux(db);
+    dlg_GestionLieux *gestLieux = new dlg_GestionLieux();
     gestLieux->exec();
     ReconstruitListeLieuxExercice();
     delete gestLieux;
@@ -1418,11 +1418,6 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     }
     widgButtons->moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(QString::number(idUser),Qt::MatchExactly).at(0)->foreground() != gcolor);
     return true;
-}
-
-QString dlg_gestionusers::CorrigeApostrophe(QString RechAp)
-{
-    return RechAp.replace("'","\\'");
 }
 
 void   dlg_gestionusers::DefinitLesVariables()

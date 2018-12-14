@@ -46,6 +46,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_ACTES                             "rufus.Actes"
 #define NOM_TABLE_APPAREILSCONNECTESCENTRE          "rufus.appareilsconnectescentre"
 #define NOM_TABLE_CORRESPONDANTS                    "rufus.correspondants"
+#define NOM_TABLE_CCAM                              "rufus.ccam"
 #define NOM_TABLE_COTATIONS                         "rufus.cotations"
 #define NOM_TABLE_FLAGS                             "rufus.flags"
 #define NOM_TABLE_IMPRESSIONS                       "rufus.Impressions"

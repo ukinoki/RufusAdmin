@@ -1,20 +1,3 @@
-/* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
-
-RufusAdmin is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-RufusAdmin is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #include "database.h"
 
 #include <QSqlDatabase>
@@ -217,7 +200,7 @@ bool DataBase::UpdateTable(QString nomtable,
 {
     QString req = "update " + nomtable + " set";
     for (QHash<QString, QString>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
-        req += " " + itset.key() + " = " + (itset.value().toLower()=="null"? "null," : "'" + Utils::CorrigeApostrophe(itset.value()) + "',");
+        req += " " + itset.key() + " = " + (itset.value().toLower()=="null"? "null," : "'" + Utils::correctquoteSQL(itset.value()) + "',");
     req = req.left(req.size()-1); //retire la virgule de la fin
     req += " " + where;
     return StandardSQL(req, errormsg);
@@ -233,7 +216,7 @@ bool DataBase::InsertIntoTable(QString nomtable,
     for (QHash<QString, QString>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
     {
         champs  += itset.key() + ",";
-        valeurs += (itset.value().toLower()=="null"? "null," : "'" + Utils::CorrigeApostrophe(itset.value()) + "',");
+        valeurs += (itset.value().toLower()=="null"? "null," : "'" + Utils::correctquoteSQL(itset.value()) + "',");
     }
     champs = champs.left(champs.size()-1) + ") values (";
     valeurs = valeurs.left(valeurs.size()-1) + ")";
@@ -361,21 +344,6 @@ QJsonObject DataBase::login(QString login, QString password)
     return jrep;
 }
 
-QJsonObject DataBase::loadUserDatabyLogin(QString login)
-{
-    QJsonObject userData{};
-
-    QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" + login + "'";
-    QSqlQuery  query(req, getDataBase());
-    if( traiteErreurRequete(query, req, tr("Impossible de retrouver les données de l'utilisateur")) )
-        return userData;
-
-    if( !query.first() )
-        return userData;
-    return loadUserData(query.value(0).toInt());
-
-}
-
 QJsonObject DataBase::loadUserData(int idUser)
 {
     QJsonObject userData{};
@@ -453,6 +421,7 @@ QJsonObject DataBase::loadUserData(int idUser)
     query.finish();
     return userData;
 }
+
 QList<User*> DataBase::loadUsersAll()
 {
     QList<User*> users;
@@ -484,6 +453,20 @@ QList<User*> DataBase::loadUsersAll()
     } while( query.next() );
 
     return users;
+}
+
+QJsonObject DataBase::loadUserDatabyLogin(QString login)
+{
+    QJsonObject userData{};
+
+    QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" + login + "'";
+    QSqlQuery  query(req, getDataBase());
+    if( traiteErreurRequete(query, req, tr("Impossible de retrouver les données de l'utilisateur")) )
+        return userData;
+
+    if( !query.first() )
+        return userData;
+    return loadUserData(query.value(0).toInt());
 }
 
 /*
@@ -778,7 +761,7 @@ void DataBase::loadDepenseArchivee(Depense *dep)
     {
         archivee = (QSqlQuery("select idligne from " NOM_TABLE_ARCHIVESBANQUE
                                 " where LigneDate = '" + dep->date().toString("yyyy-MM-dd")
-                                + "' and LigneLibelle = '" + Utils::CorrigeApostrophe(dep->objet())
+                                + "' and LigneLibelle = '" + Utils::correctquoteSQL(dep->objet())
                                 + "' and LigneMontant = " + QString::number(dep->montant()),
                       getDataBase())
                       .size() > 0);
@@ -809,7 +792,7 @@ QList<Depense*> DataBase::VerifExistDepense(QHash<int, Depense *> m_listDepenses
         op = "<";
     QList<Depense*> listdepenses;
     QString req = "select idDep from " NOM_TABLE_DEPENSES " where DateDep " + op + "'" + date.toString("yyyy-MM-dd") +
-            "'and Objet = '" + Utils::CorrigeApostrophe(objet) +
+            "'and Objet = '" + Utils::correctquoteSQL(objet) +
             "'and Montant = " + QString::number(montant) +
             " and idUser = " + QString::number(iduser) +
             " order by DateDep";
@@ -935,6 +918,113 @@ QList<TypeTiers*> DataBase::loadTypesTiers()
 /*******************************************************************************************************************************************************************
  ***** FIN COMPTABILITÊ ********************************************************************************************************************************************
 ********************************************************************************************************************************************************************/
+
+/*
+ * Cotations
+*/
+QList<Cotation*> DataBase::loadCotations()
+{
+    QString  req = " select idcotation, Typeacte, MontantOPTAM, MontantNonOPTAM, MontantPratique, CCAM, idUser, Frequence from " NOM_TABLE_COTATIONS;
+    QList<Cotation*> cotations;
+    QSqlQuery query(req, getDataBase() );
+    if( traiteErreurRequete(query, req) || !query.first())
+        return cotations;
+    do
+    {
+        QJsonObject jcotation{};
+        jcotation["id"] = query.value(0).toInt();
+        jcotation["typeacte"] = query.value(1).toString();
+        jcotation["montantoptam"] = query.value(2).toDouble();
+        jcotation["montantnonoptam"] = query.value(3).toDouble();
+        jcotation["montantpratique"] = query.value(4).toDouble();
+        jcotation["ccam"] = (query.value(5).toInt()==1);
+        jcotation["iduser"] = query.value(6).toInt();
+        jcotation["frequence"] = query.value(7).toInt();
+        jcotation["descriptif"] = "";
+        Cotation *cotation = new Cotation(jcotation);
+        cotations << cotation;
+    } while( query.next() );
+    return cotations;
+}
+
+/*
+ * Cotations
+*/
+QList<Cotation*> DataBase::loadCotationsByUser(int iduser)
+{
+    int k = 0;
+
+    QList<Cotation*> cotations;
+    QString  req = "SELECT idcotation, Typeacte, MontantOPTAM, MontantNonOPTAM, MontantPratique, CCAM, Frequence, nom"
+          " FROM " NOM_TABLE_COTATIONS " cot left join " NOM_TABLE_CCAM " cc on cot.typeacte= cc.codeccam"
+          " where idUser = " + QString::number(iduser) + " and typeacte in (select codeccam from " NOM_TABLE_CCAM ")"
+          " order by typeacte";
+    QSqlQuery query(req, getDataBase() );
+    if( traiteErreurRequete(query, req))
+        return cotations;
+    if (query.first())
+    do
+    {
+        ++k;
+        QJsonObject jcotation{};
+        jcotation["id"] = k;
+        jcotation["idcotation"] = query.value(0).toInt();
+        jcotation["typeacte"] = query.value(1).toString();
+        jcotation["montantoptam"] = query.value(2).toDouble();
+        jcotation["montantnonoptam"] = query.value(3).toDouble();
+        jcotation["montantpratique"] = query.value(4).toDouble();
+        jcotation["ccam"] = (query.value(5).toInt()==1);
+        jcotation["iduser"] = iduser;
+        jcotation["frequence"] = query.value(6).toInt();
+        jcotation["descriptif"] = query.value(7).toString();
+        Cotation *cotation = new Cotation(jcotation);
+        cotations << cotation;
+    } while( query.next() );
+    req = " SELECT idcotation, Typeacte, MontantOPTAM, MontantNonOPTAM, MontantPratique, CCAM, Frequence, null as nom"
+          " FROM "  NOM_TABLE_COTATIONS
+          " where idUser = " + QString::number(iduser) +
+          " and typeacte not in (select codeccam from  " NOM_TABLE_CCAM ")"
+          " order by typeacte";
+    QSqlQuery query1(req, getDataBase() );
+    if( traiteErreurRequete(query1, req) || !query1.first())
+        return cotations;
+    do
+    {
+        k++;
+        QJsonObject jcotation{};
+        jcotation["id"] = k;
+        jcotation["idcotation"] = query1.value(0).toInt();
+        jcotation["typeacte"] = query1.value(1).toString();
+        jcotation["montantoptam"] = query1.value(2).toDouble();
+        jcotation["montantnonoptam"] = query1.value(3).toDouble();
+        jcotation["montantpratique"] = query1.value(4).toDouble();
+        jcotation["ccam"] = (query1.value(5).toInt()==1);
+        jcotation["iduser"] = iduser;
+        jcotation["frequence"] = query1.value(6).toInt();
+        jcotation["descriptif"] = query1.value(7).toString();
+        Cotation *cotation = new Cotation(jcotation);
+        cotations << cotation;
+    } while( query1.next() );
+
+    return cotations;
+}
+
+QStringList DataBase::loadTypesCotations()
+{
+    QStringList listcotations;
+    QString req = "select typeacte as code from " NOM_TABLE_COTATIONS
+                  " union "
+                  " select codeccam as code from " NOM_TABLE_CCAM
+                  " order by code asc";
+    QSqlQuery query(req, getDataBase());
+    if( traiteErreurRequete(query, req) || !query.first())
+        return listcotations;
+    do
+    {
+        listcotations << query.value(0).toString();
+    } while (query.next());
+    return listcotations;
+}
 
 /*
  * Motifs

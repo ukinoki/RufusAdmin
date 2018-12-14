@@ -1,23 +1,7 @@
-/* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
-
-RufusAdmin is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License,
-or any later version.
-
-RufusAdmin is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <QDir>
 #include <QRegExp>
 #include <QHostAddress>
 #include <QNetworkInterface>
@@ -56,13 +40,14 @@ public:
 
     static QString trim(QString text, bool end=true);
     static QString capitilize(QString text);
+    static QString trimcapitilize(QString, bool end = true, bool maj = true, bool lower = true);
+    static QMap<QString, double> dir_size(const QString DirPath);
     static qint32  ArrayToInt(QByteArray source);
     static QByteArray IntToArray(int source);
     static QString getIpAdress();
     static QString getMACAdress();
-    static QString CorrigeApostrophe(QString RechAp);
+    static QString correctquoteSQL(QString text);
     static bool VerifMDP(QString MDP, QString Msg, bool mdpverified=false);
 };
-
 
 #endif // UTILS_H

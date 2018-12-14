@@ -33,7 +33,6 @@ ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool 
 }
 
 void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     // INCORPORATION DES FICHIERS IMAGE DANS LA BASE  =====
-
 {
     //qDebug() << "OK import " + QString::number(++a);
     if (EnCours)

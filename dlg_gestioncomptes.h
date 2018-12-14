@@ -59,7 +59,6 @@ private:
     QString                 gUserLogin;
     QTimer                  *gTimer;
     void                    closeEvent(QCloseEvent *);
-    QString                 CorrigeApostrophe(QString RechAp);
     void                    MetAJourListeBanques();
     void                    RemplirTableView(int idcompte = -1);
     bool                    VerifCompte();

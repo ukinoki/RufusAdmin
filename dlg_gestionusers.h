@@ -25,6 +25,7 @@ along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtSql>
 #include <QSqlDatabase>
 
+#include "database.h"
 #include "dlg_gestioncomptes.h"
 #include "dlg_gestionlieux.h"
 #include "uplineedit.h"
@@ -48,7 +49,7 @@ class dlg_gestionusers : public UpDialog
     Q_OBJECT
 
 public:
-    explicit dlg_gestionusers(int idUser, int idlieu, QSqlDatabase db, bool mdpverified=true, QWidget *parent = Q_NULLPTR);
+    explicit dlg_gestionusers(int idUser, int idlieu, bool mdpverified=true, QWidget *parent = Q_NULLPTR);
     /*
      * la variable mdpverified est utilisée pour l'appel de la fiche dlg_gestionlieux
      * Cette fiche est parfois appelée alors que le mdp administrateur a déjà eté vérifié, parfois non
@@ -103,7 +104,6 @@ private:
     void                    CalcListitemsCompteActescomboBox(int iduser);
     void                    CalcListitemsCompteComptacomboBox(int iduser, bool soccomptable);
     void                    CalcListitemsEmployeurcomboBox(int iduser);
-    QString                 CorrigeApostrophe(QString RechAp);
     void                    DefinitLesVariables();
     QString                 Edit(QString txt, QString titre = "");
     bool                    ExisteEmployeur(int iduser);
