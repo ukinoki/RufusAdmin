@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("14-12-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("16-12-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -146,7 +146,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gMacAdress                  = Utils::getMACAdress();
     TCPServer                   = TcpServer::getInstance();
     TCPServer                   ->setId(idAdminDocs);
-    connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeStatut);
+    connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
     TCPServer                   ->start();
     QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
     gflagCorrespdts             = GetflagCorrespdts();
@@ -2857,7 +2857,7 @@ void RufusAdmin::FermeTCP()
         QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db);
 }
 
-void RufusAdmin::ResumeStatut()
+void RufusAdmin::ResumeTCPSocketStatut()
 {
     QString statut;
         QString list = TCPServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);

@@ -78,9 +78,15 @@ void DataBase::getInformations()
            "\n" + tr("password    ") + "\n ->\t" + m_db.password() +
            "\n" + tr("port        ") + "\n ->\t" + QString::number(m_db.port()));
 }
+
 User* DataBase::getUserConnected() const
 {
     return m_userConnected;
+}
+
+void DataBase::setUserConnected(User *usr)
+{
+    m_userConnected = usr;
 }
 
 bool DataBase::traiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage)

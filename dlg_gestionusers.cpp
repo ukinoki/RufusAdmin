@@ -655,8 +655,8 @@ void dlg_gestionusers::Slot_EnregistreUser()
                " Medecin = null,\n"
                " UserAGA = null,\n"
                " ResponsableActes = null,\n"
-               " IdCompteParDefaut = null,\n"
-               " idCompteEncaissHonoraires = " + ui->CompteComptacomboBox->currentData().toString() + ",\n"
+               " IdCompteParDefaut = " + ui->CompteComptacomboBox->currentData().toString() + ",\n"
+               " idCompteEncaissHonoraires = null,\n"
                " UserCCAM = null,\n"
                " UserEnregHonoraires = null,\n"
                " UserEmployeur = null,\n"
@@ -702,7 +702,7 @@ void dlg_gestionusers::Slot_EnregistreUser()
         done(ui->idUseruplineEdit->text().toInt());
         return;
     }
-    else if (gMode == Creer && !ui->SocieteComptableupRadioButton->isChecked())
+    else if (gMode == Creer)
     {
         //2. On crée 3 comptes avec ce login et ce MDP: local en localshost, réseau en 192.168.1.% et distant en %-SSL et login avec SSL à la fin
         QString AdressIP, MasqueReseauLocal;
@@ -1095,6 +1095,8 @@ void dlg_gestionusers::SupprUser()
         QString req = "delete from " NOM_TABLE_COTATIONS " where idUser = " + QString::number(idUser);
         QSqlQuery (req,db);
         req         = "delete from " NOM_TABLE_UTILISATEURS " where idUser = " + QString::number(idUser);
+        QSqlQuery (req,db);
+        req         = "delete from " NOM_TABLE_JOINTURESLIEUX " where iduser not in (select iduser from " NOM_TABLE_UTILISATEURS ")";
         QSqlQuery (req,db);
         /*req = "delete from " NOM_TABLE_COMPTES  " where iduser = " + QString::number(idUser) + " and idcompte = " + ui->idCompteupLineEdit->text();
         QSqlQuery (req,db);

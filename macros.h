@@ -18,7 +18,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                48                  // version de la base de données
+#define VERSION_BASE                                49                  // version de la base de données
 
 // Les bases
 #define NOM_BASE_CONSULTS                           "rufus"
@@ -105,7 +105,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_ALLOWED_PACKET                          "16"
 
 // Durée mise en veille
-#define MISE_EN_VEILLE                              "180000"
+#define MISE_EN_VEILLE                              "120000"
 
 // le son d'alarme
 #define NOM_ALARME                                  "://goutte.wav"

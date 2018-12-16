@@ -71,6 +71,7 @@ public:
     QSqlDatabase getDataBase() const;
     void getInformations();
     User* getUserConnected() const;
+    void setUserConnected(User *usr);
 
     bool traiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage = "");
 

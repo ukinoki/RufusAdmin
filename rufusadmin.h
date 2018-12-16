@@ -231,7 +231,7 @@ private:
     int                 GetflagSalDat();
     void                FermeTCP();
     void                KillSocket(QStringList Data);
-    void                ResumeStatut();
+    void                ResumeTCPSocketStatut();
 
     void                VerifModifsSalledAttenteCorrespondantsetNouveauxMessages();
     void                MAJTcpMsgEtFlagSalDat();
