@@ -70,6 +70,8 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
             for (int k=0; k<stop; k++)
             {
                 QString nomdoc  = listfich.at(k);
+                if (nomdoc.contains("smbtest"))
+                    continue;
                 QString CheminFichierImage      = NomDirDoc + "/" + nomdoc;
                 QString jnaltrsfername          = CheminOKTransfrDir + "/0JournalTransferts - " + QDate::currentDate().toString("yyyy-MM-dd") + ".txt";
                 QFile   jnaltrsfer(jnaltrsfername);
