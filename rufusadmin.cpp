@@ -22,7 +22,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("18-12-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("19-12-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2496,11 +2496,18 @@ void RufusAdmin::ModifParamBackup()
 #endif
 
     //programmation de l'effacement du contenu de la table ImagesEchange
-    QSqlQuery ("Use Rufus", db);
+    QSqlQuery ("Use " NOM_BASE_IMAGES, db);
     QSqlQuery ("DROP EVENT IF EXISTS VideImagesEchange", db);
     QString req =   "CREATE EVENT VideImagesEchange "
             "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
-            "DO DELETE FROM Images.ImagesEchange";
+            "DO DELETE FROM " NOM_BASE_IMAGES "." NOM_TABLE_ECHANGEIMAGES;
+    QSqlQuery (req,db);
+    //programmation de l'effacement des pdf et jpg contenus dans Faxtures
+    QSqlQuery ("Use " NOM_BASE_COMPTA, db);
+    QSqlQuery ("DROP EVENT IF EXISTS VideFactures", db);
+    req =   "CREATE EVENT VideFactures "
+            "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
+            "DO UPDATE " NOM_BASE_COMPTA "." NOM_TABLE_FACTURES " SET jpg = null, pdf = null";
     QSqlQuery (req,db);
 }
 

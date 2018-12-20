@@ -18,7 +18,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                50                  // version de la base de données
+#define VERSION_BASE                                51                  // version de la base de données
 
 // Les bases
 #define NOM_BASE_CONSULTS                           "rufus"
@@ -42,6 +42,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_TYPEPAIEMENTACTES                 "ComptaMedicale.typepaiementactes"
 #define NOM_TABLE_VERROUCOMPTAACTES                 "ComptaMedicale.verrouscomptaactes"
 
+#define NOM_TABLE_ECHANGEIMAGES                     "Images.EchangeImages"
 #define NOM_TABLE_DOCSASUPPRIMER                    "Images.DocsASupprimer"
 
 #define NOM_TABLE_ACTES                             "rufus.Actes"
