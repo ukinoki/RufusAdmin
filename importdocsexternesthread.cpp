@@ -287,6 +287,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                 QByteArray ba;
                 QFile FichierResize;
                 QString szorigin, szfinal;
+                QString nomfichresize = NomDirStockageProv + "/resize" + QString::number(itr) + "_" + QString::number(k) + ".jpg";
                 QStringList listfichresize = QDir(NomDirStockageProv).entryList(QDir::Files | QDir::NoDotAndDotDot);
                 for (int t=0; t<listfichresize.size(); t++)
                 {
@@ -296,19 +297,17 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                 }
                 if (FichierImage.open(QIODevice::ReadOnly))
                 {
-                    ba = FichierImage.readAll();
-                    //proc->Edit(ba);
                     double sz = FichierImage.size();
                     if (sz/(1024*1024) > 1)
                         szorigin = QString::number(sz/(1024*1024),'f',1) + "Mo";
                     else
                         szorigin = QString::number(sz/1024,'f',1) + "Ko";
                     szfinal = szorigin;
-                    QString nomfichresize = NomDirStockageProv + "/resize" + QString::number(itr) + "_" + QString::number(k) + ".jpg";
-                    FichierImage.copy(nomfichresize);
-                    FichierResize.setFileName(nomfichresize);
+                    FichierResize.setFileName(CheminFichierImage);
                     if (formatdoc == "jpg" && sz > TAILLEMAXIIMAGES)
                     {
+                        FichierImage.copy(nomfichresize);
+                        FichierResize.setFileName(nomfichresize);
                         QImage  img(CheminFichierImage);
                         QPixmap pixmap;
                         int     tauxcompress = 100;
@@ -324,13 +323,13 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                                 tauxcompress -= 10;
                             FichierResize.close();
                         }
-                        FichierResize.open(QIODevice::ReadOnly);
-                        ba = FichierResize.readAll();
                         if (sz/(1024*1024) > 1)
                             szfinal = QString::number(sz/(1024*1024),'f',0) + "Mo";
                         else
                             szfinal = QString::number(sz/1024,'f',0) + "Ko";
                     }
+                    FichierResize.open(QIODevice::ReadOnly);
+                    ba = FichierResize.readAll();
                 }
                 else
                 {
