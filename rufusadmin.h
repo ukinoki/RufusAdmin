@@ -108,7 +108,7 @@ private:
     QIcon                       giconBackup, giconCopy, giconErase, giconSunglasses, giconSortirDossier, giconOK, giconAnnul,
                                 giconEuro, giconEuroCount, giconFermeAppuye, giconFermeRelache, giconHelp, giconNull;
     QSettings                   *gsettingsIni;
-    QSqlDatabase                db;
+    DataBase                    *db;
     QSystemTrayIcon             *gRufusAdminTrayIcon;
     QTimer                      *gTimerUserConnecte, *gTimerVerifDivers, *gTimerSupprDocs, *gTimerDocsAExporter, *gTimerProgressBar;
     QTimer                      tim;
@@ -169,7 +169,7 @@ private slots:
     void                        Slot_ModifMDP();
     void                        Slot_ImportDocsExternes();
     void                        Slot_RestaureBase();
-    void                        Slot_SupprimerDocs();
+    void                        Slot_SupprimerDocsEtFactures();
     void                        Slot_TrayIconMenu();
     void                        Slot_VerifPosteImport();
     void                        Slot_VerifVersionBase();

@@ -17,12 +17,13 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "rufusadmin.h"
 #include "ui_rufusadmin.h"
+#include <QDebug>
 
 RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusAdmin)
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("19-12-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("25-12-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -95,7 +96,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     idlieuExercice = DetermineLieuExercice();
     gNomLieuExercice = "";
-    QSqlQuery lieuquer("select nomlieu from " NOM_TABLE_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), db);
+    QSqlQuery lieuquer("select nomlieu from " NOM_TABLE_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), db->getDataBase());
     lieuquer.first();
     gNomLieuExercice = lieuquer.value(0).toString();
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + gNomLieuExercice + "</b></font> ");
@@ -103,23 +104,23 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     //recherche de l'idUser du compte AdminDocs
     idAdminDocs = 0;
     QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
-    QSqlQuery usrquer(req, db);
+    QSqlQuery usrquer(req, db->getDataBase());
     if (usrquer.size()==0)
     {
         req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserNom = '" NOM_ADMINISTRATEURDOCS "'";
-        QSqlQuery quer(req,db);
+        QSqlQuery quer(req,db->getDataBase());
         if (quer.size()>0)
         {
             quer.first();
-            QSqlQuery("update " NOM_TABLE_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'",db);
+            QSqlQuery("update " NOM_TABLE_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'",db->getDataBase());
         }
         else
-            QSqlQuery("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')",db);
+            QSqlQuery("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')",db->getDataBase());
         usrquer.exec();
-        QSqlQuery mdpquer("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,db);
+        QSqlQuery mdpquer("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,db->getDataBase());
         mdpquer.first();
         if (mdpquer.value(0).toString() == "")
-            QSqlQuery("update " NOM_TABLE_PARAMSYSTEME " set mdpadmin = '" +db.password() + "'", db);
+            QSqlQuery("update " NOM_TABLE_PARAMSYSTEME " set mdpadmin = '" +db->getDataBase().password() + "'", db->getDataBase());
     }
     usrquer.first();
     UserAdmin = new User(DataBase::getInstance()->loadUserDatabyLogin(NOM_ADMINISTRATEURDOCS));
@@ -131,7 +132,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
                    " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                    " and idlieu = " + QString::number(idlieuExercice) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
-    QSqlQuery usr2quer(reqp, db);
+    QSqlQuery usr2quer(reqp, db->getDataBase());
     if (usr2quer.size()>0)
     {
         usr2quer.first();
@@ -139,7 +140,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         exit(0);
     }
     else
-        QSqlQuery("delete from " NOM_TABLE_USERSCONNECTES " where idUser = " + QString::number(idAdminDocs) + " and idlieu = " + QString::number(idlieuExercice), db);
+        QSqlQuery("delete from " NOM_TABLE_USERSCONNECTES " where idUser = " + QString::number(idAdminDocs) + " and idlieu = " + QString::number(idlieuExercice), db->getDataBase());
 
     // 5 mettre en place le TcpSocket
     gIPadr                      = Utils::getIpAdress();
@@ -148,7 +149,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     TCPServer                   ->setId(idAdminDocs);
     connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
     TCPServer                   ->start();
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db);
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db->getDataBase());
     gflagCorrespdts             = GetflagCorrespdts();
     gflagSalDat                 = GetflagSalDat();
 
@@ -168,7 +169,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Slot_VerifPosteImport();
     Slot_VerifVersionBase();
     Slot_CalcExporteDocs();
-    QSqlQuery msgquer("select max(creele) from " NOM_TABLE_MESSAGES, db);
+    QSqlQuery msgquer("select max(creele) from " NOM_TABLE_MESSAGES, db->getDataBase());
     if (!msgquer.first())
         gDateDernierMessage = QDateTime::currentDateTime();
     else
@@ -191,12 +192,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gTimerSupprDocs->start(60000);// "toutes les 60 secondes"
     gTimerDocsAExporter = new QTimer(this);
     gTimerDocsAExporter->start(60000);// "toutes les 60 secondes"
-    // Lancement du timer de suppression des fichiers documents inutiles
-    if (gMode != Distant)
-    {
-        connect(gTimerSupprDocs, SIGNAL(timeout()), this, SLOT(Slot_SupprimerDocs()));
-        connect(gTimerDocsAExporter, SIGNAL(timeout()), this, SLOT(Slot_CalcExporteDocs()));
-    }
+
     ConnectTimers();
 
     connect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
@@ -266,7 +262,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Remplir_Table();
     if (gMode == Poste)
     {
-        QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db);
+        QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
         dirquer.first();
         QString NomDirStockageImagerie = dirquer.value(0).toString();
         gsettingsIni->setValue("DossierImagerie",NomDirStockageImagerie);
@@ -290,7 +286,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ReconstruitListeLieuxExercice();
 
     QString VerifBasereq = "select VersionBase from " NOM_TABLE_PARAMSYSTEME;
-    QSqlQuery VersionBaseQuery(VerifBasereq,db);
+    QSqlQuery VersionBaseQuery(VerifBasereq,db->getDataBase());
     if (VersionBaseQuery.lastError().type() != QSqlError::NoError || VersionBaseQuery.size()==0)
         ui->VersionBaselabel->setText(tr("Version de la base") + "\t<font color=\"red\"><b>" + tr("inconnue") + "</b></font>");
     else
@@ -307,7 +303,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (gMode == Poste)
     {
         QString reqBkup = "select LundiBkup, MardiBkup, MercrediBkup, JeudiBkup, VendrediBkup, SamediBkup, DimancheBkup, HeureBkup, DirBkup from " NOM_TABLE_PARAMSYSTEME;
-        QSqlQuery querBkup(reqBkup, db);
+        QSqlQuery querBkup(reqBkup, db->getDataBase());
         TraiteErreurRequete(querBkup, reqBkup);
         querBkup.first();
         QString DirBkup = querBkup.value(8).toString();
@@ -368,7 +364,7 @@ void RufusAdmin::ListeAppareils()
     QString req = "select distinct list.TitreExamen, list.NomAPPareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon, " NOM_TABLE_LISTEAPPAREILS " list"
           " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(idlieuExercice);
     //qDebug()<< req;
-    QSqlQuery docsquer(req, db);
+    QSqlQuery docsquer(req, db->getDataBase());
     if (docsquer.size()>0)
         ImportDocsExtThread->RapatrieDocumentsThread(docsquer);
 }
@@ -381,7 +377,7 @@ void RufusAdmin::closeEvent(QCloseEvent *)
     QString req = "delete from " NOM_TABLE_USERSCONNECTES
                   " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                   " and idlieu = " + QString::number(idlieuExercice);
-    QSqlQuery qer(req,db);
+    QSqlQuery qer(req,db->getDataBase());
     TraiteErreurRequete(qer,req,"");
 
 }
@@ -625,7 +621,7 @@ void RufusAdmin::ConnectTimers()
     if (gMode != Distant)
     {
         connect (gTimerUserConnecte,    SIGNAL(timeout()),      this,   SLOT(Slot_ExporteDocs()));
-        connect (gTimerSupprDocs,       SIGNAL(timeout()),      this,   SLOT(Slot_SupprimerDocs()));
+        connect (gTimerSupprDocs,       SIGNAL(timeout()),      this,   SLOT(Slot_SupprimerDocsEtFactures()));
         connect (gTimerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     }
     ConnectTimerInactive();
@@ -636,7 +632,7 @@ void RufusAdmin::ConnectTimers()
 void RufusAdmin::DisconnectTimers()
 {
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
-    disconnect (gTimerSupprDocs,        SIGNAL(timeout()),      this,   SLOT(Slot_SupprimerDocs()));
+    disconnect (gTimerSupprDocs,        SIGNAL(timeout()),      this,   SLOT(Slot_SupprimerDocsEtFactures()));
     disconnect (gTimerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
     disconnect (gTimerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
@@ -671,7 +667,7 @@ double RufusAdmin::CalcBaseSize()
                       " or table_schema = 'rufus'"
                       " GROUP BY table_schema)"
                       " as bdd";
-    QSqlQuery sizequer (sizereq,db);
+    QSqlQuery sizequer (sizereq,db->getDataBase());
     if (sizequer.size()>0)
     {
         sizequer.first();
@@ -711,10 +707,10 @@ void RufusAdmin::ConnexionBase()
 {
     DlgParam = new dlg_paramconnexion();
     if (DlgParam->exec()>0)
-        db = DataBase::getInstance()->getDataBase();
+        db = DataBase::getInstance();
     else
         exit(0);
-    gMode = DataBase::getInstance()->getMode();
+    gMode = db->getMode();
 }
 
 /*-----------------------------------------------------------------------------------------------------------------
@@ -728,7 +724,7 @@ int RufusAdmin::DetermineLieuExercice()
         QString lieuxreq = "select idLieu, NomLieu from " NOM_TABLE_LIEUXEXERCICE
                            " where idLieu <> (select idLieuParDefaut from " NOM_TABLE_PARAMSYSTEME ")";
         //qDebug() << lieuxreq;
-        QSqlQuery lxquer(lieuxreq,db);
+        QSqlQuery lxquer(lieuxreq,db->getDataBase());
         TraiteErreurRequete(lxquer, lieuxreq);
         if (lxquer.size()==1)
         {
@@ -803,17 +799,17 @@ int RufusAdmin::DetermineLieuExercice()
     else
     {
         QString lieuxreq = "select idLieuParDefaut from " NOM_TABLE_PARAMSYSTEME;
-        QSqlQuery lxquer(lieuxreq,db);
+        QSqlQuery lxquer(lieuxreq,db->getDataBase());
         TraiteErreurRequete(lxquer,lieuxreq);
         lxquer.first();
         if (lxquer.value(0).toInt()>=1)
             idLieu = lxquer.value(0).toInt();
         else
         {
-            QSqlQuery lieuquer("select min(idlieu) from " NOM_TABLE_LIEUXEXERCICE,db);
+            QSqlQuery lieuquer("select min(idlieu) from " NOM_TABLE_LIEUXEXERCICE,db->getDataBase());
             lieuquer.first();
             idLieu = lieuquer.value(0).toInt();
-            QSqlQuery("update " NOM_TABLE_PARAMSYSTEME " set idLieuParDefaut = " + lieuquer.value(0).toString(), db);
+            QSqlQuery("update " NOM_TABLE_PARAMSYSTEME " set idLieuParDefaut = " + lieuquer.value(0).toString(), db->getDataBase());
         }
     }
     return idLieu;
@@ -847,7 +843,7 @@ void RufusAdmin::SupprAppareil()
     QString req = " select list.TitreExamen, list.NomAppareil from " NOM_TABLE_LISTEAPPAREILS " list, " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon"
                   " where list.idAppareil = appcon.idappareil"
                   " and list.idappareil = " + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text();
-    QSqlQuery appQuery(req,db);
+    QSqlQuery appQuery(req,db->getDataBase());
     if (TraiteErreurRequete(appQuery, req, ""))
         return;
     if (appQuery.size()==0)
@@ -870,7 +866,7 @@ void RufusAdmin::SupprAppareil()
         req = "delete from " NOM_TABLE_APPAREILSCONNECTESCENTRE " where idAppareil = "
                 + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text()
                 + " and idLieu = " + QString::number(idlieuExercice);
-        QSqlQuery(req,db);
+        QSqlQuery(req,db->getDataBase());
         gsettingsIni->remove("DossierEchangeImagerie/" + appQuery.value(1).toString());
         Remplir_Table();
     }
@@ -916,7 +912,7 @@ void RufusAdmin::Remplir_Table()
               " where list.idappareil = appcon.idappareil"
               " and idLieu = " + QString::number(idlieuExercice) +
               " ORDER BY TitreExamen";
-    QSqlQuery RemplirTableViewQuery (Remplirtablerequete,db);
+    QSqlQuery RemplirTableViewQuery (Remplirtablerequete,db->getDataBase());
     if (TraiteErreurRequete(RemplirTableViewQuery, Remplirtablerequete,""))
         return;
     ui->AppareilsConnectesupTableWidget->setRowCount(RemplirTableViewQuery.size());
@@ -980,7 +976,7 @@ void RufusAdmin::Remplir_Table()
     glistAppareils.clear();
     QString req = "select NomAppareil from " NOM_TABLE_LISTEAPPAREILS
                   " where idAppareil not in (select idAppareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(idlieuExercice) + ")";
-    QSqlQuery listappquery(req,db);
+    QSqlQuery listappquery(req,db->getDataBase());
     if (listappquery.size() == 0)
         widgAppareils->plusBouton->setEnabled(false);
     else
@@ -1007,11 +1003,11 @@ void RufusAdmin::setPosteImportDocs(bool a)
 
     QString IpAdress("NULL");
     QString req = "USE `" NOM_BASE_CONSULTS "`;";
-    QSqlQuery quer(req, db);
+    QSqlQuery quer(req, db->getDataBase());
     TraiteErreurRequete(quer,req);
 
     req = "DROP PROCEDURE IF EXISTS " NOM_POSTEIMPORTDOCS ";";
-    QSqlQuery quer1(req, db);
+    QSqlQuery quer1(req, db->getDataBase());
     TraiteErreurRequete(quer1,req);
 
     if (a)
@@ -1020,7 +1016,7 @@ void RufusAdmin::setPosteImportDocs(bool a)
           BEGIN\n\
           SELECT '" + IpAdress + "';\n\
           END ;";
-    QSqlQuery quer2(req, db);
+    QSqlQuery quer2(req, db->getDataBase());
     TraiteErreurRequete(quer2,req);
     if (a)
         Slot_MetAJourLaConnexion();
@@ -1044,7 +1040,7 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
 {
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
     QString req = "select TitreExamen, NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->getId());
-    QSqlQuery quer(req,db);
+    QSqlQuery quer(req,db->getDataBase());
     QString exam = "";
     if (quer.size()>0){
         quer.first();
@@ -1078,7 +1074,7 @@ void RufusAdmin::Slot_EnregistreAppareil()
     QString req = "insert into " NOM_TABLE_APPAREILSCONNECTESCENTRE " (idAppareil, idLieu) Values("
                   " (select idappareil from " NOM_TABLE_LISTEAPPAREILS " where NomAppareil = '" + gAskAppareil->findChildren<UpComboBox*>().at(0)->currentText() + "'), "
                   + QString::number(idlieuExercice) + ")";
-    QSqlQuery (req,db);
+    QSqlQuery (req,db->getDataBase());
     gAskAppareil->done(0);
     Remplir_Table();
 }
@@ -1106,7 +1102,7 @@ void RufusAdmin::Slot_ModifDirImagerie()
         if (gMode==Poste)
         {
             QString req ="update " NOM_TABLE_PARAMSYSTEME " set dirImagerie = '" + dockdir.path() + "'";
-            QSqlQuery quer(req, db);
+            QSqlQuery quer(req, db->getDataBase());
             TraiteErreurRequete(quer,req);
         }
     }
@@ -1126,7 +1122,7 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
     QString id;
     id = ui->AppareilsConnectesupTableWidget->item(line->getRowTable(),0)->text();
     QString req = "select NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + id;
-    QSqlQuery quer(req,db);
+    QSqlQuery quer(req,db->getDataBase());
     QString exam = "";
     if (quer.size()>0){
         quer.first();
@@ -1140,7 +1136,7 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
 
 void RufusAdmin::Slot_EnregistreEmplacementServeur(int idx)
 {
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set idlieupardefaut = " + ui->EmplacementServeurupComboBox->itemData(idx).toString(),db);
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set idlieupardefaut = " + ui->EmplacementServeurupComboBox->itemData(idx).toString(),db->getDataBase());
 }
 
 void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
@@ -1168,7 +1164,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
             msgbox.exec();
             return;
         }
-        if (anc != db.password())
+        if (anc != db->getDataBase().password())
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas le bon\n"));
@@ -1195,15 +1191,15 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         msgbox.setText(tr("Modifications enregistrées"));
         msgbox.setInformativeText(tr("Le nouveau mot de passe a été enregistré avec succès"));
         QString req = "update " NOM_TABLE_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
-        QSqlQuery chgmdpadmquery(req,db);
+        QSqlQuery chgmdpadmquery(req,db->getDataBase());
         TraiteErreurRequete( chgmdpadmquery,req,"");
         // Enregitrer le nouveau MDP de la base
         req = "update " NOM_TABLE_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(idAdminDocs);
-        QSqlQuery chgmdpquery(req,db);
+        QSqlQuery chgmdpquery(req,db->getDataBase());
         TraiteErreurRequete( chgmdpquery,req,"");
         // Enregitrer le nouveau MDP de connexion à MySQL
         req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'localhost' = '" + nouv + "'";
-        QSqlQuery chgmdpBasequery(req, db);
+        QSqlQuery chgmdpBasequery(req, db->getDataBase());
         TraiteErreurRequete(chgmdpBasequery,req, "");
         QString AdressIP;
         foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
@@ -1215,10 +1211,10 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         for (int i=0;i<listIP.size()-1;i++)
             Domaine += listIP.at(i) + ".";
         req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'" + Domaine + "%' = '" + nouv + "'";
-        QSqlQuery chgmdpBaseReseauquery(req, db);
+        QSqlQuery chgmdpBaseReseauquery(req, db->getDataBase());
         TraiteErreurRequete(chgmdpBaseReseauquery,req, "");
         req = "set password for '" NOM_ADMINISTRATEURDOCS "SSL'@'%' = '" + nouv + "'";
-        QSqlQuery chgmdpBaseDistantquery(req, db);
+        QSqlQuery chgmdpBaseDistantquery(req, db->getDataBase());
         TraiteErreurRequete(chgmdpBaseDistantquery,req, "");
         gAskMDP->done(0);
         msgbox.exec();
@@ -1248,7 +1244,7 @@ void RufusAdmin::Slot_CalcExporteDocs()
         return;
     QString totreq = "SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null limit 1";
     //qDebug() << totreq;
-    ui->ExportImagespushButton->setEnabled(QSqlQuery(totreq,db).size()>0);
+    ui->ExportImagespushButton->setEnabled(QSqlQuery(totreq,db->getDataBase()).size()>0);
 }
 
 void RufusAdmin::Slot_ExporteDocs()
@@ -1273,7 +1269,7 @@ void RufusAdmin::Slot_ExporteDocs()
 
     QString totreq = "SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null";
     //qDebug() << totreq;
-    QSqlQuery totquer(totreq,db);
+    QSqlQuery totquer(totreq,db->getDataBase());
     int total = totquer.size();
     if (total>100)
     {
@@ -1305,7 +1301,7 @@ void RufusAdmin::Slot_ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null";
     //qDebug() << req;
-    QSqlQuery exportjpgquer (req,db);
+    QSqlQuery exportjpgquer (req,db->getDataBase());
     for (int i=0; i<exportjpgquer.size(); i++)
     {
         exportjpgquer.seek(i);
@@ -1314,7 +1310,7 @@ void RufusAdmin::Slot_ExporteDocs()
             QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + exportjpgquer.value(5).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + exportjpgquer.value(0).toString(),db);
+                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
                 continue;
             }
         }
@@ -1364,7 +1360,7 @@ void RufusAdmin::Slot_ExporteDocs()
                     out << exportjpgquer.value(4).toByteArray() ;
                 }
             }
-            QSqlQuery ("delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(),db);
+            QSqlQuery ("delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
             continue;
         }
         int     tauxcompress = 100;
@@ -1402,7 +1398,7 @@ void RufusAdmin::Slot_ExporteDocs()
         }
         if (!OK)
         {
-            QSqlQuery ("delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(),db);
+            QSqlQuery ("delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
             continue;
         }
         CC.open(QIODevice::ReadWrite);
@@ -1411,7 +1407,7 @@ void RufusAdmin::Slot_ExporteDocs()
                           | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                           | QFileDevice::ReadUser   | QFileDevice::WriteUser);
         CC.close();
-        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null, lienversfichier = '/" + datetransfer + "/" + NomFileDoc + "' where idimpression = " + exportjpgquer.value(0).toString(),db);
+        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null, lienversfichier = '/" + datetransfer + "/" + NomFileDoc + "' where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
@@ -1428,7 +1424,7 @@ void RufusAdmin::Slot_ExporteDocs()
     //              LES PDF
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " NOM_TABLE_IMPRESSIONS " where pdf is not null";
-    QSqlQuery exportpdfquer (reqpdf,db);
+    QSqlQuery exportpdfquer (reqpdf,db->getDataBase());
     for (int i=0; i<exportpdfquer.size(); i++)
     {
         exportpdfquer.seek(i);
@@ -1437,7 +1433,7 @@ void RufusAdmin::Slot_ExporteDocs()
             QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + exportpdfquer.value(5).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + exportpdfquer.value(0).toString(),db);
+                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + exportpdfquer.value(0).toString(),db->getDataBase());
                 continue;
             }
         }
@@ -1493,7 +1489,7 @@ void RufusAdmin::Slot_ExporteDocs()
             }
             QString delreq = "delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportpdfquer.value(0).toString();
             //qDebug() << delreq;
-            QSqlQuery (delreq,db);
+            QSqlQuery (delreq,db->getDataBase());
             delete document;
             continue;
         }
@@ -1508,7 +1504,7 @@ void RufusAdmin::Slot_ExporteDocs()
                           | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                           | QFileDevice::ReadUser   | QFileDevice::WriteUser);
         CC.close();
-        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null, lienversfichier = '/" + datetransfer + "/" + NomFileDoc  + "' where idimpression = " + exportpdfquer.value(0).toString(),db);
+        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null, lienversfichier = '/" + datetransfer + "/" + NomFileDoc  + "' where idimpression = " + exportpdfquer.value(0).toString(),db->getDataBase());
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
@@ -1552,7 +1548,7 @@ void RufusAdmin::Slot_GestUser()
 {
     DisconnectTimerInactive();
     QString req = "select IdUser from " NOM_TABLE_UTILISATEURS " where userlogin <> '" NOM_ADMINISTRATEURDOCS "'";
-    QSqlQuery listusrquery (req, db);
+    QSqlQuery listusrquery (req, db->getDataBase());
     if (listusrquery.size()>0)
         listusrquery.first();
     int iduser = listusrquery.value(0).toInt();
@@ -1601,14 +1597,14 @@ void RufusAdmin::Slot_MasqueAppli()
 void RufusAdmin::Slot_MetAJourLaConnexion()
 {
     QString lockrequete = "LOCK TABLES " NOM_TABLE_USERSCONNECTES "  WRITE, " NOM_TABLE_SALLEDATTENTE " WRITE, " NOM_TABLE_VERROUCOMPTAACTES " WRITE;";
-    QSqlQuery lockquery (lockrequete, db);
+    QSqlQuery lockquery (lockrequete, db->getDataBase());
     if (TraiteErreurRequete(lockquery,lockrequete,"Impossible de verrouiller " NOM_TABLE_USERSCONNECTES))
         return;
 
     QString MAJConnexionRequete;
     QSqlQuery usrquer("select iduser from " NOM_TABLE_USERSCONNECTES
                       " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                      " and idlieu = " + QString::number(idlieuExercice), db);
+                      " and idlieu = " + QString::number(idlieuExercice), db->getDataBase());
     if (usrquer.size()>0)
         MAJConnexionRequete = "UPDATE " NOM_TABLE_USERSCONNECTES " SET HeureDerniereConnexion = NOW(), "
                               " idUser = " + QString::number(idAdminDocs) +
@@ -1622,12 +1618,12 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
                                Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "', " +
                                QString::number(idlieuExercice) + ")";
     //qDebug() << MAJConnexionRequete;
-    QSqlQuery MAJConnexionQuery (MAJConnexionRequete, db);
+    QSqlQuery MAJConnexionQuery (MAJConnexionRequete, db->getDataBase());
     TraiteErreurRequete(MAJConnexionQuery, MAJConnexionRequete,"");
 
     // Deconnecter les users débranchés accidentellement
     QString VerifOldUserreq = "select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60";
-    QSqlQuery verifoldquery (VerifOldUserreq,db);
+    QSqlQuery verifoldquery (VerifOldUserreq,db->getDataBase());
     //qDebug() << VerifOldUserreq;
     TraiteErreurRequete(verifoldquery,VerifOldUserreq,"");
 
@@ -1646,22 +1642,22 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
                                   " WhERE idUserEnCoursExam = " + QString::number(a) +
                                   " AND PosteExamen = '" + Poste +
                                   "' AND Left(Statut," + QString::number(length) + ") = '" ENCOURSEXAMEN "'";
-            QSqlQuery LibereVerrouRequeteQuery (LibereVerrouRequete,db);
+            QSqlQuery LibereVerrouRequeteQuery (LibereVerrouRequete,db->getDataBase());
             TraiteErreurRequete(LibereVerrouRequeteQuery,LibereVerrouRequete,"");
             //qDebug() << LibereVerrouRequete;
             //on déverrouille les actes verrouillés en comptabilité par cet utilisateur
             LibereVerrouRequete = "delete from " NOM_TABLE_VERROUCOMPTAACTES " where PosePar = " + QString::number(a);
-            QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete,db);
+            QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete,db->getDataBase());
             TraiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
             // on détruit le socket de cet utilisateur
             // KillSocket(QStringList() << verifoldquery.value(0).toString() << verifoldquery.value(2).toString().split(" - ").at(0));
             // on retire cet utilisateur de la table des utilisateurs connectés
-            QSqlQuery ("delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + verifoldquery.value(1).toString() + "'", db);
+            QSqlQuery ("delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + verifoldquery.value(1).toString() + "'", db->getDataBase());
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
             verifoldquery.next();
         }
     }
-    QSqlQuery("unlock tables",db);
+    QSqlQuery("unlock tables",db->getDataBase());
 }
 
 void RufusAdmin::Slot_ModifMDP()
@@ -1719,7 +1715,7 @@ void RufusAdmin::Slot_ModifMDP()
 void RufusAdmin::Slot_RestaureBase()
 {
     QString req = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QSqlQuery postesquer(req,db);
+    QSqlQuery postesquer(req,db->getDataBase());
     if (postesquer.size() > 0)
     {
         postesquer.first();
@@ -1789,7 +1785,7 @@ void RufusAdmin::Slot_RestaureBase()
             OKVideos = true;
 
     QString NomDirStockageImagerie("");
-    QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db);
+    QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
     dirquer.first();
     NomDirStockageImagerie = dirquer.value(0).toString();
     if (!QDir(NomDirStockageImagerie).exists())
@@ -1822,7 +1818,7 @@ void RufusAdmin::Slot_RestaureBase()
         NomDirStockageImagerie = dirstock.absolutePath();
         gsettingsIni->setValue("BDD_POSTE/DossierImagerie", NomDirStockageImagerie);
         QString reqimg = "update " NOM_TABLE_PARAMSYSTEME " set DirImagerie = '" + NomDirStockageImagerie + "'";
-        QSqlQuery (reqimg, db);
+        QSqlQuery (reqimg, db->getDataBase());
     }
 
     AskBupRestore(true, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKRessces, OKImages, OKVideos);
@@ -1857,7 +1853,7 @@ void RufusAdmin::Slot_RestaureBase()
                         msg += tr("Base non restaurée");
                         break;
                     }
-                    if (!VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
+                    if (!VerifMDP(db->getDataBase().password(),tr("Saisissez le mot de passe Administrateur")))
                     {
                         msg += tr("Base non restaurée");
                         break;
@@ -1892,10 +1888,10 @@ void RufusAdmin::Slot_RestaureBase()
                         //Suppression de toutes les tables
                         QString Msg = tr("Suppression de l'ancienne base Rufus en cours");
                         Message(Msg, 3000, false);
-                        QSqlQuery ("drop database if exists " NOM_BASE_COMPTA,      db);
-                        QSqlQuery ("drop database if exists " NOM_BASE_OPHTA,       db);
-                        QSqlQuery ("drop database if exists " NOM_BASE_CONSULTS,    db);
-                        QSqlQuery ("drop database if exists " NOM_BASE_IMAGES,      db);
+                        QSqlQuery ("drop database if exists " NOM_BASE_COMPTA,      db->getDataBase());
+                        QSqlQuery ("drop database if exists " NOM_BASE_OPHTA,       db->getDataBase());
+                        QSqlQuery ("drop database if exists " NOM_BASE_CONSULTS,    db->getDataBase());
+                        QSqlQuery ("drop database if exists " NOM_BASE_IMAGES,      db->getDataBase());
                         int a = 99;
                         //Restauration à partir du dossier sélectionné
                         for (int j=0; j<listnomsfilestorestore.size(); j++)
@@ -1906,10 +1902,10 @@ void RufusAdmin::Slot_RestaureBase()
                             NomDumpFile = listnomsfilestorestore.at(j);
                             QProcess dumpProcess(parent());
                             QStringList args;
-                            args << "-u " + db.userName();
-                            args << "-p"  + db.password();
-                            args << "-h " + db.hostName();
-                            args << "-P " + QString::number(db.port());
+                            args << "-u " + db->getDataBase().userName();
+                            args << "-p"  + db->getDataBase().password();
+                            args << "-h " + db->getDataBase().hostName();
+                            args << "-P " + QString::number(db->getDataBase().port());
                             args << "<";
                             args << listnomsfilestorestore.at(j) + "\"";
                             QDir Dir(QCoreApplication::applicationDirPath());
@@ -2043,20 +2039,65 @@ void RufusAdmin::Slot_RestaureBase()
 }
 
 
-void RufusAdmin::Slot_SupprimerDocs()
+void RufusAdmin::Slot_SupprimerDocsEtFactures()
 {
-    QSqlQuery ("lock tables '" NOM_TABLE_DOCSASUPPRIMER "' write", db);
+    db->locktables(QStringList() << NOM_TABLE_FACTURESASUPPRIMER " sup" << NOM_TABLE_DOCSASUPPRIMER << NOM_TABLE_FACTURES " fac");
+    bool ok = true;
+    QString NomDirStockageImagerie = gsettingsIni->value("DossierImagerie").toString();
+
+    /* Supprimer les documents en attente de suppression*/
     QString req = "Select filepath from " NOM_TABLE_DOCSASUPPRIMER;
-    QSqlQuery delreq (req, db);
-    for (int i=0; i<delreq.size(); i++)
+    QList<QList<QVariant>> ListeDocs = db->StandardSelectSQL(req, ok);
+    for (int i=0; i<ListeDocs.size(); i++)
     {
-        delreq.seek(i);
-        QString CheminFichier = gsettingsIni->value("DossierImagerie").toString() + delreq.value(0).toString();
+        QString CheminFichier = NomDirStockageImagerie + ListeDocs.at(i).at(0).toString();
         if (!QFile(CheminFichier).remove())
-            Message(tr("Fichier introuvable!") + " " + CheminFichier, 3000);
-        QSqlQuery("delete from " NOM_TABLE_DOCSASUPPRIMER " where filepath = '" + delreq.value(0).toString() + "'", db);
+            UpMessageBox::Watch(this, tr("Fichier introuvable!"), CheminFichier);
+        db->StandardSQL("delete from " NOM_TABLE_DOCSASUPPRIMER " where filepath = '" + ListeDocs.at(i).at(0).toString() + "'");
     }
-    QSqlQuery("unlock tables", db);
+
+    /* Supprimer les factures en attente de suppression*/
+    req = "select sup.idFacture, idUser, LienFichier from " NOM_TABLE_FACTURESASUPPRIMER " sup"
+          " left join " NOM_TABLE_FACTURES " fac"
+          " on sup.idFacture = fac.idFacture";
+    QList<QList<QVariant>> ListeFactures = DataBase::getInstance()->StandardSelectSQL(req, ok);
+    if (ListeFactures.size()>0)
+    {
+        for (int i=0; i<ListeFactures.size(); i++)
+        {
+            int idfacture       = ListeFactures.at(i).at(0).toInt();
+            int iduser          = ListeFactures.at(i).at(1).toInt();
+            QString lienfacture = ListeFactures.at(i).at(2).toString();
+            /* on détruit l'enregistrement dans la table factures*/
+            db->SupprRecordFromTable(idfacture,"idFacture",NOM_TABLE_FACTURES);
+            /*  on copie le fichier dans le dossier facturessanslien*/
+            QString CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN;
+            QDir DirTrsferOK;
+            if (!QDir(CheminOKTransfrDir).exists())
+                if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
+                {
+                    QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                    QStringList listmsg;
+                    listmsg << msg;
+                    dlg_message(listmsg, 3000, false);
+                    return;
+                }
+            CheminOKTransfrDir = CheminOKTransfrDir + "/" + Datas::I()->users->getLoginById(iduser);
+            if (!QDir(CheminOKTransfrDir).exists())
+                if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
+                {
+                    QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                    QStringList listmsg;
+                    listmsg << msg;
+                    dlg_message(listmsg, 3000, false);
+                    return;
+                }
+            QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfacture).copy(NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN + lienfacture);
+            /*  on l'efface du dossier de factures*/
+            QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfacture).remove();
+        }
+    }
+    db->commit();
 }
 
 void RufusAdmin::Slot_TrayIconMenu()
@@ -2080,7 +2121,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     bool visible = isVisible();
     if (!visible)
         showNormal();
-    if (!VerifMDP(db.password(),tr("Saisissez le mot de passe Administrateur")))
+    if (!VerifMDP(db->getDataBase().password(),tr("Saisissez le mot de passe Administrateur")))
     {
         if (!visible)
             Slot_MasqueAppli();
@@ -2095,7 +2136,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
         QString req = "delete from " NOM_TABLE_USERSCONNECTES
                       " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
                       " and idlieu = " + QString::number(idlieuExercice);
-        QSqlQuery qer(req,db);
+        QSqlQuery qer(req,db->getDataBase());
         TraiteErreurRequete(qer,req,"");
         FermeTCP();
         setPosteImportDocs(false);
@@ -2111,7 +2152,7 @@ void RufusAdmin::Slot_VerifPosteImport()
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
     QString req = "CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS;
-    QSqlQuery quer(req, db);
+    QSqlQuery quer(req, db->getDataBase());
     if (quer.size()==-1)
     {
         A = "";
@@ -2149,7 +2190,7 @@ void RufusAdmin::Slot_VerifPosteImport()
 
 void RufusAdmin::Slot_VerifVersionBase()
 {
-    QSqlQuery quer("select versionbase from " NOM_TABLE_PARAMSYSTEME, db);
+    QSqlQuery quer("select versionbase from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
     quer.first();
     int version = quer.value(0).toInt();
     if (version != VERSION_BASE)
@@ -2167,13 +2208,13 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
 {
     /*-------------------- GESTION DES LIEUX D'EXRCICE-------------------------------------------------------*/
     ui->EmplacementServeurupComboBox->clear();
-    QSqlQuery adrquer("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, db);
+    QSqlQuery adrquer("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, db->getDataBase());
     for (int i=0; i< adrquer.size(); i++)
     {
         adrquer.seek(i);
         ui->EmplacementServeurupComboBox->addItem(adrquer.value(1).toString(),adrquer.value(0));
     }
-    QSqlQuery DefautLieuquer("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, db);
+    QSqlQuery DefautLieuquer("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
     DefautLieuquer.first();
     if (DefautLieuquer.value(0).toInt()>0)
         ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(DefautLieuquer.value(0)));
@@ -2200,7 +2241,7 @@ bool RufusAdmin::VerifBase()
     int Versionencours  = 37; //correspond aux premières versions de MAJ de la base
     int Version         = VERSION_BASE;
     QString req         = "select VersionBase from " NOM_TABLE_PARAMSYSTEME;
-    QSqlQuery MAJBaseQuery(req,db);
+    QSqlQuery MAJBaseQuery(req,db->getDataBase());
     bool b              = false;
     if (MAJBaseQuery.lastError().type() != QSqlError::NoError || MAJBaseQuery.size()==0)
         b = true;
@@ -2244,7 +2285,7 @@ bool RufusAdmin::VerifBase()
             DumpFile.copy(NomDumpFile);
             QFile base(NomDumpFile);
             QStringList listinstruct = DecomposeScriptSQL(NomDumpFile);
-            QSqlQuery query(db);
+            QSqlQuery query(db->getDataBase());
             bool a = true;
             foreach(const QString &s, listinstruct)
             {
@@ -2325,7 +2366,7 @@ void RufusAdmin::Slot_ModifDirBackup()
     if (dirsauvorigin != dirSauv)
     {
         QString req = "update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'";
-        QSqlQuery (req, db);
+        QSqlQuery (req, db->getDataBase());
         ModifParamBackup();
     }
     ConnectTimerInactive();
@@ -2387,9 +2428,9 @@ void RufusAdmin::ModifParamBackup()
     }
 
     QString dirSauv   = ui->DirBackupuplineEdit->text();
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'", db);
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'", db->getDataBase());
     // ENREGISTREMENT DES PARAMETRES DE SAUVEGARDE DANS /Documents/Rufus/RufusScriptBackup.sh
-    QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db);
+    QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
     dirquer.first();
     QString NomDirStockageImagerie = dirquer.value(0).toString();
 
@@ -2397,7 +2438,7 @@ void RufusAdmin::ModifParamBackup()
     DefinitScriptBackup(NomDirStockageImagerie);
 
     //2. Heure et date du backup
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = '"    + ui->HeureBackuptimeEdit->time().toString("HH:mm") + "'", db);
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = '"    + ui->HeureBackuptimeEdit->time().toString("HH:mm") + "'", db->getDataBase());
 
     QString LundiBkup       = (ui->LundiradioButton->isChecked()?   "1" : "NULL");
     QString MardiBkup       = (ui->MardiradioButton->isChecked()?   "1" : "NULL");
@@ -2407,13 +2448,13 @@ void RufusAdmin::ModifParamBackup()
     QString SamediBkup      = (ui->SamediradioButton->isChecked()?  "1" : "NULL");
     QString DimancheBkup    = (ui->DimancheradioButton->isChecked()?"1" : "NULL");
 
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = "     + LundiBkup, db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = "     + MardiBkup, db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = "  + MercrediBkup, db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = "     + JeudiBkup, db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = "  + VendrediBkup, db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = "    + SamediBkup, db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = "  + DimancheBkup, db);
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = "     + LundiBkup, db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = "     + MardiBkup, db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = "  + MercrediBkup, db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = "     + JeudiBkup, db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = "  + VendrediBkup, db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = "    + SamediBkup, db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = "  + DimancheBkup, db->getDataBase());
 
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
@@ -2496,19 +2537,19 @@ void RufusAdmin::ModifParamBackup()
 #endif
 
     //programmation de l'effacement du contenu de la table ImagesEchange
-    QSqlQuery ("Use " NOM_BASE_IMAGES, db);
-    QSqlQuery ("DROP EVENT IF EXISTS VideImagesEchange", db);
+    QSqlQuery ("Use " NOM_BASE_IMAGES, db->getDataBase());
+    QSqlQuery ("DROP EVENT IF EXISTS VideImagesEchange", db->getDataBase());
     QString req =   "CREATE EVENT VideImagesEchange "
             "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
             "DO DELETE FROM " NOM_BASE_IMAGES "." NOM_TABLE_ECHANGEIMAGES;
-    QSqlQuery (req,db);
+    QSqlQuery (req,db->getDataBase());
     //programmation de l'effacement des pdf et jpg contenus dans Faxtures
-    QSqlQuery ("Use " NOM_BASE_COMPTA, db);
-    QSqlQuery ("DROP EVENT IF EXISTS VideFactures", db);
+    QSqlQuery ("Use " NOM_BASE_COMPTA, db->getDataBase());
+    QSqlQuery ("DROP EVENT IF EXISTS VideFactures", db->getDataBase());
     req =   "CREATE EVENT VideFactures "
             "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
             "DO UPDATE " NOM_BASE_COMPTA "." NOM_TABLE_FACTURES " SET jpg = null, pdf = null";
-    QSqlQuery (req,db);
+    QSqlQuery (req,db->getDataBase());
 }
 
 QStringList RufusAdmin::DecomposeScriptSQL(QString nomficscript)
@@ -2593,7 +2634,7 @@ void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVid
     scriptbackup += "\n";
     scriptbackup += "MYSQL_USER=\"dumprufus\"";
     scriptbackup += "\n";
-    scriptbackup += "MYSQL_PASSWORD=\"" + db.password() + "\"";
+    scriptbackup += "MYSQL_PASSWORD=\"" + db->getDataBase().password() + "\"";
     //# Commandes MySQL
     QDir Dir(QCoreApplication::applicationDirPath());
     Dir.cdUp();
@@ -2667,15 +2708,15 @@ void RufusAdmin::Slot_EffacePrgSauvegarde()
        listbutton2.at(i)->setChecked(false);
     ui->DirBackupuplineEdit->setText("");
     ui->HeureBackuptimeEdit->setTime(QTime(0,0));
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = ''", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = ''", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = NULL", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = NULL", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = NULL", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = NULL", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = NULL", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = NULL", db);
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = NULL", db);
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = ''", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = ''", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = NULL", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = NULL", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = NULL", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = NULL", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = NULL", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = NULL", db->getDataBase());
+    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = NULL", db->getDataBase());
 #ifdef Q_OS_MACX
     QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath();
     unload += SCRIPTPLISTFILE "\"\"";
@@ -2692,7 +2733,7 @@ void RufusAdmin::Slot_EffacePrgSauvegarde()
 bool RufusAdmin::ImmediateBackup()
 {
     QString req = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QSqlQuery postesquer(req,db);
+    QSqlQuery postesquer(req,db->getDataBase());
     if (postesquer.size() > 0)
     {
         postesquer.first();
@@ -2704,7 +2745,7 @@ bool RufusAdmin::ImmediateBackup()
         return false;
     }
 
-    QSqlQuery dirquer("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, db);
+    QSqlQuery dirquer("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
     dirquer.first();
     QString NomDirStockageImagerie = dirquer.value(0).toString();
     QString NomDirDestination = dirquer.value(1).toString();
@@ -2819,7 +2860,7 @@ bool RufusAdmin::ImmediateBackup()
 int RufusAdmin::GetflagCorrespdts()
 {
     int flagMG = 0;
-    QSqlQuery quer("select MAJflagMG from " NOM_TABLE_FLAGS, db);
+    QSqlQuery quer("select MAJflagMG from " NOM_TABLE_FLAGS, db->getDataBase());
     if (quer.size() > 0)
     {
         quer.first();
@@ -2834,7 +2875,7 @@ int RufusAdmin::GetflagCorrespdts()
 int RufusAdmin::GetflagMessages()
 {
     int flagMessages = 0;
-    QSqlQuery quer("select MAJflagMessages from " NOM_TABLE_FLAGS, db);
+    QSqlQuery quer("select MAJflagMessages from " NOM_TABLE_FLAGS, db->getDataBase());
     if (quer.size() > 0)
     {
         quer.first();
@@ -2849,7 +2890,7 @@ int RufusAdmin::GetflagMessages()
 int RufusAdmin::GetflagSalDat()
 {
     int flagSalDat = 0;
-    QSqlQuery quer("select MAJflagSalDat from " NOM_TABLE_FLAGS, db);
+    QSqlQuery quer("select MAJflagSalDat from " NOM_TABLE_FLAGS, db->getDataBase());
     if (quer.size() > 0)
     {
         quer.first();
@@ -2861,7 +2902,7 @@ int RufusAdmin::GetflagSalDat()
 void RufusAdmin::FermeTCP()
 {
         TCPServer->close();
-        QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db);
+        QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db->getDataBase());
 }
 
 void RufusAdmin::ResumeTCPSocketStatut()

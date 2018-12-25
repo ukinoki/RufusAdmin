@@ -44,6 +44,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 #define NOM_TABLE_ECHANGEIMAGES                     "Images.EchangeImages"
 #define NOM_TABLE_DOCSASUPPRIMER                    "Images.DocsASupprimer"
+#define NOM_TABLE_FACTURESASUPPRIMER                "Images.FacturesASupprimer"
 
 #define NOM_TABLE_ACTES                             "rufus.Actes"
 #define NOM_TABLE_APPAREILSCONNECTESCENTRE          "rufus.appareilsconnectescentre"
@@ -95,6 +96,8 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOMDIR_LOGS                                 "/Logs"
 #define NOMDIR_RUFUS                                "/Documents/Rufus"
 #define NOMDIR_IMAGES                               "/Images"
+#define NOMDIR_FACTURES                             "/Factures"
+#define NOMDIR_FACTURESSANSLIEN                     "/FacturesSansLien"
 #define NOMDIR_VIDEOS                               "/Videos"
 #define NOMDIR_PROV                                 "/Prov"
 #define NOMDIR_ECHECSTRANSFERTS                     "/EchecsTransferts"
