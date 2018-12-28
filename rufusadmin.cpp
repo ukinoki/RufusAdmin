@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("25-12-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("28-12-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -643,6 +643,99 @@ void RufusAdmin::DisconnectTimers()
     gTimerVerifVerrou       ->disconnect();
 }
 
+/*!
+ * \brief RufusAdmin::CompressFileJPG(QByteArray ba, QString nomfileOK, QString nomfileEchec)
+ * comprime un fichier jpg à une taille inférieure à celle de la macro TAILLEMAXIIMAGES
+ * \param QString nomfileOK le nom du fichier d'origine utilisé aussi en cas d'échec pour faire le log
+ * \param QDate datetransfert date utilisée en cas d'échec pour faire le log
+ * \return true si réussi, false si échec de l'enregistrement du fichier
+ * en cas d'échec
+    * un fichier de log est utilisé ou créé au besoin dans le répertoire NOMDIR_ECHECSTRANSFERTS
+    * et une ligne résumant l'échec est ajoutée en fin de ce fichier
+    * le fichier d'origine est ajouté dans ce même répertoire
+ */
+bool RufusAdmin::CompressFileJPG(QString nomfile, QDate datetransfert)
+{
+    /* on vérifie si le dossier des echecs de transferts existe sur le serveur et on le crée au besoin*/
+    QString NomDirStockageImagerie  = gsettingsIni->value("DossierImagerie").toString();
+    QString CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
+    QDir DirTrsferEchec;
+    if (!QDir(CheminEchecTransfrDir).exists())
+        if (!DirTrsferEchec.mkdir(CheminEchecTransfrDir))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            return false;
+        }
+    /* on vérifie si le dossier provisoire existe sur le poste et on le crée au besoin*/
+    QDir DirStockProv;
+    QString DirStockProvPath = QDir::homePath() + NOMDIR_RUFUS NOMDIR_PROV;
+    if (!QDir(DirStockProvPath).exists())
+        if (!DirStockProv.mkdir(DirStockProvPath))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + DirStockProvPath + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            return false;
+        }
+
+    QFile CC(nomfile);
+    QString filename = QFileInfo(nomfile).fileName();
+    QString nomfichresize = DirStockProvPath + "/" + filename;
+    QFile fileresize(nomfichresize);
+    if (fileresize.exists())
+        fileresize.remove();
+    QFile echectrsfer(CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfert.toString("yyyy-MM-dd") + ".txt");
+    QImage  img(nomfile);
+    QPixmap pixmap;
+    double w = img.width();
+    double h = img.height();
+    int x = img.width();
+    if (int(w*h)>(4096*1024)) // si l'image dépasse 4 Mpixels, on la réduit en conservant les proportions
+    {
+        double proportion = w/h;
+        int y = int(sqrt((4096*1024)/proportion));
+        x = int (y*proportion);
+    }
+    pixmap = pixmap.fromImage(img.scaledToWidth(x,Qt::SmoothTransformation));
+    /* on enregistre le fichier sur le disque du serveur
+     * si on n'y arrive pas,
+        * on crée le fichier log des echecstransferts correspondants dans le répertoire des echecs de transfert sur le serveur
+        * on complète ce fichier en ajoutant une ligne correspondant à cet échec
+        * on enregistre dans ce dossier une copie du fichier d'origine
+     */
+    if (!pixmap.save(nomfichresize, "jpeg"))
+    {
+        if (echectrsfer.open(QIODevice::Append))
+        {
+            QTextStream out(&echectrsfer);
+            out << CC.fileName() << "\n" ;
+            echectrsfer.close();
+            CC.copy(CheminEchecTransfrDir + "/" + filename);
+        }
+        return false;
+    }
+    /* on comprime*/
+    int tauxcompress = 90;
+    while (fileresize.size() > TAILLEMAXIIMAGES && tauxcompress > 1)
+    {
+        pixmap.save(nomfichresize, "jpeg",tauxcompress);
+        fileresize.open(QIODevice::ReadWrite);
+        if (fileresize.size() > TAILLEMAXIIMAGES & tauxcompress > 1)
+        {
+            tauxcompress -=10;
+            if (tauxcompress<1)
+                fileresize.copy(nomfile);
+        }
+        fileresize.close();
+        fileresize.remove();
+    }
+    return true;
+}
+
 void RufusAdmin::ConnectTimerInactive()
 {
     connect(ui->MiseEnVeilleprogressBar, &QProgressBar::valueChanged, this, [=]
@@ -1249,6 +1342,7 @@ void RufusAdmin::Slot_CalcExporteDocs()
 
 void RufusAdmin::Slot_ExporteDocs()
 {
+    bool ok;
     QString NomDirStockageImagerie  = gsettingsIni->value("DossierImagerie").toString();
     if (!QDir(NomDirStockageImagerie).exists() || NomDirStockageImagerie == "")
     {
@@ -1267,10 +1361,8 @@ void RufusAdmin::Slot_ExporteDocs()
             return;
         }
 
-    QString totreq = "SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null";
-    //qDebug() << totreq;
-    QSqlQuery totquer(totreq,db->getDataBase());
-    int total = totquer.size();
+    int total = QSqlQuery ("SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null", db->getDataBase()).size();
+    total +=    QSqlQuery ("SELECT idFacture FROM " NOM_TABLE_FACTURES " where jpg is not null or pdf is not null", db->getDataBase()).size();
     if (total>100)
     {
         int min = total/180;
@@ -1280,6 +1372,7 @@ void RufusAdmin::Slot_ExporteDocs()
         if (UpMessageBox::Question(this, tr("Nombreux documents à convertir"),
                                    tr("Il y a ") + QString::number(total) + tr(" documents à convertir.") +"\n" +
                                    tr("Cette procédure devrait durer environ ") + tps + "\n" +
+                                   tr("et figera l'éxécution du programme durant ce temps") + tps + "\n" +
                                    tr("Voulez vous le faire maintenant?"))
                                    !=UpSmallButton::STARTBUTTON)
         {
@@ -1289,142 +1382,97 @@ void RufusAdmin::Slot_ExporteDocs()
     }
     if (total==0)
         return;
-    int faits = 0;
-    QTime debut = QTime::currentTime();
-    QString duree;
-
 
     DisconnectTimers();
+
+
+
+
+/* LES DOCUMENTS  ============================================*/
+    int faits = 0;
+    QTime debut = QTime::currentTime();
+    QStringList listmsg;
+    QString duree;
+    QString CheminOKTransfrDir      = NomDirStockageImagerie + NOMDIR_IMAGES;
+    QDir DirTrsferOK;
+    if (!QDir(CheminOKTransfrDir).exists())
+        if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+            Message(msg, 3000, false);
+            return;
+        }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES JPG
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null";
     //qDebug() << req;
-    QSqlQuery exportjpgquer (req,db->getDataBase());
+    QSqlQuery exportjpgquer (req, db->getDataBase() );
     for (int i=0; i<exportjpgquer.size(); i++)
     {
         exportjpgquer.seek(i);
+        /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
         if (exportjpgquer.value(5).toString() != "")
         {
             QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + exportjpgquer.value(5).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
+                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
                 continue;
             }
         }
-        QString datetransfer            = exportjpgquer.value(3).toDate().toString("yyyy-MM-dd");
-        QString CheminOKTransfrDir      = NomDirStockageImagerie + NOMDIR_IMAGES;
-        QDir DirTrsferOK;
+        QDate datetransfer    = exportjpgquer.value(3).toDate();
+        CheminOKTransfrDir    = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
         if (!QDir(CheminOKTransfrDir).exists())
             if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
             {
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                Message(msg, 3000, false);
-                ConnectTimers();
-                return;
-            }
-        CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer;
-        if (!QDir(CheminOKTransfrDir).exists())
-            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                Message(msg, 3000, false);
-                ConnectTimers();
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
                 return;
             }
         QString NomFileDoc = exportjpgquer.value(1).toString() + "_" + exportjpgquer.value(6).toString() + "-"
-                + exportjpgquer.value(2).toString() + "_"
+                + exportjpgquer.value(2).toString().replace("/",".") + "_"
                 + exportjpgquer.value(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
                 + "-" + exportjpgquer.value(0).toString()  + ".jpg";
-        QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc;
-        QFile CC(CheminOKTransfrDoc);
-        QImage  img;
-        img.loadFromData(exportjpgquer.value(4).toByteArray());
-        QPixmap pixmap;
-        pixmap = pixmap.fromImage(img.scaledToWidth(2560,Qt::SmoothTransformation));
-        if (!pixmap.save(CheminOKTransfrDoc, "jpeg"))
+        QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc;
+        QFile prov (CheminOKTransfrDoc + "prov");
+        if (prov.open(QIODevice::Append))
         {
-            QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer + ".txt";
-            QFile   echectrsfer(echectrsfername);
-            if (echectrsfer.open(QIODevice::Append))
+            QTextStream out(&prov);
+            out << exportjpgquer.value(4).toByteArray() << "\n" ;
+        }
+        if (prov.size()>TAILLEMAXIIMAGES)
+            if (!CompressFileJPG(CheminOKTransfrDoc + "prov"))
             {
-                QTextStream out(&echectrsfer);
-                out << NomFileDoc << "\n" ;
-                echectrsfer.close();
-                QFile CD(CheminEchecTransfrDir + "/" +NomFileDoc);
-                if (CD.open(QIODevice::Append))
-                {
-                    QTextStream out(&CD);
-                    out << exportjpgquer.value(4).toByteArray() ;
-                }
+                QSqlQuery ("delete from " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
+                continue;
             }
-            QSqlQuery ("delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
-            continue;
-        }
-        int     tauxcompress = 100;
-        int sz = exportjpgquer.value(4).toByteArray().size();
-        bool OK = true;
-        while (sz > TAILLEMAXIIMAGES && tauxcompress > 10)
-        {
-            pixmap = pixmap.fromImage(img.scaledToWidth(2560,Qt::SmoothTransformation));
-            if (CC.exists())
-                CC.remove();
-            if (!pixmap.save(CheminOKTransfrDoc, "jpeg",tauxcompress))
-            {
-                QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer + ".txt";
-                QFile   echectrsfer(echectrsfername);
-                if (echectrsfer.open(QIODevice::Append))
-                {
-                    QTextStream out(&echectrsfer);
-                    out << NomFileDoc << "\n" ;
-                    echectrsfer.close();
-                    QFile CD(CheminEchecTransfrDir + "/" +NomFileDoc);
-                    if (CD.open(QIODevice::Append))
-                    {
-                        QTextStream out(&CD);
-                        out << exportjpgquer.value(4).toByteArray() ;
-                    }
-                }
-                OK = false;
-                break;
-            }
-            CC.open(QIODevice::ReadWrite);
-            sz = CC.size();
-            if (sz > TAILLEMAXIIMAGES)
-                tauxcompress -= 10;
-            CC.close();
-        }
-        if (!OK)
-        {
-            QSqlQuery ("delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
-            continue;
-        }
-        CC.open(QIODevice::ReadWrite);
-        CC.setPermissions(QFileDevice::ReadOther
-                          | QFileDevice::ReadGroup
-                          | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
-                          | QFileDevice::ReadUser   | QFileDevice::WriteUser);
-        CC.close();
-        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null, lienversfichier = '/" + datetransfer + "/" + NomFileDoc + "' where idimpression = " + exportjpgquer.value(0).toString(),db->getDataBase());
+        prov.copy(CheminOKTransfrDoc);
+        prov.remove();
+        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null, lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + NomFileDoc + "' where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
         int hour = min/60;
         min = min - (hour*60);
         nsec = nsec - (hour*3600) - (min*60);
+        listmsg.clear();
         duree = QTime(hour,min,nsec).toString("HH:mm:ss");
-        Message("JPG - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree, 10);
+        listmsg << "JPG - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+        QTime dieTime= QTime::currentTime().addMSecs(2);
+        while (QTime::currentTime() < dieTime)
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+        dlg_message(listmsg, 10);
     }
-
-
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES PDF
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " NOM_TABLE_IMPRESSIONS " where pdf is not null";
-    QSqlQuery exportpdfquer (reqpdf,db->getDataBase());
+    QSqlQuery exportpdfquer (reqpdf, db->getDataBase() );
     for (int i=0; i<exportpdfquer.size(); i++)
     {
         exportpdfquer.seek(i);
@@ -1433,47 +1481,37 @@ void RufusAdmin::Slot_ExporteDocs()
             QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + exportpdfquer.value(5).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + exportpdfquer.value(0).toString(),db->getDataBase());
+                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + exportpdfquer.value(0).toString(), db->getDataBase() );
                 continue;
             }
         }
-        QString datetransfer            = exportpdfquer.value(3).toDate().toString("yyyy-MM-dd");
-        QString CheminOKTransfrDir      = NomDirStockageImagerie + NOMDIR_IMAGES;
-        QDir DirTrsferOK;
+        QDate datetransfer    = exportpdfquer.value(3).toDate();
+        CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
         if (!QDir(CheminOKTransfrDir).exists())
             if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
             {
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                Message(msg, 3000, false);
-                ConnectTimers();
-                return;
-            }
-        CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer;
-        if (!QDir(CheminOKTransfrDir).exists())
-            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                Message(msg, 3000, false);
-                ConnectTimers();
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
                 return;
             }
         QString NomFileDoc = exportpdfquer.value(1).toString() + "_" + exportpdfquer.value(7).toString() + "-"
-                + exportpdfquer.value(2).toString() + "_"
+                + exportpdfquer.value(2).toString().replace("/",".") + "_"
                 + exportpdfquer.value(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
                 + "-" + exportpdfquer.value(0).toString()  + ".pdf";
-        QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc;
+        QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc;
 
         QByteArray bapdf;
-        if (exportpdfquer.value(6).toString()=="1")
-            bapdf.append(qUncompress(exportpdfquer.value(4).toByteArray()));
-        else
-            bapdf.append(exportpdfquer.value(4).toByteArray());
+        bapdf.append(exportpdfquer.value(4).toByteArray());
 
         Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
         if (!document || document->isLocked() || document == Q_NULLPTR)
         {
-            Message(tr("Impossible de charger le document ") + NomFileDoc, 3000, false);
-            QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer + ".txt";
+            QStringList listmsg;
+            listmsg << tr("Impossible de charger le document ") + NomFileDoc;
+            dlg_message(listmsg, 3000, false);
+            QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
             QFile   echectrsfer(echectrsfername);
             if (echectrsfer.open(QIODevice::Append))
             {
@@ -1489,7 +1527,7 @@ void RufusAdmin::Slot_ExporteDocs()
             }
             QString delreq = "delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportpdfquer.value(0).toString();
             //qDebug() << delreq;
-            QSqlQuery (delreq,db->getDataBase());
+            QSqlQuery (delreq, db->getDataBase() );
             delete document;
             continue;
         }
@@ -1504,17 +1542,272 @@ void RufusAdmin::Slot_ExporteDocs()
                           | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                           | QFileDevice::ReadUser   | QFileDevice::WriteUser);
         CC.close();
-        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null, lienversfichier = '/" + datetransfer + "/" + NomFileDoc  + "' where idimpression = " + exportpdfquer.value(0).toString(),db->getDataBase());
+        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null,"
+                   " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + NomFileDoc  + "'"
+                   " where idimpression = " + exportpdfquer.value(0).toString(), db->getDataBase() );
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
         int hour = min/60;
         min = min - (hour*60);
         nsec = nsec - (hour*3600) - (min*60);
+        listmsg.clear();
         duree = QTime(hour,min,nsec).toString("HH:mm:ss");
-        Message("PDF - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree, 10);
+        listmsg << "PDF - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+        QTime dieTime= QTime::currentTime().addMSecs(2);
+        while (QTime::currentTime() < dieTime)
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+        dlg_message(listmsg, 10);
     }
-    Message(tr("export terminé") + "\n" + QString::number(total) + " documents exportés en "  + duree, 3000);
+    int totdoc = exportjpgquer.size() + exportpdfquer.size();
+    if (totdoc > 0)
+    {
+        listmsg <<  tr("export terminé") << QString::number(totdoc) + (totdoc>1? tr(" documents exportés en ") : tr(" document exporté en "))  + duree;
+        dlg_message(listmsg, 3000);
+    }
+
+
+
+/* LES FACTURES  ============================================*/
+
+    faits = 0;
+    debut = QTime::currentTime();
+    listmsg.clear();
+    duree = "";
+    CheminOKTransfrDir  = NomDirStockageImagerie + NOMDIR_FACTURES;
+    if (!QDir(CheminOKTransfrDir).exists())
+        if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            return;
+        }
+
+    //-----------------------------------------------------------------------------------------------------------------------------------------
+    //              LES JPG
+    //-----------------------------------------------------------------------------------------------------------------------------------------
+    req = "SELECT idFacture, DateFacture, LienFichier, Intitule, Echeancier, idDepense, jpg FROM " NOM_TABLE_FACTURES
+            " where jpg is not null";
+    //qDebug() << req;
+    QSqlQuery exportjpgfactquer (req, db->getDataBase() );
+    for (int i=0; i<exportjpgfactquer.size(); i++)
+    {
+        exportjpgfactquer.seek(i);
+        /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
+        if (exportjpgfactquer.value(2).toString() != "")
+        {
+            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + exportjpgfactquer.value(2).toString();
+            if (QFile(CheminFichier).exists())
+            {
+                QSqlQuery ("update " NOM_TABLE_FACTURES " set jpg = null where idfacture = " + exportjpgfactquer.value(0).toString(), db->getDataBase() );
+                continue;
+            }
+        }
+        /* nommage d'un fichier facture
+             * idFacture + "_" + "ECHEANCIER ou FACTURE" + "_" + Intitule + "_" + DateFacture + ( + "_" + iddepense si facture et pas échéancier)
+             */
+        QDate datetransfer  = exportjpgfactquer.value(1).toDate();
+        QString user;
+
+        QString NomFileDoc = exportjpgfactquer.value(0).toString() + "_"
+                + (exportjpgfactquer.value(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
+                + exportjpgfactquer.value(3).toString().replace("/",".") + "_"
+                + exportjpgfactquer.value(2).toDate().toString("yyyyMMdd");
+        if (exportjpgfactquer.value(4).toInt()==1)          // c'est un échéancier, on recherche le user à l'origine de cette facture
+        {
+            QString req = "select idDep, dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                          " on dep.idUser  = usr.idUser"
+                          " where idFacture = " + exportjpgfactquer.value(0).toString();
+            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
+            if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
+            {
+                db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            user = Listeusr.at(0).at(2).toString();
+        }
+        else
+        {
+            QString req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                          " on dep.idUser  = usr.idUser"
+                          " where idDep = " + exportjpgfactquer.value(5).toString();
+            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
+            if (Listeusr.size()==0) // il n'y a aucun utilisateur enregistré pour cette dépense, on détruit la facture
+            {
+                db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            user = Listeusr.at(0).at(1).toString();
+            NomFileDoc += "-"+exportjpgfactquer.value(5).toString();
+        }
+        CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
+        if (!QDir(CheminOKTransfrDir).exists())
+            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
+            {
+                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
+                return;
+            }
+
+        QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc;
+        QFile prov (CheminOKTransfrDoc + "prov");
+        if (prov.open(QIODevice::Append))
+        {
+            QTextStream out(&prov);
+            out << exportjpgquer.value(6).toByteArray() << "\n" ;
+        }
+        if (prov.size()>TAILLEMAXIIMAGES)
+            if (!CompressFileJPG(CheminOKTransfrDoc + "prov"))
+            {
+                db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+        prov.copy(CheminOKTransfrDoc);
+        prov.remove();
+        QSqlQuery ("update " NOM_TABLE_FACTURES " set jpg = null, LienFichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + NomFileDoc + "'"
+                   " where idFacture = " + exportjpgfactquer.value(0).toString(), db->getDataBase() );
+        faits ++;
+        int nsec = debut.secsTo(QTime::currentTime());
+        int min = nsec/60;
+        int hour = min/60;
+        min = min - (hour*60);
+        nsec = nsec - (hour*3600) - (min*60);
+        listmsg.clear();
+        duree = QTime(hour,min,nsec).toString("HH:mm:ss");
+        listmsg << "JPG - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+        QTime dieTime= QTime::currentTime().addMSecs(2);
+        while (QTime::currentTime() < dieTime)
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+        dlg_message(listmsg, 10);
+    }
+
+    //-----------------------------------------------------------------------------------------------------------------------------------------
+    //              LES PDF
+    //-----------------------------------------------------------------------------------------------------------------------------------------
+    reqpdf = "SELECT idFacture, DateFacture, LienFichier, Intitule, Echeancier, idDepense, pdf FROM " NOM_TABLE_FACTURES
+            " where pdf is not null";
+    QSqlQuery exportpdffactquer (reqpdf, db->getDataBase() );
+    for (int i=0; i<exportpdffactquer.size(); i++)
+    {
+        exportpdffactquer.seek(i);
+        if (exportpdffactquer.value(2).toString() != "")
+        {
+            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + exportpdffactquer.value(2).toString();
+            if (QFile(CheminFichier).exists())
+            {
+                QSqlQuery ("update " NOM_TABLE_FACTURES " set pdf = null where idFacture = " + exportpdffactquer.value(0).toString(), db->getDataBase() );
+                continue;
+            }
+        }
+        QDate datetransfer  = exportpdffactquer.value(1).toDate();
+        QString user;
+
+        QString NomFileDoc = exportpdffactquer.value(0).toString() + "_"
+                + (exportpdffactquer.value(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
+                + exportpdffactquer.value(3).toString().replace("/",".") + "_"
+                + exportpdffactquer.value(2).toDate().toString("yyyyMMdd");
+        if (exportpdffactquer.value(4).toInt()==1)          // c'est un échéancier, on recherche le user à l'origine de cette facture
+        {
+            QString req = "select idDep, dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                          " on dep.idUser  = usr.idUser"
+                          " where idFacture = " + exportpdffactquer.value(0).toString();
+            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
+            if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
+            {
+                db->SupprRecordFromTable(exportpdffactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            user = Listeusr.at(0).at(2).toString();
+        }
+        else
+        {
+            QString req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                          " on dep.idUser  = usr.idUser"
+                          " where idDep = " + exportpdffactquer.value(5).toString();
+            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
+            if (Listeusr.size()==0) // il n'y a aucun utilisateur enregistré pour cette dépense, on détruit la facture
+            {
+                db->SupprRecordFromTable(exportpdffactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            user = Listeusr.at(0).at(1).toString();
+            NomFileDoc += "-"+exportpdffactquer.value(5).toString();
+        }
+        CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
+        if (!QDir(CheminOKTransfrDir).exists())
+            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
+            {
+                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
+                return;
+            }
+        QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc;
+
+        QByteArray bapdf;
+        bapdf.append(exportpdffactquer.value(6).toByteArray());
+
+        Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
+        if (!document || document->isLocked() || document == Q_NULLPTR)
+        {
+            QStringList listmsg;
+            listmsg << tr("Impossible de charger le document ") + NomFileDoc;
+            dlg_message(listmsg, 3000, false);
+            QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
+            QFile   echectrsfer(echectrsfername);
+            if (echectrsfer.open(QIODevice::Append))
+            {
+                QTextStream out(&echectrsfer);
+                out << NomFileDoc << "\n" ;
+                echectrsfer.close();
+                QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
+                if (CD.open(QIODevice::Append))
+                {
+                    QTextStream out(&CD);
+                    out << exportpdffactquer.value(6).toByteArray() ;
+                }
+            }
+            QString delreq = "delete from  " NOM_TABLE_FACTURES " where idFacture = " + exportpdffactquer.value(0).toString();
+            //qDebug() << delreq;
+            QSqlQuery (delreq, db->getDataBase() );
+            delete document;
+            continue;
+        }
+        Poppler::PDFConverter *doctosave = document->pdfConverter();
+        doctosave->setOutputFileName(CheminOKTransfrDoc);
+        doctosave->convert();
+
+        QFile CC(CheminOKTransfrDoc);
+        CC.open(QIODevice::ReadWrite);
+        CC.setPermissions(QFileDevice::ReadOther
+                          | QFileDevice::ReadGroup
+                          | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                          | QFileDevice::ReadUser   | QFileDevice::WriteUser);
+        CC.close();
+        QSqlQuery ("update " NOM_TABLE_FACTURES " set pdf = null, LienFichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + NomFileDoc  + "'"
+                   " where idFacture = " + exportpdffactquer.value(0).toString(), db->getDataBase() );
+        faits ++;
+        int nsec = debut.secsTo(QTime::currentTime());
+        int min = nsec/60;
+        int hour = min/60;
+        min = min - (hour*60);
+        nsec = nsec - (hour*3600) - (min*60);
+        listmsg.clear();
+        duree = QTime(hour,min,nsec).toString("HH:mm:ss");
+        listmsg << "PDF - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+        QTime dieTime= QTime::currentTime().addMSecs(2);
+        while (QTime::currentTime() < dieTime)
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+        dlg_message(listmsg, 10);
+    }
+    int totfac = exportjpgfactquer.size() + exportpdffactquer.size();
+    if (totfac > 0)
+        Message(tr("export terminé") + "\n" + QString::number(totfac) + (totfac>1? tr(" documents comptables exportés en ") :tr(" document comptable exporté en ")) + duree);
     ConnectTimers();
 }
 
@@ -2057,17 +2350,31 @@ void RufusAdmin::Slot_SupprimerDocsEtFactures()
     }
 
     /* Supprimer les factures en attente de suppression*/
-    req = "select sup.idFacture, idUser, LienFichier from " NOM_TABLE_FACTURESASUPPRIMER " sup"
-          " left join " NOM_TABLE_FACTURES " fac"
-          " on sup.idFacture = fac.idFacture";
-    QList<QList<QVariant>> ListeFactures = DataBase::getInstance()->StandardSelectSQL(req, ok);
+    req = "select sup.idFacture, Echeancier, LienFichier from " NOM_TABLE_FACTURESASUPPRIMER " sup"
+          " left join " NOM_TABLE_FACTURES " fac on sup.idFacture = fac.idFacture";
+    QList<QList<QVariant>> ListeFactures = db->StandardSelectSQL(req, ok);
     if (ListeFactures.size()>0)
     {
         for (int i=0; i<ListeFactures.size(); i++)
         {
             int idfacture       = ListeFactures.at(i).at(0).toInt();
-            int iduser          = ListeFactures.at(i).at(1).toInt();
             QString lienfacture = ListeFactures.at(i).at(2).toString();
+            /* recherche de l'utilisateur concerné*/
+            int user;
+            if (ListeFactures.at(i).at(1).toInt() == 0)     // c'est une facture, on efface le fichier et on le copie dans facturessanslien
+                user = ListeFactures.at(i).at(2).toInt();
+            else                                            // c'est un échancier, on efface le fichier s'il n'est pas référencé par d'autres factures
+            {
+                QString userlogin = lienfacture.split("/").at(1);
+                req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" + userlogin + "'";
+                QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
+                if (Listeusr.size()== 0)
+                    continue;
+                else user = Listeusr.at(0).at(0).toInt();
+                req = "select idFacture from " NOM_TABLE_DEPENSES " where idfacture = " + QString::number(idfacture) + " and iduser = " + QString::number(user);
+                if (db->StandardSelectSQL(req, ok).size()>0)
+                    continue;
+            }
             /* on détruit l'enregistrement dans la table factures*/
             db->SupprRecordFromTable(idfacture,"idFacture",NOM_TABLE_FACTURES);
             /*  on copie le fichier dans le dossier facturessanslien*/
@@ -2082,7 +2389,7 @@ void RufusAdmin::Slot_SupprimerDocsEtFactures()
                     dlg_message(listmsg, 3000, false);
                     return;
                 }
-            CheminOKTransfrDir = CheminOKTransfrDir + "/" + Datas::I()->users->getLoginById(iduser);
+            CheminOKTransfrDir = CheminOKTransfrDir + "/" + Datas::I()->users->getLoginById(user);
             if (!QDir(CheminOKTransfrDir).exists())
                 if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
                 {

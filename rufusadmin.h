@@ -125,6 +125,7 @@ private:
     void                        closeEvent(QCloseEvent *);
     void                        AskAppareil();
     void                        ChoixMenuSystemTray(QString txt);
+    bool                        CompressFileJPG(QString nomfile, QDate datetransfert = QDate::currentDate());
     void                        ConnexionBase();
     void                        Edit(QString txt, int delaieffacement=0);
     QStringList                 DecomposeScriptSQL(QString nomficscript);

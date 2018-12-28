@@ -70,6 +70,21 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_VILLES                            "rufus.Villes"
 
 // Divers
+#define PDF                                         "pdf"
+#define JPG                                         "jpg"
+
+#define BILANORTHOPTIQUE                            "BO"
+#define CORRECTION                                  "Correction"
+#define COURRIER                                    "Courrier"
+#define DOCUMENTRECU                                "DocRecu"
+#define IMAGERIE                                    "Imagerie"
+#define ORHTOPTIE                                   "Orthoptie"
+#define PRESCRIPTION                                "Prescription"
+#define PRESCRIPTIONLUNETTES                        "PrescrLun"
+#define COURRIERADMINISTRATIF                       "DocAdmin"
+#define VIDEO                                       "Video"
+#define FACTURE                                     "Facture"
+#define ECHEANCIER                                  "Echéancier"
 #define IMAGERIE                                    "Imagerie"
 #define DOCUMENTRECU                                "DocRecu"
 
@@ -82,7 +97,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_idUser                               "idUser"
 #define TCPMSG_MAJCorrespondants                    "MajCorrespondants"
 #define TCPMSG_MAJSalAttente                        "MajSalAttente"
-#define TCPMSG_MAJDocsExternes                      "MajDocsExternes"                                   /* fin du message invitant à mettre à jour la liste des documents externes pour un patient */
+#define TCPMSG_MAJDocsExternes                      "MajDocsExternes"                /* fin du message invitant à mettre à jour la liste des documents externes pour un patient */
 #define TCPMSG_MsgBAL                               "MsgRecuDansBAL"
 #define TCPMSG_Separator                            "triumphspeedtriple1050"
 #define TCPMSG_NonPrioritaire                       "ServeurNonPrioritaire"
