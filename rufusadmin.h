@@ -138,6 +138,7 @@ private:
     void                        Remplir_Table();
     void                        RestoreFontAppli();
     void                        SupprAppareil();
+    void                        SupprimerDocsEtFactures();
     void                        setPosteImportDocs(bool a = true);
     void                        ReconstruitListeLieuxExercice();
     bool                        TraiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage = "");
@@ -170,7 +171,6 @@ private slots:
     void                        Slot_ModifMDP();
     void                        Slot_ImportDocsExternes();
     void                        Slot_RestaureBase();
-    void                        Slot_SupprimerDocsEtFactures();
     void                        Slot_TrayIconMenu();
     void                        Slot_VerifPosteImport();
     void                        Slot_VerifVersionBase();

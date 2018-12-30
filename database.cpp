@@ -272,11 +272,8 @@ QList<QList<QVariant>> DataBase::StandardSelectSQL(QString req , bool &OK, QStri
     exemple:
         bool ok = true;
         QList<QList<QVariant>> list = db->StandardSelectSQL("Select idImpression from " NOM_TABLE_IMPRESSIONS " where idpat = " + QString::number(gidPatient), ok);
-        if (!ok)                                // erreur
-            return - 2;
+        if (!ok)                                // erreur;
         if (list.size()==0)                     // réponse vide
-            return - 1;
-        return list.at(0).at(0).toInt();
      */
     QList<QList<QVariant>> listreponses;
     QSqlQuery query(req, getDataBase());
