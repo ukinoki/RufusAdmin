@@ -47,7 +47,7 @@ public:
     static void trace(QString type, QString msg, QString infoMsg = "")
     {
         QDir DirRssces;
-        QString dirlog = QDir::homePath() + NOMDIR_RUFUS NOMDIR_LOGS;
+        QString dirlog = QDir::homePath() + NOMDIR_RUFUSADMIN NOMDIR_LOGS;
         if (!DirRssces.exists(dirlog))
             DirRssces.mkdir(dirlog);
         QString datelog = QDate::currentDate().toString("yyyy-MM-dd");

@@ -24,6 +24,7 @@ QRegExp const Utils::rgx_mail = QRegExp("[A-Za-z0-9_-]+.[A-Za-z0-9_-]+@[A-Za-z0-
                               //QRegExp("^[0-9a-zA-Z]+([0-9a-zA-Z]*[-._+])*[0-9a-zA-Z]+@[0-9a-zA-Z]+([-.][0-9a-zA-Z]+)*([0-9a-zA-Z]*[.])[a-zA-Z]{2,6}$");
 
 QRegExp const Utils::rgx_adresse = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùÙçÇ'a-zA-ZŒœ0-9°, -]*");
+QRegExp const Utils::rgx_intitulecompta = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùÙçÇ'a-zA-ZŒœ0-9°, -/%]*");
 QRegExp const Utils::rgx_CP = QRegExp("[0-9]{5}");
 QRegExp const Utils::rgx_ville = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùÙçÇ'a-zA-ZŒœ -]*");
 QRegExp const Utils::rgx_telephone = QRegExp("[0-9 ]*");
@@ -45,7 +46,7 @@ QRegExp const Utils::rgx_recherche = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎ�
  *  \brief Pause
  *
  *  Methode qui permet d'attendre un certain temps (donné en paramètre)
- *
+ *  sert surtout à forcer la mise à jour d'un affichage sans attendre la fin d'une foncion
  *  \param msec : le temps à attendre en milliseconde
  *
  */
@@ -92,7 +93,7 @@ QString Utils::convertHTML(QString text)
  * \param end mettre false si on ne souhaite pas nettoyer la fin du texte
  * \return le texte nettoyé
  */
-QString Utils::trim(QString text, bool end)
+QString Utils::trim(QString text, bool end, bool removereturnend)
 {
     QString textC = text;
     QChar c;
@@ -116,6 +117,17 @@ QString Utils::trim(QString text, bool end)
                 break;
         }
 
+    if( removereturnend )                   // enlève les retours à la ligne de la fin de la fin
+        while( textC.size() )
+        {
+            int lastIndex = textC.size() - 1;
+            c = textC.at(lastIndex);
+            if( c == "\n" )
+                textC = textC.remove(lastIndex,1);
+            else
+                break;
+        }
+
     QString newText = "";
     QChar lastChar;
     for( int i=0; i < textC.size(); ++i )   // enlève les espaces, les tirets et les apostrophes en doublon
@@ -128,6 +140,7 @@ QString Utils::trim(QString text, bool end)
         newText += c;
         lastChar = c;
     }
+
     return newText;
 }
 
@@ -175,6 +188,26 @@ QString Utils::trimcapitilize(QString text, bool end, bool maj, bool lower)
         text = capitilize(text);
     return text;
 }
+
+QString Utils::retirecaracteresaccentues(QString nom)
+{
+    nom.replace(QRegExp("[éêëè]"),"e");
+    nom.replace(QRegExp("[ÉÈÊË]"),"E");
+    nom.replace(QRegExp("[àâ]"),"a");
+    nom.replace(QRegExp("[ÂÀ]"),"A");
+    nom.replace(QRegExp("[îï]"),"i");
+    nom.replace(QRegExp("[ÏÎ]"),"I");
+    nom.replace(QRegExp("[ôö]"),"o");
+    nom.replace(QRegExp("[ÔÖ]"),"O");
+    nom.replace("ù","u");
+    nom.replace("Ù","U");
+    nom.replace("ç","c");
+    nom.replace("Ç","C");
+    nom.replace("Œ","OE");
+    nom.replace("œ","oe");
+    return nom;
+}
+
 
 /*!
  * \brief Utils::dir_size
@@ -295,5 +328,13 @@ bool Utils::VerifMDP(QString MDP, QString Msg, bool mdpverified)
     return false;
 }
 
+/*---------------------------------------------------------------------------------------------------------------------
+    -- Crée le path d'un dossier --------------------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------------------------*/
+bool Utils::mkpath(QString path)
+{
+    QDir Dir;
+    return Dir.mkpath(path);
+}
 
-
+double Utils::mmToInches(double mm )  { return mm * 0.039370147; }

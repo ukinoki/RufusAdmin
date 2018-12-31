@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("30-12-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("31-12-2018/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -82,10 +82,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gNouvMDP            = "nouv";
     gAncMDP             = "anc";
     gConfirmMDP         = "confirm";
-    QString NomDirRufus = QDir::homePath() + NOMDIR_RUFUS;
-    QDir DirRufus(NomDirRufus);
-    if (!DirRufus.exists())
-        DirRufus.mkdir(NomDirRufus);
+    Utils::mkpath(QDir::homePath() + NOMDIR_RUFUS);
 
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
     setMapDatas();    
@@ -659,28 +656,24 @@ bool RufusAdmin::CompressFileJPG(QString nomfile, QDate datetransfert)
     /* on vérifie si le dossier des echecs de transferts existe sur le serveur et on le crée au besoin*/
     QString NomDirStockageImagerie  = gsettingsIni->value("DossierImagerie").toString();
     QString CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
-    QDir DirTrsferEchec;
-    if (!QDir(CheminEchecTransfrDir).exists())
-        if (!DirTrsferEchec.mkdir(CheminEchecTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            dlg_message(listmsg, 3000, false);
-            return false;
-        }
+    if (!Utils::mkpath(CheminEchecTransfrDir))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
+        QStringList listmsg;
+        listmsg << msg;
+        dlg_message(listmsg, 3000, false);
+        return false;
+    }
     /* on vérifie si le dossier provisoire existe sur le poste et on le crée au besoin*/
-    QDir DirStockProv;
     QString DirStockProvPath = QDir::homePath() + NOMDIR_RUFUS NOMDIR_PROV;
-    if (!QDir(DirStockProvPath).exists())
-        if (!DirStockProv.mkdir(DirStockProvPath))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + DirStockProvPath + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            dlg_message(listmsg, 3000, false);
-            return false;
-        }
+    if (!Utils::mkpath(DirStockProvPath))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + DirStockProvPath + "</b></font>" + tr(" invalide");
+        QStringList listmsg;
+        listmsg << msg;
+        dlg_message(listmsg, 3000, false);
+        return false;
+    }
 
     QFile CC(nomfile);
     QString filename = QFileInfo(nomfile).fileName();
@@ -1142,7 +1135,7 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
 
     QString dir = getDossierDocuments(exam);
     if (dir == "")
-        dir = QDir::homePath() + NOMDIR_RUFUSADMIN;
+        dir = QDir::homePath() + NOMDIR_RUFUS;
     QFileDialog dialog(this, "", dir);
     dialog.setFileMode(QFileDialog::Directory);
     dialog.setViewMode(QFileDialog::List);
@@ -1176,7 +1169,7 @@ void RufusAdmin::Slot_ModifDirImagerie()
 {
     QString dir = ui->StockageupLineEdit->text();
     if (dir == "")
-        dir = QDir::homePath() + NOMDIR_RUFUSADMIN;
+        dir = QDir::homePath() + NOMDIR_RUFUS;
     QFileDialog dialog(this, "", dir);
     dialog.setFileMode(QFileDialog::Directory);
     dialog.setViewMode(QFileDialog::List);
@@ -1353,13 +1346,12 @@ void RufusAdmin::Slot_ExporteDocs()
     }
     QString CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
     QDir DirTrsferEchec;
-    if (!QDir(CheminEchecTransfrDir).exists())
-        if (!DirTrsferEchec.mkdir(CheminEchecTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
-            Message(msg, 3000, false);
-            return;
-        }
+    if (!Utils::mkpath(CheminEchecTransfrDir))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
+        Message(msg, 3000, false);
+        return;
+    }
 
     int total = QSqlQuery ("SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null", db->getDataBase()).size();
     total +=    QSqlQuery ("SELECT idFacture FROM " NOM_TABLE_FACTURES " where jpg is not null or pdf is not null", db->getDataBase()).size();
@@ -1395,13 +1387,12 @@ void RufusAdmin::Slot_ExporteDocs()
     QString duree;
     QString CheminOKTransfrDir      = NomDirStockageImagerie + NOMDIR_IMAGES;
     QDir DirTrsferOK;
-    if (!QDir(CheminOKTransfrDir).exists())
-        if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            Message(msg, 3000, false);
-            return;
-        }
+    if (!Utils::mkpath(CheminOKTransfrDir))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+        Message(msg, 3000, false);
+        return;
+    }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES JPG
@@ -1424,15 +1415,14 @@ void RufusAdmin::Slot_ExporteDocs()
         }
         QDate datetransfer    = exportjpgquer.value(3).toDate();
         CheminOKTransfrDir    = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
-        if (!QDir(CheminOKTransfrDir).exists())
-            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                QStringList listmsg;
-                listmsg << msg;
-                dlg_message(listmsg, 3000, false);
-                return;
-            }
+        if (!Utils::mkpath(CheminOKTransfrDir))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            return;
+        }
         QString NomFileDoc = exportjpgquer.value(1).toString() + "_" + exportjpgquer.value(6).toString() + "-"
                 + exportjpgquer.value(2).toString().replace("/",".") + "_"
                 + exportjpgquer.value(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
@@ -1487,15 +1477,14 @@ void RufusAdmin::Slot_ExporteDocs()
         }
         QDate datetransfer    = exportpdfquer.value(3).toDate();
         CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
-        if (!QDir(CheminOKTransfrDir).exists())
-            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                QStringList listmsg;
-                listmsg << msg;
-                dlg_message(listmsg, 3000, false);
-                return;
-            }
+        if (!Utils::mkpath(CheminOKTransfrDir))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            return;
+        }
         QString NomFileDoc = exportpdfquer.value(1).toString() + "_" + exportpdfquer.value(7).toString() + "-"
                 + exportpdfquer.value(2).toString().replace("/",".") + "_"
                 + exportpdfquer.value(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
@@ -1575,15 +1564,14 @@ void RufusAdmin::Slot_ExporteDocs()
     listmsg.clear();
     duree = "";
     CheminOKTransfrDir  = NomDirStockageImagerie + NOMDIR_FACTURES;
-    if (!QDir(CheminOKTransfrDir).exists())
-        if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            dlg_message(listmsg, 3000, false);
-            return;
-        }
+    if (!Utils::mkpath(CheminOKTransfrDir))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+        QStringList listmsg;
+        listmsg << msg;
+        dlg_message(listmsg, 3000, false);
+        return;
+    }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES JPG
@@ -1643,15 +1631,14 @@ void RufusAdmin::Slot_ExporteDocs()
             NomFileDoc += "-"+ exportjpgfactquer.value(5).toString();
         }
         CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
-        if (!QDir(CheminOKTransfrDir).exists())
-            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                QStringList listmsg;
-                listmsg << msg;
-                dlg_message(listmsg, 3000, false);
-                return;
-            }
+        if (!Utils::mkpath(CheminOKTransfrDir))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            return;
+        }
 
         QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
         QFile prov (CheminOKTransfrDoc + "prov");
@@ -1738,15 +1725,14 @@ void RufusAdmin::Slot_ExporteDocs()
             NomFileDoc += "-"+exportpdffactquer.value(5).toString();
         }
         CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
-        if (!QDir(CheminOKTransfrDir).exists())
-            if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                QStringList listmsg;
-                listmsg << msg;
-                dlg_message(listmsg, 3000, false);
-                return;
-            }
+        if (!Utils::mkpath(CheminOKTransfrDir))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            return;
+        }
         QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc + "." PDF;
 
         QByteArray bapdf;
@@ -2027,7 +2013,7 @@ void RufusAdmin::Slot_RestaureBase()
                               "la sauvegarde commencera automatiquement.\n"
                               "Ce processus est long et peut durer plusieurs minutes.\n"
                               "(environ 1' pour 2 Go)\n"));
-    QString dir = QDir::homePath() + NOMDIR_RUFUSADMIN;
+    QString dir = QDir::homePath() + NOMDIR_RUFUS;
     QFileDialog dialog(Q_NULLPTR,tr("Restaurer à partir du dossier") , dir);
     dialog.setViewMode(QFileDialog::List);
     dialog.setFileMode(QFileDialog::DirectoryOnly);
@@ -2250,9 +2236,7 @@ void RufusAdmin::Slot_RestaureBase()
                 if (listchk.at(i)->isChecked())
                 {
                     QDir DirRssces(QDir(dirtorestore.absolutePath() + NOMDIR_RESSOURCES));
-                    QDir sauvRssces;
-                    if (!sauvRssces.exists(QDir::homePath() + NOMDIR_RUFUS NOMDIR_RESSOURCES))
-                        sauvRssces.mkdir(QDir::homePath() + NOMDIR_RUFUS NOMDIR_RESSOURCES);
+                    Utils::mkpath(QDir::homePath() + NOMDIR_RUFUS NOMDIR_RESSOURCES);
                     QStringList listnomfic = DirRssces.entryList();
                     for (int i=0; i<listnomfic.size(); i++)
                     {
@@ -2375,27 +2359,24 @@ void RufusAdmin::SupprimerDocsEtFactures()
                 db->SupprRecordFromTable(idfacture,"idFacture",NOM_TABLE_FACTURES);
                 /*  on copie le fichier dans le dossier facturessanslien*/
                 QString CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN;
-                QDir DirTrsferOK;
-                if (!QDir(CheminOKTransfrDir).exists())
-                    if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-                    {
-                        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                        QStringList listmsg;
-                        listmsg << msg;
-                        dlg_message(listmsg, 3000, false);
-                        return;
-                    }
+                if (!Utils::mkpath(CheminOKTransfrDir))
+                {
+                    QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                    QStringList listmsg;
+                    listmsg << msg;
+                    dlg_message(listmsg, 3000, false);
+                    return;
+                }
                 QString user = lienfacture.split("/").at(1);
                 CheminOKTransfrDir = CheminOKTransfrDir + "/" + user;
-                if (!QDir(CheminOKTransfrDir).exists())
-                    if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-                    {
-                        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                        QStringList listmsg;
-                        listmsg << msg;
-                        dlg_message(listmsg, 3000, false);
-                        return;
-                    }
+                if (!Utils::mkpath(CheminOKTransfrDir))
+                {
+                    QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                    QStringList listmsg;
+                    listmsg << msg;
+                    dlg_message(listmsg, 3000, false);
+                    return;
+                }
                 QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfacture).copy(NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN + lienfacture);
                 /*  on l'efface du dossier de factures*/
                 QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfacture).remove();
@@ -3132,10 +3113,7 @@ bool RufusAdmin::ImmediateBackup()
     {
         QString dest = NomDirDestination + "/" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmm");
         if (OKImages || OKVideos)
-        {
-            QDir dirdest;
-            dirdest.mkdir(dest);
-        }
+            Utils::mkpath(dest);
         if (OKImages)
         {
             QString Msg = (tr("Sauvegarde des fichiers d'imagerie\n")

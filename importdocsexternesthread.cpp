@@ -627,73 +627,46 @@ bool ImportDocsExternesThread::DefinitDossiers()
         emit emitmsg(listmsg, 6000, true);
         return false;
     }
-    NomDirStockageProv      = NomDirStockageImagerie + NOMDIR_PROV;
+    NomDirStockageProv = NomDirStockageImagerie + NOMDIR_PROV;
     QDir DirStockProv;
-    if (!QDir(NomDirStockageProv).exists())
-        if (!DirStockProv.mkdir(NomDirStockageProv))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + NomDirStockageProv + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            emit emitmsg(listmsg, 3000, true);
-            return false;
-        }
-    CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_IMAGES;
-    QDir DirTrsferOK;
-    if (!QDir(CheminOKTransfrDir).exists())
-        if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            emit emitmsg(listmsg, 3000, true);
-            return false;
-        }
-    CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer;
-    if (!QDir(CheminOKTransfrDir).exists())
-        if (!DirTrsferOK.mkdir(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            emit emitmsg(listmsg, 3000, true);
-            return false;
-        }
+    if (!Utils::mkpath(NomDirStockageProv))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + NomDirStockageProv + "</b></font>" + tr(" invalide");
+        QStringList listmsg;
+        listmsg << msg;
+        emit emitmsg(listmsg, 3000, true);
+        return false;
+    }
+    CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_IMAGES + "/" + datetransfer;
+    if (!Utils::mkpath(CheminOKTransfrDir))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+        QStringList listmsg;
+        listmsg << msg;
+        emit emitmsg(listmsg, 3000, true);
+        return false;
+    }
     CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
-    QDir DirTrsferEchec;
-    if (!QDir(CheminEchecTransfrDir).exists())
-        if (!DirTrsferEchec.mkdir(CheminEchecTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            emit emitmsg(listmsg, 3000, true);
-            return false;
-        }
-
+    if (!Utils::mkpath(CheminEchecTransfrDir))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
+        QStringList listmsg;
+        listmsg << msg;
+        emit emitmsg(listmsg, 3000, true);
+        return false;
+    }
+    
     if (Acces == Local)
     {
-        CheminOKTransfrDirOrigin    = NomDirStockageImagerie + NOMDIR_IMAGES + "-Origin";
-        QDir DirTrsferOKOrigin;
-        if (!QDir(CheminOKTransfrDirOrigin).exists())
-            if (!DirTrsferOKOrigin.mkdir(CheminOKTransfrDirOrigin))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDirOrigin + "</b></font>" + tr(" invalide");
-                QStringList listmsg;
-                listmsg << msg;
-                emit emitmsg(listmsg, 3000, true);
-                return false;
-            }
-        CheminOKTransfrDirOrigin    = CheminOKTransfrDirOrigin + "/" + datetransfer;
-        if (!QDir(CheminOKTransfrDirOrigin).exists())
-            if (!DirTrsferOK.mkdir(CheminOKTransfrDirOrigin))
-            {
-                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDirOrigin + "</b></font>" + tr(" invalide");
-                QStringList listmsg;
-                listmsg << msg;
-                emit emitmsg(listmsg, 3000, true);
-                return false;
-            }
+        CheminOKTransfrDirOrigin    = NomDirStockageImagerie + NOMDIR_ORIGINAUX NOMDIR_IMAGES + "/" + datetransfer;
+        if (!Utils::mkpath(CheminOKTransfrDirOrigin))
+        {
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDirOrigin + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            emit emitmsg(listmsg, 3000, true);
+            return false;
+        }
     }
     return true;
 }

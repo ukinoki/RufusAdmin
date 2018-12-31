@@ -1,7 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <QDate>
 #include <QDir>
 #include <QRegExp>
 #include <QHostAddress>
@@ -26,6 +25,7 @@ public:
     static QRegExp const rgx_mail;
 
     static QRegExp const rgx_adresse;
+    static QRegExp const rgx_intitulecompta;
     static QRegExp const rgx_CP;
     static QRegExp const rgx_ville;
     static QRegExp const rgx_telephone;
@@ -39,7 +39,8 @@ public:
     static void Pause(int msec = 1000);
     static QString convertHTML(QString text);
 
-    static QString trim(QString text, bool end=true);
+    static QString retirecaracteresaccentues(QString nom);
+    static QString trim(QString text, bool end=true, bool removereturnend = false);
     static QString capitilize(QString text);
     static QString trimcapitilize(QString, bool end = true, bool maj = true, bool lower = true);
     static QMap<QString, double> dir_size(const QString DirPath);
@@ -49,6 +50,9 @@ public:
     static QString getMACAdress();
     static QString correctquoteSQL(QString text);
     static bool VerifMDP(QString MDP, QString Msg, bool mdpverified=false);
+    static bool mkpath(QString path);
+    static double mmToInches(double mm);
+
 };
 
 #endif // UTILS_H
