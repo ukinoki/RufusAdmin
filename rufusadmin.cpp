@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("31-12-2018/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-01-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1603,33 +1603,26 @@ void RufusAdmin::Slot_ExporteDocs()
                 + (exportjpgfactquer.value(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
                 + exportjpgfactquer.value(3).toString().replace("/",".") + "_"
                 + datetransfer.toString("yyyyMMdd");
-        if (exportjpgfactquer.value(4).toInt()==1)          // c'est un échéancier, on recherche le user à l'origine de cette facture
+        // on recherche le user à l'origine de cette facture
+        QList<QList<QVariant>> Listeusr;
+        if (exportjpgfactquer.value(4).toInt()==1)          // c'est un échéancier
+            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                  " where dep.idUser  = usr.idUser"
+                  " and idFacture = " + exportjpgfactquer.value(0).toString();
+        else                                                // c'est une facture, l'iduser est dans la table
+            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                  " where dep.idUser  = usr.idUser"
+                  " and idDep = " + exportjpgfactquer.value(5).toString();
+        Listeusr = db->StandardSelectSQL(req, ok);
+        if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
         {
-            QString req = "select idDep, dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                          " where dep.idUser  = usr.idUser"
-                          " and idFacture = " + exportjpgfactquer.value(0).toString();
-            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
-            if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
-            {
-                db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-                continue;
-            }
-            user = Listeusr.at(0).at(2).toString();
+            db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            continue;
         }
-        else
-        {
-            QString req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                          " where dep.idUser  = usr.idUser"
-                          " and idDep = " + exportjpgfactquer.value(5).toString();
-            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
-            if (Listeusr.size()==0) // il n'y a aucun utilisateur enregistré pour cette dépense, on détruit la facture
-            {
-                db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-                continue;
-            }
-            user = Listeusr.at(0).at(1).toString();
-            NomFileDoc += "-"+ exportjpgfactquer.value(5).toString();
-        }
+        user = Listeusr.at(0).at(1).toString();
+        if (exportjpgfactquer.value(4).toInt()!=1)
+            NomFileDoc += "-"+exportjpgfactquer.value(5).toString();
+
         CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
         if (!Utils::mkpath(CheminOKTransfrDir))
         {
@@ -1697,33 +1690,26 @@ void RufusAdmin::Slot_ExporteDocs()
                 + (exportpdffactquer.value(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
                 + exportpdffactquer.value(3).toString().replace("/",".") + "_"
                 + datetransfer.toString("yyyyMMdd");
-        if (exportpdffactquer.value(4).toInt()==1)          // c'est un échéancier, on recherche le user à l'origine de cette facture
+        // on recherche le user à l'origine de cette facture
+        QList<QList<QVariant>> Listeusr;
+        if (exportpdffactquer.value(4).toInt()==1)          // c'est un échéancier
+            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                  " where dep.idUser  = usr.idUser"
+                  " and idFacture = " + exportpdffactquer.value(0).toString();
+        else                                                // c'est une facture, l'iduser est dans la table
+            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                  " where dep.idUser  = usr.idUser"
+                  " and idDep = " + exportpdffactquer.value(5).toString();
+        Listeusr = db->StandardSelectSQL(req, ok);
+        if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
         {
-            QString req = "select idDep, dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                          " where dep.idUser  = usr.idUser"
-                          " and idFacture = " + exportpdffactquer.value(0).toString();
-            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
-            if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
-            {
-                db->SupprRecordFromTable(exportpdffactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-                continue;
-            }
-            user = Listeusr.at(0).at(2).toString();
+            db->SupprRecordFromTable(exportpdffactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            continue;
         }
-        else
-        {
-            QString req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                          " where dep.idUser  = usr.idUser"
-                          " and idDep = " + exportpdffactquer.value(5).toString();
-            QList<QList<QVariant>> Listeusr = db->StandardSelectSQL(req, ok);
-            if (Listeusr.size()==0) // il n'y a aucun utilisateur enregistré pour cette dépense, on détruit la facture
-            {
-                db->SupprRecordFromTable(exportpdffactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-                continue;
-            }
-            user = Listeusr.at(0).at(1).toString();
+        user = Listeusr.at(0).at(1).toString();
+        if (exportpdffactquer.value(4).toInt()!=1)
             NomFileDoc += "-"+exportpdffactquer.value(5).toString();
-        }
+
         CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
         if (!Utils::mkpath(CheminOKTransfrDir))
         {
@@ -2321,7 +2307,8 @@ void RufusAdmin::Slot_RestaureBase()
 
 void RufusAdmin::SupprimerDocsEtFactures()
 {
-    db->locktables(QStringList() << NOM_TABLE_FACTURESASUPPRIMER << NOM_TABLE_DOCSASUPPRIMER << NOM_TABLE_FACTURES << NOM_TABLE_DEPENSES);
+    if (!db->locktables(QStringList() << NOM_TABLE_FACTURESASUPPRIMER << NOM_TABLE_DOCSASUPPRIMER << NOM_TABLE_FACTURES << NOM_TABLE_DEPENSES))
+        return;
     bool ok = true;
     QString NomDirStockageImagerie = gsettingsIni->value("DossierImagerie").toString();
 
@@ -2381,6 +2368,8 @@ void RufusAdmin::SupprimerDocsEtFactures()
                 /*  on l'efface du dossier de factures*/
                 QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfacture).remove();
             }
+            /* on détruit l'enregistrement dans la table FacturesASupprimer*/
+            db->SupprRecordFromTable(idfacture,"idFacture",NOM_TABLE_FACTURESASUPPRIMER);
         }
     db->commit();
 }
@@ -2911,6 +2900,8 @@ void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVid
     scriptbackup += "\n";
     scriptbackup += "DIR_IMAGES=\"" + path + NOMDIR_IMAGES + "\"";
     scriptbackup += "\n";
+    scriptbackup += "DIR_FACTURES=\"" + path + NOMDIR_FACTURES + "\"";
+    scriptbackup += "\n";
     scriptbackup += "DIR_VIDEOS=\"" + path + NOMDIR_VIDEOS + "\"";
     //# Rufus.ini
     scriptbackup += "\n";
@@ -2965,6 +2956,12 @@ void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVid
     {
         scriptbackup += "\n";
         scriptbackup +=  "cp -R $DIR_IMAGES $BACKUP_DIR/$DATE/Images";
+    }
+    // copie les fichiers facture
+    if (AvecImages)
+    {
+        scriptbackup += "\n";
+        scriptbackup +=  "cp -R $DIR_FACTURES $BACKUP_DIR/$DATE/Factures";
     }
     // copie les fichiers video
     if (AvecVideos)
@@ -3290,7 +3287,7 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);                      // le slot verifverroudossier a déconnecté un tutilisateur et modifié la salle d'attente si des patients étaient verrouillés
 
     /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
-    if (!DataBase::getInstance()->locktables(QStringList(NOM_TABLE_FLAGS)))
+    if (!db->locktables(QStringList() << NOM_TABLE_FLAGS))
        return;
     QSqlQuery quer("select MAJflagSalDat from " NOM_TABLE_FLAGS, DataBase::getInstance()->getDataBase());
     QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagSalDat) VALUES (1)";
