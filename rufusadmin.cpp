@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("01-01-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("03-01-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2307,8 +2307,6 @@ void RufusAdmin::Slot_RestaureBase()
 
 void RufusAdmin::SupprimerDocsEtFactures()
 {
-    if (!db->locktables(QStringList() << NOM_TABLE_FACTURESASUPPRIMER << NOM_TABLE_DOCSASUPPRIMER << NOM_TABLE_FACTURES << NOM_TABLE_DEPENSES))
-        return;
     bool ok = true;
     QString NomDirStockageImagerie = gsettingsIni->value("DossierImagerie").toString();
 
@@ -2324,54 +2322,37 @@ void RufusAdmin::SupprimerDocsEtFactures()
     }
 
     /* Supprimer les factures en attente de suppression*/
-    req = "select idFacture, Echeancier, LienFichier from " NOM_TABLE_FACTURESASUPPRIMER;
+    QString CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN;
+    if (!Utils::mkpath(CheminOKTransfrDir))
+    {
+        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+        QStringList listmsg;
+        listmsg << msg;
+        dlg_message(listmsg, 3000, false);
+        return;
+    }
+    req = "select LienFichier from " NOM_TABLE_FACTURESASUPPRIMER;
     QList<QList<QVariant>> ListeFactures = db->StandardSelectSQL(req, ok);
-    if (ListeFactures.size()>0)
-        for (int i=0; i<ListeFactures.size(); i++)
+    for (int i=0; i<ListeFactures.size(); i++)
+    {
+        QString lienfichier = ListeFactures.at(i).at(0).toString();
+        /*  on copie le fichier dans le dossier facturessanslien*/
+        QString user = lienfichier.split("/").at(1);
+        CheminOKTransfrDir = CheminOKTransfrDir + "/" + user;
+        if (!Utils::mkpath(CheminOKTransfrDir))
         {
-            int idfacture       = ListeFactures.at(i).at(0).toInt();
-            QString lienfacture = ListeFactures.at(i).at(2).toString();
-            /* on vérifie si l'idfacture est utilisé par d'autres dépenses (cas d'un échéancier)*/
-            bool supprimerlafacture = true;
-            bool ok = true;
-            /* si c'est un échéancier, et s'il est référencé par d'autres dépenses => on ne l'efface pas */
-            if (ListeFactures.at(i).at(1).toInt() == 1)
-            {
-                req = "select idDep from " NOM_TABLE_DEPENSES " where idfacture = " + QString::number(idfacture);
-                supprimerlafacture = (db->StandardSelectSQL(req, ok).size()==0);
-            }
-            if (supprimerlafacture)
-            {
-                /* on détruit l'enregistrement dans la table factures*/
-                db->SupprRecordFromTable(idfacture,"idFacture",NOM_TABLE_FACTURES);
-                /*  on copie le fichier dans le dossier facturessanslien*/
-                QString CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN;
-                if (!Utils::mkpath(CheminOKTransfrDir))
-                {
-                    QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                    QStringList listmsg;
-                    listmsg << msg;
-                    dlg_message(listmsg, 3000, false);
-                    return;
-                }
-                QString user = lienfacture.split("/").at(1);
-                CheminOKTransfrDir = CheminOKTransfrDir + "/" + user;
-                if (!Utils::mkpath(CheminOKTransfrDir))
-                {
-                    QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                    QStringList listmsg;
-                    listmsg << msg;
-                    dlg_message(listmsg, 3000, false);
-                    return;
-                }
-                QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfacture).copy(NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN + lienfacture);
-                /*  on l'efface du dossier de factures*/
-                QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfacture).remove();
-            }
-            /* on détruit l'enregistrement dans la table FacturesASupprimer*/
-            db->SupprRecordFromTable(idfacture,"idFacture",NOM_TABLE_FACTURESASUPPRIMER);
+            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+            QStringList listmsg;
+            listmsg << msg;
+            dlg_message(listmsg, 3000, false);
+            continue;
         }
-    db->commit();
+        QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfichier).copy(NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN + lienfichier);
+        /*  on l'efface du dossier de factures*/
+        QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfichier).remove();
+        /* on détruit l'enregistrement dans la table FacturesASupprimer*/
+        db->StandardSQL("delete from " NOM_TABLE_FACTURESASUPPRIMER " where LienFichier = '" + Utils::correctquoteSQL(lienfichier));
+    }
 }
 
 void RufusAdmin::Slot_TrayIconMenu()

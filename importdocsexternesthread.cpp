@@ -288,11 +288,14 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                 QFile FichierResize;
                 QString szorigin, szfinal;
                 QString nomfichresize = NomDirStockageProv + "/resize" + QString::number(itr) + "_" + QString::number(k) + ".jpg";
+                        // itr = iterateur sur le type d'appareil et son dossier d'échange
+                        // k = itérateur sur les fichiers contenus dans ce dossier
                 QStringList listfichresize = QDir(NomDirStockageProv).entryList(QDir::Files | QDir::NoDotAndDotDot);
+                // on vide le dossier provisoire
                 for (int t=0; t<listfichresize.size(); t++)
                 {
                     QString nomdocrz  = listfichresize.at(t);
-                    QString CheminFichierResize     = NomDirStockageProv + "/" + nomdocrz;
+                    QString CheminFichierResize = NomDirStockageProv + "/" + nomdocrz;
                     QFile(CheminFichierResize).remove();
                 }
                 if (FichierImage.open(QIODevice::ReadOnly))
