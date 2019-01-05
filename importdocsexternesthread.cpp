@@ -39,7 +39,6 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
 
     -> docsquer.value(0) = le titre de l'examen
     -> docsquer.value(1) = le nom de l'appareil*/
-    //qDebug() << "OK import " + QString::number(++a);
     if (EnCours)
         return;
     EnCours = true;
@@ -77,13 +76,13 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                 if (nomdoc.contains("smbtest"))
                     continue;
                 QString CheminFichierImage      = NomDirDoc + "/" + nomdoc;
-                QFile   jnaltrsferfile(CheminOKTransfrDir + "/0JournalTransferts - " + QDate::currentDate().toString("yyyy-MM-dd") + ".txt");
+                QFile   jnaltrsferfile(CheminOKTransfrDir + "/0JournalTransferts - " + datetransfer + ".txt");
                 QString commentechec;
 
                 FichierOrigine.setFileName(CheminFichierImage);
                 QString datetimecreation = QFileInfo(FichierOrigine).created().toString("yyyyMMdd-HHmmss");
 
-                 // Date et type du document------------------------------------------------------------------------------------------------------------------------------------------------
+                // Date et type du document------------------------------------------------------------------------------------------------------------------------------------------------
                 QString datestring  = "";
                 if (Appareil == "TOPCON ALADDIN")
                 {
@@ -95,6 +94,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                 }
                 else if (Appareil == "TOPCON ALADDIN II")
                 {
+                    //1051_MIGUEL_JEAN-ROBERT_01-06-1948_Aladdin_06_06_2018_13_16.pdf
                     QStringList listn   = nomdoc.split("_");
                     int n               = listn.size();
                     QString jour        = listn.at(n-5);
@@ -172,6 +172,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                     if (typeexam == "Disc3D")   typeexam = "Glaucome";
                     SousTypeDoc = "Canon " + typeexam + " " + cote;
                     if (typeexam == "Disc3D")   typeexam = "Glaucome";
+                    datetimecreation = datestring + "-" + nomdoc.split("_").at(2);
                 }
                 else if (Appareil == "NIDEK-RNM")
                 {
@@ -224,6 +225,10 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                     // il faut découper le nom de fichier à partir de la fin parce que c'est invariable
                     // si on fait l'inverse et qu'on met un tiret dans le nom de famille p.e.,
                     // la fonction plante dans ses découpages de QStringList et le programme avec
+                    /*
+                     * 368_Zammit-Sauveur-2017-06-14T17_39_21Z-eidon_20129-right-0-visible-2017-06-14T17_39_26Z--report.pdf
+                     * 368_Zammit-Sauveur-2017-06-16T12_27_13Z-eidon_20129-right-0-af-2017-06-16T12_27_18Z--image.jpg
+                    */
                     if (nomdoc.split("-").size()<11)
                     {
                         commentechec =  tr("nom invalide");
@@ -288,12 +293,10 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                 }
                 // Contenu du document------------------------------------------------------------------------------------------------------------------------------------------------
                 QByteArray ba;
+                QString nomfichresize = NomDirStockageProv + "/resize" + nomdoc;
                 QString szorigin, szfinal;
-                QString nomfichresize = NomDirStockageProv + "/resize" + nomdoc + ".jpg";
-                        // itr = iterateur sur le type d'appareil et son dossier d'échange
-                        // k = itérateur sur les fichiers contenus dans ce dossier
-                QStringList listfichresize = QDir(NomDirStockageProv).entryList(QDir::Files | QDir::NoDotAndDotDot);
                 // on vide le dossier provisoire
+                QStringList listfichresize = QDir(NomDirStockageProv).entryList(QDir::Files | QDir::NoDotAndDotDot);
                 for (int t=0; t<listfichresize.size(); t++)
                 {
                     QString nomdocrz  = listfichresize.at(t);
@@ -432,8 +435,6 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                     continue;
                 }
 
-
-
                 /* _______________________________________________________________________________________________________________________________________________________
                  * Enregistrement du fichier dans la base
                  * Si on est sur le réseau local, l'enregistrement se fait dans la table Impressions et le fichier est copié à son adresse définitive
@@ -474,7 +475,6 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                             + "0" + ", '"
                             IMAGERIE "', "
                             + QString::number(idLieuExercice) + ")";
-                    //qDebug() << req;
 
                     if(query.exec(req))
                     {
@@ -522,7 +522,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QSqlQuery docsquer)     /
                     }
                     else
                     {
-                        commentechec =  tr("impossible d'enregistrer ") + nomdoc;
+                        commentechec = tr("impossible d'enregistrer ") + nomdoc;
                         EchecImport(Titredoc + " - " + nomdoc + " - " + commentechec + " - " + QHostInfo::localHostName());
                     }
                 }
