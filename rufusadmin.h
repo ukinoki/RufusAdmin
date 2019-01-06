@@ -150,6 +150,7 @@ private:
     void                        ConnectTimerInactive();
     void                        DisconnectTimerInactive();
 
+    void                        ExporteDocs();
 private slots:
     void                        AfficheMessageImport(QStringList listmsg, int pause, bool bottom=true);
     void                        ListeAppareils();
@@ -161,7 +162,6 @@ private slots:
     void                        Slot_EnregDossierStockageApp(QString dir);
     void                        Slot_EnregistreEmplacementServeur(int);
     void                        Slot_EnregistreNouvMDPAdmin();
-    void                        Slot_ExporteDocs();
     void                        Slot_GestionBanques();
     void                        Slot_GestionMotifs();
     void                        Slot_GestLieux();

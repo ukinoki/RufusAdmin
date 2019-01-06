@@ -40,7 +40,7 @@ class ImportDocsExternesThread : public QObject
     Q_OBJECT
 public:
     explicit ImportDocsExternesThread(int iduser, int idlieu, bool local = true);
-    void                        RapatrieDocumentsThread(QSqlQuery docsquer);
+    void                        RapatrieDocumentsThread(QList<QList<QVariant>> listdocs);
 
 signals:
     void                        emitmsg(QStringList listmsg, int pause, bool bottom);

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("05-01-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("06-01-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -193,7 +193,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ConnectTimers();
 
     connect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
-    connect(ui->ExportImagespushButton,         SIGNAL(clicked(bool)),              this,   SLOT(Slot_ExporteDocs()));
+    connect(ui->ExportImagespushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ExporteDocs);
     connect(ui->FermepushButton,                SIGNAL(clicked(bool)),              this,   SLOT(Slot_MasqueAppli()));
     connect(ui->GestionBanquespushButton,       SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestionBanques()));
     connect(ui->GestLieuxpushButton,            SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestLieux()));
@@ -361,9 +361,10 @@ void RufusAdmin::ListeAppareils()
     QString req = "select distinct list.TitreExamen, list.NomAPPareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon, " NOM_TABLE_LISTEAPPAREILS " list"
           " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(idlieuExercice);
     //qDebug()<< req;
-    QSqlQuery docsquer(req, db->getDataBase());
-    if (docsquer.size()>0)
-        ImportDocsExtThread->RapatrieDocumentsThread(docsquer);
+    bool ok;
+    QList<QList<QVariant>> listdocs = db->StandardSelectSQL(req, ok);
+    if (listdocs.size()>0)
+        ImportDocsExtThread->RapatrieDocumentsThread(listdocs);
 }
 
 void RufusAdmin::closeEvent(QCloseEvent *)
@@ -617,7 +618,7 @@ void RufusAdmin::ConnectTimers()
     connect (gTimerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
     if (gMode != Distant)
     {
-        connect (gTimerUserConnecte,    SIGNAL(timeout()),      this,   SLOT(Slot_ExporteDocs()));
+        connect (gTimerUserConnecte,    &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
         connect (gTimerSupprDocs,       &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
         connect (gTimerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     }
@@ -629,12 +630,12 @@ void RufusAdmin::ConnectTimers()
 void RufusAdmin::DisconnectTimers()
 {
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
-    disconnect (gTimerSupprDocs,       &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
+    disconnect (gTimerSupprDocs,        &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
     disconnect (gTimerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
     disconnect (gTimerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
     disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
     disconnect (gTimerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
-    disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ExporteDocs()));
+    disconnect (gTimerUserConnecte,     &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
     DisconnectTimerInactive();
     gTimerSalDatCorrespMsg  ->disconnect();
     gTimerVerifVerrou       ->disconnect();
@@ -665,7 +666,7 @@ bool RufusAdmin::CompressFileJPG(QString nomfile, QDate datetransfert)
         return false;
     }
     /* on vérifie si le dossier provisoire existe sur le poste et on le crée au besoin*/
-    QString DirStockProvPath = QDir::homePath() + NOMDIR_RUFUS NOMDIR_PROV;
+    QString DirStockProvPath = NomDirStockageImagerie + NOMDIR_PROV;
     if (!Utils::mkpath(DirStockProvPath))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + DirStockProvPath + "</b></font>" + tr(" invalide");
@@ -676,13 +677,16 @@ bool RufusAdmin::CompressFileJPG(QString nomfile, QDate datetransfert)
     }
 
     QFile CC(nomfile);
+    double sz = CC.size();
+    if (sz < TAILLEMAXIIMAGES)
+        return true;
+    QImage  img(nomfile);
     QString filename = QFileInfo(nomfile).fileName();
     QString nomfichresize = DirStockProvPath + "/" + filename;
     QFile fileresize(nomfichresize);
     if (fileresize.exists())
         fileresize.remove();
     QFile echectrsfer(CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfert.toString("yyyy-MM-dd") + ".txt");
-    QImage  img(nomfile);
     QPixmap pixmap;
     double w = img.width();
     double h = img.height();
@@ -711,21 +715,18 @@ bool RufusAdmin::CompressFileJPG(QString nomfile, QDate datetransfert)
         }
         return false;
     }
+    CC.remove();
     /* on comprime*/
     int tauxcompress = 90;
-    while (fileresize.size() > TAILLEMAXIIMAGES && tauxcompress > 1)
+    while (sz > TAILLEMAXIIMAGES && tauxcompress > 1)
     {
         pixmap.save(nomfichresize, "jpeg",tauxcompress);
-        fileresize.open(QIODevice::ReadWrite);
-        if (fileresize.size() > TAILLEMAXIIMAGES & tauxcompress > 1)
-        {
-            tauxcompress -=10;
-            if (tauxcompress<1)
-                fileresize.copy(nomfile);
-        }
-        fileresize.close();
-        fileresize.remove();
+        sz = fileresize.size();
+        tauxcompress -= 10;
     }
+    fileresize.copy(nomfile);
+    fileresize.close();
+    fileresize.remove();
     return true;
 }
 
@@ -1333,7 +1334,7 @@ void RufusAdmin::Slot_CalcExporteDocs()
     ui->ExportImagespushButton->setEnabled(QSqlQuery(totreq,db->getDataBase()).size()>0);
 }
 
-void RufusAdmin::Slot_ExporteDocs()
+void RufusAdmin::ExporteDocs()
 {
     bool ok;
     QString NomDirStockageImagerie  = gsettingsIni->value("DossierImagerie").toString();
@@ -1345,14 +1346,12 @@ void RufusAdmin::Slot_ExporteDocs()
         return;
     }
     QString CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
-    QDir DirTrsferEchec;
     if (!Utils::mkpath(CheminEchecTransfrDir))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
         Message(msg, 3000, false);
         return;
     }
-
     int total = QSqlQuery ("SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null", db->getDataBase()).size();
     total +=    QSqlQuery ("SELECT idFacture FROM " NOM_TABLE_FACTURES " where jpg is not null or pdf is not null", db->getDataBase()).size();
     if (total>100)
@@ -1426,23 +1425,43 @@ void RufusAdmin::Slot_ExporteDocs()
         QString NomFileDoc = exportjpgquer.value(1).toString() + "_" + exportjpgquer.value(6).toString() + "-"
                 + exportjpgquer.value(2).toString().replace("/",".") + "_"
                 + exportjpgquer.value(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
-                + "-" + exportjpgquer.value(0).toString()  + "." JPG;
-        QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc;
-        QFile prov (CheminOKTransfrDoc + "prov");
-        if (prov.open(QIODevice::Append))
-        {
-            QTextStream out(&prov);
-            out << exportjpgquer.value(4).toByteArray() << "\n" ;
-        }
-        if (prov.size()>TAILLEMAXIIMAGES)
-            if (!CompressFileJPG(CheminOKTransfrDoc + "prov"))
+                + "-" + exportjpgquer.value(0).toString();
+        QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
+        QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
+        QByteArray ba = exportjpgquer.value(6).toByteArray();
+        QPixmap pix;
+        pix.loadFromData(ba);
+        /*
+         * On utilise le passage par les QPixmap parce que le mèthode suivante consistant
+         * à réintégrer le QByteArray directement dans le fichier aboutit à un fichier corrompu...
+         * QFile prov (CheminOKTransfrProv);
+            if (prov.open(QIODevice::Append))
             {
-                QSqlQuery ("delete from " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
-                continue;
+                QTextStream out(&prov);
+                out << ba;
             }
-        prov.copy(CheminOKTransfrDoc);
-        prov.remove();
-        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null, lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) + "' where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
+        */
+        if (!pix.save(CheminOKTransfrProv, "jpeg"))
+        {
+            qDebug() << "erreur";
+            return;
+        }
+        if (!CompressFileJPG(CheminOKTransfrProv))
+        {
+            db->SupprRecordFromTable(exportjpgquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            continue;
+        }
+        QFile prov(CheminOKTransfrProv);
+        if (prov.open(QIODevice::ReadWrite))
+        {
+            prov.copy(CheminOKTransfrDoc);
+            prov.remove();
+        }
+        else
+            return;
+        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null,"
+                   " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
+                   "' where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
@@ -1633,21 +1652,39 @@ void RufusAdmin::Slot_ExporteDocs()
             return;
         }
 
-        QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
-        QFile prov (CheminOKTransfrDoc + "prov");
-        if (prov.open(QIODevice::Append))
-        {
-            QTextStream out(&prov);
-            out << exportjpgquer.value(6).toByteArray() << "\n" ;
-        }
-        if (prov.size()>TAILLEMAXIIMAGES)
-            if (!CompressFileJPG(CheminOKTransfrDoc + "prov"))
+        QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
+        QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
+        QByteArray ba = exportjpgfactquer.value(6).toByteArray();
+        QPixmap pix;
+        pix.loadFromData(ba);
+        /*
+         * On utilise le passage par les QPixmap parce que le mèthode suivante consistant
+         * à réintégrer le QByteArray directement dans le fichier aboutit à un fichier corrompu et je ne sais pas pourquoi
+         * QFile prov (CheminOKTransfrProv);
+            if (prov.open(QIODevice::Append))
             {
-                db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-                continue;
+                QTextStream out(&prov);
+                out << ba;
             }
-        prov.copy(CheminOKTransfrDoc);
-        prov.remove();
+        */
+        if (!pix.save(CheminOKTransfrProv, "jpeg"))
+        {
+            qDebug() << "erreur";
+            return;
+        }
+        if (!CompressFileJPG(CheminOKTransfrProv))
+        {
+            db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            continue;
+        }
+        QFile prov(CheminOKTransfrProv);
+        if (prov.open(QIODevice::ReadWrite))
+        {
+            prov.copy(CheminOKTransfrDoc);
+            prov.remove();
+        }
+        else
+            return;
         QSqlQuery ("update " NOM_TABLE_FACTURES " set jpg = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc) + "." JPG "'"
                    " where idFacture = " + exportjpgfactquer.value(0).toString(), db->getDataBase() );
         faits ++;
@@ -2321,7 +2358,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
         db->StandardSQL("delete from " NOM_TABLE_DOCSASUPPRIMER " where filepath = '" + Utils::correctquoteSQL(ListeDocs.at(i).at(0).toString()) + "'");
     }
 
-    /* Supprimer les factures en attente de suppression*/
+    /* Supprimer les factures en attente de suppression - même démarche mais on fait une copie de la facture dans le dossier FACTURESSANSLIEN avant de la supprimer*/
     QString CheminOKTransfrDir = NomDirStockageImagerie + NOMDIR_FACTURESSANSLIEN;
     if (!Utils::mkpath(CheminOKTransfrDir))
     {
@@ -2351,7 +2388,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
         /*  on l'efface du dossier de factures*/
         QFile(NomDirStockageImagerie + NOMDIR_FACTURES + lienfichier).remove();
         /* on détruit l'enregistrement dans la table FacturesASupprimer*/
-        db->StandardSQL("delete from " NOM_TABLE_FACTURESASUPPRIMER " where LienFichier = '" + Utils::correctquoteSQL(lienfichier));
+        db->StandardSQL("delete from " NOM_TABLE_FACTURESASUPPRIMER " where LienFichier = '" + Utils::correctquoteSQL(lienfichier) + "'");
     }
 }
 
