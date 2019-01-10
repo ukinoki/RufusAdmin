@@ -30,7 +30,7 @@ class UpDialog : public QDialog
 
 public:
     explicit UpDialog(QString NomSettings, QString NomPosition, QWidget *parent = Q_NULLPTR);
-    explicit UpDialog(QWidget *parent=0);
+    explicit UpDialog(QWidget *parent=Q_NULLPTR);
     enum Button {
                 NoButton                = 0x0,
                 ButtonPrint             = 0x1,
@@ -49,19 +49,27 @@ private:
     QString         Boutons;
     QString         NomFichIni;
     QSettings       *SettingsIni;
+    QHBoxLayout     *laybuttons;
+    QWidget         *widgbuttons;
     void            AjouteLay();
     void            closeEvent(QCloseEvent *);
     void            UpdateTabOrder();
+    double          stageheight = 35;
 
 public:
     UpSmallButton   *OKButton, *CancelButton, *PrintButton, *SupprButton, *CloseButton, *EditButton;
-    QHBoxLayout     *laybuttons;
     void            setEnregPosition(bool);
     void            AjouteLayButtons(Buttons Button=ButtonOK);
     void            AjouteWidgetLayButtons(QWidget *widg, bool ALaFin = true);
     void            setMode(QString);
     void            TuneSize();
     QString         mode();
+    QVBoxLayout*    dlglayout();
+    QHBoxLayout*    buttonslayout();
+    QWidget*        widgetbuttons();
+    void            setStageCount(double stage =  0);
+
+    QObject     *mData;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(UpDialog::Buttons)

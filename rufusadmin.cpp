@@ -93,33 +93,30 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     idlieuExercice = DetermineLieuExercice();
     gNomLieuExercice = "";
-    QSqlQuery lieuquer("select nomlieu from " NOM_TABLE_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), db->getDataBase());
-    lieuquer.first();
-    gNomLieuExercice = lieuquer.value(0).toString();
+    QList<QList<QVariant>> listlieux = db->StandardSelectSQL("select nomlieu from " NOM_TABLE_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), ok);
+    gNomLieuExercice = listlieux.at(0).at(0).toString();
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + gNomLieuExercice + "</b></font> ");
 
     //recherche de l'idUser du compte AdminDocs
     idAdminDocs = 0;
     QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
-    QSqlQuery usrquer(req, db->getDataBase());
-    if (usrquer.size()==0)
+    QList<QList<QVariant>> listusr = db->StandardSelectSQL(req, ok);
+    if (listusr.size()==0)
     {
         req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserNom = '" NOM_ADMINISTRATEURDOCS "'";
-        QSqlQuery quer(req,db->getDataBase());
-        if (quer.size()>0)
+        QList<QList<QVariant>> listusers = db->StandardSelectSQL(req, ok);
+        if (listusers.size()>0)
         {
-            quer.first();
-            QSqlQuery("update " NOM_TABLE_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'",db->getDataBase());
+            db->StandardSQL("update " NOM_TABLE_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'");
         }
         else
-            QSqlQuery("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')",db->getDataBase());
-        usrquer.exec();
-        QSqlQuery mdpquer("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,db->getDataBase());
-        mdpquer.first();
-        if (mdpquer.value(0).toString() == "")
-            QSqlQuery("update " NOM_TABLE_PARAMSYSTEME " set mdpadmin = '" +db->getDataBase().password() + "'", db->getDataBase());
+            db->StandardSQL("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')");
+        req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
+        listusr = db->StandardSelectSQL(req, ok);
+        QList<QList<QVariant>> listmdp = db->StandardSelectSQL("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,ok);
+        if (listmdp.at(0).at(0).toString() == "")
+            db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set mdpadmin = '" + db->getDataBase().password() + "'");
     }
-    usrquer.first();
     UserAdmin = new User(DataBase::getInstance()->loadUserDatabyLogin(NOM_ADMINISTRATEURDOCS));
     idAdminDocs = UserAdmin->id();
 
@@ -129,15 +126,14 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
                    " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                    " and idlieu = " + QString::number(idlieuExercice) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
-    QSqlQuery usr2quer(reqp, db->getDataBase());
-    if (usr2quer.size()>0)
+    QList<QList<QVariant>> listusr2 = db->StandardSelectSQL(reqp, ok);
+    if (listusr2.size()>0)
     {
-        usr2quer.first();
-        UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + usr2quer.value(0).toString().remove(" - " NOM_ADMINISTRATEURDOCS), tr("Sortie du programme"));
+        UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + listusr2.at(0).at(0).toString().remove(" - " NOM_ADMINISTRATEURDOCS), tr("Sortie du programme"));
         exit(0);
     }
     else
-        QSqlQuery("delete from " NOM_TABLE_USERSCONNECTES " where idUser = " + QString::number(idAdminDocs) + " and idlieu = " + QString::number(idlieuExercice), db->getDataBase());
+        db->StandardSQL("delete from " NOM_TABLE_USERSCONNECTES " where idUser = " + QString::number(idAdminDocs) + " and idlieu = " + QString::number(idlieuExercice));
 
     // 5 mettre en place le TcpSocket
     gIPadr                      = Utils::getIpAdress();
@@ -146,7 +142,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     TCPServer                   ->setId(idAdminDocs);
     connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
     TCPServer                   ->start();
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'", db->getDataBase());
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'");
     gflagCorrespdts             = GetflagCorrespdts();
     gflagSalDat                 = GetflagSalDat();
 
@@ -166,11 +162,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Slot_VerifPosteImport();
     Slot_VerifVersionBase();
     Slot_CalcExporteDocs();
-    QSqlQuery msgquer("select max(creele) from " NOM_TABLE_MESSAGES, db->getDataBase());
-    if (!msgquer.first())
+    QList<QList<QVariant>> listdate = db->StandardSelectSQL("select max(creele) from " NOM_TABLE_MESSAGES, ok);
+    if (listdate.size()==0)
         gDateDernierMessage = QDateTime::currentDateTime();
     else
-        gDateDernierMessage = msgquer.value(0).toDateTime();
+        gDateDernierMessage = listdate.at(0).at(0).toDateTime();
 
     // Lancement du timer de vérification des verrous - +++ à lancer après le timer gTimerVerifGestDocs puisqu'il l'utilise
     gTimerVerifVerrou->start(60000);// "toutes les 60 secondes"
@@ -259,9 +255,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Remplir_Table();
     if (gMode == Poste)
     {
-        QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
-        dirquer.first();
-        QString NomDirStockageImagerie = dirquer.value(0).toString();
+        QList<QList<QVariant>> listdir = db->StandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
+        QString NomDirStockageImagerie = listdir.at(0).at(0).toString();
         gsettingsIni->setValue("DossierImagerie",NomDirStockageImagerie);
         setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + gNomLieuExercice);
     }
@@ -283,14 +278,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ReconstruitListeLieuxExercice();
 
     QString VerifBasereq = "select VersionBase from " NOM_TABLE_PARAMSYSTEME;
-    QSqlQuery VersionBaseQuery(VerifBasereq,db->getDataBase());
-    if (VersionBaseQuery.lastError().type() != QSqlError::NoError || VersionBaseQuery.size()==0)
+    QList<QList<QVariant>> listversion = db->StandardSelectSQL(VerifBasereq, ok);
+    if (!ok || listversion.size()==0)
         ui->VersionBaselabel->setText(tr("Version de la base") + "\t<font color=\"red\"><b>" + tr("inconnue") + "</b></font>");
     else
-    {
-        VersionBaseQuery.first();
-        ui->VersionBaselabel->setText(tr("Version de la base ") + "<font color=\"green\"><b>" + VersionBaseQuery.value(0).toString() + "</b></font>");
-    }
+        ui->VersionBaselabel->setText(tr("Version de la base ") + "<font color=\"green\"><b>" + listversion.at(0).at(0).toString() + "</b></font>");
     ui->VersionRufuslabel->setText(tr("Version de RufusAdmin ") + "<font color=\"green\"><b>" + qApp->applicationVersion() + "</b></font>");
 
     ui->Sauvegardeframe         ->setEnabled(gMode == Poste);
@@ -300,28 +292,26 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (gMode == Poste)
     {
         QString reqBkup = "select LundiBkup, MardiBkup, MercrediBkup, JeudiBkup, VendrediBkup, SamediBkup, DimancheBkup, HeureBkup, DirBkup from " NOM_TABLE_PARAMSYSTEME;
-        QSqlQuery querBkup(reqBkup, db->getDataBase());
-        TraiteErreurRequete(querBkup, reqBkup);
-        querBkup.first();
-        QString DirBkup = querBkup.value(8).toString();
+        QList<QList<QVariant>> listBKup = db->StandardSelectSQL(reqBkup, ok);
+        QString DirBkup = listBKup.at(0).at(8).toString();
         if (QDir(DirBkup).exists())
             ui->DirBackupuplineEdit->setText(DirBkup);
-        if (querBkup.value(7).toTime().isValid())
-            ui->HeureBackuptimeEdit ->setTime(querBkup.value(7).toTime());
-        ui->LundiradioButton    ->setChecked(querBkup.value(0).toInt()==1);
-        ui->MardiradioButton    ->setChecked(querBkup.value(1).toInt()==1);
-        ui->MercrediradioButton ->setChecked(querBkup.value(2).toInt()==1);
-        ui->JeudiradioButton    ->setChecked(querBkup.value(3).toInt()==1);
-        ui->VendrediradioButton ->setChecked(querBkup.value(4).toInt()==1);
-        ui->SamediradioButton   ->setChecked(querBkup.value(5).toInt()==1);
-        ui->DimancheradioButton ->setChecked(querBkup.value(6).toInt()==1);
-        connect(ui->DirBackuppushButton,        SIGNAL(clicked(bool)),      this,   SLOT(Slot_ModifDirBackup()));
+        if (listBKup.at(0).at(7).toTime().isValid())
+            ui->HeureBackuptimeEdit->setTime(listBKup.at(0).at(7).toTime());
+        ui->LundiradioButton    ->setChecked(listBKup.at(0).at(0).toInt()==1);
+        ui->MardiradioButton    ->setChecked(listBKup.at(0).at(1).toInt()==1);
+        ui->MercrediradioButton ->setChecked(listBKup.at(0).at(2).toInt()==1);
+        ui->JeudiradioButton    ->setChecked(listBKup.at(0).at(3).toInt()==1);
+        ui->VendrediradioButton ->setChecked(listBKup.at(0).at(4).toInt()==1);
+        ui->SamediradioButton   ->setChecked(listBKup.at(0).at(5).toInt()==1);
+        ui->DimancheradioButton ->setChecked(listBKup.at(0).at(6).toInt()==1);
+        connect(ui->DirBackuppushButton,        &QPushButton::clicked,      this,   &RufusAdmin::Slot_ModifDirBackup);
         QList<QRadioButton*> listbutton2 = ui->JourSauvegardegroupBox->findChildren<QRadioButton*>();
         for (int i=0; i<listbutton2.size(); i++)
-            connect(listbutton2.at(i),          SIGNAL(clicked(bool)),      this,   SLOT(Slot_ModifDateBackup()));
-        connect(ui->HeureBackuptimeEdit,        SIGNAL(timeChanged(QTime)), this,   SLOT(Slot_ModifDateBackup()));
-        connect(ui->EffacePrgSauvupPushButton,  SIGNAL(clicked(bool)),      this,   SLOT(Slot_EffacePrgSauvegarde()));
-        connect(ui->ImmediatBackupupPushButton, &QPushButton::clicked,      [=] {ImmediateBackup();});
+            connect(listbutton2.at(i),          &QPushButton::clicked,      this,   &RufusAdmin::Slot_ModifDateBackup);
+        connect(ui->HeureBackuptimeEdit,        &QTimeEdit::timeChanged,    this,   &RufusAdmin::Slot_ModifDateBackup);
+        connect(ui->EffacePrgSauvupPushButton,  &QPushButton::clicked,      this,   &RufusAdmin::Slot_EffacePrgSauvegarde);
+        connect(ui->ImmediatBackupupPushButton, &QPushButton::clicked,      this,   &RufusAdmin::ImmediateBackup);
     }
 
     trayIconMenu = new QMenu();
@@ -330,13 +320,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gRufusAdminTrayIcon->setContextMenu(trayIconMenu);
     gRufusAdminTrayIcon->setIcon(gIconRufusAdmin);
     gRufusAdminTrayIcon->setVisible(true);
-    connect(trayIconMenu, SIGNAL(aboutToShow()), this,  SLOT(Slot_TrayIconMenu()));
+    connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::Slot_TrayIconMenu);
     ui->MessageupLabel->setText("");
 
     ImportDocsExtThread = new ImportDocsExternesThread(idAdminDocs, idlieuExercice, gMode != Distant);
-    connect(ImportDocsExtThread, SIGNAL(emitmsg(QStringList, int, bool)),  this,       SLOT(AfficheMessageImport(QStringList, int, bool)));
-    connect(ImportDocsExtThread, SIGNAL(emitmsg(QString)),      TCPServer,  SLOT(envoyerATous(QString)));
-    connect(&tim,    SIGNAL(timeout()),  this,   SLOT(ListeAppareils()));
+    connect(ImportDocsExtThread,    SIGNAL(emitmsg(QStringList, int, bool)),    this,       SLOT(AfficheMessageImport(QStringList, int, bool)));
+    connect(ImportDocsExtThread,    SIGNAL(emitmsg(QString)),                   TCPServer,  SLOT(envoyerATous(QString)));
+    connect(&tim,                   &QTimer::timeout,                           this,       &RufusAdmin::ListeAppareils);
     tim             .setInterval(5000);
     Slot_ImportDocsExternes();
 
@@ -375,9 +365,7 @@ void RufusAdmin::closeEvent(QCloseEvent *)
     QString req = "delete from " NOM_TABLE_USERSCONNECTES
                   " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                   " and idlieu = " + QString::number(idlieuExercice);
-    QSqlQuery qer(req,db->getDataBase());
-    TraiteErreurRequete(qer,req,"");
-
+    db->StandardSQL(req);
 }
 
 void RufusAdmin::AskAppareil()
@@ -754,12 +742,7 @@ double RufusAdmin::CalcBaseSize()
                       " or table_schema = 'rufus'"
                       " GROUP BY table_schema)"
                       " as bdd";
-    QSqlQuery sizequer (sizereq,db->getDataBase());
-    if (sizequer.size()>0)
-    {
-        sizequer.first();
-        basesize = sizequer.value(0).toDouble();
-    }
+    basesize = db->getFirstRecordFromStandardSelectSQL(sizereq,ok).at(0).toDouble();
     return basesize;
 }
 
@@ -810,15 +793,10 @@ int RufusAdmin::DetermineLieuExercice()
     {
         QString lieuxreq = "select idLieu, NomLieu from " NOM_TABLE_LIEUXEXERCICE
                            " where idLieu <> (select idLieuParDefaut from " NOM_TABLE_PARAMSYSTEME ")";
-        //qDebug() << lieuxreq;
-        QSqlQuery lxquer(lieuxreq,db->getDataBase());
-        TraiteErreurRequete(lxquer, lieuxreq);
-        if (lxquer.size()==1)
-        {
-            lxquer.first();
-            idLieu = lxquer.value(0).toInt();
-        }
-        else if (lxquer.size()>1)
+        QList<QList<QVariant>> listlieux = db->StandardSelectSQL(lieuxreq, ok);
+        if (listlieux.size()==1)
+            idLieu = listlieux.at(0).at(0).toInt();
+        else if (listlieux.size()>1)
         {
             DisconnectTimerInactive();
             UpDialog *gAskLieux     = new UpDialog();
@@ -831,40 +809,39 @@ int RufusAdmin::DetermineLieuExercice()
 
             QFontMetrics fm         = QFontMetrics(qApp->font());
             int hauteurligne        = int(fm.height()*1.6);
-            boxlieux                ->setFixedHeight(((lxquer.size() + 1)*hauteurligne)+5);
+            boxlieux                ->setFixedHeight(((listlieux.size() + 1)*hauteurligne)+5);
             QVBoxLayout *vbox       = new QVBoxLayout;
-            for (int i=0; i<lxquer.size(); i++)
+            for (int i=0; i<listlieux.size(); i++)
             {
-                lxquer          .seek(i);
                 UpRadioButton   *pradiobutt = new UpRadioButton(boxlieux);
-                pradiobutt      ->setText(lxquer.value(1).toString());
-                pradiobutt      ->setAccessibleName(lxquer.value(0).toString());
+                pradiobutt      ->setText(listlieux.at(i).at(1).toString());
+                pradiobutt      ->setAccessibleName(listlieux.at(i).at(0).toString());
                 QString data ("");
-                if (lxquer.value(1).toString()!="")
-                    data += lxquer.value(1).toString();
+                if (listlieux.at(i).at(1).toString()!="")
+                    data += listlieux.at(i).at(1).toString();
                 if (data == "" )
                 {
-                    data += lxquer.value(2).toString();
-                    if (lxquer.value(6).toString()!="")
-                        data += (data != ""? " " : "") + lxquer.value(6).toString();
+                    data += listlieux.at(i).at(2).toString();
+                    if (listlieux.at(i).at(6).toString()!="")
+                        data += (data != ""? " " : "") + listlieux.at(i).at(6).toString();
                 }
-                if (lxquer.value(6).toString()!="")
-                    data += (data != ""? " - " : "") + lxquer.value(6).toString();
+                if (listlieux.at(i).at(6).toString()!="")
+                    data += (data != ""? " - " : "") + listlieux.at(i).at(6).toString();
                 data = "";
-                if (lxquer.value(1).toString()!="")
-                    data += lxquer.value(1).toString();
-                if (lxquer.value(2).toString()!="")
-                    data += (data != ""? "\n" : "") + lxquer.value(2).toString();
-                if (lxquer.value(3).toString()!="")
-                    data += (data != ""? "\n" : "") + lxquer.value(3).toString();
-                if (lxquer.value(4).toString()!="")
-                    data += (data != ""? "\n" : "") + lxquer.value(4).toString();
-                if (lxquer.value(5).toString()!="")
-                    data += (data != ""? "\n" : "") + lxquer.value(5).toString();
-                if (lxquer.value(6).toString()!="")
-                    data += (data != ""? " " : "") + lxquer.value(6).toString();
-                if (lxquer.value(7).toString()!="")
-                    data += (data != ""? "\nTel: " : "Tel: ") + lxquer.value(7).toString();
+                if (listlieux.at(i).at(1).toString()!="")
+                    data += listlieux.at(i).at(1).toString();
+                if (listlieux.at(i).at(2).toString()!="")
+                    data += (data != ""? "\n" : "") + listlieux.at(i).at(2).toString();
+                if (listlieux.at(i).at(3).toString()!="")
+                    data += (data != ""? "\n" : "") + listlieux.at(i).at(3).toString();
+                if (listlieux.at(i).at(4).toString()!="")
+                    data += (data != ""? "\n" : "") + listlieux.at(i).at(4).toString();
+                if (listlieux.at(i).at(5).toString()!="")
+                    data += (data != ""? "\n" : "") + listlieux.at(i).at(5).toString();
+                if (listlieux.at(i).at(6).toString()!="")
+                    data += (data != ""? " " : "") + listlieux.at(i).at(6).toString();
+                if (listlieux.at(i).at(7).toString()!="")
+                    data += (data != ""? "\nTel: " : "Tel: ") + listlieux.at(i).at(7).toString();
                 pradiobutt      ->setImmediateToolTip(data);
                 pradiobutt      ->setChecked(i==0);
                 vbox            ->addWidget(pradiobutt);
@@ -886,17 +863,14 @@ int RufusAdmin::DetermineLieuExercice()
     else
     {
         QString lieuxreq = "select idLieuParDefaut from " NOM_TABLE_PARAMSYSTEME;
-        QSqlQuery lxquer(lieuxreq,db->getDataBase());
-        TraiteErreurRequete(lxquer,lieuxreq);
-        lxquer.first();
-        if (lxquer.value(0).toInt()>=1)
-            idLieu = lxquer.value(0).toInt();
+        QList<QList<QVariant>> listlieux = db->StandardSelectSQL(lieuxreq, ok);
+        if (listlieux.at(0).at(0).toInt()>=1)
+            idLieu = listlieux.at(0).at(0).toInt();
         else
         {
-            QSqlQuery lieuquer("select min(idlieu) from " NOM_TABLE_LIEUXEXERCICE,db->getDataBase());
-            lieuquer.first();
-            idLieu = lieuquer.value(0).toInt();
-            QSqlQuery("update " NOM_TABLE_PARAMSYSTEME " set idLieuParDefaut = " + lieuquer.value(0).toString(), db->getDataBase());
+            QList<QList<QVariant>> listliux = db->StandardSelectSQL("select min(idlieu) from " NOM_TABLE_LIEUXEXERCICE, ok);
+            idLieu = listliux.at(0).at(0).toInt();
+            db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set idLieuParDefaut = " + listliux.at(0).at(0).toString());
         }
     }
     return idLieu;
@@ -930,16 +904,15 @@ void RufusAdmin::SupprAppareil()
     QString req = " select list.TitreExamen, list.NomAppareil from " NOM_TABLE_LISTEAPPAREILS " list, " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon"
                   " where list.idAppareil = appcon.idappareil"
                   " and list.idappareil = " + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text();
-    QSqlQuery appQuery(req,db->getDataBase());
-    if (TraiteErreurRequete(appQuery, req, ""))
+    QList<QList<QVariant>> listapps = db->StandardSelectSQL(req, ok);
+    if (!ok)
         return;
-    if (appQuery.size()==0)
+    if (listapps.size()==0)
         return;
-    appQuery.first();
     UpMessageBox msgbox(this);
     msgbox.setText(tr("Suppression d'un appareil!"));
     msgbox.setInformativeText(tr("Voulez vous vraiment supprimer l'appareil") + "\n"
-                              + appQuery.value(1).toString() + " ?");
+                              + listapps.at(0).at(1).toString() + " ?");
     msgbox.setIcon(UpMessageBox::Warning);
     UpSmallButton *OKBouton = new UpSmallButton();
     OKBouton->setText(tr("Supprimer"));
@@ -953,8 +926,8 @@ void RufusAdmin::SupprAppareil()
         req = "delete from " NOM_TABLE_APPAREILSCONNECTESCENTRE " where idAppareil = "
                 + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text()
                 + " and idLieu = " + QString::number(idlieuExercice);
-        QSqlQuery(req,db->getDataBase());
-        gsettingsIni->remove("DossierEchangeImagerie/" + appQuery.value(1).toString());
+        db->StandardSQL(req);
+        gsettingsIni->remove("DossierEchangeImagerie/" + listapps.at(0).at(1).toString());
         Remplir_Table();
     }
 }
@@ -999,12 +972,11 @@ void RufusAdmin::Remplir_Table()
               " where list.idappareil = appcon.idappareil"
               " and idLieu = " + QString::number(idlieuExercice) +
               " ORDER BY TitreExamen";
-    QSqlQuery RemplirTableViewQuery (Remplirtablerequete,db->getDataBase());
-    if (TraiteErreurRequete(RemplirTableViewQuery, Remplirtablerequete,""))
+    QList<QList<QVariant>> listapps = db->StandardSelectSQL(Remplirtablerequete, ok);
+    if (!ok)
         return;
-    ui->AppareilsConnectesupTableWidget->setRowCount(RemplirTableViewQuery.size());
-    RemplirTableViewQuery.first();
-    for (i = 0; i < RemplirTableViewQuery.size(); i++)
+    ui->AppareilsConnectesupTableWidget->setRowCount(listapps.size());
+    for (i = 0; i < listapps.size(); i++)
     {
         pItem0      = new QTableWidgetItem() ;
         pItem1      = new QTableWidgetItem() ;
@@ -1014,23 +986,23 @@ void RufusAdmin::Remplir_Table()
         dossbouton  = new UpPushButton(ui->AppareilsConnectesupTableWidget);
 
         int col = 0;
-        pItem0->setText(RemplirTableViewQuery.value(0).toString());                             // idAppareil
+        pItem0->setText(listapps.at(i).at(0).toString());                             // idAppareil
         ui->AppareilsConnectesupTableWidget->setItem(i,col,pItem0);
 
         col++; //1
-        pItem1->setText(RemplirTableViewQuery.value(1).toString());                             // TypeExamen
+        pItem1->setText(listapps.at(i).at(1).toString());                             // TypeExamen
         ui->AppareilsConnectesupTableWidget->setItem(i,col,pItem1);
 
         col++; //2
-        pItem2->setText(RemplirTableViewQuery.value(2).toString());                             // NomAppareil
+        pItem2->setText(listapps.at(i).at(2).toString());                             // NomAppareil
         ui->AppareilsConnectesupTableWidget->setItem(i,col,pItem2);
 
-        col++; //3                                                                              // Format fichier
-        pItem3->setText(RemplirTableViewQuery.value(3).toString());
+        col++; //3                                                                    // Format fichier
+        pItem3->setText(listapps.at(i).at(3).toString());
         ui->AppareilsConnectesupTableWidget->setItem(i,col,pItem3);
 
-        col++; //4                                                                              // chemin
-        line4->setText(getDossierDocuments(RemplirTableViewQuery.value(2).toString()));
+        col++; //4                                                                    // chemin
+        line4->setText(getDossierDocuments(listapps.at(i).at(2).toString()));
         line4->setRowTable(i);
         line4->setFocusPolicy(Qt::NoFocus);
         line4->setStyleSheet("UpLineEdit {background-color:white; border: 0px solid rgb(150,150,150);border-radius: 0px;}"
@@ -1038,12 +1010,12 @@ void RufusAdmin::Remplir_Table()
         connect(line4,                    SIGNAL(TextModified(QString)),         this,   SLOT(Slot_EnregDossierStockageApp(QString)));
         ui->AppareilsConnectesupTableWidget->setCellWidget(i,col,line4);
 
-        col++; //5                                                                              // bouton
+        col++; //5                                                                    // bouton
         QPixmap pix = giconSortirDossier.pixmap(QSize(15,15));
         QIcon ic;
         ic.addPixmap(pix);
         dossbouton->setIcon(ic);
-        dossbouton->setId(RemplirTableViewQuery.value(0).toInt());
+        dossbouton->setId(listapps.at(i).at(0).toInt());
         dossbouton->setFixedSize(15,15);
         dossbouton->setFlat(true);
         dossbouton->setFocusPolicy(Qt::NoFocus);
@@ -1057,25 +1029,18 @@ void RufusAdmin::Remplir_Table()
         connect(dossbouton,       SIGNAL(clicked(bool)), this   ,SLOT(Slot_ChoixDossierStockageApp()));
 
         ui->AppareilsConnectesupTableWidget->setRowHeight(i,int(fm.height()*1.3));
-        RemplirTableViewQuery.next();
     }
 
     glistAppareils.clear();
     QString req = "select NomAppareil from " NOM_TABLE_LISTEAPPAREILS
                   " where idAppareil not in (select idAppareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(idlieuExercice) + ")";
-    QSqlQuery listappquery(req,db->getDataBase());
-    if (listappquery.size() == 0)
+    QList<QList<QVariant>> listnomsapps = db->StandardSelectSQL(req, ok);
+    if (listnomsapps.size() == 0)
         widgAppareils->plusBouton->setEnabled(false);
     else
-    {
-        listappquery.first();
-        for (int i=0; i<listappquery.size(); i++)
-        {
-            glistAppareils << listappquery.value(0).toString();
-            listappquery.next();
-        }
-    }
-   widgAppareils->moinsBouton->setEnabled(RemplirTableViewQuery.size()>0);
+        for (int i=0; i<listnomsapps.size(); i++)
+            glistAppareils << listnomsapps.at(i).at(0).toString();
+    widgAppareils->moinsBouton->setEnabled(listapps.size()>0);
 }
 
 void RufusAdmin::setPosteImportDocs(bool a)
@@ -1090,12 +1055,10 @@ void RufusAdmin::setPosteImportDocs(bool a)
 
     QString IpAdress("NULL");
     QString req = "USE `" NOM_BASE_CONSULTS "`;";
-    QSqlQuery quer(req, db->getDataBase());
-    TraiteErreurRequete(quer,req);
+    db->StandardSQL(req);
 
     req = "DROP PROCEDURE IF EXISTS " NOM_POSTEIMPORTDOCS ";";
-    QSqlQuery quer1(req, db->getDataBase());
-    TraiteErreurRequete(quer1,req);
+    db->StandardSQL(req);
 
     if (a)
         IpAdress = QHostInfo::localHostName() + " - " NOM_ADMINISTRATEURDOCS;
@@ -1103,8 +1066,7 @@ void RufusAdmin::setPosteImportDocs(bool a)
           BEGIN\n\
           SELECT '" + IpAdress + "';\n\
           END ;";
-    QSqlQuery quer2(req, db->getDataBase());
-    TraiteErreurRequete(quer2,req);
+    db->StandardSQL(req);
     if (a)
         Slot_MetAJourLaConnexion();
 }
@@ -1127,12 +1089,10 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
 {
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
     QString req = "select TitreExamen, NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->getId());
-    QSqlQuery quer(req,db->getDataBase());
     QString exam = "";
-    if (quer.size()>0){
-        quer.first();
-        exam = quer.value(1).toString();
-    }
+    exam = db->getFirstRecordFromStandardSelectSQL(req, ok).at(1).toString();
+    if (!ok)
+        return;
 
     QString dir = getDossierDocuments(exam);
     if (dir == "")
@@ -1161,7 +1121,7 @@ void RufusAdmin::Slot_EnregistreAppareil()
     QString req = "insert into " NOM_TABLE_APPAREILSCONNECTESCENTRE " (idAppareil, idLieu) Values("
                   " (select idappareil from " NOM_TABLE_LISTEAPPAREILS " where NomAppareil = '" + gAskAppareil->findChildren<UpComboBox*>().at(0)->currentText() + "'), "
                   + QString::number(idlieuExercice) + ")";
-    QSqlQuery (req,db->getDataBase());
+    db->StandardSQL(req);
     gAskAppareil->done(0);
     Remplir_Table();
 }
@@ -1187,11 +1147,7 @@ void RufusAdmin::Slot_ModifDirImagerie()
         QString Base = (gMode==Distant? "BDD_DISTANT/" : "");
         gsettingsIni->setValue(Base + "DossierImagerie", dockdir.path());
         if (gMode==Poste)
-        {
-            QString req ="update " NOM_TABLE_PARAMSYSTEME " set dirImagerie = '" + dockdir.path() + "'";
-            QSqlQuery quer(req, db->getDataBase());
-            TraiteErreurRequete(quer,req);
-        }
+            db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set dirImagerie = '" + dockdir.path() + "'");
     }
 }
 
@@ -1209,21 +1165,17 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
     QString id;
     id = ui->AppareilsConnectesupTableWidget->item(line->getRowTable(),0)->text();
     QString req = "select NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + id;
-    QSqlQuery quer(req,db->getDataBase());
     QString exam = "";
-    if (quer.size()>0){
-        quer.first();
-        exam = quer.value(0).toString();
-    }
+    exam = db->getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver le nom de l'appareil")).at(1).toString();
+    if (!ok)
+        return;
     if (exam != "")
         gsettingsIni->setValue("DossierEchangeImagerie/" + exam, dir);
-    else
-        UpMessageBox::Watch(this,tr("Impossible de retrouver le nom de l'appareil"));
 }
 
 void RufusAdmin::Slot_EnregistreEmplacementServeur(int idx)
 {
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set idlieupardefaut = " + ui->EmplacementServeurupComboBox->itemData(idx).toString(),db->getDataBase());
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set idlieupardefaut = " + ui->EmplacementServeurupComboBox->itemData(idx).toString());
 }
 
 void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
@@ -1278,16 +1230,13 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         msgbox.setText(tr("Modifications enregistrées"));
         msgbox.setInformativeText(tr("Le nouveau mot de passe a été enregistré avec succès"));
         QString req = "update " NOM_TABLE_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
-        QSqlQuery chgmdpadmquery(req,db->getDataBase());
-        TraiteErreurRequete( chgmdpadmquery,req,"");
+        db->StandardSQL(req);
         // Enregitrer le nouveau MDP de la base
         req = "update " NOM_TABLE_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(idAdminDocs);
-        QSqlQuery chgmdpquery(req,db->getDataBase());
-        TraiteErreurRequete( chgmdpquery,req,"");
+        db->StandardSQL(req);
         // Enregitrer le nouveau MDP de connexion à MySQL
         req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'localhost' = '" + nouv + "'";
-        QSqlQuery chgmdpBasequery(req, db->getDataBase());
-        TraiteErreurRequete(chgmdpBasequery,req, "");
+        db->StandardSQL(req);
         QString AdressIP;
         foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
             if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
@@ -1298,11 +1247,9 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         for (int i=0;i<listIP.size()-1;i++)
             Domaine += listIP.at(i) + ".";
         req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'" + Domaine + "%' = '" + nouv + "'";
-        QSqlQuery chgmdpBaseReseauquery(req, db->getDataBase());
-        TraiteErreurRequete(chgmdpBaseReseauquery,req, "");
+        db->StandardSQL(req);
         req = "set password for '" NOM_ADMINISTRATEURDOCS "SSL'@'%' = '" + nouv + "'";
-        QSqlQuery chgmdpBaseDistantquery(req, db->getDataBase());
-        TraiteErreurRequete(chgmdpBaseDistantquery,req, "");
+        db->StandardSQL(req);
         gAskMDP->done(0);
         msgbox.exec();
     }
@@ -1331,7 +1278,7 @@ void RufusAdmin::Slot_CalcExporteDocs()
         return;
     QString totreq = "SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null limit 1";
     //qDebug() << totreq;
-    ui->ExportImagespushButton->setEnabled(QSqlQuery(totreq,db->getDataBase()).size()>0);
+    ui->ExportImagespushButton->setEnabled(db->StandardSelectSQL(totreq, ok).size()>0);
 }
 
 void RufusAdmin::ExporteDocs()
@@ -1352,8 +1299,8 @@ void RufusAdmin::ExporteDocs()
         Message(msg, 3000, false);
         return;
     }
-    int total = QSqlQuery ("SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null", db->getDataBase()).size();
-    total +=    QSqlQuery ("SELECT idFacture FROM " NOM_TABLE_FACTURES " where jpg is not null or pdf is not null", db->getDataBase()).size();
+    int total = db->StandardSelectSQL("SELECT idimpression FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null or pdf is not null",ok).size();
+    total +=    db->StandardSelectSQL("SELECT idFacture FROM " NOM_TABLE_FACTURES " where jpg is not null or pdf is not null", ok).size();
     if (total>100)
     {
         int min = total/180;
@@ -1398,21 +1345,20 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null";
     //qDebug() << req;
-    QSqlQuery exportjpgquer (req, db->getDataBase() );
-    for (int i=0; i<exportjpgquer.size(); i++)
+    QList<QList<QVariant>> listexportjpg = db->StandardSelectSQL(req, ok );
+    for (int i=0; i<listexportjpg.size(); i++)
     {
-        exportjpgquer.seek(i);
         /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
-        if (exportjpgquer.value(5).toString() != "")
+        if (listexportjpg.at(i).at(5).toString() != "")
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + exportjpgquer.value(5).toString();
+            QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + listexportjpg.at(i).at(5).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
+                db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + listexportjpg.at(i).at(0).toString() );
                 continue;
             }
         }
-        QDate datetransfer    = exportjpgquer.value(3).toDate();
+        QDate datetransfer    = listexportjpg.at(i).at(3).toDate();
         CheminOKTransfrDir    = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
         if (!Utils::mkpath(CheminOKTransfrDir))
         {
@@ -1422,13 +1368,13 @@ void RufusAdmin::ExporteDocs()
             dlg_message(listmsg, 3000, false);
             return;
         }
-        QString NomFileDoc = exportjpgquer.value(1).toString() + "_" + exportjpgquer.value(6).toString() + "-"
-                + exportjpgquer.value(2).toString().replace("/",".") + "_"
-                + exportjpgquer.value(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
-                + "-" + exportjpgquer.value(0).toString();
+        QString NomFileDoc = listexportjpg.at(i).at(1).toString() + "_" + listexportjpg.at(i).at(6).toString() + "-"
+                + listexportjpg.at(i).at(2).toString().replace("/",".") + "_"
+                + listexportjpg.at(i).at(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
+                + "-" + listexportjpg.at(i).at(0).toString();
         QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
         QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
-        QByteArray ba = exportjpgquer.value(6).toByteArray();
+        QByteArray ba = listexportjpg.at(i).at(6).toByteArray();
         QPixmap pix;
         pix.loadFromData(ba);
         /*
@@ -1448,7 +1394,7 @@ void RufusAdmin::ExporteDocs()
         }
         if (!CompressFileJPG(CheminOKTransfrProv))
         {
-            db->SupprRecordFromTable(exportjpgquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            db->SupprRecordFromTable(listexportjpg.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
             continue;
         }
         QFile prov(CheminOKTransfrProv);
@@ -1459,9 +1405,9 @@ void RufusAdmin::ExporteDocs()
         }
         else
             return;
-        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set jpg = null,"
+        db->StandardSQL("update " NOM_TABLE_IMPRESSIONS " set jpg = null,"
                    " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
-                   "' where idimpression = " + exportjpgquer.value(0).toString(), db->getDataBase() );
+                   "' where idimpression = " + listexportjpg.at(i).at(0).toString());
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
@@ -1481,20 +1427,19 @@ void RufusAdmin::ExporteDocs()
     //              LES PDF
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " NOM_TABLE_IMPRESSIONS " where pdf is not null";
-    QSqlQuery exportpdfquer (reqpdf, db->getDataBase() );
-    for (int i=0; i<exportpdfquer.size(); i++)
+    QList<QList<QVariant>> listexportpdf = db->StandardSelectSQL(reqpdf, ok );
+    for (int i=0; i<listexportpdf.size(); i++)
     {
-        exportpdfquer.seek(i);
-        if (exportpdfquer.value(5).toString() != "")
+        if (listexportpdf.at(i).at(5).toString() != "")
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + exportpdfquer.value(5).toString();
+            QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + listexportpdf.at(i).at(5).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + exportpdfquer.value(0).toString(), db->getDataBase() );
+                db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + listexportpdf.at(i).at(0).toString());
                 continue;
             }
         }
-        QDate datetransfer    = exportpdfquer.value(3).toDate();
+        QDate datetransfer    = listexportpdf.at(i).at(3).toDate();
         CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
         if (!Utils::mkpath(CheminOKTransfrDir))
         {
@@ -1504,14 +1449,14 @@ void RufusAdmin::ExporteDocs()
             dlg_message(listmsg, 3000, false);
             return;
         }
-        QString NomFileDoc = exportpdfquer.value(1).toString() + "_" + exportpdfquer.value(7).toString() + "-"
-                + exportpdfquer.value(2).toString().replace("/",".") + "_"
-                + exportpdfquer.value(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
-                + "-" + exportpdfquer.value(0).toString()  + "." PDF;
+        QString NomFileDoc = listexportpdf.at(i).at(1).toString() + "_" + listexportpdf.at(i).at(7).toString() + "-"
+                + listexportpdf.at(i).at(2).toString().replace("/",".") + "_"
+                + listexportpdf.at(i).at(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
+                + "-" + listexportpdf.at(i).at(0).toString()  + "." PDF;
         QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc;
 
         QByteArray bapdf;
-        bapdf.append(exportpdfquer.value(4).toByteArray());
+        bapdf.append(listexportpdf.at(i).at(4).toByteArray());
 
         Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
         if (!document || document->isLocked() || document == Q_NULLPTR)
@@ -1530,12 +1475,12 @@ void RufusAdmin::ExporteDocs()
                 if (CD.open(QIODevice::Append))
                 {
                     QTextStream out(&CD);
-                    out << exportpdfquer.value(4).toByteArray() ;
+                    out << listexportpdf.at(i).at(4).toByteArray() ;
                 }
             }
-            QString delreq = "delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + exportpdfquer.value(0).toString();
+            QString delreq = "delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + listexportpdf.at(i).at(0).toString();
             //qDebug() << delreq;
-            QSqlQuery (delreq, db->getDataBase() );
+            db->StandardSQL (delreq);
             delete document;
             continue;
         }
@@ -1550,9 +1495,9 @@ void RufusAdmin::ExporteDocs()
                           | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                           | QFileDevice::ReadUser   | QFileDevice::WriteUser);
         CC.close();
-        QSqlQuery ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null,"
+        db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null,"
                    " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
-                   " where idimpression = " + exportpdfquer.value(0).toString(), db->getDataBase() );
+                   " where idimpression = " + listexportpdf.at(i).at(0).toString());
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
@@ -1567,7 +1512,7 @@ void RufusAdmin::ExporteDocs()
             QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
         dlg_message(listmsg, 10);
     }
-    int totdoc = exportjpgquer.size() + exportpdfquer.size();
+    int totdoc = listexportjpg.size() + listexportpdf.size();
     if (totdoc > 0)
     {
         listmsg <<  tr("export terminé") << QString::number(totdoc) + (totdoc>1? tr(" documents exportés en ") : tr(" document exporté en "))  + duree;
@@ -1598,49 +1543,48 @@ void RufusAdmin::ExporteDocs()
     req = "SELECT idFacture, DateFacture, LienFichier, Intitule, Echeancier, idDepense, jpg FROM " NOM_TABLE_FACTURES
             " where jpg is not null";
     //qDebug() << req;
-    QSqlQuery exportjpgfactquer (req, db->getDataBase() );
-    for (int i=0; i<exportjpgfactquer.size(); i++)
+    QList<QList<QVariant>> listexportjpgfact = db->StandardSelectSQL(req, ok);
+    for (int i=0; i<listexportjpgfact.size(); i++)
     {
-        exportjpgfactquer.seek(i);
         /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
-        if (exportjpgfactquer.value(2).toString() != "")
+        if (listexportjpgfact.at(i).at(2).toString() != "")
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + exportjpgfactquer.value(2).toString();
+            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + listexportjpgfact.at(i).at(2).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_FACTURES " set jpg = null where idfacture = " + exportjpgfactquer.value(0).toString(), db->getDataBase() );
+                db->StandardSQL("update " NOM_TABLE_FACTURES " set jpg = null where idfacture = " + listexportjpgfact.at(i).at(0).toString());
                 continue;
             }
         }
         /* nommage d'un fichier facture
              * idFacture + "_" + "ECHEANCIER ou FACTURE" + "_" + Intitule + "_" + DateFacture + ( + "_" + iddepense si facture et pas échéancier)
              */
-        QDate datetransfer  = exportjpgfactquer.value(1).toDate();
+        QDate datetransfer  = listexportjpgfact.at(i).at(1).toDate();
         QString user;
 
-        QString NomFileDoc = exportjpgfactquer.value(0).toString() + "_"
-                + (exportjpgfactquer.value(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
-                + exportjpgfactquer.value(3).toString().replace("/",".") + "_"
+        QString NomFileDoc = listexportjpgfact.at(i).at(0).toString() + "_"
+                + (listexportjpgfact.at(i).at(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
+                + listexportjpgfact.at(i).at(3).toString().replace("/",".") + "_"
                 + datetransfer.toString("yyyyMMdd");
         // on recherche le user à l'origine de cette facture
         QList<QList<QVariant>> Listeusr;
-        if (exportjpgfactquer.value(4).toInt()==1)          // c'est un échéancier
+        if (listexportjpgfact.at(i).at(4).toInt()==1)          // c'est un échéancier
             req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
                   " where dep.idUser  = usr.idUser"
-                  " and idFacture = " + exportjpgfactquer.value(0).toString();
+                  " and idFacture = " + listexportjpgfact.at(i).at(0).toString();
         else                                                // c'est une facture, l'iduser est dans la table
             req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
                   " where dep.idUser  = usr.idUser"
-                  " and idDep = " + exportjpgfactquer.value(5).toString();
+                  " and idDep = " + listexportjpgfact.at(i).at(5).toString();
         Listeusr = db->StandardSelectSQL(req, ok);
         if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
         {
-            db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
             continue;
         }
         user = Listeusr.at(0).at(1).toString();
-        if (exportjpgfactquer.value(4).toInt()!=1)
-            NomFileDoc += "-"+exportjpgfactquer.value(5).toString();
+        if (listexportjpgfact.at(i).at(4).toInt()!=1)
+            NomFileDoc += "-"+listexportjpgfact.at(i).at(5).toString();
 
         CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
         if (!Utils::mkpath(CheminOKTransfrDir))
@@ -1654,7 +1598,7 @@ void RufusAdmin::ExporteDocs()
 
         QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
         QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
-        QByteArray ba = exportjpgfactquer.value(6).toByteArray();
+        QByteArray ba = listexportjpgfact.at(i).at(6).toByteArray();
         QPixmap pix;
         pix.loadFromData(ba);
         /*
@@ -1674,7 +1618,7 @@ void RufusAdmin::ExporteDocs()
         }
         if (!CompressFileJPG(CheminOKTransfrProv))
         {
-            db->SupprRecordFromTable(exportjpgfactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
             continue;
         }
         QFile prov(CheminOKTransfrProv);
@@ -1685,8 +1629,8 @@ void RufusAdmin::ExporteDocs()
         }
         else
             return;
-        QSqlQuery ("update " NOM_TABLE_FACTURES " set jpg = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc) + "." JPG "'"
-                   " where idFacture = " + exportjpgfactquer.value(0).toString(), db->getDataBase() );
+        db->StandardSQL("update " NOM_TABLE_FACTURES " set jpg = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc) + "." JPG "'"
+                   " where idFacture = " + listexportjpgfact.at(i).at(0).toString());
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
@@ -1707,45 +1651,44 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     reqpdf = "SELECT idFacture, DateFacture, LienFichier, Intitule, Echeancier, idDepense, pdf FROM " NOM_TABLE_FACTURES
             " where pdf is not null";
-    QSqlQuery exportpdffactquer (reqpdf, db->getDataBase() );
-    for (int i=0; i<exportpdffactquer.size(); i++)
+    QList<QList<QVariant>> listexportpdffact = db->StandardSelectSQL(reqpdf, ok );
+    for (int i=0; i<listexportpdffact.size(); i++)
     {
-        exportpdffactquer.seek(i);
-        if (exportpdffactquer.value(2).toString() != "")
+        if (listexportpdffact.at(i).at(2).toString() != "")
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + exportpdffactquer.value(2).toString();
+            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + listexportpdffact.at(i).at(2).toString();
             if (QFile(CheminFichier).exists())
             {
-                QSqlQuery ("update " NOM_TABLE_FACTURES " set pdf = null where idFacture = " + exportpdffactquer.value(0).toString(), db->getDataBase() );
+                db->StandardSQL  ("update " NOM_TABLE_FACTURES " set pdf = null where idFacture = " + listexportpdffact.at(i).at(0).toString());
                 continue;
             }
         }
-        QDate datetransfer  = exportpdffactquer.value(1).toDate();
+        QDate datetransfer  = listexportpdffact.at(i).at(1).toDate();
         QString user;
 
-        QString NomFileDoc = exportpdffactquer.value(0).toString() + "_"
-                + (exportpdffactquer.value(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
-                + exportpdffactquer.value(3).toString().replace("/",".") + "_"
+        QString NomFileDoc = listexportpdffact.at(i).at(0).toString() + "_"
+                + (listexportpdffact.at(i).at(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
+                + listexportpdffact.at(i).at(3).toString().replace("/",".") + "_"
                 + datetransfer.toString("yyyyMMdd");
         // on recherche le user à l'origine de cette facture
         QList<QList<QVariant>> Listeusr;
-        if (exportpdffactquer.value(4).toInt()==1)          // c'est un échéancier
+        if (listexportpdffact.at(i).at(4).toInt()==1)          // c'est un échéancier
             req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
                   " where dep.idUser  = usr.idUser"
-                  " and idFacture = " + exportpdffactquer.value(0).toString();
+                  " and idFacture = " + listexportpdffact.at(i).at(0).toString();
         else                                                // c'est une facture, l'iduser est dans la table
             req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
                   " where dep.idUser  = usr.idUser"
-                  " and idDep = " + exportpdffactquer.value(5).toString();
+                  " and idDep = " + listexportpdffact.at(i).at(5).toString();
         Listeusr = db->StandardSelectSQL(req, ok);
         if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
         {
-            db->SupprRecordFromTable(exportpdffactquer.value(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+            db->SupprRecordFromTable(listexportpdffact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
             continue;
         }
         user = Listeusr.at(0).at(1).toString();
-        if (exportpdffactquer.value(4).toInt()!=1)
-            NomFileDoc += "-"+exportpdffactquer.value(5).toString();
+        if (listexportpdffact.at(i).at(4).toInt()!=1)
+            NomFileDoc += "-"+listexportpdffact.at(i).at(5).toString();
 
         CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
         if (!Utils::mkpath(CheminOKTransfrDir))
@@ -1759,7 +1702,7 @@ void RufusAdmin::ExporteDocs()
         QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc + "." PDF;
 
         QByteArray bapdf;
-        bapdf.append(exportpdffactquer.value(6).toByteArray());
+        bapdf.append(listexportpdffact.at(i).at(6).toByteArray());
 
         Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
         if (!document || document->isLocked() || document == Q_NULLPTR)
@@ -1778,12 +1721,12 @@ void RufusAdmin::ExporteDocs()
                 if (CD.open(QIODevice::Append))
                 {
                     QTextStream out(&CD);
-                    out << exportpdffactquer.value(6).toByteArray() ;
+                    out << listexportpdffact.at(i).at(6).toByteArray() ;
                 }
             }
-            QString delreq = "delete from  " NOM_TABLE_FACTURES " where idFacture = " + exportpdffactquer.value(0).toString();
+            QString delreq = "delete from  " NOM_TABLE_FACTURES " where idFacture = " + listexportpdffact.at(i).at(0).toString();
             //qDebug() << delreq;
-            QSqlQuery (delreq, db->getDataBase() );
+            db->StandardSQL  (delreq);
             delete document;
             continue;
         }
@@ -1798,8 +1741,8 @@ void RufusAdmin::ExporteDocs()
                           | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                           | QFileDevice::ReadUser   | QFileDevice::WriteUser);
         CC.close();
-        QSqlQuery ("update " NOM_TABLE_FACTURES " set pdf = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc)  + "." PDF "'"
-                   " where idFacture = " + exportpdffactquer.value(0).toString(), db->getDataBase() );
+        db->StandardSQL ("update " NOM_TABLE_FACTURES " set pdf = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc)  + "." PDF "'"
+                   " where idFacture = " + listexportpdffact.at(i).at(0).toString());
         faits ++;
         int nsec = debut.secsTo(QTime::currentTime());
         int min = nsec/60;
@@ -1814,7 +1757,7 @@ void RufusAdmin::ExporteDocs()
             QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
         dlg_message(listmsg, 10);
     }
-    int totfac = exportjpgfactquer.size() + exportpdffactquer.size();
+    int totfac = listexportjpgfact.size() + listexportpdffact.size();
     if (totfac > 0)
         Message(tr("export terminé") + "\n" + QString::number(totfac) + (totfac>1? tr(" documents comptables exportés en ") :tr(" document comptable exporté en ")) + duree);
     ConnectTimers();

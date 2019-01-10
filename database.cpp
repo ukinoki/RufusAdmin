@@ -1,3 +1,20 @@
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin or Rufus.
+
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License,
+or any later version.
+
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "database.h"
 
 #include <QSqlDatabase>
@@ -96,7 +113,6 @@ bool DataBase::traiteErreurRequete(QSqlQuery query, QString requete, QString Err
         Logs::ERROR(ErrorMessage, tr("\nErreur\n") + query.lastError().text() +  tr("\nrequete = ") + requete);
         return true;
     }
-
     return false;
 }
 
@@ -296,6 +312,11 @@ QList<QList<QVariant>> DataBase::StandardSelectSQL(QString req , bool &OK, QStri
     return listreponses;
 }
 
+QList<QVariant> DataBase::getFirstRecordFromStandardSelectSQL(QString req , bool &OK, QString errormsg)
+{
+    return StandardSelectSQL(req , OK, errormsg).at(0);
+}
+
 
 /*
  * Users
@@ -424,7 +445,6 @@ QJsonObject DataBase::loadUserData(int idUser)
     query.finish();
     return userData;
 }
-
 QList<User*> DataBase::loadUsersAll()
 {
     QList<User*> users;
@@ -727,12 +747,13 @@ QList<Depense*> DataBase::loadDepensesByUser(int idUser)
     QList<Depense*> depenses;
     QString req = "SELECT idDep, DateDep , RefFiscale, Objet, Montant,"
                         " FamFiscale, Monnaie, idRec, ModePaiement, Compte,"
-                        " NoCheque, dep.idFacture, LienFichier, Echeancier"
+                        " NoCheque, dep.idFacture, LienFichier, Echeancier, Intitule"
                         " FROM " NOM_TABLE_DEPENSES " dep left join " NOM_TABLE_FACTURES " fac on dep.idFacture = fac.idFacture"
                         " WHERE dep.idUser = " + QString::number(idUser);
     QSqlQuery query (req,getDataBase());
     if( traiteErreurRequete(query, req) || !query.first())
         return depenses;
+
     do
     {
         QJsonObject jData{};
@@ -751,9 +772,11 @@ QList<Depense*> DataBase::loadDepensesByUser(int idUser)
         jData["idfacture"]      = query.value(11).toInt();
         jData["lienfacture"]    = query.value(12).toString();
         jData["echeancier"]     = (query.value(13).toInt()==1);
+        jData["objetecheancier"]= query.value(14).toString();
         Depense *dep = new Depense(jData);
         depenses << dep;
     } while( query.next() );
+
     return depenses;
 }
 
@@ -789,7 +812,7 @@ QStringList DataBase::ListeRubriquesFiscales()
     return ListeRubriques;
 }
 
-QList<Depense*> DataBase::VerifExistDepense(QHash<int, Depense *> m_listDepenses, QDate date, QString objet, double montant, int iduser, enum comparateur Comp)
+QList<Depense*> DataBase::VerifExistDepense(QMap<int, Depense *> m_listDepenses, QDate date, QString objet, double montant, int iduser, enum comparateur Comp)
 {
     QString op = "=";
     if (Comp == DataBase::Sup)
@@ -807,7 +830,7 @@ QList<Depense*> DataBase::VerifExistDepense(QHash<int, Depense *> m_listDepenses
         return listdepenses;
     do
     {
-        QHash<int, Depense*>::const_iterator itDepense = m_listDepenses.find(query.value(0).toInt());
+        QMap<int, Depense*>::const_iterator itDepense = m_listDepenses.find(query.value(0).toInt());
         if (itDepense != m_listDepenses.constEnd())
         {
             Depense *dep = itDepense.value();

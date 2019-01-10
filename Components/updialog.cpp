@@ -20,40 +20,36 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 UpDialog::UpDialog(QString NomSettings, QString NomPosition, QWidget *parent) : QDialog(parent)
 {
-    //if (qApp->font() != QFont(POLICEPARDEFAUT,POINTPARDEFAUT))
-        setFont(QFont(POLICEPARDEFAUT,POINTPARDEFAUT));
-
     EnregPosition   = true;
     Position        = NomPosition;
     NomFichIni      = NomSettings;
     SettingsIni     = new QSettings(NomFichIni, QSettings::IniFormat);
     restoreGeometry(SettingsIni->value(Position).toByteArray());
     AjouteLay();
+    setStageCount(0);
     gMode           = "";
 }
 
 UpDialog::UpDialog(QWidget *parent) : QDialog(parent)
 {
-    //if (qApp->font() != QFont(POLICEPARDEFAUT,POINTPARDEFAUT))
-        setFont(QFont(POLICEPARDEFAUT,POINTPARDEFAUT));
-
     AjouteLay();
     EnregPosition   = false;
 }
 
 void UpDialog::AjouteLay()
 {
+    stageheight = 40;
+    widgbuttons     = new QWidget();
     laybuttons      = new QHBoxLayout();
     laybuttons      ->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
+    laybuttons      ->setContentsMargins(0,10,0,10);
     laybuttons      ->setSpacing(20);
-    QVBoxLayout *globallay = new QVBoxLayout(this);
-    globallay       ->addLayout(laybuttons);
-    globallay       ->setContentsMargins(10,10,10,10);
-    globallay       ->setSpacing(5);
+    widgbuttons     ->setLayout(laybuttons);
+    dlglayout()     ->addWidget(widgbuttons);
 }
 void UpDialog::AjouteLayButtons(Buttons Button)
 {
-    // le Butoon Cancel est toujours le plus à gauche
+    // le Button Cancel est toujours le plus à gauche
     // Close le plus à droite et OK juste avant Close
     if (Button.testFlag(UpDialog::ButtonCancel))
     {
@@ -61,7 +57,7 @@ void UpDialog::AjouteLayButtons(Buttons Button)
         CancelButton    ->setShortcut(QKeySequence("F12"));
         CancelButton    ->setUpButtonStyle(UpSmallButton::CANCELBUTTON);
         laybuttons      ->addWidget(CancelButton);
-        connect(CancelButton,   &QPushButton::clicked, [=] {reject();});
+        connect(CancelButton,   &QPushButton::clicked, this, &UpDialog::reject);
     }
     if (Button.testFlag(UpDialog::ButtonPrint))
     {
@@ -97,6 +93,43 @@ void UpDialog::AjouteLayButtons(Buttons Button)
         laybuttons      ->addWidget(CloseButton);
     }
     UpdateTabOrder();
+    setStageCount(0.7);
+}
+
+QVBoxLayout* UpDialog::dlglayout()
+{
+    QVBoxLayout *globallay = dynamic_cast<QVBoxLayout*>(this->layout());
+    if (globallay == Q_NULLPTR)
+    {
+        globallay = new QVBoxLayout(this);
+        globallay       ->setContentsMargins(10,10,10,10);
+        globallay       ->setSpacing(0);
+    }
+    return globallay;
+}
+
+QHBoxLayout* UpDialog::buttonslayout()
+{
+    return laybuttons;
+}
+
+QWidget* UpDialog::widgetbuttons()
+{
+    return widgbuttons;
+}
+
+/*!
+ * \brief UpDialog::setStageCount(double nbstages)
+ * permet de fixer grossièrement le hauteur du widget contenant les buttons
+ * de manière à connaître cette valeur à l'avance, avant l'affichage de la fiche
+ * si que des upsmallbutton sans texte nbstages = 0.6
+ * avec des upsmallbuttons et du texte nbstages = 1
+ * et plus si des widgets de plus grande taille dans le widget de buttons
+ * à déterminer à chaque fois pifométriquement
+ */
+void UpDialog::setStageCount(double nbstages)
+{
+    widgbuttons->setFixedHeight(int(stageheight * nbstages) + laybuttons->contentsMargins().bottom() +laybuttons->contentsMargins().top());
 }
 
 void UpDialog::UpdateTabOrder()
@@ -113,7 +146,7 @@ void UpDialog::AjouteWidgetLayButtons(QWidget *widg, bool ALaFin)
     else
         laybuttons->insertWidget(0,widg);
     UpSmallButton *but = dynamic_cast<UpSmallButton*>(widg);
-    if (but != NULL)
+    if (but != Q_NULLPTR)
     {
         if (but->ButtonStyle() == UpSmallButton::CANCELBUTTON)
             but    ->setShortcut(QKeySequence("F12"));

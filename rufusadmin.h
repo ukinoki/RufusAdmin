@@ -91,6 +91,7 @@ private:
     dlg_gestionusers            *Dlg_GestUsr;
     dlg_motifs                  *Dlg_motifs;
     dlg_paramconnexion          *DlgParam;
+    bool                        ok;
     int                         idAdminDocs;
     int                         idlieuExercice;
     int                         gMode;

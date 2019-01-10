@@ -1,3 +1,20 @@
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin or Rufus.
+
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License,
+or any later version.
+
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef DataBase_H
 #define DataBase_H
 
@@ -71,7 +88,9 @@ public:
     QSqlDatabase getDataBase() const;
     void getInformations();
     User* getUserConnected() const;
-    void setUserConnected(User *usr);
+    void setUserConnected(User*);           // utilisé uniquement lors du premier démarrage pour définir le premier user
+                                            // normalement effectuéé par DataBase::login() mais pas possible dans ce cas
+                                            // parce que login() utilise la table des utilisateurs connectés qui n'a pas encore été remplie à ce stade
 
     bool traiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage = "");
 
@@ -89,13 +108,14 @@ public:
     bool                    InsertSQLByBinds(QString nomtable,  QHash<QString, QVariant>, QString errormsg="");
     bool                    StandardSQL(QString req , QString errormsg="");
     QList<QList<QVariant>>  StandardSelectSQL(QString req, bool &ok, QString errormsg="");  // la variable ok sert à pointer les erreurs sur requête pour les différencier des réponses vides
+    QList<QVariant>         getFirstRecordFromStandardSelectSQL(QString req, bool &ok, QString errormsg="");  // la variable ok sert à pointer les erreurs sur requête pour les différencier des réponses vides
     /*
      * Users
     */
     QJsonObject login(QString login, QString password);
     QJsonObject loadUserData(int idUser);
-    QList<User*> loadUsersAll();
     QJsonObject loadUserDatabyLogin(QString login);
+    QList<User*> loadUsersAll();
 
     /*
      * Correspondants
@@ -119,7 +139,7 @@ public:
     QList<Depense*> loadDepensesByUser(int idUser);
     void            loadDepenseArchivee(Depense *dep);
     QStringList     ListeRubriquesFiscales();
-    QList<Depense*> VerifExistDepense(QHash<int, Depense*> m_listDepenses, QDate date, QString objet, double montant, int iduser, enum comparateur = Egal);
+    QList<Depense*> VerifExistDepense(QMap<int, Depense *> m_listDepenses, QDate date, QString objet, double montant, int iduser, enum comparateur = Egal);
     int             getMaxLigneBanque();
     QList<Archive*> loadArchiveByDate(QDate date, Compte *compte, int intervalle); //! charge les archives contenues entre 6 mois avant date et date pour le compte donné
     QList<Banque*>  loadBanques();
