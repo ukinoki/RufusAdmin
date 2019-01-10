@@ -142,7 +142,6 @@ private:
     void                        SupprimerDocsEtFactures();
     void                        setPosteImportDocs(bool a = true);
     void                        ReconstruitListeLieuxExercice();
-    bool                        TraiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage = "");
     bool                        VerifBase();
     bool                        VerifMDP(QString MDP, QString Msg);
 

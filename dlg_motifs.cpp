@@ -25,6 +25,7 @@ dlg_motifs::dlg_motifs(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     m_motifs = Datas::I()->motifs->motifs();
+    db = DataBase::getInstance();
 
     QVBoxLayout *globallay  = dynamic_cast<QVBoxLayout*>(layout());
 
@@ -583,7 +584,7 @@ void dlg_motifs::Slot_EnregistreMotifs()
     }
     //vider la table MotifsRDV
     QString req = "delete from " NOM_TABLE_MOTIFSRDV;
-    QSqlQuery (req, DataBase::getInstance()->getDataBase());
+    db->StandardSQL(req);
     //la remplir avec les nouvelles valeurs
     req = "insert into " NOM_TABLE_MOTIFSRDV " (Utiliser, Motif, raccourci, couleur, ParDefaut, NoOrdre) Values\n";
     for (int j=0; j<ui->MotifsupTableWidget->rowCount(); j++)
@@ -606,7 +607,7 @@ void dlg_motifs::Slot_EnregistreMotifs()
         req += a + ",";
         req += QString::number(j+1) + ")";
     }
-    QSqlQuery(req,DataBase::getInstance()->getDataBase());
+    db->StandardSQL(req);
     accept();
 }
 

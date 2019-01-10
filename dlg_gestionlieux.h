@@ -52,7 +52,7 @@ private slots:
     void                    Slot_ModifLieu();
 
 private:
-    QSqlDatabase            db;
+    DataBase                *db;
     QTableView              *tabLM;
     UpDialog                *gLieuDialog;
     UpLabel                 *Adressuplbl;
@@ -67,6 +67,7 @@ private:
     QStandardItemModel      *tabModel;
     WidgetButtonFrame       *widg;
     int                     idLieuAModifier;
+    bool                    ok;
     void                    CreerLieu();
     void                    ModifLieu();
     void                    SupprLieu();

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("06-01-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("10-01-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1793,10 +1793,7 @@ void RufusAdmin::Slot_GestUser()
 {
     DisconnectTimerInactive();
     QString req = "select IdUser from " NOM_TABLE_UTILISATEURS " where userlogin <> '" NOM_ADMINISTRATEURDOCS "'";
-    QSqlQuery listusrquery (req, db->getDataBase());
-    if (listusrquery.size()>0)
-        listusrquery.first();
-    int iduser = listusrquery.value(0).toInt();
+    int iduser = db->getFirstRecordFromStandardSelectSQL(req, ok).at(0).toInt();
     Dlg_GestUsr = new dlg_gestionusers(iduser, ui->EmplacementServeurupComboBox->currentData().toInt(), true, this);
     Dlg_GestUsr->setWindowTitle(tr("Gestion des utilisateurs"));
     Dlg_GestUsr->setConfig(dlg_gestionusers::ADMIN);
@@ -1841,16 +1838,14 @@ void RufusAdmin::Slot_MasqueAppli()
 
 void RufusAdmin::Slot_MetAJourLaConnexion()
 {
-    QString lockrequete = "LOCK TABLES " NOM_TABLE_USERSCONNECTES "  WRITE, " NOM_TABLE_SALLEDATTENTE " WRITE, " NOM_TABLE_VERROUCOMPTAACTES " WRITE;";
-    QSqlQuery lockquery (lockrequete, db->getDataBase());
-    if (TraiteErreurRequete(lockquery,lockrequete,"Impossible de verrouiller " NOM_TABLE_USERSCONNECTES))
+    if (!db->locktables(QStringList() << NOM_TABLE_USERSCONNECTES << NOM_TABLE_SALLEDATTENTE << NOM_TABLE_VERROUCOMPTAACTES))
         return;
 
     QString MAJConnexionRequete;
-    QSqlQuery usrquer("select iduser from " NOM_TABLE_USERSCONNECTES
+    QList<QList<QVariant>> listusers = db->StandardSelectSQL("select iduser from " NOM_TABLE_USERSCONNECTES
                       " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                      " and idlieu = " + QString::number(idlieuExercice), db->getDataBase());
-    if (usrquer.size()>0)
+                      " and idlieu = " + QString::number(idlieuExercice),ok);
+    if (listusers.size()>0)
         MAJConnexionRequete = "UPDATE " NOM_TABLE_USERSCONNECTES " SET HeureDerniereConnexion = NOW(), "
                               " idUser = " + QString::number(idAdminDocs) +
                               " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
@@ -1863,46 +1858,39 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
                                Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "', " +
                                QString::number(idlieuExercice) + ")";
     //qDebug() << MAJConnexionRequete;
-    QSqlQuery MAJConnexionQuery (MAJConnexionRequete, db->getDataBase());
-    TraiteErreurRequete(MAJConnexionQuery, MAJConnexionRequete,"");
+    db->StandardSQL(MAJConnexionRequete);
 
     // Deconnecter les users débranchés accidentellement
-    QString VerifOldUserreq = "select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60";
-    QSqlQuery verifoldquery (VerifOldUserreq,db->getDataBase());
-    //qDebug() << VerifOldUserreq;
-    TraiteErreurRequete(verifoldquery,VerifOldUserreq,"");
+    QList<QList<QVariant>> listoldusers = db->StandardSelectSQL("select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES
+                                                             " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60", ok);
 
-    if (verifoldquery.size() > 0)
+    if (listoldusers.size() > 0)
     {
-        verifoldquery.first();
-        for (int i=0; i<verifoldquery.size();i++)
+        for (int i=0; i<listoldusers.size();i++)
         {
             //on déverrouille les dossiers verrouillés par cet utilisateur et on les remet en salle d'attente
             QString blabla              = ENCOURSEXAMEN;
             int length                  = blabla.size();
-            int a                       = verifoldquery.value(0).toInt();
-            QString Poste               = verifoldquery.value(1).toString();
+            int a                       = listoldusers.at(i).at(0).toInt();
+            QString Poste               = listoldusers.at(i).at(1).toString();
             QString LibereVerrouRequete;
             LibereVerrouRequete = "UPDATE " NOM_TABLE_SALLEDATTENTE " SET Statut = '" ARRIVE "', idUserEnCoursExam = null, PosteExamen = null"
                                   " WhERE idUserEnCoursExam = " + QString::number(a) +
                                   " AND PosteExamen = '" + Poste +
                                   "' AND Left(Statut," + QString::number(length) + ") = '" ENCOURSEXAMEN "'";
-            QSqlQuery LibereVerrouRequeteQuery (LibereVerrouRequete,db->getDataBase());
-            TraiteErreurRequete(LibereVerrouRequeteQuery,LibereVerrouRequete,"");
+            db->StandardSQL(LibereVerrouRequete);
             //qDebug() << LibereVerrouRequete;
             //on déverrouille les actes verrouillés en comptabilité par cet utilisateur
             LibereVerrouRequete = "delete from " NOM_TABLE_VERROUCOMPTAACTES " where PosePar = " + QString::number(a);
-            QSqlQuery LibereVerrouComptaQuery (LibereVerrouRequete,db->getDataBase());
-            TraiteErreurRequete(LibereVerrouComptaQuery,LibereVerrouRequete,"");
+            db->StandardSQL(LibereVerrouRequete);
             // on détruit le socket de cet utilisateur
-            // KillSocket(QStringList() << verifoldquery.value(0).toString() << verifoldquery.value(2).toString().split(" - ").at(0));
+            // KillSocket(QStringList() << listoldusers.at(i).at(0).toString() << listoldusers.at(i).at(2).toString().split(" - ").at(0));
             // on retire cet utilisateur de la table des utilisateurs connectés
-            QSqlQuery ("delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + verifoldquery.value(1).toString() + "'", db->getDataBase());
+            db->StandardSQL("delete from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte = '" + listoldusers.at(i).at(1).toString() + "'");
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
-            verifoldquery.next();
         }
     }
-    QSqlQuery("unlock tables",db->getDataBase());
+    db->commit();
 }
 
 void RufusAdmin::Slot_ModifMDP()
@@ -1960,14 +1948,13 @@ void RufusAdmin::Slot_ModifMDP()
 void RufusAdmin::Slot_RestaureBase()
 {
     QString req = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QSqlQuery postesquer(req,db->getDataBase());
-    if (postesquer.size() > 0)
+    QList<QList<QVariant>> listpostes = db->StandardSelectSQL(req, ok);
+    if (listpostes.size() > 0)
     {
-        postesquer.first();
         UpMessageBox::Information(this, tr("Autres postes connectés!"),
                                      tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
                                      " si vous n'êtes pas le seul poste connecté.\n"
-                                     "Le poste ") + postesquer.value(0).toString() + tr(" est aussi connecté"));
+                                     "Le poste ") + listpostes.at(0).at(0).toString() + tr(" est aussi connecté"));
         return;
     }
 
@@ -2030,10 +2017,10 @@ void RufusAdmin::Slot_RestaureBase()
             OKVideos = true;
 
     QString NomDirStockageImagerie("");
-    QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
-    dirquer.first();
-    NomDirStockageImagerie = dirquer.value(0).toString();
-    if (!QDir(NomDirStockageImagerie).exists())
+    QList<QVariant> dirstock = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
+    if (dirstock.size()>0)
+        NomDirStockageImagerie = dirstock.at(0).toString();
+    if (!ok || !QDir(NomDirStockageImagerie).exists())
     {
         UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage valide"),
                             tr("Le dossier spécifié pour le stockage de l'imagerie n'est pas valide") + "\n"
@@ -2063,7 +2050,7 @@ void RufusAdmin::Slot_RestaureBase()
         NomDirStockageImagerie = dirstock.absolutePath();
         gsettingsIni->setValue("BDD_POSTE/DossierImagerie", NomDirStockageImagerie);
         QString reqimg = "update " NOM_TABLE_PARAMSYSTEME " set DirImagerie = '" + NomDirStockageImagerie + "'";
-        QSqlQuery (reqimg, db->getDataBase());
+        db->StandardSQL(reqimg);
     }
 
     AskBupRestore(true, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKRessces, OKImages, OKVideos);
@@ -2133,10 +2120,10 @@ void RufusAdmin::Slot_RestaureBase()
                         //Suppression de toutes les tables
                         QString Msg = tr("Suppression de l'ancienne base Rufus en cours");
                         Message(Msg, 3000, false);
-                        QSqlQuery ("drop database if exists " NOM_BASE_COMPTA,      db->getDataBase());
-                        QSqlQuery ("drop database if exists " NOM_BASE_OPHTA,       db->getDataBase());
-                        QSqlQuery ("drop database if exists " NOM_BASE_CONSULTS,    db->getDataBase());
-                        QSqlQuery ("drop database if exists " NOM_BASE_IMAGES,      db->getDataBase());
+                        db->StandardSQL("drop database if exists " NOM_BASE_COMPTA);
+                        db->StandardSQL("drop database if exists " NOM_BASE_OPHTA);
+                        db->StandardSQL("drop database if exists " NOM_BASE_CONSULTS);
+                        db->StandardSQL("drop database if exists " NOM_BASE_IMAGES);
                         int a = 99;
                         //Restauration à partir du dossier sélectionné
                         for (int j=0; j<listnomsfilestorestore.size(); j++)
@@ -2371,8 +2358,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
         QString req = "delete from " NOM_TABLE_USERSCONNECTES
                       " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
                       " and idlieu = " + QString::number(idlieuExercice);
-        QSqlQuery qer(req,db->getDataBase());
-        TraiteErreurRequete(qer,req,"");
+        db->StandardSQL(req);
         FermeTCP();
         setPosteImportDocs(false);
         exit(0);
@@ -2386,9 +2372,8 @@ void RufusAdmin::Slot_VerifPosteImport()
         return;
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
-    QString req = "CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS;
-    QSqlQuery quer(req, db->getDataBase());
-    if (quer.size()==-1)
+    QList<QVariant> listproc = db->getFirstRecordFromStandardSelectSQL("CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS, ok);
+    if (listproc.size()==0)
     {
         A = "";
         ui->PosteImportDocslabel->setText(tr("Pas de poste paramétré"));
@@ -2396,10 +2381,9 @@ void RufusAdmin::Slot_VerifPosteImport()
     }
     else
     {
-        quer.first();
         //qDebug() << "nbre reponses = " + QString::number(quer.size()) << NOM_POSTEIMPORTDOCS " = " + quer.value(0).toString();
-        PostImport = quer.value(0).toString();
-        A = quer.value(0).toString();
+        PostImport = listproc.at(0).toString();
+        A = PostImport;
         A = "<font color=\"green\"><b>" + A.remove(".local") + "</b></font>";
         QString B;
         if (A.contains(" - " NOM_ADMINISTRATEURDOCS))
@@ -2425,9 +2409,7 @@ void RufusAdmin::Slot_VerifPosteImport()
 
 void RufusAdmin::Slot_VerifVersionBase()
 {
-    QSqlQuery quer("select versionbase from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
-    quer.first();
-    int version = quer.value(0).toInt();
+    int version = db->getFirstRecordFromStandardSelectSQL("select versionbase from " NOM_TABLE_PARAMSYSTEME, ok).at(0).toInt();
     if (version != VERSION_BASE)
     {
         UpMessageBox::Watch(this, tr("Versons incompatibles"),
@@ -2441,49 +2423,33 @@ void RufusAdmin::Slot_VerifVersionBase()
 
 void RufusAdmin::ReconstruitListeLieuxExercice()
 {
-    /*-------------------- GESTION DES LIEUX D'EXRCICE-------------------------------------------------------*/
+    /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
     ui->EmplacementServeurupComboBox->clear();
-    QSqlQuery adrquer("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, db->getDataBase());
-    for (int i=0; i< adrquer.size(); i++)
-    {
-        adrquer.seek(i);
-        ui->EmplacementServeurupComboBox->addItem(adrquer.value(1).toString(),adrquer.value(0));
-    }
-    QSqlQuery DefautLieuquer("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
-    DefautLieuquer.first();
-    if (DefautLieuquer.value(0).toInt()>0)
-        ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(DefautLieuquer.value(0)));
+    QList<QList<QVariant>> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, ok);
+    for (int i=0; i< listlieux.size(); i++)
+         ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
+    int DefautLieu = 0;
+    QList<QVariant> dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
+    if (dftLieu.size()>0)
+        DefautLieu = dftLieu.at(0).toInt();
+    if (dftLieu.size()>0 && DefautLieu>0)
+        ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(DefautLieu));
     else
         ui->EmplacementServeurupComboBox->setCurrentIndex(0);
-    /*-------------------- GESTION DES LIEUX D'EXRCICE-------------------------------------------------------*/
-}
-
-/*-----------------------------------------------------------------------------------------------------------------
-    -- Traite et affiche le signal d'erreur d'une requete -------------------------------------------------------------
-    -----------------------------------------------------------------------------------------------------------------*/
-bool RufusAdmin::TraiteErreurRequete(QSqlQuery query, QString requete, QString ErrorMessage)
-{
-    if (query.lastError().type() != QSqlError::NoError)
-    {
-        UpMessageBox::Watch(this, ErrorMessage, tr("\nErreur\n") + query.lastError().text() +  tr("\nrequete = ") + requete);
-        return true;
-    }
-    else return false;
+    /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
 }
 
 bool RufusAdmin::VerifBase()
 {
     int Versionencours  = 37; //correspond aux premières versions de MAJ de la base
     int Version         = VERSION_BASE;
-    QString req         = "select VersionBase from " NOM_TABLE_PARAMSYSTEME;
-    QSqlQuery MAJBaseQuery(req,db->getDataBase());
+    QList<QVariant> Versionenr = db->getFirstRecordFromStandardSelectSQL("select VersionBase from " NOM_TABLE_PARAMSYSTEME,  ok);
     bool b              = false;
-    if (MAJBaseQuery.lastError().type() != QSqlError::NoError || MAJBaseQuery.size()==0)
+    if (!ok || Versionenr.size()==0)
         b = true;
     else
     {
-        MAJBaseQuery.first();
-        Versionencours = MAJBaseQuery.value(0).toInt();
+        Versionencours = Versionenr.at(0).toInt();
         if (Versionencours < Version)
             b = true;
     }
@@ -2520,14 +2486,12 @@ bool RufusAdmin::VerifBase()
             DumpFile.copy(NomDumpFile);
             QFile base(NomDumpFile);
             QStringList listinstruct = DecomposeScriptSQL(NomDumpFile);
-            QSqlQuery query(db->getDataBase());
             bool a = true;
             foreach(const QString &s, listinstruct)
             {
                 //Edit(s);
-                query.exec(s);
-                if (TraiteErreurRequete(query, s, ""))
-                    a = false;
+                if (!db->StandardSQL(s))
+                        a = false;
             }
             int result=0;
             base.remove();
@@ -2600,8 +2564,7 @@ void RufusAdmin::Slot_ModifDirBackup()
     ui->DirBackupuplineEdit ->setText(dirSauv);
     if (dirsauvorigin != dirSauv)
     {
-        QString req = "update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'";
-        QSqlQuery (req, db->getDataBase());
+        db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
         ModifParamBackup();
     }
     ConnectTimerInactive();
@@ -2663,17 +2626,15 @@ void RufusAdmin::ModifParamBackup()
     }
 
     QString dirSauv   = ui->DirBackupuplineEdit->text();
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'", db->getDataBase());
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
     // ENREGISTREMENT DES PARAMETRES DE SAUVEGARDE DANS /Documents/Rufus/RufusScriptBackup.sh
-    QSqlQuery dirquer("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
-    dirquer.first();
-    QString NomDirStockageImagerie = dirquer.value(0).toString();
+    QString NomDirStockageImagerie = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok).at(0).toString();
 
     //1. Dossier de backup
     DefinitScriptBackup(NomDirStockageImagerie);
 
     //2. Heure et date du backup
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = '"    + ui->HeureBackuptimeEdit->time().toString("HH:mm") + "'", db->getDataBase());
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = '"    + ui->HeureBackuptimeEdit->time().toString("HH:mm") + "'");
 
     QString LundiBkup       = (ui->LundiradioButton->isChecked()?   "1" : "NULL");
     QString MardiBkup       = (ui->MardiradioButton->isChecked()?   "1" : "NULL");
@@ -2683,13 +2644,13 @@ void RufusAdmin::ModifParamBackup()
     QString SamediBkup      = (ui->SamediradioButton->isChecked()?  "1" : "NULL");
     QString DimancheBkup    = (ui->DimancheradioButton->isChecked()?"1" : "NULL");
 
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = "     + LundiBkup, db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = "     + MardiBkup, db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = "  + MercrediBkup, db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = "     + JeudiBkup, db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = "  + VendrediBkup, db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = "    + SamediBkup, db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = "  + DimancheBkup, db->getDataBase());
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = "     + LundiBkup);
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = "     + MardiBkup);
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = "  + MercrediBkup);
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = "     + JeudiBkup);
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = "  + VendrediBkup);
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = "    + SamediBkup);
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = "  + DimancheBkup);
 
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
@@ -2772,19 +2733,19 @@ void RufusAdmin::ModifParamBackup()
 #endif
 
     //programmation de l'effacement du contenu de la table ImagesEchange
-    QSqlQuery ("Use " NOM_BASE_IMAGES, db->getDataBase());
-    QSqlQuery ("DROP EVENT IF EXISTS VideImagesEchange", db->getDataBase());
+    db->StandardSQL("Use " NOM_BASE_IMAGES);
+    db->StandardSQL("DROP EVENT IF EXISTS VideImagesEchange");
     QString req =   "CREATE EVENT VideImagesEchange "
             "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
             "DO DELETE FROM " NOM_BASE_IMAGES "." NOM_TABLE_ECHANGEIMAGES;
-    QSqlQuery (req,db->getDataBase());
+    db->StandardSQL(req);
     //programmation de l'effacement des pdf et jpg contenus dans Faxtures
-    QSqlQuery ("Use " NOM_BASE_COMPTA, db->getDataBase());
-    QSqlQuery ("DROP EVENT IF EXISTS VideFactures", db->getDataBase());
+    db->StandardSQL("Use " NOM_BASE_COMPTA);
+    db->StandardSQL("DROP EVENT IF EXISTS VideFactures");
     req =   "CREATE EVENT VideFactures "
             "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
             "DO UPDATE " NOM_BASE_COMPTA "." NOM_TABLE_FACTURES " SET jpg = null, pdf = null";
-    QSqlQuery (req,db->getDataBase());
+    db->StandardSQL(req);
 }
 
 QStringList RufusAdmin::DecomposeScriptSQL(QString nomficscript)
@@ -2951,15 +2912,15 @@ void RufusAdmin::Slot_EffacePrgSauvegarde()
        listbutton2.at(i)->setChecked(false);
     ui->DirBackupuplineEdit->setText("");
     ui->HeureBackuptimeEdit->setTime(QTime(0,0));
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = ''", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = ''", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = NULL", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = NULL", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = NULL", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = NULL", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = NULL", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = NULL", db->getDataBase());
-    QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = NULL", db->getDataBase());
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set HeureBkup = ''");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = ''");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set LundiBkup = NULL");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set MardiBkup = NULL");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set MercrediBkup = NULL");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set JeudiBkup = NULL");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set VendrediBkup = NULL");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set SamediBkup = NULL");
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set DimancheBkup = NULL");
 #ifdef Q_OS_MACX
     QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath();
     unload += SCRIPTPLISTFILE "\"\"";
@@ -2976,22 +2937,25 @@ void RufusAdmin::Slot_EffacePrgSauvegarde()
 bool RufusAdmin::ImmediateBackup()
 {
     QString req = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QSqlQuery postesquer(req,db->getDataBase());
-    if (postesquer.size() > 0)
+    QList<QList<QVariant>> listpostes = db->StandardSelectSQL(req, ok);
+    if (listpostes.size() > 0)
     {
-        postesquer.first();
-        UpMessageBox::Information(Q_NULLPTR, tr("Autres postes connectés!"),
+        UpMessageBox::Information(this, tr("Autres postes connectés!"),
                                      tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
                                      " si vous n'êtes pas le seul poste connecté.\n"
-                                     "Le poste ") + postesquer.value(0).toString() + tr(" est aussi connecté"));
+                                     "Le poste ") + listpostes.at(0).at(0).toString() + tr(" est aussi connecté"));
         show();
         return false;
     }
 
-    QSqlQuery dirquer("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, db->getDataBase());
-    dirquer.first();
-    QString NomDirStockageImagerie = dirquer.value(0).toString();
-    QString NomDirDestination = dirquer.value(1).toString();
+    QList<QVariant> listdir = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, ok);
+    QString NomDirStockageImagerie ("");
+    QString NomDirDestination ("");
+    if (listdir.size()!=0)
+    {
+        QString NomDirStockageImagerie = listdir.at(0).toString();
+        QString NomDirDestination = listdir.at(1).toString();
+    }
     if(!QDir(NomDirDestination).exists() || NomDirDestination == "")
     {
         if (UpMessageBox::Question(this,
@@ -3099,14 +3063,10 @@ bool RufusAdmin::ImmediateBackup()
     ------------------------------------------------------------------------------------------------------------------------------------*/
 int RufusAdmin::GetflagCorrespdts()
 {
-    int flagMG = 0;
-    QSqlQuery quer("select MAJflagMG from " NOM_TABLE_FLAGS, db->getDataBase());
-    if (quer.size() > 0)
-    {
-        quer.first();
-        flagMG = quer.value(0).toInt();
-    }
-    return flagMG;
+    QList<QVariant> flagrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMG from " NOM_TABLE_FLAGS, ok);
+    if (flagrcd.size() > 0)
+        return flagrcd.at(0).toInt();
+    return 0;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------
@@ -3114,14 +3074,10 @@ int RufusAdmin::GetflagCorrespdts()
     ------------------------------------------------------------------------------------------------------------------------------------*/
 int RufusAdmin::GetflagMessages()
 {
-    int flagMessages = 0;
-    QSqlQuery quer("select MAJflagMessages from " NOM_TABLE_FLAGS, db->getDataBase());
-    if (quer.size() > 0)
-    {
-        quer.first();
-        flagMessages = quer.value(0).toInt();
-    }
-    return flagMessages;
+    QList<QVariant> flagmsgrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMessages from " NOM_TABLE_FLAGS, ok);
+    if (flagmsgrcd.size() > 0)
+        return flagmsgrcd.at(0).toInt();
+    return 0;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------
@@ -3129,20 +3085,16 @@ int RufusAdmin::GetflagMessages()
     ------------------------------------------------------------------------------------------------------------------------------------*/
 int RufusAdmin::GetflagSalDat()
 {
-    int flagSalDat = 0;
-    QSqlQuery quer("select MAJflagSalDat from " NOM_TABLE_FLAGS, db->getDataBase());
-    if (quer.size() > 0)
-    {
-        quer.first();
-        flagSalDat = quer.value(0).toInt();
-    }
-    return flagSalDat;
+    QList<QVariant> flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
+    if (flagsaldatrcd.size() > 0)
+        return flagsaldatrcd.at(0).toInt();
+    return 0;
 }
 
 void RufusAdmin::FermeTCP()
 {
         TCPServer->close();
-        QSqlQuery ("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null", db->getDataBase());
+        db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null");
 }
 
 void RufusAdmin::ResumeTCPSocketStatut()
@@ -3220,18 +3172,15 @@ void RufusAdmin::VerifVerrouDossier()
     // on donne le statut "arrivé" aux patients en salle d'attente dont le iduserencourssexam n'est plus present sur ce poste examen dans la liste des users connectes
     QString req = "select iduserencoursexam, posteexamen, idpat from " NOM_TABLE_SALLEDATTENTE " where statut like '" ENCOURSEXAMEN "%'";
     //qDebug() << req;
-    QSqlQuery querr(req, DataBase::getInstance()->getDataBase() );
-    for (int i=0; i<querr.size(); i++)
+    QList<QList<QVariant>> listuser = db->StandardSelectSQL(req, ok);
+    for (int i=0; i<listuser.size(); i++)
     {
-        querr.seek(i);
-        req = "select iduser, nomposteconnecte from " NOM_TABLE_USERSCONNECTES " where iduser = " + querr.value(0).toString()  + " and nomposteconnecte = '" + querr.value(1).toString() + "'";
-        //qDebug() << req;
-        QSqlQuery squer(req, DataBase::getInstance()->getDataBase() );
-        if (squer.size()==0)
+        req = "select iduser, nomposteconnecte from " NOM_TABLE_USERSCONNECTES " where iduser = " + listuser.at(i).at(0).toString()  + " and nomposteconnecte = '" + listuser.at(i).at(1).toString() + "'";
+        QList<QVariant> userconnect = db->getFirstRecordFromStandardSelectSQL(req, ok);
+        if (userconnect.size()==0)
         {
-            req = "update " NOM_TABLE_SALLEDATTENTE " set Statut = '" ARRIVE "', posteexamen = null, iduserencoursexam = null where idpat = " + querr.value(2).toString();
-            //qDebug() << req;
-            QSqlQuery(req,  DataBase::getInstance()->getDataBase() );
+            req = "update " NOM_TABLE_SALLEDATTENTE " set Statut = '" ARRIVE "', posteexamen = null, iduserencoursexam = null where idpat = " + listuser.at(i).at(2).toString();
+            db->StandardSQL(req);
         }
         mettreajourlasalledattente = true;
     }
@@ -3250,14 +3199,14 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
     if (!db->locktables(QStringList() << NOM_TABLE_FLAGS))
        return;
-    QSqlQuery quer("select MAJflagSalDat from " NOM_TABLE_FLAGS, DataBase::getInstance()->getDataBase());
+    QList<QVariant> flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
     QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagSalDat) VALUES (1)";
     int a = 0;
-    if (quer.seek(0)) {
-        a = quer.value(0).toInt() + 1;
+    if (flagsaldatrcd.size()>(0)) {
+        a = flagsaldatrcd.at(0).toInt() + 1;
         MAJreq = "update " NOM_TABLE_FLAGS " set MAJflagSalDat = " + QString::number(a);
     }
-    QSqlQuery (MAJreq, DataBase::getInstance()->getDataBase());
+    db->StandardSQL(MAJreq);
     DataBase::getInstance()->commit();
     gflagSalDat = a;
 }
@@ -3334,22 +3283,20 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
                 " where Creele > '" + gDateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
                 + "' and asupprimer is null"
                 + " order by creele";
-        QSqlQuery quer(req, DataBase::getInstance()->getDataBase());
-        int TotalNvxMessages = quer.size();
+        QList<QList<QVariant>> listmsg = db->StandardSelectSQL(req, ok);
+        int TotalNvxMessages = listmsg.size();
         QHash<int,int> mapmessages;
         if (TotalNvxMessages>0)
         {
-            quer.first();
             for (int i=0; i<TotalNvxMessages; i++)
             {
-                QHash<int,int>::const_iterator itm = mapmessages.find(quer.value(1).toInt());
+                QHash<int,int>::const_iterator itm = mapmessages.find(listmsg.at(i).at(1).toInt());
                 if (itm != mapmessages.constEnd())
                     mapmessages[itm.key()] = itm.value()+1;
                 else
-                    mapmessages[quer.value(1).toInt()] = 1;
-                quer.next();
+                    mapmessages[listmsg.at(i).at(1).toInt()] = 1;
             }
-            gDateDernierMessage = quer.value(2).toDateTime();
+            gDateDernierMessage = listmsg.at(listmsg.size()-1).at(2).toDateTime();
         }
         for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
             TCPServer->envoyerA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);

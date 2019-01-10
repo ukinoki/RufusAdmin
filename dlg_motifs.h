@@ -46,6 +46,7 @@ public:
     ~dlg_motifs();
 
 private:
+    DataBase            *db;
     Ui::dlg_motifs      *ui;
     void                DeplaceVersRow(int id, int anc, int nouv);
     void                RecalculeLesRows();
