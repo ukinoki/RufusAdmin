@@ -56,7 +56,8 @@ private:
     QSettings                   *gsettingsIni;
     QString                     getDossierDocuments(QString Appareil);
     bool                        DefinitDossiers();
-    QSqlDatabase                db;
+    bool                        ok;
+    DataBase                    *db;
     QThread                     *thread;
 
     int                         Acces;

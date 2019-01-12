@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>415</width>
-    <height>350</height>
+    <height>195</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>415</width>
-    <height>350</height>
+    <height>195</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -29,7 +29,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>270</y>
+     <y>130</y>
      <width>390</width>
      <height>50</height>
     </rect>
@@ -136,13 +136,13 @@
      <x>10</x>
      <y>10</y>
      <width>390</width>
-     <height>250</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="minimumSize">
     <size>
      <width>390</width>
-     <height>250</height>
+     <height>0</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -195,172 +195,11 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QGroupBox" name="AccesgroupBox">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>250</width>
-      <height>170</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>250</width>
-      <height>170</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>250</width>
-      <height>170</height>
-     </size>
-    </property>
-    <property name="focusPolicy">
-     <enum>Qt::NoFocus</enum>
-    </property>
-    <property name="contextMenuPolicy">
-     <enum>Qt::NoContextMenu</enum>
-    </property>
-    <property name="title">
-     <string>Emplacement du serveur</string>
-    </property>
-    <widget class="QRadioButton" name="PosteradioButton">
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>30</y>
-       <width>120</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="focusPolicy">
-      <enum>Qt::WheelFocus</enum>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::NoContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>Sur ce poste</string>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="LocalradioButton">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>55</y>
-       <width>120</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="focusPolicy">
-      <enum>Qt::WheelFocus</enum>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::NoContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>Réseau local</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="IPlineEdit">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>177</x>
-       <y>80</y>
-       <width>35</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="focusPolicy">
-      <enum>Qt::WheelFocus</enum>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::NoContextMenu</enum>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="IPlabel">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>13</x>
-       <y>83</y>
-       <width>161</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::NoContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>Adresse IP</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="DistantradioButton">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>105</y>
-       <width>120</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Accès Distant</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="DistantlineEdit">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>70</x>
-       <y>130</y>
-       <width>161</width>
-       <height>21</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="DistantLabel">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>133</y>
-       <width>60</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Adresse</string>
-     </property>
-    </widget>
-   </widget>
    <widget class="QComboBox" name="PortcomboBox">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>110</y>
+      <x>130</x>
+      <y>70</y>
       <width>104</width>
       <height>26</height>
      </rect>
@@ -372,8 +211,8 @@
    <widget class="QLabel" name="Portlabel">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>90</y>
+      <x>20</x>
+      <y>75</y>
       <width>60</width>
       <height>16</height>
      </rect>
@@ -409,10 +248,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>MDPlineEdit</tabstop>
-  <tabstop>AccesgroupBox</tabstop>
-  <tabstop>PosteradioButton</tabstop>
-  <tabstop>LocalradioButton</tabstop>
-  <tabstop>IPlineEdit</tabstop>
   <tabstop>PortcomboBox</tabstop>
   <tabstop>AnnuluppushButton</tabstop>
   <tabstop>TestuppushButton</tabstop>

@@ -171,6 +171,14 @@ bool DataBase::locktables(QStringList ListTables, QString ModeBlocage)
     return !traiteErreurRequete(lockquery,lockrequete, tr("Impossible de bloquer les tables en mode ") + ModeBlocage);
 }
 
+void DataBase::unlocktables()
+{
+    QSqlQuery ("UNLOCK TABLES;", m_db );
+    QString rollbackrequete = "SET AUTOCOMMIT = 1;";
+    QSqlQuery rollbackquery (rollbackrequete, m_db );
+    traiteErreurRequete(rollbackquery,rollbackrequete,"");
+}
+
 bool DataBase::testconnexionbase() // une requete simple pour vérifier que la connexion à la base fontionne toujours
 {
     QString req = "select AdresseTCPServeur from " NOM_TABLE_PARAMSYSTEME;

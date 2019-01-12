@@ -45,20 +45,13 @@ public:
     ~dlg_paramconnexion();
     Ui::dlg_paramconnexion *ui;
     QSqlDatabase    getdatabase();
-    int             gMode;
-    enum gMode      {Poste, ReseauLocal, Distant};
 
 private:
-    bool            AdresseValide;
     bool            VerifFiche();
-    QString         Domaine, AdressIP;
-    QSqlDatabase    db;
+    DataBase        *db;
     bool            TestConnexion();
-    QString         gIPAvecZero, gIPSansZero, gClient, gServeur;
 
 private slots:
-    void    Slot_MAJIP();
-    void    Slot_RegleAffichage();
     void    Slot_Test();
     void    Slot_Verif();
 };

@@ -99,6 +99,7 @@ public:
     void                    commit();
     void                    rollback();
     bool                    locktables(QStringList ListTables, QString ModeBlocage = "WRITE");
+    void                    unlocktables();
     bool                    testconnexionbase();
     int                     selectMaxFromTable(QString nomchamp, QString nomtable, QString errormsg="");
     bool                    SupprRecordFromTable(int id, QString nomChamp, QString nomtable, QString errormsg="");

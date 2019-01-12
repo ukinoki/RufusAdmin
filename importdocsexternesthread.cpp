@@ -21,7 +21,7 @@ ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool 
 {
     thread          = new QThread;
     moveToThread(thread);
-    db              = DataBase::getInstance()->getDataBase();
+    db              = DataBase::getInstance();
     idAdminDocs     = iduser;
     idLieuExercice  = idlieu;
     Acces           = (local? Local : Distant);
@@ -344,6 +344,12 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                 QString req(""), idPatient("");
                 if (Appareil == "TOPCON ALADDIN")   {
                     QStringList listn = nomdoc.split("_");
+                    if (listn.size()<5)
+                    {
+                        commentechec =  tr("Impossible d'ouvrir le fichier");
+                        EchecImport(Titredoc + " - " + nomdoc + " - " + commentechec + " - " + QHostInfo::localHostName());
+                        continue;
+                    }
                     QString nom     = Utils::capitilize(listn.at(0));
                     QString prenom  = Utils::capitilize(listn.at(1));
                     QString jour    = Utils::capitilize(listn.at(2));
@@ -354,11 +360,14 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                                       " and patprenom like '" + prenom  + "'"
                                       " and patDDN = '" + annee + "-" + mois + "-" + jour + "'";
                     //qDebug() << req;
-                    QSqlQuery querpat(req, db);
-                    if (querpat.size()>0)   {
-                        querpat.first();
-                        idPatient = querpat.value(0).toString();
+                    QList<QVariant> patlst = db->getFirstRecordFromStandardSelectSQL(req, ok);
+                    if (!ok || patlst.size()==0)
+                    {
+                        commentechec =  tr("Impossible d'ouvrir le fichier");
+                        EchecImport(Titredoc + " - " + nomdoc + " - " + commentechec + " - " + QHostInfo::localHostName());
+                        continue;
                     }
+                    idPatient = patlst.at(0).toString();
                 }
                 else if (Appareil == "TOPCON ALADDIN II")
                     idPatient           = nomdoc.split("_").at(0);
@@ -416,18 +425,14 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                     continue;
                 }
                 QString identpat;
-                QSqlQuery quer1("select patnom, patprenom from " NOM_TABLE_PATIENTS " where idpat = " + idPatient, db);
-                if (quer1.size()>0)
+                QList<QVariant> patlst = db->getFirstRecordFromStandardSelectSQL("select patnom, patprenom from " NOM_TABLE_PATIENTS " where idpat = " + idPatient, ok);
+                if (!ok || patlst.size()==0)
                 {
-                    quer1.first();
-                    identpat = quer1.value(0).toString() + " " + quer1.value(1).toString();
-                }
-                else
-                {
-                    commentechec = tr("Pas de patient pour cet idPatient") + " -> " + idPatient;
+                    commentechec =  tr("Pas de patient pour cet idPatient") + " -> " + idPatient;
                     EchecImport(Titredoc + " - " + nomdoc + " - " + commentechec + " - " + QHostInfo::localHostName());
                     continue;
                 }
+                identpat = patlst.at(0).toString() + " " + patlst.at(1).toString();
 
                 /* _______________________________________________________________________________________________________________________________________________________
                  * Enregistrement du fichier dans la base
@@ -435,14 +440,9 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                  * Si on est en accès distant, l'enregistrement se fait dans la table Impressions et le contenu du fichier est copié dans le champ blob de la table de la table
                  * _______________________________________________________________________________________________________________________________________________________
                 */
-                QSqlQuery ("LOCK TABLES '" NOM_TABLE_IMPRESSIONS "' WRITE",db);
+                db->locktables(QStringList() << NOM_TABLE_IMPRESSIONS);
                 int idimpr(0);
-                QSqlQuery maxquer("select max(idimpression) from " NOM_TABLE_IMPRESSIONS, db);
-                if (maxquer.size()>0)
-                {
-                    maxquer.first();
-                    idimpr = maxquer.value(0).toInt() + 1;
-                }
+                idimpr = db->selectMaxFromTable("idimpression",  NOM_TABLE_IMPRESSIONS);
 
                 QString NomFileDoc = idPatient + "_"
                         + Typedoc + "_"
@@ -451,7 +451,6 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                         + "-" + QString::number(idimpr)
                         + "." + QFileInfo(nomdoc).suffix();
 
-                QSqlQuery query = QSqlQuery(db);
                 if (Acces == Local)
                 {
                     req = "insert into " NOM_TABLE_IMPRESSIONS " (idimpression, idUser,  idpat,  TypeDoc,  SousTypeDoc, Titre, Dateimpression,"
@@ -470,7 +469,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                             IMAGERIE "', "
                             + QString::number(idLieuExercice) + ")";
 
-                    if(query.exec(req))
+                    if(db->StandardSQL(req))
                     {
                         QString CheminOKTransfrDoc          = CheminOKTransfrDir + "/" + NomFileDoc;
                         QString CheminOKTransfrDocOrigin    = CheminOKTransfrDirOrigin + "/" + nomdoc;
@@ -509,10 +508,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                             //qDebug() << "xx = " + QString::number(xx) << "x = " + QString::number(xx-DlgMess->width()-50) << "yy = " + QString::number(yy)  << "y = " + QString::number(yy-DlgMess->height()*(k+1))  << "itr = " << QString::number(k);
                         }
                         else
-                        {
-                            req = "delete from " NOM_TABLE_IMPRESSIONS " where idimpression = " + QString::number(idimpr);
-                            QSqlQuery(req,db);
-                        }
+                            db->SupprRecordFromTable(idimpr, "idimpression", NOM_TABLE_IMPRESSIONS);
                     }
                     else
                     {
@@ -523,23 +519,21 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                 else if (Acces == Distant)
                 {
                     // on doit passer par les bindvalue pour incorporer le bytearray dans la requête
-                    req = "insert into " NOM_TABLE_IMPRESSIONS " (idimpression, idUser,  idpat,  TypeDoc,  SousTypeDoc, Titre, Dateimpression, UserEmetteur," + formatdoc + ", EmisRecu, FormatDoc, idLieu)"
-                          " values(:idimpr, :iduser, :idpat, :typeDoc, :soustypedoc, :titre, :dateimpression, :useremetteur, :doc, :emisrecu, :formatdoc, :lieu)";
-                    query.prepare(req);
-                    query.bindValue(":idimpr",          QString::number(idimpr));
-                    query.bindValue(":iduser",          QString::number(idAdminDocs));
-                    query.bindValue(":idpat",           idPatient);
-                    query.bindValue(":typeDoc",         Typedoc);
-                    query.bindValue(":soustypedoc",     SousTypeDoc);
-                    query.bindValue(":titre",           Titredoc);
-                    query.bindValue(":dateimpression",  datestring + " " + QTime::currentTime().toString("HH:mm:ss"));
-                    query.bindValue(":useremetteur",    QString::number(idAdminDocs));
-                    query.bindValue(":doc",             ba);
-                    query.bindValue(":emisrecu",        "0");
-                    query.bindValue(":formatdoc",       IMAGERIE);
-                    query.bindValue(":lieu",            QString::number(idLieuExercice));
+                    QHash<QString,QVariant> listbinds;
+                    listbinds["idimpression"] =    QString::number(idimpr);
+                    listbinds["iduser"] =          QString::number(idAdminDocs);
+                    listbinds["idpat"] =           idPatient;
+                    listbinds["typeDoc"] =         Typedoc;
+                    listbinds["soustypedoc"] =     SousTypeDoc;
+                    listbinds["titre"] =           Titredoc;
+                    listbinds["dateimpression"] =  datestring + " " + QTime::currentTime().toString("HH:mm:ss");
+                    listbinds["useremetteur"] =    QString::number(idAdminDocs);
+                    listbinds[formatdoc] =         ba;
+                    listbinds["emisrecu"] =        "0";
+                    listbinds["formatdoc"] =       IMAGERIE;
+                    listbinds["idlieu"] =          QString::number(idLieuExercice);
 
-                    if(query.exec())
+                    if(db->InsertSQLByBinds(NOM_TABLE_IMPRESSIONS, listbinds))
                     {
                         FichierImage.remove();
                         QString CheminOKTransfrDocOrigin    = CheminOKTransfrDirOrigin + "/" + nomdoc;
@@ -570,10 +564,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                             //qDebug() << "xx = " + QString::number(xx) << "x = " + QString::number(xx-DlgMess->width()-50) << "yy = " + QString::number(yy)  << "y = " + QString::number(yy-DlgMess->height()*(k+1))  << "itr = " << QString::number(k);
                         }
                         else
-                        {
-                            req = "delete from " NOM_TABLE_IMPRESSIONS " where idimpression = " + QString::number(idimpr);
-                            QSqlQuery(req,db);
-                        }
+                            db->SupprRecordFromTable(idimpr, "idimpression", NOM_TABLE_IMPRESSIONS);
                     }
                     else
                     {
@@ -581,7 +572,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                         EchecImport(Titredoc + " - " + nomdoc + " - " + commentechec + " - " + QHostInfo::localHostName());
                     }
                 }
-                QSqlQuery("UNLOCK TABLES", db);
+                db->unlocktables();
             }
         }
     }
