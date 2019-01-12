@@ -96,6 +96,7 @@ public:
 
     QString connectToDataBase(QString basename, QString login, QString password);
 
+    bool                    createtransaction(QStringList ListTables, QString ModeBlocage = "WRITE");
     void                    commit();
     void                    rollback();
     bool                    locktables(QStringList ListTables, QString ModeBlocage = "WRITE");
