@@ -58,7 +58,8 @@ public:
         {
             QTextStream out(&testfile);
             QString timelog = QTime::currentTime().toString();
-            out << type << " : " << msg << (infoMsg==""? "" : " : " + infoMsg) << " : " << timelog;
+            out << type << " : " << msg << (infoMsg==""? "" : " : " + infoMsg) << " : " << timelog << "\n";
+            testfile.close();
         }
         //else UpMessageBox::Watch(Q_NULLPTR, tr("Impossible d'ouvrir le fichier\n") + fileName);
 

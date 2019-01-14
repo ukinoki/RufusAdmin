@@ -520,18 +520,18 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                 {
                     // on doit passer par les bindvalue pour incorporer le bytearray dans la requête
                     QHash<QString,QVariant> listbinds;
-                    listbinds["idimpression"] =    QString::number(idimpr);
-                    listbinds["iduser"] =          QString::number(idAdminDocs);
+                    listbinds["idimpression"] =    idimpr;
+                    listbinds["iduser"] =          idAdminDocs;
                     listbinds["idpat"] =           idPatient;
                     listbinds["typeDoc"] =         Typedoc;
                     listbinds["soustypedoc"] =     SousTypeDoc;
                     listbinds["titre"] =           Titredoc;
                     listbinds["dateimpression"] =  datestring + " " + QTime::currentTime().toString("HH:mm:ss");
-                    listbinds["useremetteur"] =    QString::number(idAdminDocs);
+                    listbinds["useremetteur"] =    idAdminDocs;
                     listbinds[formatdoc] =         ba;
                     listbinds["emisrecu"] =        "0";
                     listbinds["formatdoc"] =       IMAGERIE;
-                    listbinds["idlieu"] =          QString::number(idLieuExercice);
+                    listbinds["idlieu"] =          idLieuExercice;
 
                     if(db->InsertSQLByBinds(NOM_TABLE_IMPRESSIONS, listbinds))
                     {
