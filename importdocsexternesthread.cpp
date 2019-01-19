@@ -442,7 +442,12 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                 */
                 db->locktables(QStringList() << NOM_TABLE_IMPRESSIONS);
                 int idimpr(0);
-                idimpr = db->selectMaxFromTable("idimpression",  NOM_TABLE_IMPRESSIONS);
+                idimpr = db->selectMaxFromTable("idimpression",  NOM_TABLE_IMPRESSIONS) + 1;
+                if (idimpr == 0)
+                {
+                    db->unlocktables();
+                    continue;
+                }
 
                 QString NomFileDoc = idPatient + "_"
                         + Typedoc + "_"

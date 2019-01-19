@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "rufusadmin.h"
@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("14-01-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("18-01-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -742,7 +742,9 @@ double RufusAdmin::CalcBaseSize()
                       " or table_schema = 'rufus'"
                       " GROUP BY table_schema)"
                       " as bdd";
-    basesize = db->getFirstRecordFromStandardSelectSQL(sizereq,ok).at(0).toDouble();
+    QList<QVariant> basedata = db->getFirstRecordFromStandardSelectSQL(sizereq,ok);
+    if (ok && basedata.size()>0)
+        basesize = basedata.at(0).toDouble();
     return basesize;
 }
 
@@ -1090,10 +1092,11 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
     QString req = "select TitreExamen, NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->getId());
     QString exam = "";
-    exam = db->getFirstRecordFromStandardSelectSQL(req, ok).at(1).toString();
+    QList<QVariant> examdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
     if (!ok)
         return;
-
+    if (examdata.size()>0)
+        exam = examdata.at(1).toString();
     QString dir = getDossierDocuments(exam);
     if (dir == "")
         dir = QDir::homePath() + NOMDIR_RUFUS;
@@ -1166,9 +1169,11 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
     id = ui->AppareilsConnectesupTableWidget->item(line->getRowTable(),0)->text();
     QString req = "select NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + id;
     QString exam = "";
-    exam = db->getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver le nom de l'appareil")).at(1).toString();
+    QList<QVariant> examdata = db->getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver le nom de l'appareil"));
     if (!ok)
         return;
+    if (examdata.size()>0)
+        exam = examdata.at(0).toString();
     if (exam != "")
         gsettingsIni->setValue("DossierEchangeImagerie/" + exam, dir);
 }
@@ -2018,7 +2023,7 @@ void RufusAdmin::Slot_RestaureBase()
 
     QString NomDirStockageImagerie("");
     QList<QVariant> dirstock = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
-    if (dirstock.size()>0)
+    if (ok && dirstock.size()>0)
         NomDirStockageImagerie = dirstock.at(0).toString();
     if (!ok || !QDir(NomDirStockageImagerie).exists())
     {
@@ -2373,6 +2378,8 @@ void RufusAdmin::Slot_VerifPosteImport()
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
     QList<QVariant> listproc = db->getFirstRecordFromStandardSelectSQL("CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS, ok);
+    if(!ok)
+        return;
     if (listproc.size()==0)
     {
         A = "";
@@ -2409,7 +2416,12 @@ void RufusAdmin::Slot_VerifPosteImport()
 
 void RufusAdmin::Slot_VerifVersionBase()
 {
-    int version = db->getFirstRecordFromStandardSelectSQL("select versionbase from " NOM_TABLE_PARAMSYSTEME, ok).at(0).toInt();
+    int version = VERSION_BASE;
+    QList<QVariant> versiondata = db->getFirstRecordFromStandardSelectSQL("select versionbase from " NOM_TABLE_PARAMSYSTEME, ok);
+    if (!ok)
+        return;
+    if (versiondata.size()>0)
+        version = versiondata.at(0).toInt();
     if (version != VERSION_BASE)
     {
         UpMessageBox::Watch(this, tr("Versons incompatibles"),
@@ -2430,6 +2442,8 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
          ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
     int DefautLieu = 0;
     QList<QVariant> dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
+    if(!ok)
+        return;
     if (dftLieu.size()>0)
         DefautLieu = dftLieu.at(0).toInt();
     if (dftLieu.size()>0 && DefautLieu>0)
@@ -2628,7 +2642,10 @@ void RufusAdmin::ModifParamBackup()
     QString dirSauv   = ui->DirBackupuplineEdit->text();
     db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
     // ENREGISTREMENT DES PARAMETRES DE SAUVEGARDE DANS /Documents/Rufus/RufusScriptBackup.sh
-    QString NomDirStockageImagerie = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok).at(0).toString();
+    QString NomDirStockageImagerie("");
+    QList<QVariant> dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
+    if (ok && dirdata.size()>0)
+        NomDirStockageImagerie = dirdata.at(0).toString();
 
     //1. Dossier de backup
     DefinitScriptBackup(NomDirStockageImagerie);
@@ -2948,13 +2965,13 @@ bool RufusAdmin::ImmediateBackup()
         return false;
     }
 
-    QList<QVariant> listdir = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, ok);
-    QString NomDirStockageImagerie ("");
+    QString NomDirStockageImagerie("");
     QString NomDirDestination ("");
-    if (listdir.size()!=0)
+    QList<QVariant> dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, ok);
+    if (ok && dirdata.size()>0)
     {
-        QString NomDirStockageImagerie = listdir.at(0).toString();
-        QString NomDirDestination = listdir.at(1).toString();
+        QString NomDirStockageImagerie = dirdata.at(0).toString();
+        QString NomDirDestination = dirdata.at(1).toString();
     }
     if(!QDir(NomDirDestination).exists() || NomDirDestination == "")
     {
@@ -3064,7 +3081,7 @@ bool RufusAdmin::ImmediateBackup()
 int RufusAdmin::GetflagCorrespdts()
 {
     QList<QVariant> flagrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMG from " NOM_TABLE_FLAGS, ok);
-    if (flagrcd.size() > 0)
+    if (ok && flagrcd.size() > 0)
         return flagrcd.at(0).toInt();
     return 0;
 }
@@ -3075,7 +3092,7 @@ int RufusAdmin::GetflagCorrespdts()
 int RufusAdmin::GetflagMessages()
 {
     QList<QVariant> flagmsgrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMessages from " NOM_TABLE_FLAGS, ok);
-    if (flagmsgrcd.size() > 0)
+    if (ok && flagmsgrcd.size() > 0)
         return flagmsgrcd.at(0).toInt();
     return 0;
 }
@@ -3086,7 +3103,7 @@ int RufusAdmin::GetflagMessages()
 int RufusAdmin::GetflagSalDat()
 {
     QList<QVariant> flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
-    if (flagsaldatrcd.size() > 0)
+    if (ok && flagsaldatrcd.size() > 0)
         return flagsaldatrcd.at(0).toInt();
     return 0;
 }
@@ -3095,6 +3112,7 @@ void RufusAdmin::FermeTCP()
 {
         TCPServer->close();
         db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null");
+        delete TCPServer;
 }
 
 void RufusAdmin::ResumeTCPSocketStatut()
@@ -3202,7 +3220,7 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     QList<QVariant> flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
     QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagSalDat) VALUES (1)";
     int a = 0;
-    if (flagsaldatrcd.size()>(0)) {
+    if (ok && flagsaldatrcd.size()>(0)) {
         a = flagsaldatrcd.at(0).toInt() + 1;
         MAJreq = "update " NOM_TABLE_FLAGS " set MAJflagSalDat = " + QString::number(a);
     }
@@ -3264,13 +3282,13 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
     if (gflagSalDat < flag)
     {
         gflagSalDat = flag;
-        //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+        TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
     flag = GetflagCorrespdts();
     if (gflagCorrespdts < flag)
     {
         gflagCorrespdts = flag;
-        //TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
+        TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
     flag = GetflagMessages();
     if (gflagMessages < flag)

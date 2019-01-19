@@ -22,6 +22,7 @@ along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
 #include <QTcpSocket>
 #include <QDebug>
 #include "utils.h"
+#include "log.h"
 
 /*les règles non écrites
  * pas de classe héritée de thread

@@ -110,15 +110,15 @@ bool dlg_paramconnexion::TestConnexion()
 
     QString req = "show grants for '" + Login + (db->getBase() == "BDD_DISTANT"? "SSL" : "")  + "'@'" + Client + "'";
     bool ok;
-    QList<QVariant> grants = db->getFirstRecordFromStandardSelectSQL(req,ok);
+    QList<QVariant> grantsdata = db->getFirstRecordFromStandardSelectSQL(req,ok);
 
-    if (!ok || grants.size()==0)
+    if (!ok || grantsdata.size()==0)
     {
         UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
                             tr("Impossible de retrouver les droits de l'utilisateur ") + NOM_ADMINISTRATEURDOCS);
         return false;
     }
-    QString reponse = grants.at(0).toString();
+    QString reponse = grantsdata.at(0).toString();
     if (reponse.left(9) != "GRANT ALL")
     {
         UpMessageBox::Watch(this,tr("Erreur sur le serveur"),

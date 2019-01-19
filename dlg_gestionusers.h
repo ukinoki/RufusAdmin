@@ -38,7 +38,7 @@ along with Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "upheaderview.h"
 
 /* sert à gérer les comptes utilisateurs
- * IDENTIQUE POUR RUFUS ET RUFUSADMIN*/
+ * QUASI-IDENTIQUE POUR RUFUS ET RUFUSADMIN*/
 
 namespace Ui {
 class dlg_gestionusers;

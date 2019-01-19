@@ -1,21 +1,20 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+ This file is part of RufusAdmin or Rufus.
+ 
+ RufusAdmin and Rufus are free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License,
+ or any later version.
+ 
+ RufusAdmin and Rufus are distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-RufusAdmin is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License,
-or any later version.
-
-RufusAdmin is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-#include "database.h"
 #include "dlg_gestionusers.h"
 #include "ui_dlg_gestionusers.h"
 
@@ -215,8 +214,8 @@ void dlg_gestionusers::Slot_Annulation()
         db->SupprRecordFromTable(DataUser()->id(), "idUser", NOM_TABLE_UTILISATEURS);
         db->SupprRecordFromTable(DataUser()->id(), "idUser", NOM_TABLE_COMPTES);
         int b = -1;
-        QList<QVariant> userlst = db->getFirstRecordFromStandardSelectSQL("select idUser from " NOM_TABLE_UTILISATEURS " where iduser = " + QString::number(gidUserDepart),ok);
-        if (userlst.size()>0)
+        QList<QVariant> userdata = db->getFirstRecordFromStandardSelectSQL("select idUser from " NOM_TABLE_UTILISATEURS " where iduser = " + QString::number(gidUserDepart),ok);
+        if (ok && userdata.size()>0)
             b = gidUserDepart;
         RemplirTableWidget(b);
         ui->Principalframe->setEnabled(false);
@@ -838,6 +837,10 @@ void dlg_gestionusers::Slot_GestionComptes()
     QString cptact  = ui->CompteActescomboBox->currentText();
     bool verifcpta  = ui->CompteComptawidget->isVisible();
     QString cptcpta = ui->CompteComptacomboBox->currentText();
+
+
+
+
     Dlg_GestComptes = new dlg_gestioncomptes(DataUser(), this);
     Dlg_GestComptes ->setWindowTitle(tr("Comptes bancaires de ") + DataUser()->getLogin());
     Dlg_GestComptes ->exec();
@@ -1072,17 +1075,12 @@ void dlg_gestionusers::SupprUser()
         db->SupprRecordFromTable(idUser, "idUser", NOM_TABLE_COTATIONS);
         db->SupprRecordFromTable(idUser, "idUser", NOM_TABLE_UTILISATEURS);
         db->StandardSQL("delete from " NOM_TABLE_JOINTURESLIEUX " where iduser not in (select iduser from " NOM_TABLE_UTILISATEURS ")");
-        /*req = "delete from " NOM_TABLE_COMPTES  " where iduser = " + QString::number(idUser) + " and idcompte = " + ui->idCompteupLineEdit->text();
-        QSqlQuery (req,db->getDataBase());
-        req = "delete from " + NOM_TABLE_COMPTESJointures + " where  iduser = " + QString::number(idUser);
-        QSqlQuery (req,db->getDataBase());*/
+
         QString req = "select user, host from mysql.user where user like '" + ui->ListUserstableWidget->selectedItems().at(1)->text() + "%'";
         QList<QList<QVariant>> listusr = db->StandardSelectSQL(req, ok);
-        //UpMessageBox::Watch(this,req);
         if (listusr.size()>0)
             for (int i=0; i<listusr.size(); i++)
                 db->StandardSQL("drop user '" + listusr.at(i).at(0).toString() + "'@'" + listusr.at(i).at(1).toString() + "'");
-                //UpMessageBox::Watch(this,req);
         if (gidUserDepart == idUser)
         {
             UpMessageBox::Watch(this, tr("Cool ") + vamourir + "...", tr("Votre suicide s'est parfaitement déroulé et le programme va maintenant se fermer"));
@@ -1108,14 +1106,15 @@ void dlg_gestionusers::CalcListitemsCompteActescomboBox(int iduser)
                   " where ban.idbanque = comp.idbanque \n"
                   " and (iduser = " + user + " or partage = 1)"
                   " and desactive is null";
-    //UpMessageBox::Watch(this,req);
-    QList<QList<QVariant>> listcpt = db->StandardSelectSQL(req, ok);
+    QList<QList<QVariant>> listcpt = db->StandardSelectSQL(req, ok, tr("Impossible de retrouver les comptes de l'utilisateur"));
+    if (!ok)
+        return;
     ui->CompteActescomboBox->clear();
     for (int i=0; i<listcpt.size(); i++)
         ui->CompteActescomboBox->insertItem(0, listcpt.at(i).at(1).toString() + " - " + listcpt.at(i).at(2).toString(), listcpt.at(i).at(0).toInt());
     QList<QVariant> idcptlst = db->getFirstRecordFromStandardSelectSQL("select idCompteEncaissHonoraires from " NOM_TABLE_UTILISATEURS
                                                                        " where iduser = " + user + " and idCompteEncaissHonoraires is not null", ok);
-    if (idcptlst.size()>0)
+    if (ok && idcptlst.size()>0)
         ui->CompteActescomboBox->setCurrentIndex(ui->CompteActescomboBox->findData(idcptlst.at(0)));
 }
 
@@ -1128,15 +1127,15 @@ void dlg_gestionusers::CalcListitemsCompteComptacomboBox(int iduser, bool soccom
                   " and desactive is null";
     if (!soccomptable)
         req +=    " and partage is null";
-    //UpMessageBox::Watch(this,req);
-    QList<QList<QVariant>> listcpt = db->StandardSelectSQL(req, ok);
+    QList<QList<QVariant>> listcpt = db->StandardSelectSQL(req, ok, tr("Impossible de retrouver les comptes de l'utilisateur"));
+    if (!ok)
+        return;
     ui->CompteComptacomboBox->clear();
     for (int i=0; i<listcpt.size(); i++)
         ui->CompteComptacomboBox->insertItem(0, listcpt.at(i).at(1).toString() + " - " + listcpt.at(i).at(2).toString(), listcpt.at(i).at(0).toInt());
     QList<QVariant> idcptlst = db->getFirstRecordFromStandardSelectSQL("select idcomptepardefaut from " NOM_TABLE_UTILISATEURS
                                                                        " where iduser = " + user + " and idcomptepardefaut is not null", ok);
-    //qDebug() << req1;
-    if (idcptlst.size()>0)
+    if (ok && idcptlst.size()>0)
         ui->CompteComptacomboBox->setCurrentIndex(ui->CompteComptacomboBox->findData(idcptlst.at(0)));
     else
         ui->CompteComptacomboBox->setCurrentIndex(0);
@@ -1151,12 +1150,14 @@ void dlg_gestionusers::CalcListitemsEmployeurcomboBox(int iduser)
                   " and iduser <> " + user +
                   " and userdesactive is null";
     //qDebug() << req;
-    QList<QList<QVariant>> listusr = db->StandardSelectSQL(req, ok);
+    QList<QList<QVariant>> listusr = db->StandardSelectSQL(req, ok, tr("Impossible de retrouver la liste des employeurs"));
+    if (!ok)
+        return;
     ui->EmployeurcomboBox->clear();
     for (int i=0; i<listusr.size(); i++)
         ui->EmployeurcomboBox->insertItem(0, (listusr.at(i).at(1).toString() != ""? listusr.at(i).at(1).toString() + " " + listusr.at(i).at(2).toString() : listusr.at(i).at(2).toString()), listusr.at(i).at(0).toInt());
     QList<QVariant> idusrlst = db->getFirstRecordFromStandardSelectSQL("select UserEmployeur from " NOM_TABLE_UTILISATEURS " where iduser = " + user, ok);
-    if (idusrlst.size()>0)
+    if (ok && idusrlst.size()>0)
         ui->EmployeurcomboBox->setCurrentIndex(ui->EmployeurcomboBox->findData(idusrlst.at(0)));
 }
 
@@ -1166,27 +1167,6 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     if (db->StandardSelectSQL("select idUser from " NOM_TABLE_UTILISATEURS " where iduser = " + QString::number(idUser), ok).size() == 0)
         return false;
     setDataUser(idUser);
-
-//    for (int i=0; i<ui->SecteurgroupBox->findChildren<QRadioButton*>().size(); i++)
-//    {
-//        ui->SecteurgroupBox->findChildren<QRadioButton*>().at(i)->setAutoExclusive(false);
-//        ui->SecteurgroupBox->findChildren<QRadioButton*>().at(i)->setChecked(false);
-//        ui->SecteurgroupBox->findChildren<QRadioButton*>().at(i)->setAutoExclusive(true);
-//    }
-//    for (int i=0; i<ui->SecteurgroupBox->findChildren<QRadioButton*>().size(); i++)
-//    {
-//        ui->SecteurgroupBox->findChildren<QRadioButton*>().at(i)->setAutoExclusive(false);
-//        ui->SecteurgroupBox->findChildren<QRadioButton*>().at(i)->setChecked(false);
-//        ui->SecteurgroupBox->findChildren<QRadioButton*>().at(i)->setAutoExclusive(true);
-//    }
-//    ui->ModeExercicegroupBox->setVisible(false);
-//    for (int i=0; i<ui->ModeExercicegroupBox->findChildren<QRadioButton*>().size(); i++)
-//    {
-//        ui->ModeExercicegroupBox->findChildren<QRadioButton*>().at(i)->setAutoExclusive(false);
-//        ui->ModeExercicegroupBox->findChildren<QRadioButton*>().at(i)->setChecked(false);
-//        ui->ModeExercicegroupBox->findChildren<QRadioButton*>().at(i)->setAutoExclusive(true);
-//    }
-
 
     /* Valeurs de soignant
      * 1 = ophtalmo
