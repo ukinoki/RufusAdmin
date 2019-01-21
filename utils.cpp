@@ -1,3 +1,20 @@
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin or Rufus.
+
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License,
+or any later version.
+
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "uptextedit.h"
 #include "utils.h"
 
@@ -176,7 +193,7 @@ QString Utils::capitilize(QString text)
  * \param text le texte à modifier
  * \param end mettre false si on ne souhaite pas nettoyer la fin du texte
  * \param maj mettre false si on ne souhaite mettre le premier caractère de chaque mot en majuscule
- * \param end mettre false si on ne souhaite pas mettre en minuscule les majuscules situées au milieu des mots
+ * \param lower mettre false si on ne souhaite pas mettre en minuscule les majuscules situées au milieu des mots
  * \return le texte modifié
  */
 QString Utils::trimcapitilize(QString text, bool end, bool maj, bool lower)
@@ -241,6 +258,26 @@ QMap<QString, double> Utils::dir_size(const QString DirPath)
     DataDir["Size"]= sizex;
     DataDir["Nfiles"]= nfiles;
     return DataDir;
+}
+
+/*!
+ * \brief Utils::getExpressionSize
+ * Cette fonction va renvoyer la taille d'un double en Mo, Go ou To
+ */
+QString Utils::getExpressionSize(double size)
+{
+    QString com = "Mo";
+    if (size>1024)
+    {
+        com = "Go";
+        size /= 1024;
+        if (size>1024)
+        {
+            com = "To";
+            size /= 1024;
+        }
+    }
+    return QString::number(size,'f',2) + com;
 }
 
 qint32 Utils::ArrayToInt(QByteArray source)

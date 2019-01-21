@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("18-01-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("21-01-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1351,38 +1351,39 @@ void RufusAdmin::ExporteDocs()
     QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null";
     //qDebug() << req;
     QList<QList<QVariant>> listexportjpg = db->StandardSelectSQL(req, ok );
-    for (int i=0; i<listexportjpg.size(); i++)
-    {
-        /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
-        if (listexportjpg.at(i).at(5).toString() != "")
+    if (ok)
+        for (int i=0; i<listexportjpg.size(); i++)
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + listexportjpg.at(i).at(5).toString();
-            if (QFile(CheminFichier).exists())
+            /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
+            if (listexportjpg.at(i).at(5).toString() != "")
             {
-                db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + listexportjpg.at(i).at(0).toString() );
-                continue;
+                QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + listexportjpg.at(i).at(5).toString();
+                if (QFile(CheminFichier).exists())
+                {
+                    db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set jpg = null where idimpression = " + listexportjpg.at(i).at(0).toString() );
+                    continue;
+                }
             }
-        }
-        QDate datetransfer    = listexportjpg.at(i).at(3).toDate();
-        CheminOKTransfrDir    = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
-        if (!Utils::mkpath(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            dlg_message(listmsg, 3000, false);
-            return;
-        }
-        QString NomFileDoc = listexportjpg.at(i).at(1).toString() + "_" + listexportjpg.at(i).at(6).toString() + "-"
-                + listexportjpg.at(i).at(2).toString().replace("/",".") + "_"
-                + listexportjpg.at(i).at(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
-                + "-" + listexportjpg.at(i).at(0).toString();
-        QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
-        QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
-        QByteArray ba = listexportjpg.at(i).at(6).toByteArray();
-        QPixmap pix;
-        pix.loadFromData(ba);
-        /*
+            QDate datetransfer    = listexportjpg.at(i).at(3).toDate();
+            CheminOKTransfrDir    = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
+            if (!Utils::mkpath(CheminOKTransfrDir))
+            {
+                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
+                return;
+            }
+            QString NomFileDoc = listexportjpg.at(i).at(1).toString() + "_" + listexportjpg.at(i).at(6).toString() + "-"
+                    + listexportjpg.at(i).at(2).toString().replace("/",".") + "_"
+                    + listexportjpg.at(i).at(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
+                    + "-" + listexportjpg.at(i).at(0).toString();
+            QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
+            QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
+            QByteArray ba = listexportjpg.at(i).at(6).toByteArray();
+            QPixmap pix;
+            pix.loadFromData(ba);
+            /*
          * On utilise le passage par les QPixmap parce que le mèthode suivante consistant
          * à réintégrer le QByteArray directement dans le fichier aboutit à un fichier corrompu...
          * QFile prov (CheminOKTransfrProv);
@@ -1392,131 +1393,132 @@ void RufusAdmin::ExporteDocs()
                 out << ba;
             }
         */
-        if (!pix.save(CheminOKTransfrProv, "jpeg"))
-        {
-            qDebug() << "erreur";
-            return;
+            if (!pix.save(CheminOKTransfrProv, "jpeg"))
+            {
+                qDebug() << "erreur";
+                return;
+            }
+            if (!CompressFileJPG(CheminOKTransfrProv))
+            {
+                db->SupprRecordFromTable(listexportjpg.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            QFile prov(CheminOKTransfrProv);
+            if (prov.open(QIODevice::ReadWrite))
+            {
+                prov.copy(CheminOKTransfrDoc);
+                prov.remove();
+            }
+            else
+                return;
+            db->StandardSQL("update " NOM_TABLE_IMPRESSIONS " set jpg = null,"
+                                                            " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
+                            "' where idimpression = " + listexportjpg.at(i).at(0).toString());
+            faits ++;
+            int nsec = debut.secsTo(QTime::currentTime());
+            int min = nsec/60;
+            int hour = min/60;
+            min = min - (hour*60);
+            nsec = nsec - (hour*3600) - (min*60);
+            listmsg.clear();
+            duree = QTime(hour,min,nsec).toString("HH:mm:ss");
+            listmsg << "JPG - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+            QTime dieTime= QTime::currentTime().addMSecs(2);
+            while (QTime::currentTime() < dieTime)
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+            dlg_message(listmsg, 10);
         }
-        if (!CompressFileJPG(CheminOKTransfrProv))
-        {
-            db->SupprRecordFromTable(listexportjpg.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-            continue;
-        }
-        QFile prov(CheminOKTransfrProv);
-        if (prov.open(QIODevice::ReadWrite))
-        {
-            prov.copy(CheminOKTransfrDoc);
-            prov.remove();
-        }
-        else
-            return;
-        db->StandardSQL("update " NOM_TABLE_IMPRESSIONS " set jpg = null,"
-                   " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
-                   "' where idimpression = " + listexportjpg.at(i).at(0).toString());
-        faits ++;
-        int nsec = debut.secsTo(QTime::currentTime());
-        int min = nsec/60;
-        int hour = min/60;
-        min = min - (hour*60);
-        nsec = nsec - (hour*3600) - (min*60);
-        listmsg.clear();
-        duree = QTime(hour,min,nsec).toString("HH:mm:ss");
-        listmsg << "JPG - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
-        QTime dieTime= QTime::currentTime().addMSecs(2);
-        while (QTime::currentTime() < dieTime)
-            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-        dlg_message(listmsg, 10);
-    }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES PDF
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " NOM_TABLE_IMPRESSIONS " where pdf is not null";
     QList<QList<QVariant>> listexportpdf = db->StandardSelectSQL(reqpdf, ok );
-    for (int i=0; i<listexportpdf.size(); i++)
-    {
-        if (listexportpdf.at(i).at(5).toString() != "")
+    if (ok)
+        for (int i=0; i<listexportpdf.size(); i++)
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + listexportpdf.at(i).at(5).toString();
-            if (QFile(CheminFichier).exists())
+            if (listexportpdf.at(i).at(5).toString() != "")
             {
-                db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + listexportpdf.at(i).at(0).toString());
-                continue;
-            }
-        }
-        QDate datetransfer    = listexportpdf.at(i).at(3).toDate();
-        CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
-        if (!Utils::mkpath(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            dlg_message(listmsg, 3000, false);
-            return;
-        }
-        QString NomFileDoc = listexportpdf.at(i).at(1).toString() + "_" + listexportpdf.at(i).at(7).toString() + "-"
-                + listexportpdf.at(i).at(2).toString().replace("/",".") + "_"
-                + listexportpdf.at(i).at(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
-                + "-" + listexportpdf.at(i).at(0).toString()  + "." PDF;
-        QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc;
-
-        QByteArray bapdf;
-        bapdf.append(listexportpdf.at(i).at(4).toByteArray());
-
-        Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
-        if (!document || document->isLocked() || document == Q_NULLPTR)
-        {
-            QStringList listmsg;
-            listmsg << tr("Impossible de charger le document ") + NomFileDoc;
-            dlg_message(listmsg, 3000, false);
-            QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
-            QFile   echectrsfer(echectrsfername);
-            if (echectrsfer.open(QIODevice::Append))
-            {
-                QTextStream out(&echectrsfer);
-                out << NomFileDoc << "\n" ;
-                echectrsfer.close();
-                QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
-                if (CD.open(QIODevice::Append))
+                QString CheminFichier = NomDirStockageImagerie + NOMDIR_IMAGES + listexportpdf.at(i).at(5).toString();
+                if (QFile(CheminFichier).exists())
                 {
-                    QTextStream out(&CD);
-                    out << listexportpdf.at(i).at(4).toByteArray() ;
+                    db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set pdf = null where idimpression = " + listexportpdf.at(i).at(0).toString());
+                    continue;
                 }
             }
-            QString delreq = "delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + listexportpdf.at(i).at(0).toString();
-            //qDebug() << delreq;
-            db->StandardSQL (delreq);
-            delete document;
-            continue;
-        }
-        Poppler::PDFConverter *doctosave = document->pdfConverter();
-        doctosave->setOutputFileName(CheminOKTransfrDoc);
-        doctosave->convert();
+            QDate datetransfer    = listexportpdf.at(i).at(3).toDate();
+            CheminOKTransfrDir      = CheminOKTransfrDir + "/" + datetransfer.toString("yyyy-MM-dd");
+            if (!Utils::mkpath(CheminOKTransfrDir))
+            {
+                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
+                return;
+            }
+            QString NomFileDoc = listexportpdf.at(i).at(1).toString() + "_" + listexportpdf.at(i).at(7).toString() + "-"
+                    + listexportpdf.at(i).at(2).toString().replace("/",".") + "_"
+                    + listexportpdf.at(i).at(3).toDate().toString("yyyyMMdd") + "-" + QTime::currentTime().toString("HHmmss")
+                    + "-" + listexportpdf.at(i).at(0).toString()  + "." PDF;
+            QString CheminOKTransfrDoc = CheminOKTransfrDir + "/" + NomFileDoc;
 
-        QFile CC(CheminOKTransfrDoc);
-        CC.open(QIODevice::ReadWrite);
-        CC.setPermissions(QFileDevice::ReadOther
-                          | QFileDevice::ReadGroup
-                          | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
-                          | QFileDevice::ReadUser   | QFileDevice::WriteUser);
-        CC.close();
-        db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null,"
-                   " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
-                   " where idimpression = " + listexportpdf.at(i).at(0).toString());
-        faits ++;
-        int nsec = debut.secsTo(QTime::currentTime());
-        int min = nsec/60;
-        int hour = min/60;
-        min = min - (hour*60);
-        nsec = nsec - (hour*3600) - (min*60);
-        listmsg.clear();
-        duree = QTime(hour,min,nsec).toString("HH:mm:ss");
-        listmsg << "PDF - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
-        QTime dieTime= QTime::currentTime().addMSecs(2);
-        while (QTime::currentTime() < dieTime)
-            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-        dlg_message(listmsg, 10);
-    }
+            QByteArray bapdf;
+            bapdf.append(listexportpdf.at(i).at(4).toByteArray());
+
+            Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
+            if (!document || document->isLocked() || document == Q_NULLPTR)
+            {
+                QStringList listmsg;
+                listmsg << tr("Impossible de charger le document ") + NomFileDoc;
+                dlg_message(listmsg, 3000, false);
+                QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
+                QFile   echectrsfer(echectrsfername);
+                if (echectrsfer.open(QIODevice::Append))
+                {
+                    QTextStream out(&echectrsfer);
+                    out << NomFileDoc << "\n" ;
+                    echectrsfer.close();
+                    QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
+                    if (CD.open(QIODevice::Append))
+                    {
+                        QTextStream out(&CD);
+                        out << listexportpdf.at(i).at(4).toByteArray() ;
+                    }
+                }
+                QString delreq = "delete from  " NOM_TABLE_IMPRESSIONS " where idimpression = " + listexportpdf.at(i).at(0).toString();
+                //qDebug() << delreq;
+                db->StandardSQL (delreq);
+                delete document;
+                continue;
+            }
+            Poppler::PDFConverter *doctosave = document->pdfConverter();
+            doctosave->setOutputFileName(CheminOKTransfrDoc);
+            doctosave->convert();
+
+            QFile CC(CheminOKTransfrDoc);
+            CC.open(QIODevice::ReadWrite);
+            CC.setPermissions(QFileDevice::ReadOther
+                              | QFileDevice::ReadGroup
+                              | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                              | QFileDevice::ReadUser   | QFileDevice::WriteUser);
+            CC.close();
+            db->StandardSQL ("update " NOM_TABLE_IMPRESSIONS " set pdf = null, compression = null,"
+                                                             " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
+                                                                                                                                                                         " where idimpression = " + listexportpdf.at(i).at(0).toString());
+            faits ++;
+            int nsec = debut.secsTo(QTime::currentTime());
+            int min = nsec/60;
+            int hour = min/60;
+            min = min - (hour*60);
+            nsec = nsec - (hour*3600) - (min*60);
+            listmsg.clear();
+            duree = QTime(hour,min,nsec).toString("HH:mm:ss");
+            listmsg << "PDF - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+            QTime dieTime= QTime::currentTime().addMSecs(2);
+            while (QTime::currentTime() < dieTime)
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+            dlg_message(listmsg, 10);
+        }
     int totdoc = listexportjpg.size() + listexportpdf.size();
     if (totdoc > 0)
     {
@@ -1549,64 +1551,65 @@ void RufusAdmin::ExporteDocs()
             " where jpg is not null";
     //qDebug() << req;
     QList<QList<QVariant>> listexportjpgfact = db->StandardSelectSQL(req, ok);
-    for (int i=0; i<listexportjpgfact.size(); i++)
-    {
-        /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
-        if (listexportjpgfact.at(i).at(2).toString() != "")
+    if (ok)
+        for (int i=0; i<listexportjpgfact.size(); i++)
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + listexportjpgfact.at(i).at(2).toString();
-            if (QFile(CheminFichier).exists())
+            /* si le lien vers le fichier est valide, on efface le champ jpg et on passe à la réponse suivante*/
+            if (listexportjpgfact.at(i).at(2).toString() != "")
             {
-                db->StandardSQL("update " NOM_TABLE_FACTURES " set jpg = null where idfacture = " + listexportjpgfact.at(i).at(0).toString());
-                continue;
+                QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + listexportjpgfact.at(i).at(2).toString();
+                if (QFile(CheminFichier).exists())
+                {
+                    db->StandardSQL("update " NOM_TABLE_FACTURES " set jpg = null where idfacture = " + listexportjpgfact.at(i).at(0).toString());
+                    continue;
+                }
             }
-        }
-        /* nommage d'un fichier facture
+            /* nommage d'un fichier facture
              * idFacture + "_" + "ECHEANCIER ou FACTURE" + "_" + Intitule + "_" + DateFacture + ( + "_" + iddepense si facture et pas échéancier)
              */
-        QDate datetransfer  = listexportjpgfact.at(i).at(1).toDate();
-        QString user;
+            QDate datetransfer  = listexportjpgfact.at(i).at(1).toDate();
+            QString user;
 
-        QString NomFileDoc = listexportjpgfact.at(i).at(0).toString() + "_"
-                + (listexportjpgfact.at(i).at(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
-                + listexportjpgfact.at(i).at(3).toString().replace("/",".") + "_"
-                + datetransfer.toString("yyyyMMdd");
-        // on recherche le user à l'origine de cette facture
-        QList<QList<QVariant>> Listeusr;
-        if (listexportjpgfact.at(i).at(4).toInt()==1)          // c'est un échéancier
-            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                  " where dep.idUser  = usr.idUser"
-                  " and idFacture = " + listexportjpgfact.at(i).at(0).toString();
-        else                                                // c'est une facture, l'iduser est dans la table
-            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                  " where dep.idUser  = usr.idUser"
-                  " and idDep = " + listexportjpgfact.at(i).at(5).toString();
-        Listeusr = db->StandardSelectSQL(req, ok);
-        if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
-        {
-            db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-            continue;
-        }
-        user = Listeusr.at(0).at(1).toString();
-        if (listexportjpgfact.at(i).at(4).toInt()!=1)
-            NomFileDoc += "-"+listexportjpgfact.at(i).at(5).toString();
+            QString NomFileDoc = listexportjpgfact.at(i).at(0).toString() + "_"
+                    + (listexportjpgfact.at(i).at(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
+                    + listexportjpgfact.at(i).at(3).toString().replace("/",".") + "_"
+                    + datetransfer.toString("yyyyMMdd");
+            // on recherche le user à l'origine de cette facture
+            QList<QList<QVariant>> Listeusr;
+            if (listexportjpgfact.at(i).at(4).toInt()==1)          // c'est un échéancier
+                req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " and idFacture = " + listexportjpgfact.at(i).at(0).toString();
+            else                                                // c'est une facture, l'iduser est dans la table
+                req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " and idDep = " + listexportjpgfact.at(i).at(5).toString();
+            Listeusr = db->StandardSelectSQL(req, ok);
+            if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
+            {
+                db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            user = Listeusr.at(0).at(1).toString();
+            if (listexportjpgfact.at(i).at(4).toInt()!=1)
+                NomFileDoc += "-"+listexportjpgfact.at(i).at(5).toString();
 
-        CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
-        if (!Utils::mkpath(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            dlg_message(listmsg, 3000, false);
-            return;
-        }
+            CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
+            if (!Utils::mkpath(CheminOKTransfrDir))
+            {
+                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
+                return;
+            }
 
-        QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
-        QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
-        QByteArray ba = listexportjpgfact.at(i).at(6).toByteArray();
-        QPixmap pix;
-        pix.loadFromData(ba);
-        /*
+            QString CheminOKTransfrDoc  = CheminOKTransfrDir + "/" + NomFileDoc + "." JPG;
+            QString CheminOKTransfrProv = CheminOKTransfrDir + "/" + NomFileDoc + "prov." JPG;
+            QByteArray ba = listexportjpgfact.at(i).at(6).toByteArray();
+            QPixmap pix;
+            pix.loadFromData(ba);
+            /*
          * On utilise le passage par les QPixmap parce que le mèthode suivante consistant
          * à réintégrer le QByteArray directement dans le fichier aboutit à un fichier corrompu et je ne sais pas pourquoi
          * QFile prov (CheminOKTransfrProv);
@@ -1616,40 +1619,40 @@ void RufusAdmin::ExporteDocs()
                 out << ba;
             }
         */
-        if (!pix.save(CheminOKTransfrProv, "jpeg"))
-        {
-            qDebug() << "erreur";
-            return;
+            if (!pix.save(CheminOKTransfrProv, "jpeg"))
+            {
+                qDebug() << "erreur";
+                return;
+            }
+            if (!CompressFileJPG(CheminOKTransfrProv))
+            {
+                db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            QFile prov(CheminOKTransfrProv);
+            if (prov.open(QIODevice::ReadWrite))
+            {
+                prov.copy(CheminOKTransfrDoc);
+                prov.remove();
+            }
+            else
+                return;
+            db->StandardSQL("update " NOM_TABLE_FACTURES " set jpg = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc) + "." JPG "'"
+                                                                                                                                                         " where idFacture = " + listexportjpgfact.at(i).at(0).toString());
+            faits ++;
+            int nsec = debut.secsTo(QTime::currentTime());
+            int min = nsec/60;
+            int hour = min/60;
+            min = min - (hour*60);
+            nsec = nsec - (hour*3600) - (min*60);
+            listmsg.clear();
+            duree = QTime(hour,min,nsec).toString("HH:mm:ss");
+            listmsg << "JPG - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+            QTime dieTime= QTime::currentTime().addMSecs(2);
+            while (QTime::currentTime() < dieTime)
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+            dlg_message(listmsg, 10);
         }
-        if (!CompressFileJPG(CheminOKTransfrProv))
-        {
-            db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-            continue;
-        }
-        QFile prov(CheminOKTransfrProv);
-        if (prov.open(QIODevice::ReadWrite))
-        {
-            prov.copy(CheminOKTransfrDoc);
-            prov.remove();
-        }
-        else
-            return;
-        db->StandardSQL("update " NOM_TABLE_FACTURES " set jpg = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc) + "." JPG "'"
-                   " where idFacture = " + listexportjpgfact.at(i).at(0).toString());
-        faits ++;
-        int nsec = debut.secsTo(QTime::currentTime());
-        int min = nsec/60;
-        int hour = min/60;
-        min = min - (hour*60);
-        nsec = nsec - (hour*3600) - (min*60);
-        listmsg.clear();
-        duree = QTime(hour,min,nsec).toString("HH:mm:ss");
-        listmsg << "JPG - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
-        QTime dieTime= QTime::currentTime().addMSecs(2);
-        while (QTime::currentTime() < dieTime)
-            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-        dlg_message(listmsg, 10);
-    }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES PDF
@@ -1657,111 +1660,112 @@ void RufusAdmin::ExporteDocs()
     reqpdf = "SELECT idFacture, DateFacture, LienFichier, Intitule, Echeancier, idDepense, pdf FROM " NOM_TABLE_FACTURES
             " where pdf is not null";
     QList<QList<QVariant>> listexportpdffact = db->StandardSelectSQL(reqpdf, ok );
-    for (int i=0; i<listexportpdffact.size(); i++)
-    {
-        if (listexportpdffact.at(i).at(2).toString() != "")
+    if (ok)
+        for (int i=0; i<listexportpdffact.size(); i++)
         {
-            QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + listexportpdffact.at(i).at(2).toString();
-            if (QFile(CheminFichier).exists())
+            if (listexportpdffact.at(i).at(2).toString() != "")
             {
-                db->StandardSQL  ("update " NOM_TABLE_FACTURES " set pdf = null where idFacture = " + listexportpdffact.at(i).at(0).toString());
-                continue;
-            }
-        }
-        QDate datetransfer  = listexportpdffact.at(i).at(1).toDate();
-        QString user;
-
-        QString NomFileDoc = listexportpdffact.at(i).at(0).toString() + "_"
-                + (listexportpdffact.at(i).at(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
-                + listexportpdffact.at(i).at(3).toString().replace("/",".") + "_"
-                + datetransfer.toString("yyyyMMdd");
-        // on recherche le user à l'origine de cette facture
-        QList<QList<QVariant>> Listeusr;
-        if (listexportpdffact.at(i).at(4).toInt()==1)          // c'est un échéancier
-            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                  " where dep.idUser  = usr.idUser"
-                  " and idFacture = " + listexportpdffact.at(i).at(0).toString();
-        else                                                // c'est une facture, l'iduser est dans la table
-            req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
-                  " where dep.idUser  = usr.idUser"
-                  " and idDep = " + listexportpdffact.at(i).at(5).toString();
-        Listeusr = db->StandardSelectSQL(req, ok);
-        if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
-        {
-            db->SupprRecordFromTable(listexportpdffact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
-            continue;
-        }
-        user = Listeusr.at(0).at(1).toString();
-        if (listexportpdffact.at(i).at(4).toInt()!=1)
-            NomFileDoc += "-"+listexportpdffact.at(i).at(5).toString();
-
-        CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
-        if (!Utils::mkpath(CheminOKTransfrDir))
-        {
-            QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            QStringList listmsg;
-            listmsg << msg;
-            dlg_message(listmsg, 3000, false);
-            return;
-        }
-        QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc + "." PDF;
-
-        QByteArray bapdf;
-        bapdf.append(listexportpdffact.at(i).at(6).toByteArray());
-
-        Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
-        if (!document || document->isLocked() || document == Q_NULLPTR)
-        {
-            QStringList listmsg;
-            listmsg << tr("Impossible de charger le document ") + NomFileDoc;
-            dlg_message(listmsg, 3000, false);
-            QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
-            QFile   echectrsfer(echectrsfername);
-            if (echectrsfer.open(QIODevice::Append))
-            {
-                QTextStream out(&echectrsfer);
-                out << NomFileDoc << "\n" ;
-                echectrsfer.close();
-                QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
-                if (CD.open(QIODevice::Append))
+                QString CheminFichier = NomDirStockageImagerie + NOMDIR_FACTURES + listexportpdffact.at(i).at(2).toString();
+                if (QFile(CheminFichier).exists())
                 {
-                    QTextStream out(&CD);
-                    out << listexportpdffact.at(i).at(6).toByteArray() ;
+                    db->StandardSQL  ("update " NOM_TABLE_FACTURES " set pdf = null where idFacture = " + listexportpdffact.at(i).at(0).toString());
+                    continue;
                 }
             }
-            QString delreq = "delete from  " NOM_TABLE_FACTURES " where idFacture = " + listexportpdffact.at(i).at(0).toString();
-            //qDebug() << delreq;
-            db->StandardSQL  (delreq);
-            delete document;
-            continue;
-        }
-        Poppler::PDFConverter *doctosave = document->pdfConverter();
-        doctosave->setOutputFileName(CheminOKTransfrDoc);
-        doctosave->convert();
+            QDate datetransfer  = listexportpdffact.at(i).at(1).toDate();
+            QString user;
 
-        QFile CC(CheminOKTransfrDoc);
-        CC.open(QIODevice::ReadWrite);
-        CC.setPermissions(QFileDevice::ReadOther
-                          | QFileDevice::ReadGroup
-                          | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
-                          | QFileDevice::ReadUser   | QFileDevice::WriteUser);
-        CC.close();
-        db->StandardSQL ("update " NOM_TABLE_FACTURES " set pdf = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc)  + "." PDF "'"
-                   " where idFacture = " + listexportpdffact.at(i).at(0).toString());
-        faits ++;
-        int nsec = debut.secsTo(QTime::currentTime());
-        int min = nsec/60;
-        int hour = min/60;
-        min = min - (hour*60);
-        nsec = nsec - (hour*3600) - (min*60);
-        listmsg.clear();
-        duree = QTime(hour,min,nsec).toString("HH:mm:ss");
-        listmsg << "PDF - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
-        QTime dieTime= QTime::currentTime().addMSecs(2);
-        while (QTime::currentTime() < dieTime)
-            QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-        dlg_message(listmsg, 10);
-    }
+            QString NomFileDoc = listexportpdffact.at(i).at(0).toString() + "_"
+                    + (listexportpdffact.at(i).at(4).toInt()==1? ECHEANCIER : FACTURE) + "-"
+                    + listexportpdffact.at(i).at(3).toString().replace("/",".") + "_"
+                    + datetransfer.toString("yyyyMMdd");
+            // on recherche le user à l'origine de cette facture
+            QList<QList<QVariant>> Listeusr;
+            if (listexportpdffact.at(i).at(4).toInt()==1)          // c'est un échéancier
+                req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " and idFacture = " + listexportpdffact.at(i).at(0).toString();
+            else                                                // c'est une facture, l'iduser est dans la table
+                req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
+                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " and idDep = " + listexportpdffact.at(i).at(5).toString();
+            Listeusr = db->StandardSelectSQL(req, ok);
+            if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
+            {
+                db->SupprRecordFromTable(listexportpdffact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
+                continue;
+            }
+            user = Listeusr.at(0).at(1).toString();
+            if (listexportpdffact.at(i).at(4).toInt()!=1)
+                NomFileDoc += "-"+listexportpdffact.at(i).at(5).toString();
+
+            CheminOKTransfrDir  = CheminOKTransfrDir + "/" + user;
+            if (!Utils::mkpath(CheminOKTransfrDir))
+            {
+                QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
+                QStringList listmsg;
+                listmsg << msg;
+                dlg_message(listmsg, 3000, false);
+                return;
+            }
+            QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc + "." PDF;
+
+            QByteArray bapdf;
+            bapdf.append(listexportpdffact.at(i).at(6).toByteArray());
+
+            Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
+            if (!document || document->isLocked() || document == Q_NULLPTR)
+            {
+                QStringList listmsg;
+                listmsg << tr("Impossible de charger le document ") + NomFileDoc;
+                dlg_message(listmsg, 3000, false);
+                QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
+                QFile   echectrsfer(echectrsfername);
+                if (echectrsfer.open(QIODevice::Append))
+                {
+                    QTextStream out(&echectrsfer);
+                    out << NomFileDoc << "\n" ;
+                    echectrsfer.close();
+                    QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
+                    if (CD.open(QIODevice::Append))
+                    {
+                        QTextStream out(&CD);
+                        out << listexportpdffact.at(i).at(6).toByteArray() ;
+                    }
+                }
+                QString delreq = "delete from  " NOM_TABLE_FACTURES " where idFacture = " + listexportpdffact.at(i).at(0).toString();
+                //qDebug() << delreq;
+                db->StandardSQL  (delreq);
+                delete document;
+                continue;
+            }
+            Poppler::PDFConverter *doctosave = document->pdfConverter();
+            doctosave->setOutputFileName(CheminOKTransfrDoc);
+            doctosave->convert();
+
+            QFile CC(CheminOKTransfrDoc);
+            CC.open(QIODevice::ReadWrite);
+            CC.setPermissions(QFileDevice::ReadOther
+                              | QFileDevice::ReadGroup
+                              | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                              | QFileDevice::ReadUser   | QFileDevice::WriteUser);
+            CC.close();
+            db->StandardSQL ("update " NOM_TABLE_FACTURES " set pdf = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc)  + "." PDF "'"
+                                                                                                                                                           " where idFacture = " + listexportpdffact.at(i).at(0).toString());
+            faits ++;
+            int nsec = debut.secsTo(QTime::currentTime());
+            int min = nsec/60;
+            int hour = min/60;
+            min = min - (hour*60);
+            nsec = nsec - (hour*3600) - (min*60);
+            listmsg.clear();
+            duree = QTime(hour,min,nsec).toString("HH:mm:ss");
+            listmsg << "PDF - " + NomFileDoc + " - " + QString::number(faits) + "/" + QString::number(total) + " - "  + duree;
+            QTime dieTime= QTime::currentTime().addMSecs(2);
+            while (QTime::currentTime() < dieTime)
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
+            dlg_message(listmsg, 10);
+        }
     int totfac = listexportjpgfact.size() + listexportpdffact.size();
     if (totfac > 0)
         Message(tr("export terminé") + "\n" + QString::number(totfac) + (totfac>1? tr(" documents comptables exportés en ") :tr(" document comptable exporté en ")) + duree);
