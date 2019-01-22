@@ -48,17 +48,18 @@ bool TcpServer::start()
         return false;
     }
     // le serveur a été démarré correctement
-    emit ModifListeSockets();
+    emit ModifListeSockets();  // déclenche la fonction void RufusAdmin::ResumeTCPSocketStatut() qui recalcule le statut des sockets
     return true;
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    Logs::MSGSOCKET("void TcpServer::incomingConnection(qintptr socketDescriptor)");
+//    Logs::MSGSOCKET("void TcpServer::incomingConnection(qintptr socketDescriptor)");
+// ++++ l'utilisation de l'instruction Logs::MSGSOCKET dans cette fonction perturvbe le fonctionnement du programme
     TcpSocket *socket = new TcpSocket(socketDescriptor);
 
     connect(socket,     SIGNAL(emitmsg(qintptr, QString)),              this,   SLOT(TraiteMessageRecu(qintptr, QString)));
-    connect(socket,     SIGNAL(deconnexion(qintptr, TcpSocket*)),       this,   SLOT(Deconnexion(qintptr, TcpSocket*)));
+    connect(socket,     SIGNAL(deconnexion(qintptr)),                   this,   SLOT(Deconnexion(qintptr)));
 
     socketdescriptors  .insert(socketDescriptor, socket);
 }
@@ -68,20 +69,30 @@ void TcpServer::Deconnexion(int iduser, QString MACAdress)
     Logs::MSGSOCKET("void TcpServer::Deconnexion(int iduser, QString MACAdress)");
     for(QMap<qintptr, TcpSocket*>::iterator itthr = socketdescriptors.begin(); itthr != socketdescriptors.end(); ++itthr )
         if (itthr.value()->idUser() == iduser)
-            if (itthr.value()->getData().split(TCPMSG_Separator).at(1) == MACAdress)
-            {
-                itthr.value()->envoyerMessage(TCPMSG_Disconnect); // la valse des signaux permet de commander l'arrêt du thread depuis l'intérieur - pas trouvé mieux
-                break;
-            }
+        {
+            if (itthr.value()->getData().split(TCPMSG_Separator).size()>0)
+                if (itthr.value()->getData().split(TCPMSG_Separator).at(1) == MACAdress)
+                {
+                    itthr.value()->envoyerMessage(TCPMSG_Disconnect); // la valse des signaux permet de commander l'arrêt du thread depuis l'intérieur - pas trouvé mieux
+                    break;
+                }
+        }
 }
 
-void TcpServer::Deconnexion(qintptr sktdescriptor, TcpSocket* skt)
+void TcpServer::Deconnexion(qintptr sktdescriptor)
 {
-    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor, TcpSocket* skt)");
-    if (SocketFromDescriptor(sktdescriptor) == Q_NULLPTR)
+    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor)- skt descriptor " + QString::number(sktdescriptor));
+
+    TcpSocket *skt = SocketFromDescriptor(sktdescriptor);
+    if ( skt == Q_NULLPTR)
         return;
-    QString adress = SocketFromDescriptor(sktdescriptor)->getData().split(TCPMSG_Separator).at(2);
-    QString login = Datas::I()->users->getLoginById(SocketFromDescriptor(sktdescriptor)->idUser());
+    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion skt->getData() " + skt->getData());
+    QString adress ("");
+    if (skt->getData().split(TCPMSG_Separator).size()>2)
+        adress = skt->getData().split(TCPMSG_Separator).at(2);
+    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion adress " + adress);
+    QString login = Datas::I()->users->getLoginById(skt->idUser());
+    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion login " + login);
     dlg_message(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
     socketdescriptors   .remove(sktdescriptor);
     skt->deleteLater();
@@ -91,7 +102,7 @@ void TcpServer::Deconnexion(qintptr sktdescriptor, TcpSocket* skt)
 
 void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
 {
-    Logs::MSGSOCKET("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)");
+    Logs::MSGSOCKET("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(sktdescriptor) + " msg " + msg);
     //qDebug() << msg;
     if (SocketFromDescriptor(sktdescriptor) == Q_NULLPTR)
         return;
@@ -108,6 +119,8 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
                 * TCPMSG_MsgBAL
         */
         msg.remove(TCPMSG_MsgBAL);
+        if (msg.split(TCPMSG_Separator).size()<2)
+            return;
         QString listdest = msg.split(TCPMSG_Separator).at(0);
         QString nbmsg = msg.split(TCPMSG_Separator).at(1);
         QStringList listid = listdest.split(",");
@@ -127,7 +140,9 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
         msg.remove(TCPMSG_DataSocket);
         SocketFromDescriptor(sktdescriptor)->setData(msg);
         QString login = Datas::I()->users->getLoginById(SocketFromDescriptor(sktdescriptor)->idUser());
-        QString adress = msg.split(TCPMSG_Separator).at(2);
+        QString adress(tr("une adresse inconnue"));
+        if (msg.split(TCPMSG_Separator).size()>2)
+            adress = msg.split(TCPMSG_Separator).at(2);
         dlg_message(QStringList() << login + " " +  tr("vient de se connecter sur") + " " + adress, 3000);
         envoieListeSockets();
         AfficheListeSockets(TCPMSG_DataSocket);
@@ -144,18 +159,8 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
 void TcpServer::envoieListeSockets(qintptr sktdescriptor)
 {
     Logs::MSGSOCKET("void TcpServer::envoieListeSockets(qintptr sktdescriptor)");
-    // le 1er item de gListeSockets est le serveur
-    gListeSockets = Utils::getIpAdress();
-    gListeSockets += TCPMSG_Separator + Utils::getMACAdress();
-    gListeSockets += TCPMSG_Separator + QHostInfo::localHostName();
-    gListeSockets += TCPMSG_Separator + QString::number(idAdmin) + "{}";
-    // les suivants sont les clients
-    for(QMap<qintptr, TcpSocket*>::iterator itthr = socketdescriptors.begin(); itthr != socketdescriptors.end(); ++itthr )
-        gListeSockets += itthr.value()->getData() + TCPMSG_Separator + QString::number(itthr.value()->idUser()) + "{}";
-
-    gListeSockets += TCPMSG_ListeSockets;
-
-    if (sktdescriptor == 0)
+    ListeSockets();
+    if (sktdescriptor == -1)
         envoyerATous(gListeSockets);
     else
     {
@@ -183,20 +188,30 @@ QString TcpServer::ListeSockets()
 
 TcpSocket* TcpServer::SocketFromDescriptor(qintptr sktdescriptor)
 {
-    Logs::MSGSOCKET("void TcpServer::SocketFromDescriptor(qintptr sktdescriptor)");
+    Logs::MSGSOCKET("void TcpServer::SocketFromDescriptor(qintptr sktdescriptor) - sktdescriptor " + QString::number(sktdescriptor));
     QMap<qintptr, TcpSocket*>::const_iterator itthread = socketdescriptors.find(sktdescriptor);
-    if (itthread != socketdescriptors.constEnd())
+    if (itthread == socketdescriptors.constEnd())
+    {
+        Logs::MSGSOCKET("void TcpServer::SocketFromDescriptor(qintptr sktdescriptor) - sktdescriptor QNULLPTR");
+        return Q_NULLPTR;
+    }
+    else
+    {
+        Logs::MSGSOCKET("void TcpServer::SocketFromDescriptor(qintptr sktdescriptor) - iterator " + QString::number(itthread.key()));
         return itthread.value();
-    else return Q_NULLPTR;
+    }
 }
 
 void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)
 {
-    Logs::MSGSOCKET("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)");
+    Logs::MSGSOCKET("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - skt descriptor " + QString::number(emetteurorigin) + " msg " + msg);
     for(QMap<qintptr, TcpSocket*>::const_iterator itthread = socketdescriptors.constBegin(); itthread != socketdescriptors.constEnd(); ++itthread )
     {
         if (itthread.key() != emetteurorigin)
-             itthread.value()->envoyerMessage(msg);
+        {
+            Logs::MSGSOCKET("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - sktdescriptor destinataire " + QString::number(itthread.key()) + " msg " + msg);
+            itthread.value()->envoyerMessage(msg);
+        }
     }
 }
 

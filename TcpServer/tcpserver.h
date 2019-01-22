@@ -45,7 +45,7 @@ private:
     QMap<qintptr, TcpSocket*>       socketdescriptors;                                      // le mapping des sockets à partir des scoketdescriptor
 
     void                            AfficheListeSockets(QString fonction = "");             /* utilisé pour le debugging seulement */
-    void                            envoieListeSockets(qintptr sktdescriptor = 0);          /* envoie la liste des sockets à tous les socketdescriptors */
+    void                            envoieListeSockets(qintptr sktdescriptor = -1);          /* envoie la liste des sockets à tous les socketdescriptors */
     QString                         gListeSockets;
     int                             idAdmin;
     TcpSocket*                      SocketFromDescriptor(qintptr socketdescriptor);
@@ -55,7 +55,7 @@ signals:
 
 private slots:
     void                            TraiteMessageRecu(qintptr sktdescriptor, QString msg);  /* traitement des messages reçus*/
-    void                            Deconnexion(qintptr sktdescriptor, TcpSocket* skt);     /* deconnexion d'un socket */
+    void                            Deconnexion(qintptr sktdescriptor);                     /* deconnexion d'un socket */
 
 public slots:
     void                            envoyerATous(QString msg, qintptr emetteurorigin = 0);                      /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */

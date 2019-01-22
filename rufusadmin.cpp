@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("21-01-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("22-01-2019/3");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -3122,17 +3122,17 @@ void RufusAdmin::FermeTCP()
 void RufusAdmin::ResumeTCPSocketStatut()
 {
     QString statut;
-        QString list = TCPServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);
-        QStringList ListSockets = list.split("{}");
-        // le 1er item de gListSockets est le serveur
-        QString Serveur = ListSockets.at(0);
-        statut += tr("ServeurTCP") + "\n\t"
-                + Serveur.split(TCPMSG_Separator).at(2) + " - "
-                + gIPadr + " - "
-                + Serveur.split(TCPMSG_Separator).at(1) + " --- "
-                + Datas::I()->users->getLoginById(Serveur.split(TCPMSG_Separator).at(3).toInt());
+    QString list = TCPServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);
+    QStringList ListSockets = list.split("{}");
+    // le 1er item de gListSockets est le serveur
+    QString Serveur = ListSockets.at(0);
+    statut += tr("ServeurTCP") + "\n\t"
+            + Serveur.split(TCPMSG_Separator).at(2) + " - "
+            + gIPadr + " - "
+            + Serveur.split(TCPMSG_Separator).at(1) + " --- "
+            + Datas::I()->users->getLoginById(Serveur.split(TCPMSG_Separator).at(3).toInt());
 
-        ListSockets.removeFirst();
+    ListSockets.removeFirst();
     statut += "\n" + tr("postes connectés") + "\n";
     QStringList::const_iterator itsocket;
     for( itsocket = ListSockets.constBegin(); itsocket != ListSockets.constEnd(); ++itsocket )
@@ -3143,7 +3143,7 @@ void RufusAdmin::ResumeTCPSocketStatut()
                 + Datas::I()->users->getLoginById(itsocket->split(TCPMSG_Separator).at(3).toInt()) + "\n";
     }
     gSocketStatut = statut;
-    emit ModifEdit(gSocketStatut);
+    emit ModifEdit(gSocketStatut); // déclenche la modification de la fenêtre resumestatut
 }
 
 void RufusAdmin::Edit(QString txt, int delaieffacement)

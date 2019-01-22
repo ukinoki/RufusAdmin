@@ -64,7 +64,7 @@ void TcpSocket::TraiteDonneesRecues()
     while (socket->bytesAvailable() > 0)
     {
         buffer.append(socket->readAll());
-        while ((sizedata == 0 && buffer.size() >= 4) || (sizedata > 0 && buffer.size() >= sizedata)) // on n'a toujours pas la teille du message ou on n'a pas le message complet
+        while ((sizedata == 0 && buffer.size() >= 4) || (sizedata > 0 && buffer.size() >= sizedata)) // on n'a toujours pas la taille du message ou on n'a pas le message complet
         {
             if (sizedata == 0 && buffer.size() >= 4)                // on a les 4 premiers caractères => on a la taille du message
             {
@@ -74,10 +74,10 @@ void TcpSocket::TraiteDonneesRecues()
             if (sizedata > 0 && buffer.size() >= sizedata)          // le message est complet
             {
                 QByteArray data = buffer.mid(0, sizedata);
+                QString msg = QString::fromUtf8(data);              // traitement du message
+                qDebug() << " Data in: " << buffer << " message = " << msg;
                 buffer.clear();                                     // on remet à 0 buffer et sizedata
                 sizedata = 0;
-                QString msg = QString::fromUtf8(data);              // traitement du message
-                //qDebug() << socketDescriptor << " Data in: " << buffer << " message = " << msg;
                 if (msg.contains(TCPMSG_Disconnect))
                     Deconnexion();
                 else
@@ -94,16 +94,16 @@ void TcpSocket::envoyerMessage(QString msg)
         Logs::MSGSOCKET("unknown socket");
         return;
     }
+    Logs::MSGSOCKET("void TcpSocket::envoyerMessage(QString msg) - msg " + msg);
     QByteArray paquet = msg.toUtf8();
     QString login = Datas::I()->users->getLoginById(idUser());
-    QString adress = getData().split(TCPMSG_Separator).at(2);
     QString msg2("");
     if (msg.contains(TCPMSG_ListeSockets)) msg2 = TCPMSG_ListeSockets;
     else if (msg.contains(TCPMSG_MAJSalAttente)) msg2 = TCPMSG_MAJSalAttente;
     else if (msg.contains(TCPMSG_MAJCorrespondants)) msg2 = TCPMSG_MAJCorrespondants;
     else if (msg.contains(TCPMSG_MAJDocsExternes)) msg2 = TCPMSG_MAJDocsExternes;
     else if (msg.contains(TCPMSG_MAJCorrespondants)) msg2 = TCPMSG_MAJCorrespondants;
-    Logs::MSGSOCKET(msg2 + " - destinataire = " + login + " - poste = " + adress);
+    Logs::MSGSOCKET(msg2 + " - destinataire = " + login);
     //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
     if(socket->state() == QAbstractSocket::ConnectedState)
     {
@@ -115,7 +115,7 @@ void TcpSocket::envoyerMessage(QString msg)
 
 void TcpSocket::Deconnexion()
 {
-    emit deconnexion(sktdescriptor, this);
+    emit deconnexion(sktdescriptor);
     thread.quit();
 }
 
