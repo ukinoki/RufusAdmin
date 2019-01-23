@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("22-01-2019/3");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("23-01-2019/3");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1847,27 +1847,28 @@ void RufusAdmin::Slot_MasqueAppli()
 
 void RufusAdmin::Slot_MetAJourLaConnexion()
 {
-    if (!db->locktables(QStringList() << NOM_TABLE_USERSCONNECTES << NOM_TABLE_SALLEDATTENTE << NOM_TABLE_VERROUCOMPTAACTES))
-        return;
-
-    QString MAJConnexionRequete;
-    QList<QList<QVariant>> listusers = db->StandardSelectSQL("select iduser from " NOM_TABLE_USERSCONNECTES
-                      " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                      " and idlieu = " + QString::number(idlieuExercice),ok);
-    if (listusers.size()>0)
-        MAJConnexionRequete = "UPDATE " NOM_TABLE_USERSCONNECTES " SET HeureDerniereConnexion = NOW(), "
-                              " idUser = " + QString::number(idAdminDocs) +
-                              " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                              " and idlieu = " + QString::number(idlieuExercice);
-    else
-       MAJConnexionRequete = "insert into " NOM_TABLE_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, MACAdressePosteConnecte, idlieu)"
-                               " VALUES(NOW()," +
-                               QString::number(idAdminDocs) + ", -1, -1, -1, '" +
-                               QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', '" +
-                               Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "', " +
-                               QString::number(idlieuExercice) + ")";
-    //qDebug() << MAJConnexionRequete;
-    db->StandardSQL(MAJConnexionRequete);
+    if (db->locktables(QStringList() << NOM_TABLE_USERSCONNECTES))
+    {
+        QString MAJConnexionRequete;
+        QList<QList<QVariant>> listusers = db->StandardSelectSQL("select iduser from " NOM_TABLE_USERSCONNECTES
+                                                                 " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
+                                                                 " and idlieu = " + QString::number(idlieuExercice),ok);
+        if (listusers.size()>0)
+            MAJConnexionRequete = "UPDATE " NOM_TABLE_USERSCONNECTES " SET HeureDerniereConnexion = NOW(), "
+                                                                     " idUser = " + QString::number(idAdminDocs) +
+                                                                     " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
+                                                                     " and idlieu = " + QString::number(idlieuExercice);
+        else
+            MAJConnexionRequete = "insert into " NOM_TABLE_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, MACAdressePosteConnecte, idlieu)"
+                                   " VALUES(NOW()," +
+                                    QString::number(idAdminDocs) + ", -1, -1, -1, '" +
+                                    QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', '" +
+                                    Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "', " +
+                                    QString::number(idlieuExercice) + ")";
+        //qDebug() << MAJConnexionRequete;
+        db->StandardSQL(MAJConnexionRequete);
+        db->unlocktables();
+    }
 
     // Deconnecter les users débranchés accidentellement
     QList<QList<QVariant>> listoldusers = db->StandardSelectSQL("select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES
@@ -1899,7 +1900,6 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
         }
     }
-    db->unlocktables();
 }
 
 void RufusAdmin::Slot_ModifMDP()

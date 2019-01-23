@@ -442,8 +442,8 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                 */
                 db->locktables(QStringList() << NOM_TABLE_IMPRESSIONS);
                 int idimpr(0);
-                idimpr = db->selectMaxFromTable("idimpression",  NOM_TABLE_IMPRESSIONS) + 1;
-                if (idimpr == 0)
+                idimpr = db->selectMaxFromTable("idimpression",  NOM_TABLE_IMPRESSIONS, ok) + 1;
+                if (!ok)
                 {
                     db->unlocktables();
                     continue;
