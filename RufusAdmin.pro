@@ -103,7 +103,7 @@ LIBS += -L/usr/local/lib/ -lpoppler-qt5
 #   elle ne figure pas dans le dock et le menu est supprimé
 #	<key>LSUIElement</key>
 #	<string>1</string>
-QMAKE_INFO_PLIST = info.plist
+#QMAKE_INFO_PLIST = info.plist
 }
 LINUX {
 INCLUDEPATH += /usr/include/poppler/qt5

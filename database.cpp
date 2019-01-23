@@ -752,10 +752,9 @@ int DataBase::getMaxLigneBanque()
 {
     int a(0), b(0);
     a = selectMaxFromTable("idligne", NOM_TABLE_ARCHIVESBANQUE, ok);
-    a = selectMaxFromTable("idligne", NOM_TABLE_LIGNESCOMPTES, ok);
+    b = selectMaxFromTable("idligne", NOM_TABLE_LIGNESCOMPTES, ok);
     return (((a<b)?b:a)+1);
 }
-
 
 /*
  * Depenses

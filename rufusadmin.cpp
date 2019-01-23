@@ -413,6 +413,18 @@ QString RufusAdmin::getExpressionSize(double size)
     return QString::number(size,'f',2) + com;
 }
 
+/*!
+ *  \brief AskBupRestore
+ *  la fiche qui permet de paramètrer une opération de sauvegarde ou de restauration
+ *  \param restore :            true = restauration - false = backup
+ *  \param pathorigin :         le dossier de stockage de l'imagerie sur le serveur
+ *  \param pathdestination :    le dossier où se trouve la backup
+ *  \param OKini :              le rufus.ini est sauvegardé
+ *  \param OKRssces :           les fichiers ressources sont sauvegardé
+ *  \param OKimages :           les fichiers images sont sauvegardés
+ *  \param OKvideos :           les fichiers videos sont sauvegardés
+ *
+ */
 void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdestination, bool OKini, bool OKRssces, bool OKimages, bool OKvideos)
 {
     QMap<QString,double>      DataDir;
@@ -477,7 +489,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
     if (OKvideos)
     {
         // taille du dossier video ---------------------------------------------------------------------------------------------------------------------------------------
-        DataDir = dir_size(pathorigin + NOMDIR_VIDEOS);
+        DataDir = Utils::dir_size(pathorigin + NOMDIR_VIDEOS);
         VideosSize = DataDir["Size"]/1024/1024;
         QHBoxLayout *layVideos = new QHBoxLayout;
         UpLabel *labeVideos = new UpLabel();
@@ -500,7 +512,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
     if (OKimages)
     {
         // taille du dossier Images ---------------------------------------------------------------------------------------------------------------------------------------
-        DataDir = dir_size(pathorigin + NOMDIR_IMAGES);
+        DataDir = Utils::dir_size(pathorigin + NOMDIR_IMAGES);
         ImagesSize = DataDir["Size"]/1024/1024;
         QHBoxLayout *layImges = new QHBoxLayout;
         UpLabel *labelmges = new UpLabel();
@@ -746,33 +758,6 @@ double RufusAdmin::CalcBaseSize()
     if (ok && basedata.size()>0)
         basesize = basedata.at(0).toDouble();
     return basesize;
-}
-
-QMap<QString, double> RufusAdmin::dir_size(const QString DirPath)
-{
-    QMap<QString, double>      DataDir;
-    double sizex = 0;
-    double nfiles = 0;
-
-    QDir dir(DirPath);
-    if(!dir.exists())
-    {
-        DataDir["Size"]= 0;
-        DataDir["Nfiles"]= 0;
-        return DataDir;
-    }
-    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
-    QFileInfoList list = dir.entryInfoList();
-
-    for(int i = 0; i < list.size(); ++i)
-    {
-        QFileInfo fileInfo = list.at(i);
-        sizex += (fileInfo.isDir()) ? this->dir_size(fileInfo.absoluteFilePath())["Size"]: fileInfo.size();
-        nfiles += (fileInfo.isDir()) ? this->dir_size(fileInfo.absoluteFilePath())["Nfiles"] : i+1;
-    }
-    DataDir["Size"]= sizex;
-    DataDir["Nfiles"]= nfiles;
-    return DataDir;
 }
 
 void RufusAdmin::ConnexionBase()
@@ -1638,7 +1623,7 @@ void RufusAdmin::ExporteDocs()
             else
                 return;
             db->StandardSQL("update " NOM_TABLE_FACTURES " set jpg = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc) + "." JPG "'"
-                                                                                                                                                         " where idFacture = " + listexportjpgfact.at(i).at(0).toString());
+                            " where idFacture = " + listexportjpgfact.at(i).at(0).toString());
             faits ++;
             int nsec = debut.secsTo(QTime::currentTime());
             int min = nsec/60;
@@ -1751,7 +1736,7 @@ void RufusAdmin::ExporteDocs()
                               | QFileDevice::ReadUser   | QFileDevice::WriteUser);
             CC.close();
             db->StandardSQL ("update " NOM_TABLE_FACTURES " set pdf = null, LienFichier = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc)  + "." PDF "'"
-                                                                                                                                                           " where idFacture = " + listexportpdffact.at(i).at(0).toString());
+                             " where idFacture = " + listexportpdffact.at(i).at(0).toString());
             faits ++;
             int nsec = debut.secsTo(QTime::currentTime());
             int min = nsec/60;
@@ -1847,8 +1832,6 @@ void RufusAdmin::Slot_MasqueAppli()
 
 void RufusAdmin::Slot_MetAJourLaConnexion()
 {
-    if (db->locktables(QStringList() << NOM_TABLE_USERSCONNECTES))
-    {
         QString MAJConnexionRequete;
         QList<QList<QVariant>> listusers = db->StandardSelectSQL("select iduser from " NOM_TABLE_USERSCONNECTES
                                                                  " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
@@ -1867,8 +1850,6 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
                                     QString::number(idlieuExercice) + ")";
         //qDebug() << MAJConnexionRequete;
         db->StandardSQL(MAJConnexionRequete);
-        db->unlocktables();
-    }
 
     // Deconnecter les users débranchés accidentellement
     QList<QList<QVariant>> listoldusers = db->StandardSelectSQL("select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES
@@ -2758,14 +2739,14 @@ void RufusAdmin::ModifParamBackup()
     db->StandardSQL("DROP EVENT IF EXISTS VideImagesEchange");
     QString req =   "CREATE EVENT VideImagesEchange "
             "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
-            "DO DELETE FROM " NOM_BASE_IMAGES "." NOM_TABLE_ECHANGEIMAGES;
+            "DO DELETE FROM " NOM_TABLE_ECHANGEIMAGES;
     db->StandardSQL(req);
-    //programmation de l'effacement des pdf et jpg contenus dans Faxtures
+    //programmation de l'effacement des pdf et jpg contenus dans Factures
     db->StandardSQL("Use " NOM_BASE_COMPTA);
     db->StandardSQL("DROP EVENT IF EXISTS VideFactures");
     req =   "CREATE EVENT VideFactures "
             "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
-            "DO UPDATE " NOM_BASE_COMPTA "." NOM_TABLE_FACTURES " SET jpg = null, pdf = null";
+            "DO UPDATE " NOM_TABLE_FACTURES " SET jpg = null, pdf = null";
     db->StandardSQL(req);
 }
 
@@ -2974,8 +2955,8 @@ bool RufusAdmin::ImmediateBackup()
     QList<QVariant> dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, ok);
     if (ok && dirdata.size()>0)
     {
-        QString NomDirStockageImagerie = dirdata.at(0).toString();
-        QString NomDirDestination = dirdata.at(1).toString();
+        NomDirStockageImagerie = dirdata.at(0).toString();
+        NomDirDestination = dirdata.at(1).toString();
     }
     if(!QDir(NomDirDestination).exists() || NomDirDestination == "")
     {
@@ -3219,8 +3200,6 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);                      // le slot verifverroudossier a déconnecté un tutilisateur et modifié la salle d'attente si des patients étaient verrouillés
 
     /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
-    if (!db->locktables(QStringList() << NOM_TABLE_FLAGS))
-       return;
     QList<QVariant> flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
     QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagSalDat) VALUES (1)";
     int a = 0;
@@ -3229,7 +3208,6 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
         MAJreq = "update " NOM_TABLE_FLAGS " set MAJflagSalDat = " + QString::number(a);
     }
     db->StandardSQL(MAJreq);
-    db->unlocktables();
     gflagSalDat = a;
 }
 

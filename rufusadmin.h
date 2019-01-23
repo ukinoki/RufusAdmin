@@ -213,7 +213,6 @@ private:
     double                  BaseSize, ImagesSize, VideosSize, FreeSpace;
     UpDialog                *gAskBupRestore;
     UpLabel                 *labelResume, *labelVolumeLibre;
-    QMap<QString, double>   dir_size(const QString DirPath);
     void                    AskBupRestore(bool restore, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true);
     void                    DefinitScriptBackup(QString path, bool AvecImages= true, bool AvecVideos = true);
     QString                 getExpressionSize(double size);
