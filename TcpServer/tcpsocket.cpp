@@ -35,12 +35,12 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
         return;
     }
 
-    connect(&thread,    SIGNAL(finished()),                             socket, SLOT(deleteLater()));
+    connect(&thread,    &QThread::finished,                                                     socket, &TcpSocket::deleteLater);
     // note - Qt::DirectConnection is used because it's multithreaded
     //        This makes the slot to be invoked immediately, when the signal is emitted.
-    connect(socket,     SIGNAL(readyRead()),                            this,   SLOT(TraiteDonneesRecues()), Qt::DirectConnection);
-    connect(socket,     SIGNAL(disconnected()),                         this,   SLOT(Deconnexion()));
-    connect(socket,     SIGNAL(error(QAbstractSocket::SocketError)),    this,   SLOT(erreurSocket(QAbstractSocket::SocketError)));
+    connect(socket,     &QTcpSocket::readyRead,                                                 this,   &TcpSocket::TraiteDonneesRecues, Qt::DirectConnection);
+    connect(socket,     &QTcpSocket::disconnected,                                              this,   &TcpSocket::Deconnexion);
+    connect(socket,     QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),   this,   &TcpSocket::erreurSocket);
     thread.start();
 }
 
@@ -121,7 +121,7 @@ void TcpSocket::Deconnexion()
 
 void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
 {
-    //qDebug() << "le cient ne répond plus - " << erreur << " - " << socket->errorString();
+    qDebug() << "le cient ne répond plus - " << erreur << " - " << socket->errorString();
 
     /*
         le cient ne répond plus

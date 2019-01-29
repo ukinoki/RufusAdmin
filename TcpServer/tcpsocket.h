@@ -60,7 +60,7 @@ private:
     QByteArray      buffer;                                                 // le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
     qint32          sizedata;                                               // le stockage de la taille permet de savoir si le bloc a été reçu
     int             iduser;                                                 // stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
-    QString         datasclient;                                            // stocke l'adresse IP et l'adresse MAC du client
+    QString         datasclient;                                            // stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
 
 private slots:
     void            erreurSocket(QAbstractSocket::SocketError);
