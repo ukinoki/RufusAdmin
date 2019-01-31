@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("29-01-2019/3");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-02-2019/3");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2258,7 +2258,7 @@ void RufusAdmin::Slot_RestaureBase()
     ConnectTimers();
 }
 
-// utilisé RufusAdmin pour supprimer les documents et les factures
+// utilisé par RufusAdmin pour supprimer les documents et les factures
 // ayant été inscrits dans les tables DocsASupprimer et FacturesASupprimer
 // par les autres postes
 
@@ -2362,40 +2362,40 @@ void RufusAdmin::Slot_VerifPosteImport()
         return;
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
-    QList<QVariant> listproc = db->getFirstRecordFromStandardSelectSQL("CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS, ok);
-    if(!ok)
-        return;
-    if (listproc.size()==0)
+    QString req = "SELECT name FROM mysql.proc p WHERE db = '" NOM_BASE_CONSULTS "' AND name = '" NOM_POSTEIMPORTDOCS "'";
+    QList<QVariant> imptdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
+    if (ok && imptdata.size()>0)
     {
-        A = "";
-        ui->PosteImportDocslabel->setText(tr("Pas de poste paramétré"));
-        ui->PosteImportDocsPrioritairelabel->setText("");
-    }
-    else
-    {
-        //qDebug() << "nbre reponses = " + QString::number(quer.size()) << NOM_POSTEIMPORTDOCS " = " + quer.value(0).toString();
-        PostImport = listproc.at(0).toString();
-        A = PostImport;
-        A = "<font color=\"green\"><b>" + A.remove(".local") + "</b></font>";
-        QString B;
-        if (A.contains(" - " NOM_ADMINISTRATEURDOCS))
-            B = tr("Administrateur");
+        QList<QVariant> procdata = db->getFirstRecordFromStandardSelectSQL("CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS, ok);
+        if(!ok || procdata.size()==0)
+        {
+            ui->PosteImportDocslabel->setText(tr("Pas de poste paramétré"));
+            ui->PosteImportDocsPrioritairelabel->setText("");
+        }
         else
-            B = (A.contains(" - prioritaire")? tr("prioritaire") : tr("non prioritaire"));
-        B = "<b>" + B + "</b>";
-        A.remove(" - prioritaire");
-        A.remove(" - " NOM_ADMINISTRATEURDOCS);
+        {
+            //qDebug() << "nbre reponses = " + QString::number(quer.size()) << NOM_POSTEIMPORTDOCS " = " + quer.value(0).toString();
+            PostImport = procdata.at(0).toString();
+            A = PostImport;
+            A = "<font color=\"green\"><b>" + A.remove(".local") + "</b></font>";
+            QString B;
+            if (A.contains(" - " NOM_ADMINISTRATEURDOCS))
+                B = tr("Administrateur");
+            else
+                B = (A.contains(" - prioritaire")? tr("prioritaire") : tr("non prioritaire"));
+            A.remove(" - prioritaire");
+            A.remove(" - " NOM_ADMINISTRATEURDOCS);
+            ui->PosteImportDocslabel->setText(A);
 
-        ui->PosteImportDocslabel->setText(A);
-        if (B == tr("non prioritaire"))
-            B = "<font color=\"red\">" + B + "</font>";
-        else
-            B = "<font color=\"green\">" + B + "</font>";
-        ui->PosteImportDocsPrioritairelabel->setText(B);
+            if (B == tr("non prioritaire"))
+                B = "<font color=\"red\"><b>" + B + "</b></font>";
+            else
+                B = "<font color=\"green\"><b>" + B + "</b></font>";
+            ui->PosteImportDocsPrioritairelabel->setText(B);
+        }
     }
     QString IpAdr = QHostInfo::localHostName() + " - " NOM_ADMINISTRATEURDOCS;
-
-    if (PostImport != "NULL" && PostImport != IpAdr && gMode != Distant)
+    if (PostImport != "NULL" && PostImport != IpAdr)
         setPosteImportDocs();
 }
 
