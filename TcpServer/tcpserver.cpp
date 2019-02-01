@@ -102,7 +102,8 @@ void TcpServer::Deconnexion(qintptr sktdescriptor)
 
 void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
 {
-    Logs::MSGSOCKET("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(sktdescriptor) + " msg " + msg);
+    QString resume = msg;
+    Logs::MSGSOCKET("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(sktdescriptor) + " msg " + resume.replace(TCPMSG_Separator, " : "));
     //qDebug() << msg;
     if (SocketFromDescriptor(sktdescriptor) == Q_NULLPTR)
         return;
@@ -138,6 +139,7 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
     else if (msg.contains(TCPMSG_DataSocket))               // les datas  du client qui vient de se connecter reçues par le serveur
     {
         msg.remove(TCPMSG_DataSocket);
+        //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
         SocketFromDescriptor(sktdescriptor)->setData(msg);
         QString login = Datas::I()->users->getLoginById(SocketFromDescriptor(sktdescriptor)->idUser());
         QString adress(tr("une adresse inconnue"));
@@ -152,6 +154,8 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
         envoieListeSockets(sktdescriptor);
     else if (msg.contains(TCPMSG_MAJDocsExternes))
         envoyerATous(msg);
+    else if (msg.contains(TCPMSG_TestConnexion))
+    {}
     else
         envoyerATous(msg, sktdescriptor);
 }

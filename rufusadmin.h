@@ -219,6 +219,7 @@ private:
     void                    ModifParamBackup();
 
     // TCPServer, TCPSocket
+    bool                UtiliseTCP;
     TcpServer           *TCPServer;
     quint16             PortTCPServer;
     QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;

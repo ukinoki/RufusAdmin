@@ -75,7 +75,7 @@ void TcpSocket::TraiteDonneesRecues()
             {
                 QByteArray data = buffer.mid(0, sizedata);
                 QString msg = QString::fromUtf8(data);              // traitement du message
-                qDebug() << " Data in: " << buffer << " message = " << msg;
+                //qDebug() << " Data in: " << buffer << " message = " << msg;
                 buffer.clear();                                     // on remet à 0 buffer et sizedata
                 sizedata = 0;
                 if (msg.contains(TCPMSG_Disconnect))

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("31-02-2019/3");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-02-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -138,11 +138,18 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     // 5 mettre en place le TcpSocket
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
-    TCPServer                   = TcpServer::getInstance();
-    TCPServer                   ->setId(idAdminDocs);
-    connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
-    TCPServer                   ->start();
-    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'");
+    UtiliseTCP = (gIPadr!="");
+    if (UtiliseTCP)
+    {
+        TCPServer                   = TcpServer::getInstance();
+        TCPServer                   ->setId(idAdminDocs);
+        connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
+        TCPServer                   ->start();
+        db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'");
+    }
+    else
+        db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = NULL");
+
     gflagCorrespdts             = GetflagCorrespdts();
     gflagSalDat                 = GetflagSalDat();
 
@@ -325,7 +332,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     ImportDocsExtThread = new ImportDocsExternesThread(idAdminDocs, idlieuExercice, gMode != Distant);
     connect(ImportDocsExtThread,    SIGNAL(emitmsg(QStringList, int, bool)),    this,       SLOT(AfficheMessageImport(QStringList, int, bool)));
-    connect(ImportDocsExtThread,    SIGNAL(emitmsg(QString)),                   TCPServer,  SLOT(envoyerATous(QString)));
+    if (UtiliseTCP)
+        connect(ImportDocsExtThread,SIGNAL(emitmsg(QString)),                   TCPServer,  SLOT(envoyerATous(QString)));
     connect(&tim,                   &QTimer::timeout,                           this,       &RufusAdmin::ListeAppareils);
     tim             .setInterval(5000);
     Slot_ImportDocsExternes();
@@ -3095,33 +3103,54 @@ int RufusAdmin::GetflagSalDat()
 
 void RufusAdmin::FermeTCP()
 {
-        TCPServer->close();
-        db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null");
-        delete TCPServer;
+    if (!UtiliseTCP)
+        return;
+    TCPServer->close();
+    db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = null");
+    delete TCPServer;
 }
 
 void RufusAdmin::ResumeTCPSocketStatut()
 {
+    if (!UtiliseTCP)
+        return;
+    QString sep = "{!!}";
     QString statut;
     QString list = TCPServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);
     QStringList ListSockets = list.split("{}");
-    // le 1er item de gListSockets est le serveur
-    QString Serveur = ListSockets.at(0);
-    statut += tr("ServeurTCP") + "\n\t"
-            + Serveur.split(TCPMSG_Separator).at(2) + " - "
-            + gIPadr + " - "
-            + Serveur.split(TCPMSG_Separator).at(1) + " --- "
-            + Datas::I()->users->getLoginById(Serveur.split(TCPMSG_Separator).at(3).toInt());
-
-    ListSockets.removeFirst();
-    statut += "\n" + tr("postes connectés") + "\n";
     QStringList::const_iterator itsocket;
     for( itsocket = ListSockets.constBegin(); itsocket != ListSockets.constEnd(); ++itsocket )
     {
-        statut += "\t" + itsocket->split(TCPMSG_Separator).at(2) + " - "
-                + itsocket->split(TCPMSG_Separator).at(0) + " - "
-                + itsocket->split(TCPMSG_Separator).at(1) + " --- "
-                + Datas::I()->users->getLoginById(itsocket->split(TCPMSG_Separator).at(3).toInt()) + "\n";
+        QString statcp = *itsocket;
+        statcp.replace(TCPMSG_Separator, sep);
+        //qDebug() << statcp;
+        if (itsocket == ListSockets.constBegin())
+        {
+            // le 1er item de gListSockets est le serveur
+            statut += tr("ServeurTCP") + "\n\t";
+            if (statcp.split(sep).size()>3)
+            {
+                statut += statcp.split(sep).at(2) + " - "
+                        + statcp.split(sep).at(0) + " - "
+                        + statcp.split(sep).at(1) + " --- "
+                        + Datas::I()->users->getLoginById(statcp.split(sep).at(3).toInt());
+            }
+            else
+                statut += tr("inconnu");
+            statut += "\n" + tr("Postes connectés") + "\n";
+        }
+        else
+        {
+            if (statcp.split(sep).size()>3)
+            {
+                statut += "\t" + statcp.split(sep).at(2) + " - "
+                        + statcp.split(sep).at(0) + " - "
+                        + statcp.split(sep).at(1) + " --- "
+                        + Datas::I()->users->getLoginById(statcp.split(sep).at(3).toInt()) + "\n";
+            }
+            else
+                statut += "\t" + tr("inconnu");
+        }
     }
     gSocketStatut = statut;
     emit ModifEdit(gSocketStatut); // déclenche la modification de la fenêtre resumestatut
@@ -3264,13 +3293,15 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
     if (gflagSalDat < flag)
     {
         gflagSalDat = flag;
-        TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+        if (UtiliseTCP)
+            TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
     flag = GetflagCorrespdts();
     if (gflagCorrespdts < flag)
     {
         gflagCorrespdts = flag;
-        TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
+        if (UtiliseTCP)
+            TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
     flag = GetflagMessages();
     if (gflagMessages < flag)
@@ -3298,8 +3329,9 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
             }
             gDateDernierMessage = listmsg.at(listmsg.size()-1).at(2).toDateTime();
         }
-        for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
-            TCPServer->envoyerA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);
+        if (UtiliseTCP)
+            for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
+                TCPServer->envoyerA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);
     }
 }
 
