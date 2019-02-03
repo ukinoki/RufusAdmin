@@ -102,8 +102,7 @@ void TcpServer::Deconnexion(qintptr sktdescriptor)
 
 void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
 {
-    QString resume = msg;
-    Logs::MSGSOCKET("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(sktdescriptor) + " msg " + resume.replace(TCPMSG_Separator, " : "));
+    Logs::MSGSOCKET("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(sktdescriptor) + " msg " + msg);
     //qDebug() << msg;
     if (SocketFromDescriptor(sktdescriptor) == Q_NULLPTR)
         return;

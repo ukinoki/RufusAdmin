@@ -220,8 +220,8 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                 }
                 else if (Appareil == "EIDON")
                 {
-                    // il faut découper le nom de fichier à partir de la fin parce que c'est invariable
-                    // si on fait l'inverse et qu'on met un tiret dans le nom de famille p.e.,
+                    // il faut découper le nom de fichier en retrouvant l'emplacement du module dateTheure ( 2017-06-14T17_39_21Z- )dans le nom
+                    // parce que si on découpe à partir du début en se basant sur les tirets le décompte plant si on met des tirets dans le nom ou le prénom p.e.,
                     // la fonction plante dans ses découpages de QStringList et le programme avec
                     /*
                      * avant 2019
@@ -229,48 +229,47 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                      * 368_Zammit - Sauveur - 2017 - 06 - 16T12_27_13Z - eidon_20129 - right - 0 - af      - 2017 - 06 - 16T12_27_18Z -    - image.jpg
                      * 0          - 1       - 2    - 3  - 4            - 5           - 6     - 7 - 8       - 9    - 10 - 11           - 12 - 13
 
-                    datestring = listitems.at(listitems.size()-5);                  //année
-                    datestring += listitems.at(listitems.size()-4);                 //mois
-                    datestring += listitems.at(listitems.size()-3).split("T").at(0);//jour
-                    QString cote = ((listitems.at(listitems.size()-8)=="right")? tr("OD") : tr("OG"));
-                    Titredoc    = "RNM - Eidon ";
-                    Typedoc     = "RNM";
-                    SousTypeDoc = "Eidon " + cote;
-                    if (listitems.at(listitems.size()-6) == "infrared")
-                        SousTypeDoc += " IR";
-                    else if (listitems.at(listitems.size()-6) == "af")
-                        SousTypeDoc += " Autofluo";
-                    QString time = listitems.at(listitems.size()-3).split("T").at(1);
-
                      * version 2019
                      * 9303  - Caro_Fernando  - - 2019 - 01 - 31T12_13_04Z - eidon_20005 - right - 0 - visible - 2019 - 01 - 31T12_13_03Z - 2019 - 01 - 31_121345 - image.jpg
                      * 15179 - Viottolo_Louis - - 2019 - 01 - 31T13_31_04Z - eidon_20005 - right - 0 - visible - 2019 - 01 - 31T13_31_03Z - 2019 - 01 - 31_133138 - image.jpg
                      * 0     - 1              -2- 3    - 4  - 5            - 6           - 7     - 8 - 9       - 10   - 11 - 12           - 13   - 14 - 15        - 16
                     */
-                    if (nomdoc.split("-").size()<17)
+
+                    QRegExp re("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}_[0-9]{2}_[0-9]{2}Z-");
+                    int idxdate;
+                    if (nomdoc.contains(re))
+                    {
+                        Titredoc    = "RNM - Eidon ";
+                        Typedoc     = "RNM";
+                        idxdate = nomdoc.indexOf(re);
+                        datestring = nomdoc.mid(idxdate,10).replace("-","");
+                        datetimecreation = datestring + "-" + nomdoc.mid(idxdate + 11,8).replace("_","");
+                        QString details (""), cote("");
+                        if (nomdoc.split(re).size()>1)
+                            details = nomdoc.split(re).at(1);
+                        else
+                        {
+                            commentechec =  tr("nom invalide");
+                            EchecImport(Titredoc + " - " + nomdoc + " - " + commentechec + " - " + QHostInfo::localHostName());
+                            continue;
+                        }
+                        cote = ((details.at(1)=="right")? tr("OD") : tr("OG"));
+                        SousTypeDoc = "Eidon " + cote;
+                        if (details.size()>3)
+                        {
+                            QString typecliche = details.at(3);
+                            if (typecliche == "infrared")
+                                SousTypeDoc += " IR";
+                            else if (typecliche == "af")
+                                SousTypeDoc += " Autofluo";
+                        }
+                    }
+                    else
                     {
                         commentechec =  tr("nom invalide");
                         EchecImport(Titredoc + " - " + nomdoc + " - " + commentechec + " - " + QHostInfo::localHostName());
                         continue;
                     }
-                    QStringList listitems = nomdoc.split("-");
-                    datestring = listitems.at(listitems.size()-7);                  //année
-                    datestring += listitems.at(listitems.size()-6);                 //mois
-                    datestring += listitems.at(listitems.size()-5).split("T").at(0);//jour
-                    QString cote = ((listitems.at(listitems.size()-10)=="right")? tr("OD") : tr("OG"));
-                    Titredoc    = "RNM - Eidon ";
-                    Typedoc     = "RNM";
-                    SousTypeDoc = "Eidon " + cote;
-                    if (listitems.at(listitems.size()-8) == "infrared")
-                        SousTypeDoc += " IR";
-                    else if (listitems.at(listitems.size()-8) == "af")
-                        SousTypeDoc += " Autofluo";
-                    QString time = listitems.at(listitems.size()-5).split("T").at(1);
-                    time = time.split("Z").at(0);
-                    datetimecreation   = datestring + "-"
-                                       + time.split("_").at(0)
-                                       + time.split("_").at(1)
-                                       + time.split("_").at(2);
                 }
                 else if (Appareil == "OPTOS Daytona series")
                 {
