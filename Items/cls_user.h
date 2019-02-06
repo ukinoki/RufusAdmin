@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef CLS_USER_H
@@ -74,6 +74,7 @@ private:
     QString m_nomUserEncaissHonoraires;
     QString m_nomCompteEncaissHonoraires;
     QString m_nomCompteParDefaut;
+    int m_iduserComptePardefaut; //!< id du user propriétaire du compte bancaire par défaut
 
     int m_soignant;
     int m_responsableActes; //!< 1 : responsable
@@ -102,17 +103,17 @@ private:
 
     QDateTime m_dateDerniereConnexion;
 
-    Site *m_Site = NULL;
-    Comptes *m_comptes = NULL;
+    Site *m_Site        = Q_NULLPTR;
+    Comptes *m_comptes  = Q_NULLPTR;
 
 
-    User *m_userSuperviseur = NULL;
+    User *m_userSuperviseur     = Q_NULLPTR;
     int m_idUserActeSuperviseur = ROLE_INDETERMINE; //!< son id s'il est responsable de ses actes
                                                   //!< un idUser s'il est assistant
-    User *m_userParent = NULL;
+    User *m_userParent = Q_NULLPTR;
     int m_idUserParent = ROLE_INDETERMINE; //!< son id s'il n'est pas remplaçant
                                          //!< un idUser qui correspond au soigant remplacé
-    User *m_userComptable = NULL;
+    User *m_userComptable = Q_NULLPTR;
     int m_idUserComptable = ROLE_INDETERMINE; //!< son id s'il est responsable et libéral
                                          //!< l'id de son employeur s'il est responsable et salarié
                                          //!< s'il est remplaçant (retrocession) on lui demande qui il remplace et le comptable devient
@@ -122,8 +123,8 @@ private:
 
 
 public:
-    explicit User(QJsonObject data = {}, QObject *parent = nullptr);
-    explicit User(QString login, QString password, QJsonObject data = {}, QObject *parent = nullptr);
+    explicit User(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
+    explicit User(QString login, QString password, QJsonObject data = {}, QObject *parent = Q_NULLPTR);
 
     void setData(QJsonObject data);
 
@@ -159,6 +160,7 @@ public:
     void setIdUserParent(int idUserParent);
     int getIdUserComptable() const;
     void setIdUserComptable(int idUserComptable);
+    int getidUserCompteParDefaut() const;
 
     int getSecteur() const;
     int getIdCompteParDefaut() const;

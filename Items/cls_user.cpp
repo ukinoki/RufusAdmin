@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "cls_user.h"
@@ -90,6 +90,7 @@ void User::setData(QJsonObject data)
     setDataInt(data, "idCompteEncaissHonoraires", m_idCompteEncaissHonoraires);
     setDataInt(data, "enregHonoraires", m_enregHonoraires);
     setDataInt(data, "secteur", m_secteur);
+    setDataInt(data, "usercptdefaut", m_iduserComptePardefaut);
 
     setDataBool(data, "AGA", m_AGA);
     setDataBool(data, "desactive", m_desactive);
@@ -104,7 +105,10 @@ void User::setData(QJsonObject data)
 QString User::getLogin() const { return m_login; }
 QString User::getPassword() const { return m_password; }
 
-int User::id() const { return m_id; }
+int User::id() const
+{
+    return m_id;
+}
 void User::setId( int value ) { m_id = value; }
 
 QString User::getNom() const { return m_nom; }
@@ -171,6 +175,7 @@ QString User::getPortable() const { return m_portable; }
 
 QString User::getNomCompteParDefaut() const { return m_nomCompteParDefaut; }
 QString User::getNomCompteAbrege() const { return m_nomCompteEncaissHonoraires; }
+int User::getidUserCompteParDefaut() const { return m_iduserComptePardefaut; }
 
 
 /*!
