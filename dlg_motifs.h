@@ -1,18 +1,18 @@
-/* (C) 2016 LAINE SERGE
-This file is part of RufusAdmin.
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+the Free Software Foundation, either version 3 of the License,
+or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef DLG_MOTIFS_H
@@ -21,17 +21,18 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QColorDialog>
 #include <QToolTip>
 #include <QVBoxLayout>
+#include <QSqlQuery>
 
 #include "upcheckbox.h"
 #include "uplineedit.h"
 #include "uplabel.h"
-#include "upmessagebox.h"
 #include "uptablewidget.h"
 #include "widgetbuttonframe.h"
-#include "database.h"
 #include "gbl_datas.h"
-#include "utils.h"
-#include <QSqlQuery>
+#include "database.h"
+#include "updialog.h"
+
+
 
 namespace Ui {
 class dlg_motifs;
@@ -46,9 +47,9 @@ public:
     ~dlg_motifs();
 
 private:
-    DataBase            *db;
     Ui::dlg_motifs      *ui;
     void                DeplaceVersRow(int id, int anc, int nouv);
+    void                MAJMotifs();               // met à jour la liste des motifs
     void                RecalculeLesRows();
     void                RemplirTableWidget();
     UpCheckBox*         UpchkFromTableW(QTableWidget*, int row, int col);

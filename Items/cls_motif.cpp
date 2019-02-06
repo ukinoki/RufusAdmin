@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+Rufus is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+Rufus is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
+along with Rufus. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "cls_motif.h"
@@ -70,11 +70,6 @@ void Motifs::addMotif(QList<Motif*> listMotifs)
         addMotif( *it );
 }
 
-void Motifs::removeMotif(Motif* Motif)
-{
-    m_motifs       ->remove(Motif->id());
-}
-
 Motif* Motifs::getMotifById(int id)
 {
     QMap<int, Motif*>::const_iterator itcpt = m_motifs->find(id);
@@ -82,3 +77,21 @@ Motif* Motifs::getMotifById(int id)
         return Q_NULLPTR;
     return itcpt.value();
 }
+
+void Motifs::clearAll()
+{
+    QList<Motif*> listmotifs;
+    for( QMap<int, Motif*>::const_iterator itmtf = m_motifs->constBegin(); itmtf != m_motifs->constEnd(); ++itmtf)
+        delete itmtf.value();
+    m_motifs->clear();
+}
+
+void Motifs::removeMotif(Motif *motf)
+{
+    QMap<int, Motif*>::const_iterator itmotf = m_motifs->find(motf->id());
+    if( itmotf == m_motifs->constEnd() )
+        return;
+    m_motifs->remove(motf->id());
+    delete motf;
+}
+

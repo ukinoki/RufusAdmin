@@ -1,18 +1,18 @@
-/* (C) 2016 LAINE SERGE
-This file is part of RufusAdmin.
+/* (C) 2018 LAINE SERGE
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+the Free Software Foundation, either version 3 of the License,
+or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin. If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "dlg_motifs.h"
@@ -25,7 +25,6 @@ dlg_motifs::dlg_motifs(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     m_motifs = Datas::I()->motifs->motifs();
-    db = DataBase::getInstance();
 
     QVBoxLayout *globallay  = dynamic_cast<QVBoxLayout*>(layout());
 
@@ -35,6 +34,7 @@ dlg_motifs::dlg_motifs(QWidget *parent) :
     AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     OKButton                ->setText(tr("Enregistrer\nles modifications"));
     CancelButton            ->setText(tr("Annuler"));
+    setStageCount(1);
 
     ui->MotifsupTableWidget ->setPalette(QPalette(Qt::white));
     ui->MotifsupTableWidget ->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -494,80 +494,34 @@ void dlg_motifs::CreeMotif()
 
     int row = ui->MotifsupTableWidget->rowCount();
     ui->MotifsupTableWidget->insertRow(row);
-    int col = 0;                                                                            //0 - Utiliser
-    QWidget *w         = new QWidget(ui->MotifsupTableWidget);
-    UpCheckBox *Check  = new UpCheckBox(w);
-    QHBoxLayout *l     = new QHBoxLayout();
-    Check->setChecked(true);
-    Check->setRowTable(row);
-    Check->setFocusPolicy(Qt::NoFocus);
-    connect(Check,  SIGNAL(clicked(bool)),  this,   SLOT(Slot_Utiliser(bool)));
-    l->setAlignment(Qt::AlignCenter);
-    l->addWidget(Check);
-    l->setContentsMargins(0,0,0,0);
-    w->setLayout(l);
-    ui->MotifsupTableWidget->setCellWidget(row,col,w);
-
-    col++;                                                                                  //1 - Motif
-    QTableWidgetItem *pItem0 = new QTableWidgetItem();
-    pItem0->setText(tr("Nouveau motif"));
-    ui->MotifsupTableWidget->setItem(row,col,pItem0);
-
-    col++;                                                                                  //2 - Raccourci
-    QTableWidgetItem *pItem1 = new QTableWidgetItem();
-    pItem1->setText("NM");
-    ui->MotifsupTableWidget->setItem(row,col,pItem1);
-
-    col++;                                                                                  //3 - idMotifsRDV
-    QTableWidgetItem *pItem2 = new QTableWidgetItem();
-    pItem2->setText("0");
-    ui->MotifsupTableWidget->setItem(row,col,pItem2);
-
-    col++;                                                                                  //4 - Couleur
-    QTableWidgetItem *pItem3 = new QTableWidgetItem();
-    pItem3->setText("FFFFFF");
-    ui->MotifsupTableWidget->setItem(row,col,pItem3);
-
-    col++;                                                                                  //5 - Duree
-    QTableWidgetItem *pItem4 = new QTableWidgetItem();
-    pItem4->setText("");
-    ui->MotifsupTableWidget->setItem(row,col,pItem4);
-
-    col++;                                                                                  //6 - ParDefaut
-    QWidget *w0         = new QWidget(ui->MotifsupTableWidget);
-    UpCheckBox *Check0  = new UpCheckBox(w0);
-    QHBoxLayout *l0     = new QHBoxLayout();
-    Check0->setChecked(false);
-    Check0->setRowTable(row);
-    Check0->setFocusPolicy(Qt::NoFocus);
-    connect(Check0, SIGNAL(clicked(bool)), this, SLOT(Slot_ParDefaut()));
-    l0->setAlignment( Qt::AlignCenter );
-    l0->addWidget(Check0);
-    l0->setContentsMargins(0,0,0,0);
-    w0->setLayout(l0);
-    ui->MotifsupTableWidget->setCellWidget(row,col,w0);
-
-    col++;                                                                                  //7 - Couleur
-    QWidget *w1         = new QWidget(ui->MotifsupTableWidget);
-    UpLabel *Lbl1       = new UpLabel(w1);
-    QHBoxLayout *l1     = new QHBoxLayout();
-    QString background = "background:#FFFFFF";
-    Lbl1->setStyleSheet(background);
-    Lbl1->setRow(row);
-    l1->addWidget(Lbl1);
-    l1->setContentsMargins(0,0,0,0);
-    w1->setLayout(l1);
-    ui->MotifsupTableWidget->setCellWidget(row,col,w1);
-
-    col++;                                                                                  //8 - NoOrdre
-    QTableWidgetItem *pItem5 = new QTableWidgetItem();
-    pItem5->setText(QString::number(row+1));
-    ui->MotifsupTableWidget->setItem(row,col,pItem5);
+    QJsonObject jmotif{};
+    jmotif["id"] = 0;
+    jmotif["motif"] = tr("Nouveau motif");
+    jmotif["raccourci"] = "NM";
+    jmotif["couleur"] = "FFFFFF";
+    jmotif["duree"] = 0;
+    jmotif["pardefaut"] = false;
+    jmotif["utiliser"] = true;
+    jmotif["noordre"] = row+1;
+    Motif *motif = new Motif(jmotif);
+    Datas::I()->motifs->addMotif(motif);
+    SetMotifToRow(motif,row);
 
     QFontMetrics fm(qApp->font());
     ui->MotifsupTableWidget->setRowHeight(row,int(fm.height()*1.3));
     ui->MotifsupTableWidget->selectRow(row);
     OKButton->setEnabled(true);
+}
+
+void dlg_motifs::MAJMotifs()
+{
+    Datas::I()->motifs->clearAll();
+    QList<Motif*> listMotifs = DataBase::getInstance()->loadMotifs();
+    for(QList<Motif*>::const_iterator itmtf = listMotifs.constBegin(); itmtf != listMotifs.constEnd(); ++itmtf )
+    {
+        Motif *mt = const_cast<Motif*>(*itmtf);
+        Datas::I()->motifs->addMotif( mt );
+    }
 }
 
 void dlg_motifs::Slot_EnregistreMotifs()
@@ -583,10 +537,9 @@ void dlg_motifs::Slot_EnregistreMotifs()
         }
     }
     //vider la table MotifsRDV
-    QString req = "delete from " NOM_TABLE_MOTIFSRDV;
-    db->StandardSQL(req);
+    DataBase::getInstance()->StandardSQL("delete from " NOM_TABLE_MOTIFSRDV);
     //la remplir avec les nouvelles valeurs
-    req = "insert into " NOM_TABLE_MOTIFSRDV " (Utiliser, Motif, raccourci, couleur, ParDefaut, NoOrdre) Values\n";
+    QString req = "insert into " NOM_TABLE_MOTIFSRDV " (Utiliser, Motif, raccourci, couleur, ParDefaut, NoOrdre) Values\n";
     for (int j=0; j<ui->MotifsupTableWidget->rowCount(); j++)
     {
         if (j>0)
@@ -597,8 +550,8 @@ void dlg_motifs::Slot_EnregistreMotifs()
             if (UpchkFromTableW(ui->MotifsupTableWidget,j,0)->isChecked())
                 a = "1";
         req += a + ",";
-        req += "'" + Utils::correctquoteSQL(ui->MotifsupTableWidget->item(j,1)->text()) +"',";
-        req += "'" + Utils::correctquoteSQL(ui->MotifsupTableWidget->item(j,2)->text()) +"',";
+        req += "'" + Utils::correctquoteSQL(Utils::trimcapitilize(ui->MotifsupTableWidget->item(j,1)->text())) +"',";
+        req += "'" + Utils::correctquoteSQL(Utils::trimcapitilize(ui->MotifsupTableWidget->item(j,2)->text())) +"',";
         req += "'" + ui->MotifsupTableWidget->item(j,4)->text() +"',";
         a = "NULL";
         if (UpchkFromTableW(ui->MotifsupTableWidget,j,6)!=Q_NULLPTR)
@@ -607,7 +560,8 @@ void dlg_motifs::Slot_EnregistreMotifs()
         req += a + ",";
         req += QString::number(j+1) + ")";
     }
-    db->StandardSQL(req);
+    DataBase::getInstance()->StandardSQL(req);
+    MAJMotifs();
     accept();
 }
 
