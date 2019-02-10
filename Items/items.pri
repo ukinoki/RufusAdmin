@@ -23,7 +23,8 @@ SOURCES += $$PWD/cls_acte.cpp \
     $$PWD/cls_paiementsdirects.cpp \
     $$PWD/cls_motif.cpp \
     $$PWD/cls_tiers.cpp \
-    $$PWD/cls_cotation.cpp
+    $$PWD/cls_cotation.cpp \
+    $$PWD/cls_document.cpp
     $$PWD/cls_item.cpp
 
 HEADERS += $$PWD/cls_acte.h \
@@ -47,5 +48,6 @@ HEADERS += $$PWD/cls_acte.h \
     $$PWD/cls_paiementsdirects.h \
     $$PWD/cls_motif.h \
     $$PWD/cls_tiers.h \
-    $$PWD/cls_cotation.h
+    $$PWD/cls_cotation.h \
+    $$PWD/cls_document.h
     $$PWD/cls_item.h

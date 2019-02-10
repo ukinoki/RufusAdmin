@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef MACROS_H
@@ -51,12 +51,15 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_CORRESPONDANTS                    "rufus.correspondants"
 #define NOM_TABLE_CCAM                              "rufus.ccam"
 #define NOM_TABLE_COTATIONS                         "rufus.cotations"
+#define NOM_TABLE_COURRIERS                         "rufus.courriers"
 #define NOM_TABLE_FLAGS                             "rufus.flags"
 #define NOM_TABLE_IMPRESSIONS                       "rufus.Impressions"
+#define NOM_TABLE_JOINTURESDOCS                     "rufus.jointuresdocuments"
 #define NOM_TABLE_JOINTURESLIEUX                    "rufus.jointuresLieux"
 #define NOM_TABLE_LIEUXEXERCICE                     "rufus.LieuxExercice"
 #define NOM_TABLE_LISTEAPPAREILS                    "rufus.listeappareils"
 #define NOM_TABLE_LISTETIERS                        "rufus.listetiers"
+#define NOM_TABLE_METADOCUMENTS                     "rufus.Metadocuments"
 #define NOM_TABLE_MESSAGES                          "rufus.Messagerie"
 #define NOM_TABLE_MESSAGESJOINTURES                 "rufus.MessagerieJointures"
 #define NOM_TABLE_MOTIFSRDV                         "rufus.MotifsRDV"
