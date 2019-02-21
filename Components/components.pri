@@ -14,7 +14,8 @@ SOURCES += $$PWD/upcheckbox.cpp \
         $$PWD/upradiobutton.cpp \
         $$PWD/upsmallbutton.cpp \
         $$PWD/uptablewidget.cpp \
-        $$PWD/uptextedit.cpp
+        $$PWD/uptextedit.cpp \
+    $$PWD/uptoolbar.cpp
 
 HEADERS += $$PWD/upcheckbox.h \
         $$PWD/upcombobox.h \
@@ -28,4 +29,5 @@ HEADERS += $$PWD/upcheckbox.h \
     $$PWD/upradiobutton.h \
     $$PWD/upsmallbutton.h \
     $$PWD/uptablewidget.h \
-    $$PWD/uptextedit.h
+    $$PWD/uptextedit.h \
+    $$PWD/uptoolbar.h

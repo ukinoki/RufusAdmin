@@ -1,19 +1,19 @@
 /* (C) 2018 LAINE SERGE
- This file is part of RufusAdmin or Rufus.
- 
- RufusAdmin and Rufus are free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License,
- or any later version.
- 
- RufusAdmin and Rufus are distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of RufusAdmin or Rufus.
+
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License,
+or any later version.
+
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "dlg_gestionusers.h"
 #include "ui_dlg_gestionusers.h"
@@ -281,8 +281,8 @@ void dlg_gestionusers::CreerUser()
     Line2                       ->setObjectName(gMDPupLineEdit);
     Line3                       ->setObjectName(gConfirmMDPupLineEdit);
     Line                        ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15));
-    Line2                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15));
-    Line3                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15));
+    Line2                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_8));
+    Line3                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_8));
     Line                        ->setAlignment(Qt::AlignCenter);
     Line2                       ->setAlignment(Qt::AlignCenter);
     Line3                       ->setAlignment(Qt::AlignCenter);
@@ -304,7 +304,7 @@ void dlg_gestionusers::CreerUser()
     lay                         ->setSpacing(2);
 
     label                       ->setText(tr("Choisissez un login pour le nouvel utilisateur\n- maxi 15 caractères -\n- pas de caractères spéciaux ou accentués -"));
-    label2                      ->setText(tr("Choisissez un mot de passe\n- maxi 8 caractères -\n- pas de caractères spéciaux ou accentués -"));
+    label2                      ->setText(tr("Choisissez un mot de passe\n- mini 5 maxi 8 caractères -\n- pas de caractères spéciaux ou accentués -"));
     label3                      ->setText(tr("Confirmez le mot de passe"));
 
     gAsk                        ->AjouteLayButtons(UpDialog::ButtonOK);
@@ -838,9 +838,6 @@ void dlg_gestionusers::Slot_GestionComptes()
     bool verifcpta  = ui->CompteComptawidget->isVisible();
     QString cptcpta = ui->CompteComptacomboBox->currentText();
 
-
-
-
     Dlg_GestComptes = new dlg_gestioncomptes(DataUser(), this);
     Dlg_GestComptes ->setWindowTitle(tr("Comptes bancaires de ") + DataUser()->getLogin());
     Dlg_GestComptes ->exec();
@@ -1366,32 +1363,6 @@ void   dlg_gestionusers::DefinitLesVariables()
     respsalarie    = responsable && pasliberal;
     respliberal    = responsable && liberal;
     soigntnonrplct = responsable && !retrocession;
-}
-
-QString dlg_gestionusers::Edit(QString txt, QString titre)
-{
-    QString         rep("");
-    UpDialog        *gAsk           = new UpDialog();
-    UpTextEdit* gTxtEdit            = new UpTextEdit(gAsk);
-    int x = qApp->screens().at(0)->availableGeometry().width();
-    int y = qApp->screens().at(0)->availableGeometry().height();
-
-    gAsk->setModal(true);
-    gTxtEdit->setText(txt);
-
-    gAsk->setMaximumWidth(x);
-    gAsk->setMaximumHeight(y);
-    gAsk->setWindowTitle(titre);
-
-    gAsk->dlglayout()->insertWidget(0,gTxtEdit);
-
-    gAsk->AjouteLayButtons();
-    connect(gAsk->OKButton,SIGNAL(clicked(bool)),gAsk,SLOT(accept()));
-
-    if (gAsk->exec()>0)
-        rep = gTxtEdit->toHtml();
-    delete gAsk;
-    return rep;
 }
 
 bool dlg_gestionusers::ExisteEmployeur(int iduser)

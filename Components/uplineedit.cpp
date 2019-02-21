@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "uplineedit.h"
@@ -28,8 +28,10 @@ UpLineEdit::UpLineEdit(QWidget *parent) : QLineEdit(parent)
     ValeurApres     = "";
     Champ           = "";
     Table           = "";
+    linedata        = QVariant();
     installEventFilter(this);
-    connect(this, &QLineEdit::textEdited, [=] {ReemitTextEdited(text());});
+    connect(this, &QLineEdit::textEdited,       this, &UpLineEdit::ReemitTextEdited);
+    // connect(this, &QLineEdit::inputRejected,    this, [=] {QSound::play(NOM_ALARME);}); le signal inpuRejected n'est pas reconnu par osx...
     setContextMenuPolicy(Qt::NoContextMenu);
 }
 
@@ -41,6 +43,11 @@ UpLineEdit::~UpLineEdit()
 // ------------------------------------------------------------------------------------------
 bool UpLineEdit::eventFilter(QObject *obj, QEvent *event)
 {
+    if (event->type() == QEvent::Enter)
+    {
+        AfficheToolTip();
+        return true;
+    }
     if (event->type() == QEvent::FocusIn)
         setValeurAvant(text());
     if (event->type() == QEvent::FocusOut)
@@ -72,6 +79,17 @@ void UpLineEdit::mouseDoubleClickEvent(QMouseEvent *)
         emit mouseDoubleClick(RowTable);
 }
 
+void UpLineEdit::AfficheToolTip()
+{
+    if (gToolTipMsg != "" && isEnabled())
+        QToolTip::showText(cursor().pos(),gToolTipMsg);
+}
+
+void UpLineEdit::setImmediateToolTip(QString Msg)
+{
+    gToolTipMsg = Msg;
+}
+
 void UpLineEdit::setCanDepart(bool OK)
 {
     CanDepart = OK;
@@ -80,6 +98,16 @@ void UpLineEdit::setCanDepart(bool OK)
 bool UpLineEdit::getCanDepart() const
 {
     return CanDepart;
+}
+
+void UpLineEdit::setData(QVariant data)
+{
+    linedata = data;
+}
+
+QVariant UpLineEdit::getData()
+{
+    return linedata;
 }
 
 void UpLineEdit::setPeutEtreVide(bool OK)
@@ -158,7 +186,7 @@ QString UpLineEdit::getTableCorrespondant() const
     return Table;
 }
 
-void UpLineEdit::ReemitTextEdited(QString texte)
+void UpLineEdit::ReemitTextEdited()
 {
-    emit upTextEdited(texte, RowTable, ColumnTable);
+    emit upTextEdited(text(), RowTable, ColumnTable);
 }

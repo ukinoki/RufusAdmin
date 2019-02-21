@@ -15,9 +15,30 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "cls_paiementdirect.h"
+#ifndef UPTOOLBAR_H
+#define UPTOOLBAR_H
 
-cls_paiementdirect::cls_paiementdirect()
+#include <QToolBar>
+#include <QEvent>
+
+class UpToolBar : public QToolBar
 {
+    Q_OBJECT
+public:
+    explicit    UpToolBar(bool AvecFinDebut = true, bool AvecReload = false, QWidget *parent = Q_NULLPTR);
+    ~UpToolBar();
+    QAction*            First();
+    QAction*            Last();
+    QAction*            Next();
+    QAction*            Prec();
+    QAction*            Reload();
+    QString             action;
+private:
+    void                EmetReponse();
+    QAction             *debut, *prec, *suiv, *fin, *reload;
+    void                TBChoix(QAction *choix);
+signals:
+    void                TBSignal();
+};
 
-}
+#endif // UPTOOLBAR_H

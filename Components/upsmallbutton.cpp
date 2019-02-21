@@ -1,55 +1,23 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upsmallbutton.h"
+#include "icons.h"
 
-UpSmallButton::UpSmallButton(QString text, QWidget *parent) : QPushButton(parent)
-{
-    setAutoDefault(true);
-    installEventFilter(this);
-    setContextMenuPolicy(Qt::NoContextMenu);
-    setFixedHeight(35);
-    setFlat(true);
-    setFocusPolicy(Qt::NoFocus);
-    setText(text);
-
-    StyleBouton = NOBUTTON;
-    giconBack           .addFile(QStringLiteral("://back.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconCancel         .addFile(QStringLiteral("://cancel.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconCancelpushed   .addFile(QStringLiteral("://cancelpushed.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconClose          .addFile(QStringLiteral("://shutdown.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconClosepushed    .addFile(QStringLiteral("://shutdowndown.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconCopy           .addFile(QStringLiteral("://copy_v2.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconDoNotRecord    .addFile(QStringLiteral("://donotrecord.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconEdit           .addFile(QStringLiteral("://edit.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOK             .addFile(QStringLiteral("://start.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOKpushed       .addFile(QStringLiteral("://startpushed.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOKpushed       .addFile(QStringLiteral("://startpushed.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOups           .addFile(QStringLiteral("://damn-icon.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconPrint          .addFile(QStringLiteral("://Imprimer.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconReception      .addFile(QStringLiteral("://reception_icon.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconRecord         .addFile(QStringLiteral("://save.png"), QSize(30,30), QIcon::Normal, QIcon::Off);
-    giconSuppr          .addFile(QStringLiteral("://trash.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    gLuggage            = -1;
-    gToolTipMsg         = "";
-    setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
-        "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
-        "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
-}
 
 UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
 {
@@ -60,28 +28,16 @@ UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
     setFlat(true);
     setFocusPolicy(Qt::NoFocus);
 
-    StyleBouton = NOBUTTON;
-    giconBack           .addFile(QStringLiteral("://back.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconCancel         .addFile(QStringLiteral("://cancel.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconCancelpushed   .addFile(QStringLiteral("://cancelpushed.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconClose          .addFile(QStringLiteral("://shutdown.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconClosepushed    .addFile(QStringLiteral("://shutdowndown.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconCopy           .addFile(QStringLiteral("://copy_v2.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconDoNotRecord    .addFile(QStringLiteral("://donotrecord.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconEdit           .addFile(QStringLiteral("://edit.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOK             .addFile(QStringLiteral("://start.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOKpushed       .addFile(QStringLiteral("://startpushed.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOKpushed       .addFile(QStringLiteral("://startpushed.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconOups           .addFile(QStringLiteral("://damn-icon.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconPrint          .addFile(QStringLiteral("://Imprimer.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconReception      .addFile(QStringLiteral("://reception_icon.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
-    giconRecord         .addFile(QStringLiteral("://save.png"), QSize(30,30), QIcon::Normal, QIcon::Off);
-    giconSuppr          .addFile(QStringLiteral("://trash.png"), QSize(35,35), QIcon::Normal, QIcon::Off);
+    StyleBouton         = NOBUTTON;
     gLuggage            = -1;
     gToolTipMsg         = "";
     setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
         "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
         "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
+}
+UpSmallButton::UpSmallButton(QString text, QWidget *parent) : UpSmallButton(parent)
+{
+    setText(text);
 }
 
 UpSmallButton::~UpSmallButton()
@@ -102,27 +58,32 @@ void UpSmallButton::setImmediateToolTip(QString Msg)
 void UpSmallButton::setUpButtonStyle(enum StyleBouton Style)
 {
     switch (Style) {
-    case BACKBUTTON:            setIcon(giconBack);         break;
-    case CANCELBUTTON:          setIcon(giconCancel);       break;
-    case CLOSEBUTTON:           setIcon(giconClose);        break;
-    case COPYBUTTON:            setIcon(giconCopy);         break;
-    case DONOTRECORDBUTTON:     setIcon(giconDoNotRecord);  break;
-    case EDITBUTTON:            setIcon(giconEdit);         break;
-    case OUPSBUTTON:            setIcon(giconOups);         break;
-    case PRINTBUTTON:           setIcon(giconPrint);        break;
-    case RECEPTIONBUTTON:       setIcon(giconReception);    break;
-    case RECORDBUTTON:          setIcon(giconRecord);       break;
-    case STARTBUTTON:           setIcon(giconOK);           break;
-    case SUPPRBUTTON:           setIcon(giconSuppr);        break;
-    default:                                                break;
+    case BACKBUTTON:            setIcon( Icons::icBack() );         break;
+    case CALENDARBUTTON:        setIcon( Icons::icDate() );         break;
+    case CANCELBUTTON:          setIcon( Icons::icAnnuler() );      break;
+    case CLOSEBUTTON:           setIcon( Icons::icFerme() );        break;
+    case COPYBUTTON:            setIcon( Icons::icRecopier() );     break;
+    case DONOTRECORDBUTTON:     setIcon( Icons::icDoNotRecord() );  break;
+    case EDITBUTTON:            setIcon( Icons::icEditer() );       break;
+    case HOMEBUTTON:            setIcon( Icons::icPageHome() );     break;
+    case LOUPEBUTTON:           setIcon( Icons::icLoupe() );        break;
+    case OUPSBUTTON:            setIcon( Icons::icOups() );         break;
+    case PRINTBUTTON:           setIcon( Icons::icImprimer() );     break;
+    case QWANTBUTTON:           setIcon( Icons::icQwant() );        break;
+    case RECEPTIONBUTTON:       setIcon( Icons::icReception() );    break;
+    case RECORDBUTTON:          setIcon( Icons::icSauvegarder() );  break;
+    case STARTBUTTON:           setIcon( Icons::icOK() );           break;
+    case SUPPRBUTTON:           setIcon( Icons::icPoubelle() );     break;
+    default:                                                        break;
     }
     StyleBouton = Style;
     setCursor(Qt::PointingHandCursor);
-    setIconSize(QSize(30,30));
     if (Style==CANCELBUTTON)
         setIconSize(QSize(25,25));
-    if (Style==STARTBUTTON)
+    else if (Style==STARTBUTTON)
         setIconSize(QSize(35,35));
+    else
+        setIconSize(QSize(30,30));
 }
 
 void UpSmallButton::setText(QString txt)
@@ -134,9 +95,9 @@ void UpSmallButton::setText(QString txt)
                             même si txt = "", ce qui entraîne alors obligatoirement le changement de style du bouton*/
     setFocusPolicy(Qt::StrongFocus);
     setFixedHeight(45);
-    setStyleSheet("UpSmallButton {border: 1px none black; padding-left: 8px; padding-top: 3px; padding-right: 8px; padding-bottom: 3px;}"
-                  "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
-                  "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
+    setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
+        "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
+        "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
 }
 
 void UpSmallButton::setLuggage(QVariant var)
@@ -176,17 +137,17 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
         if (ButtonStyle() == STARTBUTTON)
         {
             QPushButton* Button = static_cast<QPushButton*>(obj);
-            Button->setIcon(giconOKpushed);
+            Button->setIcon( Icons::icOKpushed() );
         }
         if (ButtonStyle() == CANCELBUTTON)
         {
             QPushButton* Button = static_cast<QPushButton*>(obj);
-            Button->setIcon(giconCancelpushed);
+            Button->setIcon( Icons::icAnnulerAppuye() );
         }
         if (ButtonStyle() == CLOSEBUTTON)
         {
             QPushButton* Button = static_cast<QPushButton*>(obj);
-            Button->setIcon(giconClosepushed);
+            Button->setIcon( Icons::icFermeAppuye() );
         }
     }
 
@@ -198,9 +159,9 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
             QRect rect = QRect(Button->pos(),Button->size());
             QPoint pos = mapFromParent(cursor().pos());
             if (rect.contains(pos))
-                Button->setIcon(giconOKpushed);
+                Button->setIcon( Icons::icOKpushed() );
             else
-                Button->setIcon(giconOK);
+                Button->setIcon( Icons::icOK() );
         }
         if (ButtonStyle() == CANCELBUTTON)
         {
@@ -208,9 +169,9 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
             QRect rect = QRect(Button->pos(),Button->size());
             QPoint pos = mapFromParent(cursor().pos());
             if (rect.contains(pos))
-                Button->setIcon(giconCancelpushed);
+                Button->setIcon( Icons::icAnnulerAppuye() );
             else
-                Button->setIcon(giconCancel);
+                Button->setIcon( Icons::icAnnuler() );
         }
         if (ButtonStyle() == CLOSEBUTTON)
         {
@@ -218,9 +179,9 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
             QRect rect = QRect(Button->pos(),Button->size());
             QPoint pos = mapFromParent(cursor().pos());
             if (rect.contains(pos))
-                Button->setIcon(giconClosepushed);
+                Button->setIcon( Icons::icFermeAppuye() );
             else
-                Button->setIcon(giconClose);
+                Button->setIcon( Icons::icFerme() );
         }
     }
 
@@ -229,17 +190,17 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
         if (ButtonStyle() == STARTBUTTON)
         {
             QPushButton* Button = static_cast<QPushButton*>(obj);
-            Button->setIcon(giconOK);
+            Button->setIcon( Icons::icOK() );
         }
         if (ButtonStyle() == CANCELBUTTON)
         {
             QPushButton* Button = static_cast<QPushButton*>(obj);
-            Button->setIcon(giconCancel);
+            Button->setIcon( Icons::icAnnuler() );
         }
         if (ButtonStyle() == CLOSEBUTTON)
         {
             QPushButton* Button = static_cast<QPushButton*>(obj);
-            Button->setIcon(giconClose);
+            Button->setIcon( Icons::icFerme() );
         }
         if (isEnabled())
         {

@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef UPLINEEDIT_H
@@ -22,6 +22,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDoubleValidator>
 #include <QEvent>
 #include <QSound>
+#include <QToolTip>
 
 class UpLineEdit : public QLineEdit
 {
@@ -37,6 +38,8 @@ public:
     int         getId();
     int         getColumnTable() const;
     void        setColumnTable(int val);
+    void        setData(QVariant data);
+    QVariant    getData();
     void        setPeutEtreVide(bool);
     bool        getPeutEtreVide();
     void        setValeurAvant(QString valprec);
@@ -47,13 +50,17 @@ public:
     QString     getChampCorrespondant() const;
     void        setTableCorrespondant(QString tablecorrespondant);
     QString     getTableCorrespondant() const;
+    void        setImmediateToolTip(QString Msg);
 
 private:
+    QString     gToolTipMsg;
     bool        eventFilter(QObject *obj, QEvent *event)  ;
     bool        CanDepart, PeutEtreVide;
     int         RowTable, ColumnTable, id;
     QString     ValeurAvant, ValeurApres, Champ, Table;
-    void        ReemitTextEdited(QString texte);
+    QVariant    linedata;
+    void        ReemitTextEdited();
+    void        AfficheToolTip();
 
 signals:
     void        upTextEdited(QString texte, int row, int col);

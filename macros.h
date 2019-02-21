@@ -200,4 +200,10 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_EnvoieListSocket                     "EnvoieListe"                                       /* fin du message demandant l'envoi de la liste des sockets à un client */
 #define TCPMSG_Disconnect                           "Deconnexion"                                       /* fin du message demandant la deconnexion et la fermeture d'un socket */
 
+// ancres et comentaires html
+#define HTMLCOMMENT_LINUX           "<!LINUX>"
+#define HTMLCOMMENT_MAC             "<!MAC>"
+#define HTMLANCHOR_BODEBUT          "<BOdebut>"
+#define HTMLANCHOR_BOFIN            "<BOfin>"
+
 #endif // MACROS_H

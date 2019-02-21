@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef UPSMALLBUTTON_H
@@ -32,7 +32,8 @@ public:
     explicit    UpSmallButton(QWidget *parent = Q_NULLPTR);
     ~UpSmallButton();
     int         StyleBouton;
-    enum        StyleBouton {RECEPTIONBUTTON, BACKBUTTON, CANCELBUTTON, CLOSEBUTTON, COPYBUTTON, DONOTRECORDBUTTON, EDITBUTTON, NOBUTTON, PRINTBUTTON ,RECORDBUTTON, STARTBUTTON, SUPPRBUTTON, OUPSBUTTON};
+    enum        StyleBouton {BACKBUTTON, CALENDARBUTTON, CANCELBUTTON, CLOSEBUTTON, COPYBUTTON,
+                             DONOTRECORDBUTTON, EDITBUTTON, HOMEBUTTON, LOUPEBUTTON, NOBUTTON, OUPSBUTTON, QWANTBUTTON, PRINTBUTTON ,RECEPTIONBUTTON, RECORDBUTTON, STARTBUTTON, SUPPRBUTTON};
     void        setUpButtonStyle(enum StyleBouton);
     int         ButtonStyle();
     void        setId(int);
@@ -44,17 +45,6 @@ public:
 
 private:
     bool        eventFilter(QObject *obj, QEvent *event)  ;
-    QIcon       giconBack,
-                giconCancel,    giconCancelpushed,
-                giconClose,     giconClosepushed,
-                giconCopy,
-                giconDoNotRecord,
-                giconEdit,
-                giconOK,        giconOKpushed,
-                giconOups,
-                giconPrint,
-                giconReception, giconRecord,
-                giconSuppr;
     int         id;
     QVariant    gLuggage;
     void        AfficheToolTip();

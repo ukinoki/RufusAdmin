@@ -23,10 +23,16 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QHostAddress>
 #include <QNetworkInterface>
 #include <QHostInfo>
+
 #include "uplineedit.h"
 #include "uplabel.h"
+#include "uptextedit.h"
 #include "upmessagebox.h"
+
 #include <QInputDialog>
+#include <QCoreApplication>
+#include <QEventLoop>
+#include <QTime>
 
 class Utils
 {
@@ -34,6 +40,7 @@ public:
     static QRegExp const rgx_rx;
     static QRegExp const rgx_AlphaNumeric;
     static QRegExp const rgx_AlphaNumeric_3_15;
+    static QRegExp const rgx_AlphaNumeric_5_8;
     static QRegExp const rgx_AlphaNumeric_5_15;
 
     static QRegExp const rgx_IPV4;
@@ -54,7 +61,11 @@ public:
 
 
     static void Pause(int msec = 1000);
-    static QString convertHTML(QString text);
+    static void convertHTML(QString &text);
+    static void convertPlainText(QString &text);
+    static void nettoieHTML(QString &text, bool supprimeLesLignesVidesDuMilieu = false);
+    static void retirelignevidehtml(QString &txthtml);
+    static void supprimeAncre(QString &text, QString ancredebut, QString ancrefin = "");
 
     static QString                  retirecaracteresaccentues(QString nom);
     static QString                  trim(QString text, bool end=true, bool removereturnend = false);
@@ -71,6 +82,9 @@ public:
     static bool                     mkpath(QString path);
     static double                   mmToInches(double mm);
 
+    static QString                 CalculeFormule(QMap<QString,QVariant>  Donnees,
+                                                  QString Cote);                      // comme son nom l'indique
+    static QString                  PrefixePlus(QString);                          // convertit en QString signé + ou - les valeurs QDouble de dioptries
 };
 
 #endif // UTILS_H

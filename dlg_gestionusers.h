@@ -106,7 +106,6 @@ private:
     void                    CalcListitemsCompteComptacomboBox(int iduser, bool soccomptable);
     void                    CalcListitemsEmployeurcomboBox(int iduser);
     void                    DefinitLesVariables();
-    QString                 Edit(QString txt, QString titre = "");
     bool                    ExisteEmployeur(int iduser);
     void                    RemplirTableWidget(int iduser);
     void                    ReconstruitListeLieuxExercice();
