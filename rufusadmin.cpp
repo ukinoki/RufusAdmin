@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("21-02-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("24-02-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -384,7 +384,6 @@ void RufusAdmin::AskAppareil()
     gAskAppareil->move(QPoint(x()+width()/2,y()+height()/2));
     gAskAppareil->setFixedWidth(400);
     gAskAppareil->setWindowTitle(tr("Choisissez un appareil"));
-    QVBoxLayout *globallay = dynamic_cast<QVBoxLayout*>(gAskAppareil->layout());
     QHBoxLayout *lay = new QHBoxLayout;
     UpLabel *label = new UpLabel();
     label->setText("Nom de l'appareil");
@@ -396,8 +395,8 @@ void RufusAdmin::AskAppareil()
     upCombo->setFixedSize(260,32);
     upCombo->setChampCorrespondant("NomAppareil");
     lay->addWidget(upCombo);
-    globallay->insertLayout(0,lay);
-    globallay->setSizeConstraint(QLayout::SetFixedSize);
+    gAskAppareil->dlglayout()->insertLayout(0,lay);
+    gAskAppareil->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
     gAskAppareil->AjouteLayButtons(UpDialog::ButtonOK);
     connect(gAskAppareil->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreAppareil()));
     gAskAppareil->exec();
@@ -461,7 +460,6 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
     gAskBupRestore->setModal(true);
     gAskBupRestore->move(QPoint(x()+width()/2,y()+height()/2));
     gAskBupRestore->setWindowTitle(Restore? tr("Dossiers à restaurer") : tr("Dossiers à sauvegarder"));
-    QVBoxLayout *globallay = dynamic_cast<QVBoxLayout*>(gAskBupRestore->layout());
     int labelsize = 15;
 
     if (Restore)
@@ -478,7 +476,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         Inichk->setAccessibleDescription("ini");
         layini->addWidget(Inichk);
         layini->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
-        globallay->insertLayout(0, layini);
+        gAskBupRestore->dlglayout()->insertLayout(0, layini);
 
         QHBoxLayout *layRssces = new QHBoxLayout;
         UpLabel *labelrssces = new UpLabel();
@@ -492,7 +490,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         Rssceschk->setAccessibleDescription("ressources");
         layRssces->addWidget(Rssceschk);
         layRssces->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
-        globallay->insertLayout(0, layRssces);
+        gAskBupRestore->dlglayout()->insertLayout(0, layRssces);
     }
     if (OKvideos)
     {
@@ -514,7 +512,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         UpLabel *lblvolvid = new UpLabel();
         lblvolvid->setText(getExpressionSize(VideosSize));
         layVideos->addWidget(lblvolvid);
-        globallay->insertLayout(0, layVideos);
+        gAskBupRestore->dlglayout()->insertLayout(0, layVideos);
         connect(Videoschk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
     }
     if (OKimages)
@@ -537,7 +535,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         UpLabel *lblvolimg = new UpLabel();
         lblvolimg->setText(getExpressionSize(ImagesSize));
         layImges->addWidget(lblvolimg);
-        globallay->insertLayout(0, layImges);
+        gAskBupRestore->dlglayout()->insertLayout(0, layImges);
         connect(Imgeschk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
     }
 
@@ -555,22 +553,21 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
     UpLabel *lblvolbase = new UpLabel();
     lblvolbase->setText(getExpressionSize(BaseSize));
     layBDD->addWidget(lblvolbase);
-    globallay->insertLayout(0, layBDD);
+    gAskBupRestore->dlglayout()->insertLayout(0, layBDD);
 
 
     QHBoxLayout *layResume = new QHBoxLayout;
     labelResume = new UpLabel();
     layResume->addWidget(labelResume);
-    globallay->insertLayout(globallay->count()-1, layResume);
+    gAskBupRestore->dlglayout()->insertLayout(gAskBupRestore->dlglayout()->count()-1, layResume);
 
     QHBoxLayout *layVolumeLibre = new QHBoxLayout;
     labelVolumeLibre = new UpLabel();
     layVolumeLibre->addWidget(labelVolumeLibre);
-    globallay->insertLayout(globallay->count()-1, layVolumeLibre);
+    gAskBupRestore->dlglayout()->insertLayout(gAskBupRestore->dlglayout()->count()-1, layVolumeLibre);
 
     connect(BDDchk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
 
-    //globallay->setSizeConstraint(QLayout::SetFixedSize);
     gAskBupRestore->setFixedWidth(400);
     gAskBupRestore->AjouteLayButtons(UpDialog::ButtonOK);
     connect(gAskBupRestore->OKButton,    SIGNAL(clicked(bool)), gAskBupRestore, SLOT(accept()));
@@ -796,9 +793,8 @@ int RufusAdmin::DetermineLieuExercice()
             DisconnectTimerInactive();
             UpDialog *gAskLieux     = new UpDialog();
             gAskLieux               ->AjouteLayButtons();
-            QVBoxLayout *globallay  = dynamic_cast<QVBoxLayout*>(gAskLieux->layout());
             QGroupBox*boxlieux      = new QGroupBox();
-            globallay               ->insertWidget(0,boxlieux);
+            gAskLieux->dlglayout()  ->insertWidget(0,boxlieux);
             boxlieux                ->setAccessibleName("Parent");
             boxlieux                ->setTitle(tr("D'où vous connectez-vous?"));
 
@@ -844,7 +840,7 @@ int RufusAdmin::DetermineLieuExercice()
             vbox                ->setContentsMargins(8,0,8,0);
             boxlieux            ->setLayout(vbox);
             gAskLieux           ->setModal(true);
-            globallay           ->setSizeConstraint(QLayout::SetFixedSize);
+            gAskLieux->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
             connect(gAskLieux->OKButton,   SIGNAL(clicked(bool)),  gAskLieux, SLOT(accept()));
             gAskLieux->exec();
             QList<QRadioButton*> listbutt = boxlieux->findChildren<QRadioButton*>();
@@ -1899,7 +1895,6 @@ void RufusAdmin::Slot_ModifMDP()
     gAskMDP    = new UpDialog(this);
     gAskMDP    ->setModal(true);
     gAskMDP    ->move(QPoint(x()+width()/2,y()+height()/2));
-    QVBoxLayout *globallay = dynamic_cast<QVBoxLayout*>(gAskMDP->layout());
     QRegExp  rxMdp           = QRegExp("^[a-zA-Z0-9]{3,15}$");
 
 
@@ -1908,28 +1903,28 @@ void RufusAdmin::Slot_ModifMDP()
     ConfirmMDP->setObjectName(gConfirmMDP);
     ConfirmMDP->setValidator(new QRegExpValidator(rxMdp,this));
     ConfirmMDP->setAlignment(Qt::AlignCenter);
-    globallay->insertWidget(0,ConfirmMDP);
+    gAskMDP->dlglayout()->insertWidget(0,ConfirmMDP);
     UpLabel *labelConfirmMDP = new UpLabel();
     labelConfirmMDP->setText(tr("Confirmez le nouveau mot de passe"));
-    globallay->insertWidget(0,labelConfirmMDP);
+    gAskMDP->dlglayout()->insertWidget(0,labelConfirmMDP);
     UpLineEdit *NouvMDP = new UpLineEdit(gAskMDP);
     NouvMDP->setEchoMode(QLineEdit::Password);
     NouvMDP->setObjectName(gNouvMDP);
     NouvMDP->setValidator(new QRegExpValidator(rxMdp,this));
     NouvMDP->setAlignment(Qt::AlignCenter);
-    globallay->insertWidget(0,NouvMDP);
+    gAskMDP->dlglayout()->insertWidget(0,NouvMDP);
     UpLabel *labelNewMDP = new UpLabel();
     labelNewMDP->setText(tr("Entrez le nouveau mot de passe"));
-    globallay->insertWidget(0,labelNewMDP);
+    gAskMDP->dlglayout()->insertWidget(0,labelNewMDP);
     UpLineEdit *AncMDP = new UpLineEdit(gAskMDP);
     AncMDP->setEchoMode(QLineEdit::Password);
     AncMDP->setAlignment(Qt::AlignCenter);
     AncMDP->setValidator(new QRegExpValidator(rxMdp,this));
     AncMDP->setObjectName(gAncMDP);
-    globallay->insertWidget(0,AncMDP);
+    gAskMDP->dlglayout()->insertWidget(0,AncMDP);
     UpLabel *labelOldMDP = new UpLabel();
     labelOldMDP->setText(tr("Ancien mot de passe"));
-    globallay->insertWidget(0,labelOldMDP);
+    gAskMDP->dlglayout()->insertWidget(0,labelOldMDP);
     AncMDP->setFocus();
 
     gAskMDP->AjouteLayButtons(UpDialog::ButtonOK);
@@ -1939,7 +1934,7 @@ void RufusAdmin::Slot_ModifMDP()
         gAskMDP->setTabOrder(ListTab.at(i), ListTab.at(i+1));
     gAskMDP    ->setWindowTitle(tr("Mot de passe utilisateur"));
     connect(gAskMDP->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreNouvMDPAdmin()));
-    globallay->setSizeConstraint(QLayout::SetFixedSize);
+    gAskMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
 
     gAskMDP->exec();
     ConnectTimerInactive();
@@ -3161,7 +3156,6 @@ void RufusAdmin::ResumeTCPSocketStatut()
 void RufusAdmin::Edit(QString txt, int delaieffacement)
 {
     UpDialog        *gAsk           = new UpDialog(this);
-    QVBoxLayout     *globallay      = dynamic_cast<QVBoxLayout*>(gAsk->layout());
     UpTextEdit      *TxtEdit        = new UpTextEdit(gAsk);
     int x = qApp->desktop()->availableGeometry().width();
     int y = qApp->desktop()->availableGeometry().height();
@@ -3176,7 +3170,7 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
     gAsk->setMaximumWidth(x);
     gAsk->setMaximumHeight(y);
 
-    globallay->insertWidget(0,TxtEdit);
+    gAsk->dlglayout()->insertWidget(0,TxtEdit);
 
     gAsk->AjouteLayButtons();
     connect(gAsk->OKButton,SIGNAL(clicked(bool)),gAsk,SLOT(accept()));

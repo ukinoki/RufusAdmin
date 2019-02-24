@@ -43,7 +43,6 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDial
     ui->CompteFacticePushButton->setVisible(false);
 
     setAttribute(Qt::WA_DeleteOnClose);
-    QVBoxLayout *globallay  = dynamic_cast<QVBoxLayout*>(layout());
 
     widgButtons             = new WidgetButtonFrame(ui->ComptesuptableWidget);
     widgButtons             ->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
@@ -91,8 +90,8 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDial
     hlay        ->addWidget(widgButtons->widgButtonParent());
     hlay        ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding));
     hlay        ->addLayout(vlay);
-    globallay   ->insertLayout(0,hlay);
-    globallay   ->setSizeConstraint(QLayout::SetFixedSize);
+    dlglayout() ->insertLayout(0,hlay);
+    dlglayout() ->setSizeConstraint(QLayout::SetFixedSize);
 
     gMode = Norm;
     ui->DesactiveComptecheckBox->setVisible(true);
