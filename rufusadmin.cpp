@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("24-02-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-03-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -195,7 +195,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     ConnectTimers();
 
-    connect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
     connect(ui->ExportImagespushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ExporteDocs);
     connect(ui->FermepushButton,                SIGNAL(clicked(bool)),              this,   SLOT(Slot_MasqueAppli()));
     connect(ui->GestionBanquespushButton,       SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestionBanques()));
@@ -1774,6 +1773,7 @@ void RufusAdmin::Slot_GestLieux()
     DisconnectTimerInactive();
     dlg_GestionLieux *gestLieux = new dlg_GestionLieux(this);
     gestLieux->exec();
+    ReconstruitListeLieuxExercice();
     ConnectTimerInactive();
 }
 
@@ -2426,20 +2426,28 @@ void RufusAdmin::Slot_VerifVersionBase()
 void RufusAdmin::ReconstruitListeLieuxExercice()
 {
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
+    disconnect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
     ui->EmplacementServeurupComboBox->clear();
     QList<QList<QVariant>> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, ok);
-    for (int i=0; i< listlieux.size(); i++)
-         ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
-    int DefautLieu = 0;
-    QList<QVariant> dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
-    if(!ok)
-        return;
-    if (dftLieu.size()>0)
-        DefautLieu = dftLieu.at(0).toInt();
-    if (dftLieu.size()>0 && DefautLieu>0)
-        ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(DefautLieu));
-    else
-        ui->EmplacementServeurupComboBox->setCurrentIndex(0);
+    if (ok && listlieux.size()>0)
+    {
+        for (int i=0; i< listlieux.size(); i++)
+            ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
+        int DefautLieu = 0;
+        QList<QVariant> dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
+        if(!ok)
+            return;
+        if (dftLieu.size()>0)
+            DefautLieu = dftLieu.at(0).toInt();
+        if (dftLieu.size()>0 && DefautLieu>0)
+            ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(DefautLieu));
+        else
+        {
+            ui->EmplacementServeurupComboBox->setCurrentIndex(0);
+            Slot_EnregistreEmplacementServeur(0);
+        }
+    }
+    connect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
 }
 

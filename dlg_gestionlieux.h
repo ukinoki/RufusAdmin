@@ -67,6 +67,7 @@ private:
     QStandardItemModel      *tabModel;
     WidgetButtonFrame       *widg;
     int                     idLieuAModifier;
+    int                     idlieuserveur;
     bool                    ok;
     void                    CreerLieu();
     void                    ModifLieu();
