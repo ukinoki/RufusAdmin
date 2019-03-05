@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("01-03-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("05-03-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -3003,8 +3003,10 @@ bool RufusAdmin::ImmediateBackup()
         return false;
     }
 
+    Utils::cleanfolder(NomDirStockageImagerie + NOMDIR_IMAGES);
+    Utils::cleanfolder(NomDirStockageImagerie + NOMDIR_FACTURES);
+    Utils::cleanfolder(NomDirStockageImagerie + NOMDIR_VIDEOS);
     Message(tr("Sauvegarde en cours"),3000,false);
-
     QList<UpCheckBox*> listchk = gAskBupRestore->findChildren<UpCheckBox*>();
     bool OKbase     = false;
     bool OKImages   = false;
@@ -3068,6 +3070,13 @@ bool RufusAdmin::ImmediateBackup()
             Message(tr("Fichiers d'imagerie restaurés!"), 3000, false);
         }
     }
+    if (OKImages)
+    {
+        Utils::cleanfolder(NomDirDestination + NOMDIR_IMAGES);
+        Utils::cleanfolder(NomDirDestination + NOMDIR_FACTURES);
+    }
+    if (OKVideos)
+        Utils::cleanfolder(NomDirDestination + NOMDIR_VIDEOS);
     ConnectTimerInactive();
     UpMessageBox::Watch(this, tr("Sauvegarde terminée"));
     return true;
