@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("05-03-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("06-03-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1186,7 +1186,6 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         anc         = gAskMDP->findChild<UpLineEdit*>(gAncMDP)->text();
         nouv        = gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->text();
         confirm     = gAskMDP->findChild<UpLineEdit*>(gConfirmMDP)->text();
-        QRegExp  rxMdp           = QRegExp("^[a-zA-Z0-9]{3,15}$");
 
         if (anc == "")
         {
@@ -1204,7 +1203,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
             msgbox.exec();
             return;
         }
-        if (!rxMdp.exactMatch(nouv) || nouv == "")
+        if (!Utils::rgx_AlphaNumeric_5_12.exactMatch(nouv) || nouv == "")
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le nouveau mot de passe n'est pas conforme\n(au moins 3 caractères - chiffres ou lettres non accentuées -\n"));

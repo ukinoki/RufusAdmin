@@ -279,14 +279,14 @@ void dlg_gestionusers::CreerUser()
     Line2                       ->setObjectName(gMDPupLineEdit);
     Line3                       ->setObjectName(gConfirmMDPupLineEdit);
     Line                        ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15));
-    Line2                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_8));
-    Line3                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_8));
+    Line2                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12));
+    Line3                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12));
     Line                        ->setAlignment(Qt::AlignCenter);
     Line2                       ->setAlignment(Qt::AlignCenter);
     Line3                       ->setAlignment(Qt::AlignCenter);
     Line                        ->setMaxLength(15);
-    Line2                       ->setMaxLength(8);
-    Line3                       ->setMaxLength(8);
+    Line2                       ->setMaxLength(12);
+    Line3                       ->setMaxLength(12);
     Line                        ->setFixedHeight(20);
     Line2                       ->setFixedHeight(20);
     Line3                       ->setFixedHeight(20);
@@ -301,7 +301,7 @@ void dlg_gestionusers::CreerUser()
 
     lay                         ->setSpacing(2);
 
-    label                       ->setText(tr("Choisissez un login pour le nouvel utilisateur\n- maxi 15 caractères -\n- pas de caractères spéciaux ou accentués -"));
+    label                       ->setText(tr("Choisissez un login pour le nouvel utilisateur\n- mini 5 maxi 15 caractères -\n- pas de caractères spéciaux ou accentués -"));
     label2                      ->setText(tr("Choisissez un mot de passe\n- mini 5 maxi 8 caractères -\n- pas de caractères spéciaux ou accentués -"));
     label3                      ->setText(tr("Confirmez le mot de passe"));
 
@@ -396,6 +396,7 @@ void dlg_gestionusers::Slot_EnregistreNouvMDP()
         db->StandardSQL("set password for '" + OtherUser->getLogin() + "'@'" + Domaine + "%' = '" + nouv + "'");
         db->StandardSQL("set password for '" + OtherUser->getLogin() + "SSL'@'%' = '" + nouv + "'");
         ui->MDPuplineEdit->setText(nouv);
+        OtherUser->setPassword(nouv);
         gAskMDP->done(0);
         msgbox.exec();
     }
@@ -906,8 +907,9 @@ void dlg_gestionusers::Slot_ModifMDP()
     UpLineEdit *ConfirmMDP = new UpLineEdit(gAskMDP);
     ConfirmMDP->setEchoMode(QLineEdit::Password);
     ConfirmMDP->setObjectName(gConfirmMDP);
-    ConfirmMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15,this));
+    ConfirmMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12,this));
     ConfirmMDP->setAlignment(Qt::AlignCenter);
+    ConfirmMDP->setMaxLength(12);
     gAskMDP->dlglayout()->insertWidget(0,ConfirmMDP);
     UpLabel *labelConfirmMDP = new UpLabel();
     labelConfirmMDP->setText(tr("Confirmez le nouveau mot de passe"));
@@ -915,8 +917,9 @@ void dlg_gestionusers::Slot_ModifMDP()
     UpLineEdit *NouvMDP = new UpLineEdit(gAskMDP);
     NouvMDP->setEchoMode(QLineEdit::Password);
     NouvMDP->setObjectName(gNouvMDP);
-    NouvMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15,this));
+    NouvMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12,this));
     NouvMDP->setAlignment(Qt::AlignCenter);
+    NouvMDP->setMaxLength(12);
     gAskMDP->dlglayout()->insertWidget(0,NouvMDP);
     UpLabel *labelNewMDP = new UpLabel();
     labelNewMDP->setText(tr("Entrez le nouveau mot de passe"));
@@ -924,8 +927,9 @@ void dlg_gestionusers::Slot_ModifMDP()
     UpLineEdit *AncMDP = new UpLineEdit(gAskMDP);
     AncMDP->setEchoMode(QLineEdit::Password);
     AncMDP->setAlignment(Qt::AlignCenter);
-    AncMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15,this));
+    AncMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_3_12,this));
     AncMDP->setObjectName(gAncMDP);
+    AncMDP->setMaxLength(12);
     gAskMDP->dlglayout()->insertWidget(0,AncMDP);
     UpLabel *labelOldMDP = new UpLabel();
     labelOldMDP->setText(tr("Ancien mot de passe"));
