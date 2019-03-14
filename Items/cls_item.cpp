@@ -134,6 +134,11 @@ void Item::setDataInt(QJsonObject data, QString key, int &prop)
     if( data.contains(key) )
         prop = data[key].toInt();
 }
+void Item::setDataLongLongInt(QJsonObject data, QString key, qlonglong &prop)
+{
+    if( data.contains(key) )
+        prop = data[key].toVariant().toLongLong();
+}
 void Item::setDataDouble(QJsonObject data, QString key, double &prop)
 {
     if( data.contains(key) )
@@ -159,5 +164,12 @@ void Item::setDataDate(QJsonObject data, QString key, QDate &prop)
     if( data.contains(key) )
     {
         prop = QDate::fromString(data[key].toString(),"yyyy-MM-dd");
+    }
+}
+void Item::setDataByteArray(QJsonObject data, QString key, QByteArray &prop)
+{
+    if( data.contains(key) )
+    {
+        prop = data[key].toVariant().toByteArray();
     }
 }
