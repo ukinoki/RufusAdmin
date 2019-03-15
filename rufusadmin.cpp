@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("14-03-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("15-03-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -93,18 +93,18 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     idlieuExercice = DetermineLieuExercice();
     gNomLieuExercice = "";
-    QList<QList<QVariant>> listlieux = db->StandardSelectSQL("select nomlieu from " NOM_TABLE_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), ok);
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select nomlieu from " NOM_TABLE_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), ok);
     gNomLieuExercice = listlieux.at(0).at(0).toString();
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + gNomLieuExercice + "</b></font> ");
 
     //recherche de l'idUser du compte AdminDocs
     idAdminDocs = 0;
     QString req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
-    QList<QList<QVariant>> listusr = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listusr = db->StandardSelectSQL(req, ok);
     if (listusr.size()==0)
     {
         req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserNom = '" NOM_ADMINISTRATEURDOCS "'";
-        QList<QList<QVariant>> listusers = db->StandardSelectSQL(req, ok);
+        QList<QVariantList> listusers = db->StandardSelectSQL(req, ok);
         if (listusers.size()>0)
         {
             db->StandardSQL("update " NOM_TABLE_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'");
@@ -113,7 +113,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
             db->StandardSQL("insert into " NOM_TABLE_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')");
         req = "select iduser from " NOM_TABLE_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
         listusr = db->StandardSelectSQL(req, ok);
-        QList<QList<QVariant>> listmdp = db->StandardSelectSQL("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,ok);
+        QList<QVariantList> listmdp = db->StandardSelectSQL("select mdpadmin from " NOM_TABLE_PARAMSYSTEME,ok);
         if (listmdp.at(0).at(0).toString() == "")
             db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set mdpadmin = '" + db->getDataBase().password() + "'");
     }
@@ -126,7 +126,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
                    " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                    " and idlieu = " + QString::number(idlieuExercice) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
-    QList<QList<QVariant>> listusr2 = db->StandardSelectSQL(reqp, ok);
+    QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, ok);
     if (listusr2.size()>0)
     {
         UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + listusr2.at(0).at(0).toString().remove(" - " NOM_ADMINISTRATEURDOCS), tr("Sortie du programme"));
@@ -169,7 +169,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Slot_VerifPosteImport();
     Slot_VerifVersionBase();
     Slot_CalcExporteDocs();
-    QList<QList<QVariant>> listdate = db->StandardSelectSQL("select max(creele) from " NOM_TABLE_MESSAGES, ok);
+    QList<QVariantList> listdate = db->StandardSelectSQL("select max(creele) from " NOM_TABLE_MESSAGES, ok);
     if (listdate.size()==0)
         gDateDernierMessage = QDateTime::currentDateTime();
     else
@@ -261,7 +261,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Remplir_Table();
     if (gMode == Poste)
     {
-        QList<QList<QVariant>> listdir = db->StandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
+        QList<QVariantList> listdir = db->StandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
         QString NomDirStockageImagerie = listdir.at(0).at(0).toString();
         gsettingsIni->setValue("DossierImagerie",NomDirStockageImagerie);
         setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + gNomLieuExercice);
@@ -284,7 +284,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ReconstruitListeLieuxExercice();
 
     QString VerifBasereq = "select VersionBase from " NOM_TABLE_PARAMSYSTEME;
-    QList<QList<QVariant>> listversion = db->StandardSelectSQL(VerifBasereq, ok);
+    QList<QVariantList> listversion = db->StandardSelectSQL(VerifBasereq, ok);
     if (!ok || listversion.size()==0)
         ui->VersionBaselabel->setText(tr("Version de la base") + "\t<font color=\"red\"><b>" + tr("inconnue") + "</b></font>");
     else
@@ -298,7 +298,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (gMode == Poste)
     {
         QString reqBkup = "select LundiBkup, MardiBkup, MercrediBkup, JeudiBkup, VendrediBkup, SamediBkup, DimancheBkup, HeureBkup, DirBkup from " NOM_TABLE_PARAMSYSTEME;
-        QList<QList<QVariant>> listBKup = db->StandardSelectSQL(reqBkup, ok);
+        QList<QVariantList> listBKup = db->StandardSelectSQL(reqBkup, ok);
         QString DirBkup = listBKup.at(0).at(8).toString();
         if (QDir(DirBkup).exists())
             ui->DirBackupuplineEdit->setText(DirBkup);
@@ -359,7 +359,7 @@ void RufusAdmin::ListeAppareils()
           " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(idlieuExercice);
     //qDebug()<< req;
     bool ok;
-    QList<QList<QVariant>> listdocs = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listdocs = db->StandardSelectSQL(req, ok);
     if (listdocs.size()>0)
         ImportDocsExtThread->RapatrieDocumentsThread(listdocs);
 }
@@ -758,7 +758,7 @@ double RufusAdmin::CalcBaseSize()
                       " or table_schema = 'rufus'"
                       " GROUP BY table_schema)"
                       " as bdd";
-    QList<QVariant> basedata = db->getFirstRecordFromStandardSelectSQL(sizereq,ok);
+    QVariantList basedata = db->getFirstRecordFromStandardSelectSQL(sizereq,ok);
     if (ok && basedata.size()>0)
         basesize = basedata.at(0).toDouble();
     return basesize;
@@ -784,7 +784,7 @@ int RufusAdmin::DetermineLieuExercice()
     {
         QString lieuxreq = "select idLieu, NomLieu from " NOM_TABLE_LIEUXEXERCICE
                            " where idLieu <> (select idLieuParDefaut from " NOM_TABLE_PARAMSYSTEME ")";
-        QList<QList<QVariant>> listlieux = db->StandardSelectSQL(lieuxreq, ok);
+        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, ok);
         if (listlieux.size()==1)
             idLieu = listlieux.at(0).at(0).toInt();
         else if (listlieux.size()>1)
@@ -853,12 +853,12 @@ int RufusAdmin::DetermineLieuExercice()
     else
     {
         QString lieuxreq = "select idLieuParDefaut from " NOM_TABLE_PARAMSYSTEME;
-        QList<QList<QVariant>> listlieux = db->StandardSelectSQL(lieuxreq, ok);
+        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, ok);
         if (listlieux.at(0).at(0).toInt()>=1)
             idLieu = listlieux.at(0).at(0).toInt();
         else
         {
-            QList<QList<QVariant>> listliux = db->StandardSelectSQL("select min(idlieu) from " NOM_TABLE_LIEUXEXERCICE, ok);
+            QList<QVariantList> listliux = db->StandardSelectSQL("select min(idlieu) from " NOM_TABLE_LIEUXEXERCICE, ok);
             idLieu = listliux.at(0).at(0).toInt();
             db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set idLieuParDefaut = " + listliux.at(0).at(0).toString());
         }
@@ -894,7 +894,7 @@ void RufusAdmin::SupprAppareil()
     QString req = " select list.TitreExamen, list.NomAppareil from " NOM_TABLE_LISTEAPPAREILS " list, " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon"
                   " where list.idAppareil = appcon.idappareil"
                   " and list.idappareil = " + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text();
-    QList<QList<QVariant>> listapps = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listapps = db->StandardSelectSQL(req, ok);
     if (!ok)
         return;
     if (listapps.size()==0)
@@ -962,7 +962,7 @@ void RufusAdmin::Remplir_Table()
               " where list.idappareil = appcon.idappareil"
               " and idLieu = " + QString::number(idlieuExercice) +
               " ORDER BY TitreExamen";
-    QList<QList<QVariant>> listapps = db->StandardSelectSQL(Remplirtablerequete, ok);
+    QList<QVariantList> listapps = db->StandardSelectSQL(Remplirtablerequete, ok);
     if (!ok)
         return;
     ui->AppareilsConnectesupTableWidget->setRowCount(listapps.size());
@@ -1024,7 +1024,7 @@ void RufusAdmin::Remplir_Table()
     glistAppareils.clear();
     QString req = "select NomAppareil from " NOM_TABLE_LISTEAPPAREILS
                   " where idAppareil not in (select idAppareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(idlieuExercice) + ")";
-    QList<QList<QVariant>> listnomsapps = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listnomsapps = db->StandardSelectSQL(req, ok);
     if (listnomsapps.size() == 0)
         widgAppareils->plusBouton->setEnabled(false);
     else
@@ -1080,7 +1080,7 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
     QString req = "select TitreExamen, NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->getId());
     QString exam = "";
-    QList<QVariant> examdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
+    QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
     if (!ok)
         return;
     if (examdata.size()>0)
@@ -1157,7 +1157,7 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
     id = ui->AppareilsConnectesupTableWidget->item(line->getRowTable(),0)->text();
     QString req = "select NomAppareil from " NOM_TABLE_LISTEAPPAREILS " where idAppareil = " + id;
     QString exam = "";
-    QList<QVariant> examdata = db->getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver le nom de l'appareil"));
+    QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver le nom de l'appareil"));
     if (!ok)
         return;
     if (examdata.size()>0)
@@ -1337,7 +1337,7 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " NOM_TABLE_IMPRESSIONS " where jpg is not null";
     //qDebug() << req;
-    QList<QList<QVariant>> listexportjpg = db->StandardSelectSQL(req, ok );
+    QList<QVariantList> listexportjpg = db->StandardSelectSQL(req, ok );
     if (ok)
         for (int i=0; i<listexportjpg.size(); i++)
         {
@@ -1420,7 +1420,7 @@ void RufusAdmin::ExporteDocs()
     //              LES PDF
     //-----------------------------------------------------------------------------------------------------------------------------------------
     QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " NOM_TABLE_IMPRESSIONS " where pdf is not null";
-    QList<QList<QVariant>> listexportpdf = db->StandardSelectSQL(reqpdf, ok );
+    QList<QVariantList> listexportpdf = db->StandardSelectSQL(reqpdf, ok );
     if (ok)
         for (int i=0; i<listexportpdf.size(); i++)
         {
@@ -1537,7 +1537,7 @@ void RufusAdmin::ExporteDocs()
     req = "SELECT idFacture, DateFacture, LienFichier, Intitule, Echeancier, idDepense, jpg FROM " NOM_TABLE_FACTURES
             " where jpg is not null";
     //qDebug() << req;
-    QList<QList<QVariant>> listexportjpgfact = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listexportjpgfact = db->StandardSelectSQL(req, ok);
     if (ok)
         for (int i=0; i<listexportjpgfact.size(); i++)
         {
@@ -1562,7 +1562,7 @@ void RufusAdmin::ExporteDocs()
                     + listexportjpgfact.at(i).at(3).toString().replace("/",".") + "_"
                     + datetransfer.toString("yyyyMMdd");
             // on recherche le user à l'origine de cette facture
-            QList<QList<QVariant>> Listeusr;
+            QList<QVariantList> Listeusr;
             if (listexportjpgfact.at(i).at(4).toInt()==1)          // c'est un échéancier
                 req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
                                                                                                               " where dep.idUser  = usr.idUser"
@@ -1646,7 +1646,7 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     reqpdf = "SELECT idFacture, DateFacture, LienFichier, Intitule, Echeancier, idDepense, pdf FROM " NOM_TABLE_FACTURES
             " where pdf is not null";
-    QList<QList<QVariant>> listexportpdffact = db->StandardSelectSQL(reqpdf, ok );
+    QList<QVariantList> listexportpdffact = db->StandardSelectSQL(reqpdf, ok );
     if (ok)
         for (int i=0; i<listexportpdffact.size(); i++)
         {
@@ -1667,7 +1667,7 @@ void RufusAdmin::ExporteDocs()
                     + listexportpdffact.at(i).at(3).toString().replace("/",".") + "_"
                     + datetransfer.toString("yyyyMMdd");
             // on recherche le user à l'origine de cette facture
-            QList<QList<QVariant>> Listeusr;
+            QList<QVariantList> Listeusr;
             if (listexportpdffact.at(i).at(4).toInt()==1)          // c'est un échéancier
                 req = "select dep.idUser, UserLogin from " NOM_TABLE_DEPENSES " dep, " NOM_TABLE_UTILISATEURS " usr"
                                                                                                               " where dep.idUser  = usr.idUser"
@@ -1837,7 +1837,7 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
 {
     QString macadress =  Utils::getMACAdress() + " - " + NOM_ADMINISTRATEURDOCS;
     QString MAJConnexionRequete;
-    QList<QList<QVariant>> listusers = db->StandardSelectSQL("select iduser from " NOM_TABLE_USERSCONNECTES
+    QList<QVariantList> listusers = db->StandardSelectSQL("select iduser from " NOM_TABLE_USERSCONNECTES
                                                              " where MACAdressePosteConnecte = '" + macadress + "'"
                                                              " and idlieu = " + QString::number(idlieuExercice),ok);
     if (listusers.size()>0)
@@ -1857,7 +1857,7 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
     db->StandardSQL(MAJConnexionRequete);
 
     // Deconnecter les users débranchés accidentellement
-    QList<QList<QVariant>> listoldusers = db->StandardSelectSQL("select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES
+    QList<QVariantList> listoldusers = db->StandardSelectSQL("select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " NOM_TABLE_USERSCONNECTES
                                                              " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60", ok);
 
     if (listoldusers.size() > 0)
@@ -1942,7 +1942,7 @@ void RufusAdmin::Slot_ModifMDP()
 void RufusAdmin::Slot_RestaureBase()
 {
     QString req = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QList<QList<QVariant>> listpostes = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listpostes = db->StandardSelectSQL(req, ok);
     if (listpostes.size() > 0)
     {
         UpMessageBox::Information(this, tr("Autres postes connectés!"),
@@ -2011,7 +2011,7 @@ void RufusAdmin::Slot_RestaureBase()
             OKVideos = true;
 
     QString NomDirStockageImagerie("");
-    QList<QVariant> dirstock = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
+    QVariantList dirstock = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
     if (ok && dirstock.size()>0)
         NomDirStockageImagerie = dirstock.at(0).toString();
     if (!ok || !QDir(NomDirStockageImagerie).exists())
@@ -2273,7 +2273,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
 
     /* Supprimer les documents en attente de suppression*/
     QString req = "Select filepath from " NOM_TABLE_DOCSASUPPRIMER;
-    QList<QList<QVariant>> ListeDocs = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> ListeDocs = db->StandardSelectSQL(req, ok);
     for (int i=0; i<ListeDocs.size(); i++)
     {
         QString CheminFichier = NomDirStockageImagerie + ListeDocs.at(i).at(0).toString();
@@ -2293,7 +2293,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
         return;
     }
     req = "select LienFichier from " NOM_TABLE_FACTURESASUPPRIMER;
-    QList<QList<QVariant>> ListeFactures = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> ListeFactures = db->StandardSelectSQL(req, ok);
     for (int i=0; i<ListeFactures.size(); i++)
     {
         QString lienfichier = ListeFactures.at(i).at(0).toString();
@@ -2367,10 +2367,10 @@ void RufusAdmin::Slot_VerifPosteImport()
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
     QString req = "SELECT name FROM mysql.proc p WHERE db = '" NOM_BASE_CONSULTS "' AND name = '" NOM_POSTEIMPORTDOCS "'";
-    QList<QVariant> imptdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
+    QVariantList imptdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
     if (ok && imptdata.size()>0)
     {
-        QList<QVariant> procdata = db->getFirstRecordFromStandardSelectSQL("CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS, ok);
+        QVariantList procdata = db->getFirstRecordFromStandardSelectSQL("CALL " NOM_BASE_CONSULTS "." NOM_POSTEIMPORTDOCS, ok);
         if(!ok || procdata.size()==0)
         {
             ui->PosteImportDocslabel->setText(tr("Pas de poste paramétré"));
@@ -2406,7 +2406,7 @@ void RufusAdmin::Slot_VerifPosteImport()
 void RufusAdmin::Slot_VerifVersionBase()
 {
     int version = VERSION_BASE;
-    QList<QVariant> versiondata = db->getFirstRecordFromStandardSelectSQL("select versionbase from " NOM_TABLE_PARAMSYSTEME, ok);
+    QVariantList versiondata = db->getFirstRecordFromStandardSelectSQL("select versionbase from " NOM_TABLE_PARAMSYSTEME, ok);
     if (!ok)
         return;
     if (versiondata.size()>0)
@@ -2427,13 +2427,13 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
     disconnect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
     ui->EmplacementServeurupComboBox->clear();
-    QList<QList<QVariant>> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, ok);
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " NOM_TABLE_LIEUXEXERCICE, ok);
     if (ok && listlieux.size()>0)
     {
         for (int i=0; i< listlieux.size(); i++)
             ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
         int DefautLieu = 0;
-        QList<QVariant> dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
+        QVariantList dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
         if(!ok)
             return;
         if (dftLieu.size()>0)
@@ -2454,7 +2454,7 @@ bool RufusAdmin::VerifBase()
 {
     int Versionencours  = 37; //correspond aux premières versions de MAJ de la base
     int Version         = VERSION_BASE;
-    QList<QVariant> Versionenr = db->getFirstRecordFromStandardSelectSQL("select VersionBase from " NOM_TABLE_PARAMSYSTEME,  ok);
+    QVariantList Versionenr = db->getFirstRecordFromStandardSelectSQL("select VersionBase from " NOM_TABLE_PARAMSYSTEME,  ok);
     bool b              = false;
     if (!ok || Versionenr.size()==0)
         b = true;
@@ -2640,7 +2640,7 @@ void RufusAdmin::ModifParamBackup()
     db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
     // ENREGISTREMENT DES PARAMETRES DE SAUVEGARDE DANS /Documents/Rufus/RufusScriptBackup.sh
     QString NomDirStockageImagerie("");
-    QList<QVariant> dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
+    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " NOM_TABLE_PARAMSYSTEME, ok);
     if (ok && dirdata.size()>0)
         NomDirStockageImagerie = dirdata.at(0).toString();
 
@@ -2951,7 +2951,7 @@ void RufusAdmin::Slot_EffacePrgSauvegarde()
 bool RufusAdmin::ImmediateBackup()
 {
     QString req = "select NomPosteConnecte from " NOM_TABLE_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QList<QList<QVariant>> listpostes = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listpostes = db->StandardSelectSQL(req, ok);
     if (listpostes.size() > 0)
     {
         UpMessageBox::Information(this, tr("Autres postes connectés!"),
@@ -2964,7 +2964,7 @@ bool RufusAdmin::ImmediateBackup()
 
     QString NomDirStockageImagerie("");
     QString NomDirDestination ("");
-    QList<QVariant> dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, ok);
+    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " NOM_TABLE_PARAMSYSTEME, ok);
     if (ok && dirdata.size()>0)
     {
         NomDirStockageImagerie = dirdata.at(0).toString();
@@ -3086,7 +3086,7 @@ bool RufusAdmin::ImmediateBackup()
     ------------------------------------------------------------------------------------------------------------------------------------*/
 int RufusAdmin::GetflagCorrespdts()
 {
-    QList<QVariant> flagrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMG from " NOM_TABLE_FLAGS, ok);
+    QVariantList flagrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMG from " NOM_TABLE_FLAGS, ok);
     if (ok && flagrcd.size() > 0)
         return flagrcd.at(0).toInt();
     return 0;
@@ -3097,7 +3097,7 @@ int RufusAdmin::GetflagCorrespdts()
     ------------------------------------------------------------------------------------------------------------------------------------*/
 int RufusAdmin::GetflagMessages()
 {
-    QList<QVariant> flagmsgrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMessages from " NOM_TABLE_FLAGS, ok);
+    QVariantList flagmsgrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMessages from " NOM_TABLE_FLAGS, ok);
     if (ok && flagmsgrcd.size() > 0)
         return flagmsgrcd.at(0).toInt();
     return 0;
@@ -3108,7 +3108,7 @@ int RufusAdmin::GetflagMessages()
     ------------------------------------------------------------------------------------------------------------------------------------*/
 int RufusAdmin::GetflagSalDat()
 {
-    QList<QVariant> flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
+    QVariantList flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
     if (ok && flagsaldatrcd.size() > 0)
         return flagsaldatrcd.at(0).toInt();
     return 0;
@@ -3216,11 +3216,11 @@ void RufusAdmin::VerifVerrouDossier()
     // on donne le statut "arrivé" aux patients en salle d'attente dont le iduserencourssexam n'est plus present sur ce poste examen dans la liste des users connectes
     QString req = "select iduserencoursexam, posteexamen, idpat from " NOM_TABLE_SALLEDATTENTE " where statut like '" ENCOURSEXAMEN "%'";
     //qDebug() << req;
-    QList<QList<QVariant>> listuser = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listuser = db->StandardSelectSQL(req, ok);
     for (int i=0; i<listuser.size(); i++)
     {
         req = "select iduser, nomposteconnecte from " NOM_TABLE_USERSCONNECTES " where iduser = " + listuser.at(i).at(0).toString()  + " and nomposteconnecte = '" + listuser.at(i).at(1).toString() + "'";
-        QList<QVariant> userconnect = db->getFirstRecordFromStandardSelectSQL(req, ok);
+        QVariantList userconnect = db->getFirstRecordFromStandardSelectSQL(req, ok);
         if (userconnect.size()==0)
         {
             req = "update " NOM_TABLE_SALLEDATTENTE " set Statut = '" ARRIVE "', posteexamen = null, iduserencoursexam = null where idpat = " + listuser.at(i).at(2).toString();
@@ -3241,7 +3241,7 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);                      // le slot verifverroudossier a déconnecté un tutilisateur et modifié la salle d'attente si des patients étaient verrouillés
 
     /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
-    QList<QVariant> flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
+    QVariantList flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
     QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagSalDat) VALUES (1)";
     int a = 0;
     if (ok && flagsaldatrcd.size()>(0)) {
@@ -3326,7 +3326,7 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
                 " where Creele > '" + gDateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
                 + "' and asupprimer is null"
                 + " order by creele";
-        QList<QList<QVariant>> listmsg = db->StandardSelectSQL(req, ok);
+        QList<QVariantList> listmsg = db->StandardSelectSQL(req, ok);
         int TotalNvxMessages = listmsg.size();
         QHash<int,int> mapmessages;
         if (TotalNvxMessages>0)

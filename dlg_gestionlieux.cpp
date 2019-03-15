@@ -266,7 +266,7 @@ void dlg_GestionLieux::ModifLieu()
     QString req = "select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " NOM_TABLE_LIEUXEXERCICE
                   " where idLieu = " + QString::number(idLieuAModifier);
     //qDebug() << req;
-    QList<QVariant> lieurcd= db->getFirstRecordFromStandardSelectSQL(req,ok);
+    QVariantList lieurcd= db->getFirstRecordFromStandardSelectSQL(req,ok);
     if (lieurcd.size()==0 || !ok)
         return;
     if (lieurcd.at(1).toString() != "")
@@ -366,7 +366,7 @@ void dlg_GestionLieux::ReconstruitModel()
     QStandardItem *pitem7;
     QStandardItem *pitem8;
 
-    QList<QList<QVariant>> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " NOM_TABLE_LIEUXEXERCICE, ok);
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " NOM_TABLE_LIEUXEXERCICE, ok);
     for (int i=0; i<listlieux.size(); i++)
     {
         pitem0 = new QStandardItem(listlieux.at(i).at(0).toString());
@@ -428,7 +428,7 @@ void dlg_GestionLieux::ReconstruitModel()
     tabLM   ->setFixedWidth(larg+2);
     bool ok;
     idlieuserveur = -1;
-    QList<QVariant> serveurLieudata = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
+    QVariantList serveurLieudata = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
     if (ok && serveurLieudata.size()>0)
         idlieuserveur = serveurLieudata.at(0).toInt();
 }

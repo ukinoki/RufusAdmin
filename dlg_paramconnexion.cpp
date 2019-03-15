@@ -110,7 +110,7 @@ bool dlg_paramconnexion::TestConnexion()
 
     QString req = "show grants for '" + Login + (db->getBase() == "BDD_DISTANT"? "SSL" : "")  + "'@'" + Client + "'";
     bool ok;
-    QList<QVariant> grantsdata = db->getFirstRecordFromStandardSelectSQL(req,ok);
+    QVariantList grantsdata = db->getFirstRecordFromStandardSelectSQL(req,ok);
 
     if (!ok || grantsdata.size()==0)
     {

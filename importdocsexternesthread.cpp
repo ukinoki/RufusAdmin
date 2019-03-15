@@ -32,7 +32,7 @@ ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool 
     thread          ->start();
 }
 
-void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > listdocs)     // INCORPORATION DES FICHIERS IMAGE DANS LA BASE  =====
+void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > listdocs)     // INCORPORATION DES FICHIERS IMAGE DANS LA BASE  =====
 {
     /* req = "select distinct list.TitreExamen, list.NomAPPareil from " NOM_TABLE_APPAREILSCONNECTESCENTRE " appcon, " NOM_TABLE_LISTEAPPAREILS " list"
           " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(idlieuExercice);
@@ -380,7 +380,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                                       " and patprenom like '" + prenom  + "'"
                                       " and patDDN = '" + annee + "-" + mois + "-" + jour + "'";
                     //qDebug() << req;
-                    QList<QVariant> patlst = db->getFirstRecordFromStandardSelectSQL(req, ok);
+                    QVariantList patlst = db->getFirstRecordFromStandardSelectSQL(req, ok);
                     if (!ok || patlst.size()==0)
                     {
                         commentechec =  tr("Impossible d'ouvrir le fichier");
@@ -448,7 +448,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QList<QVariant> > l
                     continue;
                 }
                 QString identpat;
-                QList<QVariant> patdata = db->getFirstRecordFromStandardSelectSQL("select patnom, patprenom from " NOM_TABLE_PATIENTS " where idpat = " + idPatient, ok);
+                QVariantList patdata = db->getFirstRecordFromStandardSelectSQL("select patnom, patprenom from " NOM_TABLE_PATIENTS " where idpat = " + idPatient, ok);
                 if (!ok || patdata.size()==0)
                 {
                     commentechec =  tr("Pas de patient pour cet idPatient") + " -> " + idPatient;
