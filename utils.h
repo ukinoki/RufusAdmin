@@ -39,9 +39,9 @@ class Utils
 public:
     static QRegExp const rgx_rx;
     static QRegExp const rgx_AlphaNumeric;
+    static QRegExp const rgx_AlphaNumeric_3_12;
     static QRegExp const rgx_AlphaNumeric_5_12;
     static QRegExp const rgx_AlphaNumeric_5_15;
-    static QRegExp const rgx_AlphaNumeric_3_12;
     static QRegExp const rgx_MajusculeSeul;
 
     static QRegExp const rgx_IPV4;
@@ -88,6 +88,8 @@ public:
     static QString                  CalculeFormule(QMap<QString,QVariant>  Donnees,
                                                   QString Cote);                      // comme son nom l'indique
     static QString                  PrefixePlus(QString);                          // convertit en QString signé + ou - les valeurs QDouble de dioptries
+    static QStringList              DecomposeScriptSQL(QString nomficscript);
+
 };
 
 #endif // UTILS_H
