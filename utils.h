@@ -69,6 +69,7 @@ public:
     static void retirelignevidehtml(QString &txthtml);
     static void supprimeAncre(QString &text, QString ancredebut, QString ancrefin = "");
 
+    static QSize                    CalcSize(QString txt, QFont fm = qApp->font());
     static QString                  retirecaracteresaccentues(QString nom);
     static QString                  trim(QString text, bool end=true, bool removereturnend = false);
     static QString                  capitilize(QString text);
@@ -76,6 +77,7 @@ public:
     static QMap<QString, double>    dir_size(const QString DirPath);
     static QString                  getExpressionSize(double size);
     static qint32                   ArrayToInt(QByteArray source);
+    static int                      MaxInt()    {return std::numeric_limits<int>::max();}
     static QByteArray               IntToArray(int source);
     static QString                  getIpAdress();
     static QString                  getMACAdress();

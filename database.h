@@ -111,7 +111,7 @@ public:
     bool                    InsertSQLByBinds(QString nomtable,  QHash<QString, QVariant>, QString errormsg="");
     bool                    StandardSQL(QString req , QString errormsg="");
     QList<QVariantList>     StandardSelectSQL(QString req, bool &ok, QString errormsg="");  // la variable ok sert à pointer les erreurs sur requête pour les différencier des réponses vides
-    QVariantList            getFirstRecordFromStandardSelectSQL(QString req, bool &ok, QString errormsg="");  // la variable ok sert à pointer les erreurs sur requête pour les différencier des réponses vides
+    QVariantList           getFirstRecordFromStandardSelectSQL(QString req, bool &ok, QString errormsg="");  // la variable ok sert à pointer les erreurs sur requête pour les différencier des réponses vides
     /*
      * Users
     */
@@ -166,7 +166,6 @@ public:
     /*
      * Cotations
     */
-    QList<Cotation*> loadCotations();
     QStringList loadTypesCotations();
     QList<Cotation*> loadCotationsByUser(int iduser);
 

@@ -55,7 +55,6 @@ void Cotation::setData(QJsonObject data)
 Cotations::Cotations()
 {
     m_cotations = new QMap<int, Cotation*>();
-    m_cotationsbyuser = new QMap<int, Cotation*>();
 }
 
 QMap<int, Cotation *> *Cotations::cotations() const
@@ -63,43 +62,17 @@ QMap<int, Cotation *> *Cotations::cotations() const
     return m_cotations;
 }
 
-QMap<int, Cotation *> *Cotations::cotationsbyuser() const
-{
-    return m_cotationsbyuser;
-}
-
-void Cotations::addCotation(Cotation *cotation)
+void Cotations::addCotationByUser(Cotation *cotation)
 {
     if( m_cotations->contains(cotation->id()) )
         return;
     m_cotations->insert(cotation->id(), cotation);
 }
 
-void Cotations::addCotationByUser(Cotation *cotation)
+void Cotations::clearAll()
 {
-    if( m_cotationsbyuser->contains(cotation->id()) )
-        return;
-    m_cotationsbyuser->insert(cotation->id(), cotation);
+    for( QMap<int, Cotation*>::const_iterator itcot = m_cotations->constBegin(); itcot != m_cotations->constEnd(); ++itcot)
+        delete itcot.value();
+    m_cotations->clear();
 }
 
-void Cotations::addCotation(QList<Cotation*> listcotations)
-{
-    QList<Cotation*>::const_iterator it;
-    for( it = listcotations.constBegin(); it != listcotations.constEnd(); ++it )
-        addCotation( *it );
-}
-
-void Cotations::removeCotation(Cotation* cotation)
-{
-    if (cotation == Q_NULLPTR)
-        return;
-    m_cotations->remove(cotation->id());
-}
-
-Cotation* Cotations::getCotationById(int id)
-{
-    QMap<int, Cotation*>::const_iterator itcot = m_cotations->find(id);
-    if( itcot == m_cotations->constEnd() )
-        return Q_NULLPTR;
-    return itcot.value();
-}
