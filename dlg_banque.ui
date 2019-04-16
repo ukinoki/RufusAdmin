@@ -212,19 +212,22 @@ border-radius: 5px;
       <height>21</height>
      </rect>
     </property>
+    <property name="maxLength">
+     <number>45</number>
+    </property>
    </widget>
   </widget>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>UpSmallButton</class>
-   <extends>QPushButton</extends>
-   <header>upsmallbutton.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpLineEdit</class>
    <extends>QLineEdit</extends>
    <header>uplineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpSmallButton</class>
+   <extends>QPushButton</extends>
+   <header>upsmallbutton.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -84,7 +84,8 @@ int Acte::idUser() const
 {
     return m_idUser;
 }
-
+int Acte::idParent() const        { return m_idUserParent; }
+int Acte::idComptable() const     { return m_idUserComptable; }
 
 Acte::Acte(QObject *parent) : Item(parent)
 {
@@ -108,6 +109,8 @@ void Acte::setData(QJsonObject data)
     setDataInt(data, "idCreatedBy", m_idCreatedBy);
     setDataInt(data, "idPatient", m_idPatient);
     setDataInt(data, "idUser", m_idUser);
+    setDataInt(data, "idUserParent", m_idUserParent);
+    setDataInt(data, "idUserComptable", m_idUserComptable);
 
     setDataDouble(data, "montant", m_montant);
 
@@ -128,3 +131,4 @@ void Acte::setData(QJsonObject data)
 bool Acte::isValid() { return m_nbActes > 0; }
 bool Acte::courrierAFaire() { return m_courrierStatus == "T" || m_courrierStatus == "1"; }
 bool Acte::isPayeEnFranc() const { return m_monnaie == "F"; }
+

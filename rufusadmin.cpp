@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("06-04-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("16-04-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -337,8 +337,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     tim             .setInterval(5000);
     Slot_ImportDocsExternes();
 
-    initListeBanques();
-    initListeMotifs();
+    Datas::I()->banques->initListe();
+    Datas::I()->motifs->initListe();
 
     installEventFilter(this);
 }
@@ -3250,38 +3250,6 @@ void RufusAdmin::MAJTcpMsgEtFlagSalDat()
     }
     db->StandardSQL(MAJreq);
     gflagSalDat = a;
-}
-
-
-/*!
- * \brief RufusAdmin::initListeBanques
- * Charge l'ensemble des banques
- * et les ajoute à la classe Banques
- */
-void RufusAdmin::initListeBanques()
-{
-    QList<Banque*> listbanques = DataBase::getInstance()->loadBanques();
-    QList<Banque*>::const_iterator itbq;
-    for( itbq = listbanques.constBegin(); itbq != listbanques.constEnd(); ++itbq )
-    {
-        Banque *bq = const_cast<Banque*>(*itbq);
-        Datas::I()->banques->addBanque( bq );
-    }
-}
-/*!
- * \brief RufusAdmin::initListeMotifs
- * Charge l'ensemble des motifs d'actes
- * et les ajoute à la classe Motifs
- */
-void RufusAdmin::initListeMotifs()
-{
-    QList<Motif*> listmotifs = DataBase::getInstance()->loadMotifs();
-    QList<Motif*>::const_iterator itmtf;
-    for( itmtf = listmotifs.constBegin(); itmtf != listmotifs.constEnd(); ++itmtf )
-    {
-        Motif *mtf = const_cast<Motif*>(*itmtf);
-        Datas::I()->motifs->addMotif(mtf);
-    }
 }
 
 void RufusAdmin::KillSocket(QStringList datas)  //TODO marche mal quand le client se reconnecte, ça ne marche plus

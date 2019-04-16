@@ -38,39 +38,3 @@ void Banque::setData(QJsonObject data)
 }
 
 
-Banques::Banques()
-{
-    m_banques = new QMap<int, Banque*>();
-}
-
-QMap<int, Banque *> *Banques::banques() const
-{
-    return m_banques;
-}
-
-void Banques::addBanque(Banque *banque)
-{
-    if( m_banques->contains(banque->id()) )
-        return;
-    m_banques->insert(banque->id(), banque);
-}
-
-void Banques::addBanque(QList<Banque*> listbanques)
-{
-    QList<Banque*>::const_iterator it;
-    for( it = listbanques.constBegin(); it != listbanques.constEnd(); ++it )
-        addBanque( *it );
-}
-
-void Banques::removeBanque(Banque* banque)
-{
-    m_banques       ->remove(banque->id());
-}
-
-Banque* Banques::getBanqueById(int id)
-{
-    QMap<int, Banque*>::const_iterator itcpt = m_banques->find(id);
-    if( itcpt == m_banques->constEnd() )
-        return Q_NULLPTR;
-    return itcpt.value();
-}

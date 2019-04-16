@@ -15,13 +15,15 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "cls_docsexternes.h"
 
 DocsExternes::DocsExternes()
 {
+    m_docsexternes = new QMap<int, DocExterne*>();
 }
 
-QHash<int, DocExterne *> DocsExternes::docsexternes()
+QMap<int, DocExterne *> *DocsExternes::docsexternes()
 {
     return m_docsexternes;
 }
@@ -34,9 +36,9 @@ QHash<int, DocExterne *> DocsExternes::docsexternes()
  */
 DocExterne* DocsExternes::getDocumentById(int id, bool loadDetails, bool addToList)
 {
-    QHash<int, DocExterne*>::const_iterator itdoc = m_docsexternes.find(id);
+    QMap<int, DocExterne*>::const_iterator itdoc = m_docsexternes->find(id);
     DocExterne *result;
-    if( itdoc == m_docsexternes.constEnd() )
+    if( itdoc == m_docsexternes->constEnd() )
             result = new DocExterne();
     else
     {
@@ -75,12 +77,15 @@ DocExterne* DocsExternes::reloadDocument(DocExterne* docmt)
     return getDocumentById(docmt->id());
 }
 
-void DocsExternes::addDocExterne(DocExterne *docext)
+bool DocsExternes::addDocExterne(DocExterne *doc)
 {
-    if( m_docsexternes.contains(docext->id()) )
-        return;
-    m_docsexternes.insert(docext->id(), docext);
+    if( doc == Q_NULLPTR)
+        return false;
+    if( m_docsexternes->contains(doc->id()) )
+        return false;
+    m_docsexternes->insert(doc->id(), doc);
     m_nouveaudocument = true;
+    return true;
 }
 
 void DocsExternes::addListDocsExternes(QList<DocExterne*> listdocs)
@@ -92,12 +97,21 @@ void DocsExternes::addListDocsExternes(QList<DocExterne*> listdocs)
     }
 }
 
-void DocsExternes::VideLaListe()
+void DocsExternes::clearAll()
 {
-    m_docsexternes.clear();
+    QList<DocExterne*> listdocs;
+    for( QMap<int, DocExterne*>::const_iterator itdoc = m_docsexternes->constBegin(); itdoc != m_docsexternes->constEnd(); ++itdoc)
+        delete itdoc.value();
+    m_docsexternes->clear();
 }
 
-void DocsExternes::RemoveKey(int key)
+void DocsExternes::removeDocExterne(DocExterne *doc)
 {
-    m_docsexternes.remove(key);
+    if (doc == Q_NULLPTR)
+        return;
+    QMap<int, DocExterne*>::const_iterator itdoc = m_docsexternes->find(doc->id());
+    if( itdoc == m_docsexternes->constEnd() )
+        return;
+    m_docsexternes->remove(doc->id());
+    delete doc;
 }

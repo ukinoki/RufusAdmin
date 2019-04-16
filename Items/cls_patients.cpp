@@ -67,6 +67,6 @@ Patient* Patients::getPatientById(int id)
 {
     QMap<int, Patient*>::const_iterator patient = m_patients->find(id);
     if( patient == m_patients->constEnd() )
-        return Q_NULLPTR;
+        return nullptr;
     return patient.value();
 }

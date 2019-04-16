@@ -19,9 +19,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define GBL_DATAS_H
 
 #include <QObject>
-#include "cls_banque.h"
+#include "cls_banques.h"
 #include "cls_compte.h"
-#include "cls_motif.h"
+#include "cls_motifs.h"
 #include <cls_users.h>
 
 class Datas : public QObject

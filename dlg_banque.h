@@ -54,7 +54,6 @@ private:
     int                                     gMode;
     bool                                    gFermeApresValidation;
     enum gMode                              {Norm, Modif, Nouv, Suppr};
-    QMap<int, Banque*>                      *m_banques;
     DataBase                                *db;
     WidgetButtonFrame                       *widgButtons;
 
@@ -66,7 +65,6 @@ private:
 
     void            AnnuleModifBanque();
     void            AfficheBanque();
-    void            MAJBanques();               // met à jour la liste des banques
     void            ValideModifBanque();
     void            ChoixButtonFrame(int);
 };

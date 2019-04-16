@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef CLS_CORRESPONDANTS_H
@@ -23,21 +23,18 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 class Correspondants
 {
-    QMap<int, Correspondant*> *m_Correspondants;    //!<Collection de tous les correspondants
-    QMap<int, Correspondant*> *m_MGCorrespondants;  //!<Collection de tous les généralistes
+    QMap<int, Correspondant*> *m_Correspondants;    //!<Collection de tous les correspondants sans exception, généralistes ou pas
 
 public:
     //GETTER
     QMap<int, Correspondant *> *getCorrespondants()     const;
-    QMap<int, Correspondant *> *getMGCorrespondants()   const;
-
 
     Correspondants();
 
-    bool addCorrespondant(Correspondant *Correspondant);
-    bool addMGCorrespondant(Correspondant *Correspondant);
+    bool addCorrespondant(Correspondant *cor);
     Correspondant* getCorrespondantById(int id);
-    void VideLesListes();
+    void removeCorrespondant(Correspondant* cor);
+    void clearAll();
 };
 
 

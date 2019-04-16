@@ -18,24 +18,27 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MACROS_H
 #define MACROS_H
 
-#define VERSION_BASE                                52                  // version de la base de données
+// Les versions de la base et des ressources
+#define VERSION_BASE                                52  // version de la base de données
+#define VERSION_RESSOURCES                          34  // version des fichiers de ressources
 
 // Les bases
+#define NOM_BASE_CCAM                               "CCAM"
 #define NOM_BASE_CONSULTS                           "rufus"
 #define NOM_BASE_COMPTA                             "ComptaMedicale"
 #define NOM_BASE_OPHTA                              "Ophtalmologie"
 #define NOM_BASE_IMAGES                             "Images"
 
 // Les tables
-
 #define NOM_TABLE_ARCHIVESBANQUE                    "ComptaMedicale.archivesbanques"
 #define NOM_TABLE_BANQUES                           "ComptaMedicale.banques"
 #define NOM_TABLE_COMPTES                           "ComptaMedicale.Comptes"
-#define NOM_TABLE_RECETTES                          "ComptaMedicale.lignesrecettes"
 #define NOM_TABLE_DEPENSES                          "ComptaMedicale.Depenses"
 #define NOM_TABLE_FACTURES                          "ComptaMedicale.Factures"
 #define NOM_TABLE_LIGNESCOMPTES                     "ComptaMedicale.lignescomptes"
 #define NOM_TABLE_LIGNESPAIEMENTS                   "ComptaMedicale.lignespaiements"
+#define NOM_TABLE_RECETTES                          "ComptaMedicale.lignesrecettes"
+#define NOM_TABLE_RECETTESSPECIALES                 "ComptaMedicale.autresrecettes"
 #define NOM_TABLE_REMISECHEQUES                     "ComptaMedicale.remisecheques"
 #define NOM_TABLE_RUBRIQUES2035                     "ComptaMedicale.rubriques2035"
 #define NOM_TABLE_TIERS                             "ComptaMedicale.tiers"
@@ -46,12 +49,21 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_DOCSASUPPRIMER                    "Images.DocsASupprimer"
 #define NOM_TABLE_FACTURESASUPPRIMER                "Images.FacturesASupprimer"
 
+#define NOM_TABLE_BILANORTHO                        "Ophtalmologie.bilanortho"
+#define NOM_TABLE_BIOMETRIES                        "Ophtalmologie.biometries"
+#define NOM_TABLE_COMMENTAIRESLUNETTES              "Ophtalmologie.commentaireslunettes"
+#define NOM_TABLE_DONNEES_OPHTA_PATIENTS            "Ophtalmologie.DonneesOphtaPatients"
+#define NOM_TABLE_REFRACTION                        "Ophtalmologie.refractions"
+#define NOM_TABLE_TONOMETRIE                        "Ophtalmologie.tonometries"
+
 #define NOM_TABLE_ACTES                             "rufus.Actes"
 #define NOM_TABLE_APPAREILSCONNECTESCENTRE          "rufus.appareilsconnectescentre"
-#define NOM_TABLE_CORRESPONDANTS                    "rufus.correspondants"
+#define NOM_TABLE_APPAREILSREFRACTION               "rufus.AppareilsRefraction"
 #define NOM_TABLE_CCAM                              "rufus.ccam"
+#define NOM_TABLE_CORRESPONDANTS                    "rufus.correspondants"
 #define NOM_TABLE_COTATIONS                         "rufus.cotations"
 #define NOM_TABLE_COURRIERS                         "rufus.courriers"
+#define NOM_TABLE_DONNEESSOCIALESPATIENTS           "rufus.donneessocialespatients"
 #define NOM_TABLE_FLAGS                             "rufus.flags"
 #define NOM_TABLE_IMPRESSIONS                       "rufus.Impressions"
 #define NOM_TABLE_JOINTURESDOCS                     "rufus.jointuresdocuments"
@@ -59,10 +71,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_TABLE_LIEUXEXERCICE                     "rufus.LieuxExercice"
 #define NOM_TABLE_LISTEAPPAREILS                    "rufus.listeappareils"
 #define NOM_TABLE_LISTETIERS                        "rufus.listetiers"
-#define NOM_TABLE_METADOCUMENTS                     "rufus.Metadocuments"
 #define NOM_TABLE_MESSAGES                          "rufus.Messagerie"
 #define NOM_TABLE_MESSAGESJOINTURES                 "rufus.MessagerieJointures"
+#define NOM_TABLE_METADOCUMENTS                     "rufus.Metadocuments"
 #define NOM_TABLE_MOTIFSRDV                         "rufus.MotifsRDV"
+#define NOM_TABLE_MOTSCLES                          "rufus.MotsCles"
+#define NOM_TABLE_MOTSCLESJOINTURES                 "rufus.MotsClesJointures"
 #define NOM_TABLE_PARAMSYSTEME                      "rufus.ParametresSysteme"
 #define NOM_TABLE_PATIENTS                          "rufus.Patients"
 #define NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS    "rufus.renseignementsmedicauxpatients"
@@ -88,12 +102,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define VIDEO                                       "Video"
 #define FACTURE                                     "Facture"
 #define ECHEANCIER                                  "Echéancier"
-#define IMAGERIE                                    "Imagerie"
-#define DOCUMENTRECU                                "DocRecu"
 
+#define NOM_APPLI                                   "Rufus"
+
+#define NOM_POSTEIMPORTDOCS                         "posteimportdocs"
 #define NOM_ADMINISTRATEURDOCS                      "Admin"
 #define NOM_MDPADMINISTRATEUR                       "bob"
-#define NOM_POSTEIMPORTDOCS                         "posteimportdocs"
 
 //les TCP
 #define NOM_PORT_TCPSERVEUR                         "50885"
@@ -110,6 +124,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_TestConnexion                        "TestConnexion"                                     /* fin du message de test de la connexion */
 #define TCPMSG_OKConnexion                          "OKConnexion"                                       /* fin du message de confirmation de la connexion */
 
+// Constantes de statut salle d'attente  //+++++ATTENTION ces constantes servent dans des requêtes SQL - NE PAS METTRE DE CARACTERES SPECIAUX
+#define ARRIVE                                      "Arrivé"
+#define ENCOURS                                     "En cours"
+#define ENATTENTENOUVELEXAMEN                       "En attente de nouvel examen par "
+#define RETOURACCUEIL                               "Retour accueil"
+#define ENCOURSEXAMEN                               "En cours de consultation avec "
+
 // Les fichiers et répertoires divers
 #define NOMDIR_LIBS2                                "/Applications";
 #define NOMDIR_RESSOURCES                           "/Ressources"
@@ -119,16 +140,27 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOMDIR_ORIGINAUX                            "/Originaux"
 #define NOMDIR_FACTURESSANSLIEN                     "/FacturesSansLien"
 #define NOMDIR_DOSSIERECHANGE                       "/DossierEchange"
+#define NOMDIR_CRDOSSIERS                           "/CRDossiers"
 #define NOMDIR_IMAGERIE                             "/Imagerie"
 #define NOMDIR_IMAGES                               "/Images"
 #define NOMDIR_VIDEOS                               "/Videos"
 #define NOMDIR_PROV                                 "/Prov"
 #define NOMDIR_LOGS                                 "/Logs"
 #define NOMDIR_ECHECSTRANSFERTS                     "/EchecsTransferts"
+
+#define NOMFIC_ENTETEORDO                           "/Documents/Rufus/Ressources/Entete_Ordonnance.txt"
+#define NOMFIC_CORPSORDO                            "/Documents/Rufus/Ressources/Corps_Ordonnance.txt"
+#define NOMFIC_ENTETEORDOALD                        "/Documents/Rufus/Ressources/Entete_OrdoALD.txt"
+#define NOMFIC_CORPSORDOALD                         "/Documents/Rufus/Ressources/Corps_OrdoALD.txt"
+#define NOMFIC_PIEDPAGE                             "/Documents/Rufus/Ressources/Pied_Ordonnance.txt"
+#define NOMFIC_PIEDORDOLUNETTES                     "/Documents/Rufus/Ressources/Pied_Ordonnance_Lunettes.txt"
+#define NOMFIC_PDF                                  "/Documents/Rufus/Ressources/pdf.pdf"
+#define NOMFIC_TEST                                 "/Documents/Rufus/Ressources/test.txt"
 #define NOMFIC_INI                                  "/Documents/RufusAdmin/RufusAdmin.ini"
 #define NOMFIC_INIRUFUS                             "/Documents/Rufus/Rufus.ini"
-#define SCRIPTBACKUPFILE    "/Documents/Rufus/RufusScriptBackup.sh"
-#define SCRIPTPLISTFILE     "/Library/LaunchAgents/rufus.bup.plist"
+#define SCRIPTBACKUPFILE                            "/Documents/Rufus/RufusScriptBackup.sh"
+#define SCRIPTRESTOREFILE                           "/Documents/Rufus/RufusScriptRestore.sh"
+#define SCRIPTPLISTFILE                             "/Library/LaunchAgents/rufus.bup.plist"
 
 // Variables mysql
 #define MAX_ALLOWED_PACKET                          "16"
@@ -139,6 +171,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 // le son d'alarme
 #define NOM_ALARME                                  "://goutte.wav"
 
+// la largeur de la formule de réfraction dans le champ ActeTexte
+#define LARGEUR_FORMULE                             "310"
+
+// le lien vers la CCAM
+#define LIEN_CCAM                                   "https://www.ameli.fr/accueil-de-la-ccam/trouver-un-acte/consultation-par-chapitre.php?chap=a%3A0%3A%7B%7D&add=2#chapitre_2"
+
 // la taille maximale des images
 #define TAILLEMAXIIMAGES                            262144
 
@@ -146,26 +184,16 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define UPGROUBOXINACTIVE                           "UpGroupBox {font: bold; border: 1px solid rgb(164,164,164); border-radius: 10px;}"
 #define UPGROUBOXACTIVE                             "UpGroupBox {border: 2px solid rgb(164, 205, 255); border-radius: 10px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E0E0E0, stop: 1 #FFFFFF);}"
 
-// Constantes de statut salle d'attente  //+++++ATTENTION ces constantes servent dans des requêtes SQL - NE PAS METTRE DE CARACTERES SPECIAUX
-#define ARRIVE                                      "Arrivé"
-#define ENCOURS                                     "En cours"
-#define ENATTENTENOUVELEXAMEN                       "En attente de nouvel examen par "
-#define RETOURACCUEIL                               "Retour accueil"
-#define ENCOURSEXAMEN                               "En cours de consultation avec "
-
+// la police d'écran par défaut et le facteur de correction des td width html en impression qui varie entre Linux et OSX (???)
 #ifdef Q_OS_MACX
 #define POLICEPARDEFAUT         "Comic Sans MS"
 #define POINTPARDEFAUT          13
-#define PATH_SPEC_MAC "/../../.."
+#define CORRECTION_td_width     1
 #endif
 #ifdef Q_OS_LINUX
-#define POLICEPARDEFAUT         "Noto Sans MS"
-#define POINTPARDEFAUT          9
-#define LINUX "/../../.."
-#endif
-#ifdef Q_OS_WIN
 #define POLICEPARDEFAUT         "Comic Sans MS"
-#define POINTPARDEFAUT          13
+#define POINTPARDEFAUT          10
+#define CORRECTION_td_width     1.3
 #endif
 
 #define OPHTALIBERAL            "ophlib"
@@ -187,23 +215,28 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define SECRETAIRE              "s"
 #define SOCIETECOMPTABLE        "SEL"
 
-//les TCP
-#define TCPMSG_MAJCorrespondants                    "MajCorrespondants"                                 /* fin du message invitant à mettre à jour la liste des correspondants */
-#define TCPMSG_MAJSalAttente                        "MajSalAttente"                                     /* fin du message invitant à mettre à jour la salle d'attente */
-#define TCPMSG_MsgBAL                               "MsgRecuDansBAL"                                    /* fin du message informant de la réception d'un message de messagerie instantanée */
+#define HAUTEUR_SANS_ORDONNANCE_MINI                    191                 // Hauteur du formulaire Refraction sans la partie ordonnance sans detail sans observ
+#define HAUTEUR_SANS_ORDONNANCE_AVEC_DETAIL             335                 // Hauteur du formulaire Refraction sans la partie ordonnance avec detail sans observ
+#define HAUTEUR_AVEC_ORDONNANCE_SANS_DETAIL             450                 // Hauteur du formulaire Refraction avec partie ordonnance sans detail
+#define HAUTEUR_AVEC_ORDONNANCE_AVEC_DETAIL             590                 // Hauteur du formulaire Refraction avec partie ordonnance avec detail
+#define LARGEURLISTE   1300
+#define LARGEURNORMALE 1260
+#define HAUTEUR_MINI        280
+#define HAUTEUR_NORMALE     970
 
-#define NOM_PORT_TCPSERVEUR                         "50885"
-#define TCPMSG_idUser                               "idUser"                                            /* nom du message founissant l'idUser */
-#define TCPMSG_Separator                            "triumphspeedtriple1050"                            /* separateur au sein d'un message */
-#define TCPMSG_DataSocket                           "DataSocket"                                        /* fin du message fournissant IP et MAC d'un client */
-#define TCPMSG_ListeSockets                         "ListeSockets"                                      /* fin du message informant le client que ce message contient la liste des TcpSockets */
-#define TCPMSG_EnvoieListSocket                     "EnvoieListe"                                       /* fin du message demandant l'envoi de la liste des sockets à un client */
-#define TCPMSG_Disconnect                           "Deconnexion"                                       /* fin du message demandant la deconnexion et la fermeture d'un socket */
+//Opérations bancaires
+#define NOM_VIREMENT            "Virement"
+#define NOM_CHEQUE              "Chèque"
+#define NOM_PRELEVEMENT         "Prélèvement"
+#define NOM_TIP                 "TIP"
+#define NOM_ESPECES             "Espèces"
+#define NOM_CARTECREDIT         "Carte de crédit"
 
 // ancres et comentaires html
 #define HTMLCOMMENT_LINUX           "<!LINUX>"
 #define HTMLCOMMENT_MAC             "<!MAC>"
 #define HTMLANCHOR_BODEBUT          "<BOdebut>"
 #define HTMLANCHOR_BOFIN            "<BOfin>"
+
 
 #endif // MACROS_H

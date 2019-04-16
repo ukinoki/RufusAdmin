@@ -26,7 +26,6 @@ dlg_banque::dlg_banque(QWidget *parent, QString nouvbanqueabrege) :
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
     db                      = DataBase::getInstance();
-    m_banques               = Datas::I()->banques->banques();
 
     gFermeApresValidation   = (nouvbanqueabrege != "");
     setWindowTitle(tr("Enregistrer une nouvelle banque"));
@@ -217,24 +216,10 @@ void dlg_banque::SupprBanque()
         UpMessageBox::Watch(this, tr("Impossible de supprimer la banque ") + lbl->text(), tr("Elle est utilisée par d'autres utilisateurs"));
         return;
     }
+    Datas::I()->banques->initListe();
     db->SupprRecordFromTable(idBanque,"idBanque",NOM_TABLE_BANQUES);
     RemplirTableView();
     AfficheBanque();
-}
-
-void dlg_banque::MAJBanques()
-{
-    for(QMap<int, Banque*>::const_iterator itbq = m_banques->constBegin(); itbq != m_banques->constEnd(); ++itbq )
-    {
-        Banque *bq = const_cast<Banque*>(*itbq);
-        Datas::I()->banques->removeBanque( bq );
-    }
-    QList<Banque*> listbanques = DataBase::getInstance()->loadBanques();
-    for(QList<Banque*>::const_iterator itbq = listbanques.constBegin(); itbq != listbanques.constEnd(); ++itbq )
-    {
-        Banque *bq = const_cast<Banque*>(*itbq);
-        Datas::I()->banques->addBanque( bq );
-    }
 }
 
 void dlg_banque::ValideModifBanque()
@@ -254,7 +239,7 @@ void dlg_banque::ValideModifBanque()
 
     if (gMode == Nouv)
     {
-        for (QMap<int, Banque*>::const_iterator itbanq = m_banques->constBegin(); itbanq != m_banques->constEnd(); ++itbanq)
+        for (QMap<int, Banque*>::const_iterator itbanq = Datas::I()->banques->banques()->constBegin(); itbanq != Datas::I()->banques->banques()->constEnd(); ++itbanq)
         {
             Banque *bq = const_cast<Banque*>(itbanq.value());
             if (bq->NomBanque().toUpper() == ui->NomBanqueupLineEdit->text().toUpper())
@@ -286,7 +271,7 @@ void dlg_banque::ValideModifBanque()
         listsets.insert("idbanqueabrege",   ui->NomAbregeupLineEdit->text());
         listsets.insert("nombanque",        nombanque);
         db->InsertIntoTable(NOM_TABLE_BANQUES, listsets);
-        MAJBanques();
+        Datas::I()->banques->initListe();
         if (gFermeApresValidation)
         {
             UpMessageBox::Watch(this,tr("La banque ") + nombanque + tr(" a été enregistrée"));
@@ -328,7 +313,7 @@ void dlg_banque::ValideModifBanque()
         DataBase:: getInstance()->UpdateTable(NOM_TABLE_BANQUES,
                                               listsets,
                                               "where idBanque = " + QString::number(idBanque));
-        MAJBanques();
+        Datas::I()->banques->initListe();
     }
     RemplirTableView();
     UpLabel *lbl;

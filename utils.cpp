@@ -218,10 +218,7 @@ void Utils::convertPlainText(QString &text)
     UpTextEdit textprov;
     textprov.setText( text );
     text = textprov.toPlainText();
-    while (text.at(text.size()-1).unicode() == 10)
-        text.remove(text.size()-1,1);
-//    while (text.endsWith("\n"))
-//        text = text.left(text.size()-1);
+    text  = trim(text, true, true);
 }
 
 /*!
@@ -298,16 +295,15 @@ void Utils::supprimeAncre(QString &text, QString ancredebut, QString ancrefin)
  */
 QSize Utils::CalcSize(QString txt, QFont fm)
 {
-    QTextEdit txtedit;
-    txtedit.setText(txt);
-    txt = txtedit.toPlainText();
+    double correction = (txt.contains("<b>")? 1.2 : 1.1); //le 1.2 est là pour tenir compte des éventuels caractères gras
+    convertPlainText(txt);
     QStringList lmsg            = txt.split("\n");
     int         w               = 0;
-    double      hauteurligne    = QFontMetrics(fm).height()*1.2;
+    double      hauteurligne    = QFontMetrics(fm).height()*correction;
     int         nlignes         = lmsg.size();
     for (int k=0; k<nlignes; k++)
     {
-        int x   = int(QFontMetrics(fm).width(lmsg.at(k))*1.2); //le 1.1 est là pour tenir compte des éventuels caractères gras
+        int x   = int(QFontMetrics(fm).width(lmsg.at(k))*correction);
         w       = (x>w? x : w);
         //qDebug() << lmsg.at(k) + " - ligne = " + QString::number(k+1) + " - largeur = " + QString::number(w);
     }
@@ -463,7 +459,7 @@ bool Utils::mkpath(QString path)
 }
 
 /*!
- * \brief Utils::cleanfilder
+ * \brief Utils::cleanfolder
  * élimine les sous-dossiers vides d'un dossier
  */
 void Utils::cleanfolder(const QString DirPath)
@@ -477,7 +473,7 @@ void Utils::cleanfolder(const QString DirPath)
     if (list.size()==0)
     {
         dir.rmdir(DirPath);
-        qDebug() << "dossier vide effacé" << DirPath;
+        //qDebug() << "dossier vide effacé" << DirPath;
     }
     else for(int i = 0; i < list.size(); ++i)
     {
@@ -619,5 +615,16 @@ QStringList Utils::DecomposeScriptSQL(QString nomficscript)
     return listinstruct;
 
     /* POUR CREER DES PROCEDURES AVEC Qt - cf fichier créer des procédures mysql avec QSt dans /assets/diagrams */
+}
+
+QString Utils::ConvertitModePaiement(QString mode)
+{
+    if (mode == "E")       mode = QObject::tr("Espèces");
+    else if (mode == "B")  mode = QObject::tr("Carte de crédit");
+    else if (mode == "T")  mode = QObject::tr("TIP");
+    else if (mode == "V")  mode = QObject::tr("Virement");
+    else if (mode == "P")  mode = QObject::tr("Prélèvement");
+    else if (mode == "C")  mode = QObject::tr("Chèque");
+    return mode;
 }
 

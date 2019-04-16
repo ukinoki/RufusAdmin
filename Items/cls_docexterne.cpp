@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "cls_docexterne.h"
 #include <QDebug>
 
@@ -46,6 +47,7 @@ QString DocExterne::format() const                  { return m_formatdoc;}
 
 int DocExterne::importance() const                  { return m_importance;}
 
+void DocExterne::setDate(QDateTime date)            { m_dateimpression = date;}
 void DocExterne::setimportance(int imptce)          { m_importance = imptce;}
 void DocExterne::setAllLoaded(bool AllLoaded)       { m_isAllLoaded = AllLoaded;}
 

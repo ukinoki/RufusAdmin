@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "cls_paiementdirect.h"
 
 cls_paiementdirect::cls_paiementdirect()

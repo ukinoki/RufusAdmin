@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of Rufus.
+This file is part of RufusAdmin or Rufus.
 
-Rufus is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+the Free Software Foundation, either version 3 of the License,
+or any later version.
 
-Rufus is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Rufus. If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef CLS_TIERS_H
@@ -53,23 +53,6 @@ public:
     QString faxtiers() const;
 };
 
-
-class TiersPayants
-{
-private:
-    QMap<int, Tiers*> *m_tierspayants; //!< la liste des tiers payants
-
-public:
-    explicit TiersPayants();
-
-    QMap<int, Tiers *> *tierspayants() const;
-
-    void addTiers(Tiers *Tiers);
-    void addTiers(QList<Tiers*> listTierss);
-    void removeTiers(Tiers* Tiers);
-    Tiers* getTiersById(int id);
-};
-
 class TypeTiers : public Item
 {
 private:
@@ -79,21 +62,6 @@ public:
     void setData(QJsonObject data);
 
     QString typetiers() const;
-};
-
-class TypesTiers
-{
-private:
-    QList<TypeTiers *> *m_typestiers; //!< la liste des types de tiers payants
-
-public:
-    explicit TypesTiers();
-
-    QList<TypeTiers *> *typestiers() const;
-
-    void addTypeTiers(TypeTiers *Tiers);
-    void addTypeTiers(QList<TypeTiers*> listTierss);
-    void removeTypeTiers(TypeTiers* Tiers);
 };
 
 

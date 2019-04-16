@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef CLS_DEPENSES_H
@@ -24,17 +24,18 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 class Depenses : public QObject
 {
 public:
-    QHash<int, Depense*> *m_Depenses;    //!< Collection de toutes les depenses pour unuser et une  année donnée - le QHash plutôt que le QMap pour garder le tri par date
+    QMap<int, Depense*> *m_Depenses = Q_NULLPTR;    //!< Collection de toutes les depenses pour un user et une année donnée
 
 public:
     //GETTER
-    QHash<int, Depense *> *getDepenses()     const;
+    QMap<int, Depense *> *getDepenses()     const;
 
     Depenses(QObject *parent = Q_NULLPTR);
 
-    bool addDepense(Depense *Depense);
-    Depense* getDepenseById(int id);
-
+    bool        addDepense(Depense *Depense);
+    Depense*    getDepenseById(int id);
+    void        clearAll();
+    void        removeDepense(Depense *dep);
 };
 
 #endif // CLS_DEPENSES_H

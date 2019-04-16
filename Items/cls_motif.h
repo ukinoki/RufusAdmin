@@ -1,19 +1,20 @@
 /* (C) 2018 LAINE SERGE
-This file is part of Rufus.
+This file is part of RufusAdmin or Rufus.
 
-Rufus is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+the Free Software Foundation, either version 3 of the License,
+or any later version.
 
-Rufus is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Rufus. If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 
 #ifndef CLS_MOTIF_H
 #define CLS_MOTIF_H
@@ -46,24 +47,6 @@ public:
     bool pardefaut() const;
     bool utiliser() const;
     int noordre() const;
-};
-
-
-class Motifs
-{
-private:
-    QMap<int, Motif*> *m_motifs; //!< la liste des Motifs
-
-public:
-    explicit Motifs();
-
-    QMap<int, Motif *> *motifs() const;
-
-    void addMotif(Motif *Motif);
-    void addMotif(QList<Motif*> listMotifs);
-    void removeMotif(Motif* Motif);
-    Motif* getMotifById(int id);
-    void clearAll();
 };
 
 #endif // CLS_MOTIF_H

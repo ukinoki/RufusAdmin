@@ -1,19 +1,20 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 
 #ifndef CLS_DOCSEXTERNES_H
 #define CLS_DOCSEXTERNES_H
@@ -25,19 +26,19 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 class DocsExternes
 {
 private:
-    QHash<int, DocExterne*> m_docsexternes; //!< la liste des DocExternes pour un patient donné
+    QMap<int, DocExterne*> *m_docsexternes = Q_NULLPTR; //!< la liste des DocExternes pour un patient donné
     bool m_nouveaudocument;
 
 public:
     explicit DocsExternes();
-    QHash<int, DocExterne *> docsexternes();
+    QMap<int, DocExterne *>* docsexternes();
     DocExterne* getDocumentById(int id, bool loadDetails=true, bool addToList=true);
-    void addDocExterne(DocExterne *DocExterne);
+    bool addDocExterne(DocExterne *doc);
     void addListDocsExternes(QList<DocExterne*> listdocs);
     bool NouveauDocument();
     void setNouveauDocumentFalse();
     DocExterne* reloadDocument(DocExterne* docmt);
-    void RemoveKey(int key);
-    void VideLaListe();
+    void removeDocExterne(DocExterne *doc);
+    void clearAll();
 };
 #endif // CLS_DOCSEXTERNES_H
