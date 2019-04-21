@@ -32,7 +32,7 @@ private:
     QString m_nom;      //!< le nom de la ville
 
 public:
-    explicit Ville(QJsonObject data = {}, QObject *parent = nullptr);
+    explicit Ville(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
 
     int id() const;
     QString codePostal() const;
@@ -55,7 +55,7 @@ private:
     QString m_fieldName;
 
 public:
-    explicit VilleListModel(const QList<Ville*> &villes, QString fieldName, QObject *parent=0);
+    explicit VilleListModel(const QList<Ville*> &villes, QString fieldName, QObject *parent = Q_NULLPTR);
 
     void setFieldName(QString fieldName);
     int rowCount(const QModelIndex &parent) const;

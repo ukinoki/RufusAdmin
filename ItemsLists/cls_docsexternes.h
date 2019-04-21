@@ -15,33 +15,29 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_BANQUE_H
-#define CLS_BANQUE_H
 
-#include <QObject>
-#include "cls_item.h"
+#ifndef CLS_DOCSEXTERNES_H
+#define CLS_DOCSEXTERNES_H
 
-/*!
- * \brief Banque class
- * l'ensemble des informations concernant une banque
- */
+#include "cls_docexterne.h"
+#include "database.h"
 
-
-class Banque : public Item
+class DocsExternes
 {
 private:
-    int m_id, m_codebanque;
-    QString m_idbanqueabrege, m_nombanque;
+    QMap<int, DocExterne*> *m_docsexternes = Q_NULLPTR; //!< la liste des DocExternes pour un patient donné
+    bool m_nouveaudocument;
 
 public:
-    explicit Banque(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
-    void setData(QJsonObject data);
-
-    int id() const;
-    int CodeBanque() const;
-    QString NomBanqueAbrege() const;
-    QString NomBanque() const;
+    explicit DocsExternes();
+    QMap<int, DocExterne *>* docsexternes();
+    DocExterne* getById(int id, bool loadDetails=true, bool addToList=true);
+    bool add(DocExterne *doc);
+    void addList(QList<DocExterne*> listdocs);
+    bool NouveauDocument();
+    void setNouveauDocumentFalse();
+    DocExterne* reload(DocExterne* docmt);
+    void remove(DocExterne *doc);
+    void clearAll();
 };
-
-
-#endif // CLS_BANQUE_H
+#endif // CLS_DOCSEXTERNES_H

@@ -15,30 +15,35 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef TIERSPAYANTS_H
+#define TIERSPAYANTS_H
 
-#ifndef CLS_DOCSEXTERNES_H
-#define CLS_DOCSEXTERNES_H
-
-#include <QObject>
-#include "cls_docexterne.h"
 #include "database.h"
+#include "cls_tiers.h"
 
-class DocsExternes
+
+/*!
+ * \brief TierPayants class
+ * la liste des différents organsmes de tiers payants
+ * CPAM, MGEN, MSA...etc..
+ * géré par la table ComptaMedicale.tiers
+ */
+class TiersPayants
 {
 private:
-    QMap<int, DocExterne*> *m_docsexternes = Q_NULLPTR; //!< la liste des DocExternes pour un patient donné
-    bool m_nouveaudocument;
+    QMap<int, Tiers*> *m_tierspayants; //!< la liste des tiers payants
 
 public:
-    explicit DocsExternes();
-    QMap<int, DocExterne *>* docsexternes();
-    DocExterne* getDocumentById(int id, bool loadDetails=true, bool addToList=true);
-    bool addDocExterne(DocExterne *doc);
-    void addListDocsExternes(QList<DocExterne*> listdocs);
-    bool NouveauDocument();
-    void setNouveauDocumentFalse();
-    DocExterne* reloadDocument(DocExterne* docmt);
-    void removeDocExterne(DocExterne *doc);
+    explicit TiersPayants();
+
+    QMap<int, Tiers *> *tierspayants() const;
+
+    void add(Tiers *Tiers);
+    void addList(QList<Tiers*> listTierss);
+    void remove(Tiers* Tiers);
+    Tiers* getById(int id);
     void clearAll();
+    void initListe();
 };
-#endif // CLS_DOCSEXTERNES_H
+
+#endif // TIERSPAYANTS_H

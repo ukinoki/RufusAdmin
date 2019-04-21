@@ -15,33 +15,25 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_BANQUE_H
-#define CLS_BANQUE_H
+#ifndef CLS_PATIENTS_H
+#define CLS_PATIENTS_H
 
 #include <QObject>
-#include "cls_item.h"
+#include <cls_patient.h>
 
-/*!
- * \brief Banque class
- * l'ensemble des informations concernant une banque
- */
-
-
-class Banque : public Item
+class Patients
 {
-private:
-    int m_id, m_codebanque;
-    QString m_idbanqueabrege, m_nombanque;
+    QMap<int, Patient*> *m_patients; //!<Collection de tous les Patient
 
 public:
-    explicit Banque(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
-    void setData(QJsonObject data);
+    //GETTER
+    QMap<int, Patient *> *getPatients() const;
 
-    int id() const;
-    int CodeBanque() const;
-    QString NomBanqueAbrege() const;
-    QString NomBanque() const;
+
+    Patients();
+
+    bool add(Patient *patient);
+    Patient* getById(int id);
 };
 
-
-#endif // CLS_BANQUE_H
+#endif // CLS_PATIENTS_H

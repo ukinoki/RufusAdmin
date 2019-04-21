@@ -15,27 +15,29 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_DEPENSES_H
-#define CLS_DEPENSES_H
+#ifndef CLS_MOTIFS_H
+#define CLS_MOTIFS_H
 
-#include <QObject>
-#include "cls_depense.h"
+#include "cls_motif.h"
+#include "database.h"
 
-class Depenses : public QObject
+class Motifs
 {
-public:
-    QMap<int, Depense*> *m_Depenses = Q_NULLPTR;    //!< Collection de toutes les depenses pour un user et une année donnée
+private:
+    QMap<int, Motif*> *m_motifs; //!< la liste des Motifs
 
 public:
-    //GETTER
-    QMap<int, Depense *> *getDepenses()     const;
+    explicit Motifs();
 
-    Depenses(QObject *parent = Q_NULLPTR);
+    QMap<int, Motif *> *motifs() const;
 
-    bool        addDepense(Depense *Depense);
-    Depense*    getDepenseById(int id);
-    void        clearAll();
-    void        removeDepense(Depense *dep);
+    void add(Motif *Motif);
+    void addList(QList<Motif*> listMotifs);
+    void remove(Motif* motif);
+    Motif* getById(int id);
+    void clearAll();
+    void initListe();
 };
 
-#endif // CLS_DEPENSES_H
+
+#endif // CLS_MOTIFS_H

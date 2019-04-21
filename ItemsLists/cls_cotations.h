@@ -15,33 +15,23 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_BANQUE_H
-#define CLS_BANQUE_H
+#ifndef COTATIONS_H
+#define COTATIONS_H
 
-#include <QObject>
-#include "cls_item.h"
+#include "cls_cotation.h"
+#include "database.h"
 
-/*!
- * \brief Banque class
- * l'ensemble des informations concernant une banque
- */
-
-
-class Banque : public Item
+class Cotations
 {
 private:
-    int m_id, m_codebanque;
-    QString m_idbanqueabrege, m_nombanque;
+    QMap<int, Cotation*> *m_cotations;    //!< la liste des cotations pratiquées par un utilisateur
 
 public:
-    explicit Banque(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
-    void setData(QJsonObject data);
-
-    int id() const;
-    int CodeBanque() const;
-    QString NomBanqueAbrege() const;
-    QString NomBanque() const;
+    explicit Cotations();
+    QMap<int, Cotation *> *cotations() const;
+    void add(Cotation *cotation);
+    void clearAll();
+    void initListeByUser(int iduser);
 };
 
-
-#endif // CLS_BANQUE_H
+#endif // COTATIONS_H

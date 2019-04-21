@@ -18,23 +18,24 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CLS_CORRESPONDANTS_H
 #define CLS_CORRESPONDANTS_H
 
-#include <QObject>
 #include <cls_correspondant.h>
+#include "database.h"
 
 class Correspondants
 {
-    QMap<int, Correspondant*> *m_Correspondants;    //!<Collection de tous les correspondants sans exception, généralistes ou pas
+    QMap<int, Correspondant*> *m_correspondants;    //!<Collection de tous les correspondants sans exception, généralistes ou pas
 
 public:
     //GETTER
-    QMap<int, Correspondant *> *getCorrespondants()     const;
+    QMap<int, Correspondant *> *correspondants()     const;
 
     Correspondants();
 
-    bool addCorrespondant(Correspondant *cor);
-    Correspondant* getCorrespondantById(int id);
-    void removeCorrespondant(Correspondant* cor);
+    bool add(Correspondant *cor);
+    Correspondant* getById(int id, bool loadDetails = false, bool addToList = true);
+    void remove(Correspondant* cor);
     void clearAll();
+    void initListe(bool all = false);
 };
 
 

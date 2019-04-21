@@ -64,7 +64,7 @@ private:
     DataBase();
     static DataBase *instance;
 
-    User *m_userConnected = nullptr;
+    User *m_userConnected = Q_NULLPTR;
 
 
     int m_mode;
@@ -126,6 +126,7 @@ public:
     QList<Correspondant *>  loadCorrespondants();
     void                    SupprCorrespondant(int idcor);
     QList<Correspondant*>   loadCorrespondantsALL();
+    QJsonObject             loadCorrespondantData(int idcor);
 
     /*
      * DocsExternes
@@ -138,14 +139,12 @@ public:
      * Documents émis
     */
     QList<Document*>        loadDocuments();
-    QJsonObject             loadDocumentData(int idDoc);
     void                    SupprDocument(Document *doc);
 
     /*
      * MetaDocuments
     */
     QList<MetaDocument*>    loadMetaDocuments();
-    QJsonObject             loadMetaDocumentData(int idDoc);
     void                    SupprMetaDocument(Document *doc);
 
     /*

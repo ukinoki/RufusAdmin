@@ -22,7 +22,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 /*
  * GETTER
 */
-QMap<int, Depense *> *Depenses::getDepenses() const
+QMap<int, Depense *> *Depenses::depenses() const
 {
     return m_Depenses;
 }
@@ -32,7 +32,7 @@ QMap<int, Depense *> *Depenses::getDepenses() const
  * \brief Depenses::Depenses
  * Initialise la map Depenses
  */
-Depenses::Depenses(QObject *parent) : QObject (parent)
+Depenses::Depenses()
 {
     m_Depenses = new QMap<int, Depense*>();
 }
@@ -51,10 +51,10 @@ void Depenses::clearAll()
  *
  * \param Depense la Depense que l'on veut ajouter
  * \return true si la Depense est ajoutée
- * \return false si le paramètre Depense est un nullptr
+ * \return false si le paramètre Depense est un Q_NULLPTR
  * \return false si la Depense est déjà présent
  */
-bool Depenses::addDepense(Depense *Depense)
+bool Depenses::add(Depense *Depense)
 {
     if( Depense == Q_NULLPTR)
         return false;
@@ -68,12 +68,12 @@ bool Depenses::addDepense(Depense *Depense)
 }
 
 /*!
- * \brief Depenses::getDepenseById
+ * \brief Depenses::getById
  * \param id l'id du Depense recherché
- * \return nullptr si aucune Depense trouvée
+ * \return Q_NULLPTR si aucune Depense trouvée
  * \return Depense* le Depense Depense à l'id
  */
-Depense* Depenses::getDepenseById(int id)
+Depense* Depenses::getById(int id)
 {
     QMap<int, Depense*>::const_iterator Depense = m_Depenses->find(id);
     if( Depense == m_Depenses->constEnd() )
@@ -81,7 +81,7 @@ Depense* Depenses::getDepenseById(int id)
     return Depense.value();
 }
 
-void Depenses::removeDepense(Depense *dep)
+void Depenses::remove(Depense *dep)
 {
     if (dep == Q_NULLPTR)
         return;
@@ -91,3 +91,21 @@ void Depenses::removeDepense(Depense *dep)
     m_Depenses->remove(dep->id());
     delete dep;
 }
+
+/*!
+ * \brief Depenseses::initListeByUser
+ * Charge l'ensemble des cotations pour le user
+ * et les ajoute à la classe Correspondants
+ */
+void Depenses::initListeByUser(int iduser)
+{
+    clearAll();
+    QList<Depense*> listdepenses = DataBase::getInstance()->loadDepensesByUser(iduser);
+    QList<Depense*>::const_iterator itdepenses;
+    for( itdepenses = listdepenses.constBegin(); itdepenses != listdepenses.constEnd(); ++itdepenses )
+    {
+        Depense *dep = const_cast<Depense*>(*itdepenses);
+        add(dep);
+    }
+}
+

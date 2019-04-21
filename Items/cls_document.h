@@ -36,31 +36,21 @@ public:
     QString texte() const;
     QString resume() const;
     QString conclusion() const;
-    bool ispublic() const;
-    bool isprescription() const;
-    bool ismedical() const;
-    bool iseditable() const;
+    bool ispublic() const;                      //! le document est accessible à tous les utilisateurs habilités
+    bool isprescription() const;                /*! le document est une prescription -> un dupli est émis
+                                                 *                                      l'entête est différent
+                                                 *                                      il n'est pas accessible au personnel non médical à moins d'avoir été déclaré administratif
+                                                 */
+    bool ismedical() const;                     //! le document est médical (-> son accès réservé au personnel médical) ou administratif
+    bool iseditable() const;                    //! le document est éditable avant impression
 
-//    void setDate(QDateTime date);
-//    void setimportance(int imptce);
-//    void setAllLoaded(bool allloaded);
-};
-
-class Documents
-{
-private:
-    QMap<int, Document*> *m_documents = Q_NULLPTR;      //!< la liste des Documents
-
-public:
-    explicit Documents();
-
-    QMap<int, Document *> *documents() const;
-
-    void addDocument(Document *Document);
-    void addDocument(QList<Document*> listDocuments);
-    void removeDocument(Document* Document);
-    void clearAll();
-    Document* getDocumentById(int id);
+    void settext(QString txt);
+    void setresume(QString resume);
+    void setconclusion(QString conclusion);
+    void setpublic(bool pblic);
+    void setprescription(bool prescription);
+    void setmedical(bool medical);
+    void seteditable(bool editable);
 };
 
 class MetaDocument : public Item
@@ -80,25 +70,5 @@ public:
     QString resume() const;
     bool ispublic() const;
 };
-
-
-class MetaDocuments
-{
-private:
-    QMap<int, MetaDocument*> *m_metadocuments = Q_NULLPTR;      //!< la liste des metadocuments
-
-public:
-    explicit MetaDocuments();
-
-    QMap<int, MetaDocument *> *metadocuments() const;
-
-    void addmetaDocument(MetaDocument *MetaDoc);
-    void addmetaDocument(QList<MetaDocument*> listmetaDocs);
-    void removemetaDocument(MetaDocument* MetaDoc);
-    void clearAll();
-    MetaDocument* getmetaDocumentById(int id);
-};
-
-
 
 #endif // CLS_DOCUMENT_H

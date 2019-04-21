@@ -15,33 +15,23 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_BANQUE_H
-#define CLS_BANQUE_H
+#ifndef CLS_PAIEMENTSDIRECTS_H
+#define CLS_PAIEMENTSDIRECTS_H
 
-#include <QObject>
-#include "cls_item.h"
+#include "cls_paiementdirect.h"
 
 /*!
- * \brief Banque class
- * l'ensemble des informations concernant une banque
+ * \brief Cette classe gére la liste des paiements directs
+ *  ( = actes dont le paiement est en attente d'être enregistré )
+ * = tous les actes effectués pour lequel il faut encore enregistré le moyen de paiement:
+ *  . paiement direct proprement dit
+ *  . ou paiement par tiers
  */
 
-
-class Banque : public Item
+class PaiementsDirects
 {
-private:
-    int m_id, m_codebanque;
-    QString m_idbanqueabrege, m_nombanque;
-
 public:
-    explicit Banque(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
-    void setData(QJsonObject data);
-
-    int id() const;
-    int CodeBanque() const;
-    QString NomBanqueAbrege() const;
-    QString NomBanque() const;
+    explicit PaiementsDirects();
 };
 
-
-#endif // CLS_BANQUE_H
+#endif // CLS_PAIEMENTSDIRECTS_H

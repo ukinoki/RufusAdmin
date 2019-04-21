@@ -30,7 +30,7 @@ private:
     double m_montantoptam, m_montantnonoptam, m_montantpratique;
 
 public:
-    explicit Cotation(QJsonObject data = {}, QObject *parent = nullptr);
+    explicit Cotation(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
     void setData(QJsonObject data);
 
     int id() const;
@@ -43,19 +43,6 @@ public:
     int idUser() const;
     int frequence() const;
     QString descriptif() const;
-};
-
-
-class Cotations
-{
-private:
-    QMap<int, Cotation*> *m_cotations;    //!< la liste des cotations pratiquées par un utilisateur
-
-public:
-    explicit Cotations();
-    QMap<int, Cotation *> *cotations() const;
-    void addCotationByUser(Cotation *cotation);
-    void clearAll();
 };
 
 #endif // CLS_COTATION_H

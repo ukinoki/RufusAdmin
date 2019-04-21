@@ -25,13 +25,11 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
  * \brief Tiers class
  * l'ensemble des informations concernant un tiers payant
  *!
- * \brief TierPayants class
- * la liste des tiers payants
- *!
  * \brief TypeTiers class
  * non d'un type de tiers payants - utilisée pour les paiements directs
- * \brief TypesTiers class
- * la liste des types de tiers payants - utilisée pour les paiements directs
+ *  - utilisée pour les paiements directs
+ * AME, ACS, CMU, etc..
+ * géré par la table ComtaMedicale.tiers
  */
 
 
@@ -41,7 +39,7 @@ private:
     int m_id;
     QString m_nomtiers, m_adressetiers, m_villetiers, m_codepostaltiers, m_telephonetiers, m_faxtiers;
 public:
-    explicit Tiers(QJsonObject data = {}, QObject *parent = nullptr);
+    explicit Tiers(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
     void setData(QJsonObject data);
 
     int id() const;
@@ -58,7 +56,7 @@ class TypeTiers : public Item
 private:
     QString m_typetiers;
 public:
-    explicit TypeTiers(QJsonObject data = {}, QObject *parent = nullptr);
+    explicit TypeTiers(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
     void setData(QJsonObject data);
 
     QString typetiers() const;

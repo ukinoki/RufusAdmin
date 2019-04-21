@@ -90,6 +90,7 @@ RESOURCES += \
 # INCLUDE
 #--------------------
 include(Items/items.pri)
+include(ItemsLists/itemslists.pri)
 include(Components/components.pri)
 include(TcpServer/tcpserver.pri)
 

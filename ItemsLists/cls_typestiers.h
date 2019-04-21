@@ -15,24 +15,36 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_PAIEMENTSDIRECTS_H
-#define CLS_PAIEMENTSDIRECTS_H
+#ifndef CLS_TYPESTIERS_H
+#define CLS_TYPESTIERS_H
 
-#include <QObject>
-#include "cls_paiementdirect.h"
+#include "cls_tiers.h"
+#include "database.h"
 
 /*!
- * \brief Cette classe gére la liste des paiements directs
- *  ( = actes dont le paiement est en attente d'être enregistré )
- * = tous les actes effectués pour lequel il faut encore enregistré le moyen de paiement:
- *  . paiement direct proprement dit
- *  . ou paiement par tiers
- */
+ * \brief TypesTiers class
+ * la liste des types de tiers payants
+ *  - utilisée pour les paiements directs
+ * AME, ACS, CMU, etc..
+ * géré par la table rufus.listetiers
+*/
 
-class PaiementsDirects
+class TypesTiers
 {
+private:
+    QList<TypeTiers *> *m_typestiers; //!< la liste des types de tiers payants
+
 public:
-    explicit PaiementsDirects();
+    explicit TypesTiers();
+
+    QList<TypeTiers *> *typestiers() const;
+
+    void add(TypeTiers *Tiers);
+    void addList(QList<TypeTiers*> listTierss);
+    void remove(TypeTiers* Tiers);
+    void clearAll();
+    void initListe();
 };
 
-#endif // CLS_PAIEMENTSDIRECTS_H
+
+#endif // CLS_TYPESTIERS_H
