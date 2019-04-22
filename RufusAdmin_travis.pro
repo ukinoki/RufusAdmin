@@ -48,7 +48,7 @@ SOURCES += \
     widgetbuttonframe.cpp \
     importdocsexternesthread.cpp \
     dlg_message.cpp \
-    dlg_banque.cpp \
+    dlg_gestionbanques.cpp \
     dlg_gestioncomptes.cpp \
     dlg_gestionlieux.cpp \
     dlg_gestionusers.cpp \
@@ -62,7 +62,7 @@ HEADERS += \
     dlg_paramconnexion.h \
     widgetbuttonframe.h \
     importdocsexternesthread.h \
-    dlg_banque.h \
+    dlg_gestionbanques.h \
     dlg_message.h \
     dlg_gestioncomptes.h \
     dlg_gestionlieux.h \
@@ -76,7 +76,7 @@ HEADERS += \
 FORMS += \
         rufusadmin.ui \
     dlg_paramconnexion.ui \
-    dlg_banque.ui \
+    dlg_gestionbanques.ui \
     dlg_gestioncomptes.ui \
     dlg_gestionusers.ui \
     dlg_motifs.ui
