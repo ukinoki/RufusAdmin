@@ -54,7 +54,6 @@ SOURCES += \
     dlg_gestionusers.cpp \
     dlg_motifs.cpp \
     utils.cpp \
-    database.cpp \
     gbl_datas.cpp
 
 HEADERS += \
@@ -70,7 +69,6 @@ HEADERS += \
     dlg_gestionusers.h \
     dlg_motifs.h \
     utils.h \
-    database.h \
     gbl_datas.h \
     log.h \
     icons.h
@@ -93,6 +91,7 @@ RESOURCES += \
 #--------------------
 include(Items/items.pri)
 include(ItemsLists/itemslists.pri)
+include(Database/database.pri)
 include(Components/components.pri)
 include(TcpServer/tcpserver.pri)
 
