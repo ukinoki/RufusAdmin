@@ -57,7 +57,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSplashScreen>
 #include <QSystemTrayIcon>
 #include <poppler-qt5.h>
-#include "dlg_banque.h"
+#include "dlg_gestionbanques.h"
 #include "dlg_gestionusers.h"
 #include "dlg_gestionlieux.h"
 #include "dlg_message.h"
@@ -87,7 +87,7 @@ public:
 
 private:
     Ui::RufusAdmin              *ui;
-    dlg_banque                  *Dlg_Banq;
+    dlg_gestionbanques          *Dlg_Banq;
     dlg_gestionusers            *Dlg_GestUsr;
     dlg_motifs                  *Dlg_motifs;
     dlg_paramconnexion          *DlgParam;

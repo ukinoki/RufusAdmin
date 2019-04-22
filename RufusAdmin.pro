@@ -46,13 +46,13 @@ SOURCES += \
     widgetbuttonframe.cpp \
     importdocsexternesthread.cpp \
     dlg_message.cpp \
-    dlg_banque.cpp \
     dlg_gestioncomptes.cpp \
     dlg_gestionlieux.cpp \
     dlg_gestionusers.cpp \
     dlg_motifs.cpp \
     utils.cpp \
-    gbl_datas.cpp
+    gbl_datas.cpp \
+    dlg_gestionbanques.cpp
 
 HEADERS += \
         rufusadmin.h \
@@ -60,7 +60,6 @@ HEADERS += \
     dlg_paramconnexion.h \
     widgetbuttonframe.h \
     importdocsexternesthread.h \
-    dlg_banque.h \
     dlg_message.h \
     dlg_gestioncomptes.h \
     dlg_gestionlieux.h \
@@ -69,15 +68,16 @@ HEADERS += \
     utils.h \
     gbl_datas.h \
     log.h \
-    icons.h
+    icons.h \
+    dlg_gestionbanques.h
 
 FORMS += \
         rufusadmin.ui \
     dlg_paramconnexion.ui \
-    dlg_banque.ui \
     dlg_gestioncomptes.ui \
     dlg_gestionusers.ui \
-    dlg_motifs.ui
+    dlg_motifs.ui \
+    dlg_gestionbanques.ui
 
 RESOURCES += \
     assets/Images/images.qrc \

@@ -1762,7 +1762,7 @@ void RufusAdmin::ExporteDocs()
 void RufusAdmin::Slot_GestionBanques()
 {
     DisconnectTimerInactive();
-    Dlg_Banq = new dlg_banque(this);
+    Dlg_Banq = new dlg_gestionbanques(this);
     Dlg_Banq->exec();
     ConnectTimerInactive();
 }

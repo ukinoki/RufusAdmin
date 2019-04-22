@@ -15,12 +15,12 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "dlg_banque.h"
-#include "ui_dlg_banque.h"
+#include "dlg_gestionbanques.h"
+#include "ui_dlg_gestionbanques.h"
 
-dlg_banque::dlg_banque(QWidget *parent, QString nouvbanqueabrege) :
+dlg_gestionbanques::dlg_gestionbanques(QWidget *parent, QString nouvbanqueabrege) :
     UpDialog(parent),
-    ui(new Ui::dlg_banque)
+    ui(new Ui::dlg_gestionbanques)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
@@ -111,12 +111,12 @@ dlg_banque::dlg_banque(QWidget *parent, QString nouvbanqueabrege) :
     ui->NomAbregeupLineEdit ->setValidator(new QRegExpValidator(val));
 }
 
-dlg_banque::~dlg_banque()
+dlg_gestionbanques::~dlg_gestionbanques()
 {
     delete ui;
 }
 
-void dlg_banque::AfficheBanque()
+void dlg_gestionbanques::AfficheBanque()
 {
     UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
     int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
@@ -140,7 +140,7 @@ void dlg_banque::AfficheBanque()
     delete lbl;
 }
 
-void dlg_banque::AnnuleModifBanque()
+void dlg_gestionbanques::AnnuleModifBanque()
 {
     if (gFermeApresValidation)
         reject();
@@ -151,7 +151,7 @@ void dlg_banque::AnnuleModifBanque()
     }
 }
 
-void dlg_banque::ChoixButtonFrame(int i)
+void dlg_gestionbanques::ChoixButtonFrame(int i)
 {
     switch (i) {
     case 1:
@@ -168,7 +168,7 @@ void dlg_banque::ChoixButtonFrame(int i)
     }
 }
 
-void dlg_banque::NouvBanque()
+void dlg_gestionbanques::NouvBanque()
 {
     ui->AnnulModifupSmallButton->setVisible(true);
     ui->OKModifupSmallButton->setVisible(true);
@@ -183,7 +183,7 @@ void dlg_banque::NouvBanque()
     gMode = Nouv;
 }
 
-void dlg_banque::ModifBanque()
+void dlg_gestionbanques::ModifBanque()
 {
     ui->AnnulModifupSmallButton->setVisible(true);
     ui->OKModifupSmallButton->setVisible(true);
@@ -193,7 +193,7 @@ void dlg_banque::ModifBanque()
     gMode = Modif;
 }
 
-void dlg_banque::SupprBanque()
+void dlg_gestionbanques::SupprBanque()
 {
     UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
     int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
@@ -222,7 +222,7 @@ void dlg_banque::SupprBanque()
     AfficheBanque();
 }
 
-void dlg_banque::ValideModifBanque()
+void dlg_gestionbanques::ValideModifBanque()
 {
     QString msg = "";
     QString nombanque = Utils::capitilize(ui->NomBanqueupLineEdit->text());
@@ -332,7 +332,7 @@ void dlg_banque::ValideModifBanque()
     RemetEnNorm();
 }
 
-void dlg_banque::RemetEnNorm()
+void dlg_gestionbanques::RemetEnNorm()
 {
     gMode = Norm;
     ui->AnnulModifupSmallButton->setVisible(false);
@@ -342,7 +342,7 @@ void dlg_banque::RemetEnNorm()
     widgButtons->setEnabled(true);
 }
 
-void dlg_banque::RemplirTableView()
+void dlg_gestionbanques::RemplirTableView()
 {
     QTableWidgetItem    *pitem0;
     UpLabel             *label1;
