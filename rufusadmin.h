@@ -118,7 +118,7 @@ private:
     WidgetButtonFrame           *widgAppareils;
     User                        *UserAdmin;
 
-    double                      CalcBaseSize();
+    qint64                      CalcBaseSize();
     int                         DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
     void                        setMapDatas();
@@ -126,7 +126,6 @@ private:
     void                        closeEvent(QCloseEvent *);
     void                        AskAppareil();
     void                        ChoixMenuSystemTray(QString txt);
-    bool                        CompressFileJPG(QString nomfile, QDate datetransfert = QDate::currentDate());
     void                        ConnexionBase();
     void                        Edit(QString txt, int delaieffacement=0);
     QStringList                 DecomposeScriptSQL(QString nomficscript);
@@ -208,7 +207,7 @@ private slots:
     void                    Slot_ModifDateBackup();
     void                    Slot_EffacePrgSauvegarde();
 private:
-    double                  BaseSize, ImagesSize, VideosSize, FreeSpace;
+    qint64                  BaseSize, ImagesSize, VideosSize, FreeSpace;
     UpDialog                *gAskBupRestore;
     UpLabel                 *labelResume, *labelVolumeLibre;
     void                    AskBupRestore(bool restore, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true);

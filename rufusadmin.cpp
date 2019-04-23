@@ -433,7 +433,7 @@ QString RufusAdmin::getExpressionSize(double size)
  */
 void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdestination, bool OKini, bool OKRssces, bool OKimages, bool OKvideos)
 {
-    QMap<QString,double>      DataDir;
+    QMap<QString,qint64>      DataDir;
     // taille de la base de données ----------------------------------------------------------------------------------------------------------------------------------------------
     BaseSize = 0;
     if (Restore)
@@ -645,95 +645,6 @@ void RufusAdmin::DisconnectTimers()
     gTimerVerifVerrou       ->disconnect();
 }
 
-/*!
- * \brief RufusAdmin::CompressFileJPG(QByteArray ba, QString nomfileOK, QString nomfileEchec)
- * comprime un fichier jpg à une taille inférieure à celle de la macro TAILLEMAXIIMAGES
- * \param QString nomfileOK le nom du fichier d'origine utilisé aussi en cas d'échec pour faire le log
- * \param QDate datetransfert date utilisée en cas d'échec pour faire le log
- * \return true si réussi, false si échec de l'enregistrement du fichier
- * en cas d'échec
-    * un fichier de log est utilisé ou créé au besoin dans le répertoire NOMDIR_ECHECSTRANSFERTS
-    * et une ligne résumant l'échec est ajoutée en fin de ce fichier
-    * le fichier d'origine est ajouté dans ce même répertoire
- */
-bool RufusAdmin::CompressFileJPG(QString nomfile, QDate datetransfert)
-{
-    /* on vérifie si le dossier des echecs de transferts existe sur le serveur et on le crée au besoin*/
-    QString NomDirStockageImagerie  = gsettingsIni->value("DossierImagerie").toString();
-    QString CheminEchecTransfrDir   = NomDirStockageImagerie + NOMDIR_ECHECSTRANSFERTS;
-    if (!Utils::mkpath(CheminEchecTransfrDir))
-    {
-        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
-        QStringList listmsg;
-        listmsg << msg;
-        dlg_message(listmsg, 3000, false);
-        return false;
-    }
-    /* on vérifie si le dossier provisoire existe sur le poste et on le crée au besoin*/
-    QString DirStockProvPath = NomDirStockageImagerie + NOMDIR_PROV;
-    if (!Utils::mkpath(DirStockProvPath))
-    {
-        QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + DirStockProvPath + "</b></font>" + tr(" invalide");
-        QStringList listmsg;
-        listmsg << msg;
-        dlg_message(listmsg, 3000, false);
-        return false;
-    }
-
-    QFile CC(nomfile);
-    double sz = CC.size();
-    if (sz < TAILLEMAXIIMAGES)
-        return true;
-    QImage  img(nomfile);
-    QString filename = QFileInfo(nomfile).fileName();
-    QString nomfichresize = DirStockProvPath + "/" + filename;
-    QFile fileresize(nomfichresize);
-    if (fileresize.exists())
-        fileresize.remove();
-    QFile echectrsfer(CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfert.toString("yyyy-MM-dd") + ".txt");
-    QPixmap pixmap;
-    double w = img.width();
-    double h = img.height();
-    int x = img.width();
-    if (int(w*h)>(4096*1024)) // si l'image dépasse 4 Mpixels, on la réduit en conservant les proportions
-    {
-        double proportion = w/h;
-        int y = int(sqrt((4096*1024)/proportion));
-        x = int (y*proportion);
-    }
-    pixmap = pixmap.fromImage(img.scaledToWidth(x,Qt::SmoothTransformation));
-    /* on enregistre le fichier sur le disque du serveur
-     * si on n'y arrive pas,
-        * on crée le fichier log des echecstransferts correspondants dans le répertoire des echecs de transfert sur le serveur
-        * on complète ce fichier en ajoutant une ligne correspondant à cet échec
-        * on enregistre dans ce dossier une copie du fichier d'origine
-     */
-    if (!pixmap.save(nomfichresize, "jpeg"))
-    {
-        if (echectrsfer.open(QIODevice::Append))
-        {
-            QTextStream out(&echectrsfer);
-            out << CC.fileName() << "\n" ;
-            echectrsfer.close();
-            CC.copy(CheminEchecTransfrDir + "/" + filename);
-        }
-        return false;
-    }
-    CC.remove();
-    /* on comprime*/
-    int tauxcompress = 90;
-    while (sz > TAILLEMAXIIMAGES && tauxcompress > 1)
-    {
-        pixmap.save(nomfichresize, "jpeg",tauxcompress);
-        sz = fileresize.size();
-        tauxcompress -= 10;
-    }
-    fileresize.copy(nomfile);
-    fileresize.close();
-    fileresize.remove();
-    return true;
-}
-
 void RufusAdmin::ConnectTimerInactive()
 {
     connect(ui->MiseEnVeilleprogressBar, &QProgressBar::valueChanged, this, [=]
@@ -748,9 +659,9 @@ void RufusAdmin::DisconnectTimerInactive()
     ui->MiseEnVeilleprogressBar->disconnect();
 }
 
-double RufusAdmin::CalcBaseSize()
+qint64 RufusAdmin::CalcBaseSize()
 {
-    double basesize = 0;
+    qint64 basesize = 0;
     QString sizereq = "SELECT SUM(SizeMB) from "
                       "(SELECT table_schema, round(sum(data_length+index_length)/1024/1024,4) AS SizeMB FROM information_schema.tables"
                       " where table_schema = 'ComptaMedicale'"
@@ -760,7 +671,7 @@ double RufusAdmin::CalcBaseSize()
                       " as bdd";
     QVariantList basedata = db->getFirstRecordFromStandardSelectSQL(sizereq,ok);
     if (ok && basedata.size()>0)
-        basesize = basedata.at(0).toDouble();
+        basesize = basedata.at(0).toLongLong();
     return basesize;
 }
 
@@ -1385,7 +1296,7 @@ void RufusAdmin::ExporteDocs()
                 qDebug() << "erreur";
                 return;
             }
-            if (!CompressFileJPG(CheminOKTransfrProv))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, gsettingsIni->value("DossierImagerie").toString()))
             {
                 db->SupprRecordFromTable(listexportjpg.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
                 continue;
@@ -1611,7 +1522,7 @@ void RufusAdmin::ExporteDocs()
                 qDebug() << "erreur";
                 return;
             }
-            if (!CompressFileJPG(CheminOKTransfrProv))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, gsettingsIni->value("DossierImagerie").toString()))
             {
                 db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", NOM_TABLE_FACTURES);
                 continue;
