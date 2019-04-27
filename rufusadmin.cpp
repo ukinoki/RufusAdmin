@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("22-04-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("26-04-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2404,31 +2404,61 @@ bool RufusAdmin::VerifBase()
             Message(tr("Mise à jour de la base vers la version ") + "<font color=\"red\"><b>" + QString::number(Version) + "</b></font>", 1000, false);
             QString Nomfic = "://majbase" + QString::number(Version) + ".sql";
             QFile DumpFile(Nomfic);
-            QString NomDumpFile = QDir::homePath() + "/Documents/Rufus/Ressources/majbase" + QString::number(Version) + ".sql";
-            DumpFile.copy(NomDumpFile);
-            QFile base(NomDumpFile);
-            QStringList listinstruct = DecomposeScriptSQL(NomDumpFile);
-            bool a = true;
-            foreach(const QString &s, listinstruct)
+            if (DumpFile.exists())
             {
-                //Edit(s);
-                if (!db->StandardSQL(s))
+                QString NomDumpFile = QDir::homePath() + "/Documents/Rufus/Ressources/majbase" + QString::number(Version) + ".sql";
+                DumpFile.copy(NomDumpFile);
+                QFile base(NomDumpFile);
+                QStringList listinstruct = Utils::DecomposeScriptSQL(NomDumpFile);
+                bool a = true;
+                foreach(const QString &s, listinstruct)
+                {
+                    if (!db->StandardSQL(s))
                         a = false;
+                }
+                int result=0;
+                base.remove();
+                if (a)
+                {
+                    result = 1;
+                    UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
+                }
+                else
+                {
+                    QSound::play(NOM_ALARME);
+                    UpMessageBox::Watch(Q_NULLPTR,tr("Echec de la mise à jour vers la version ") + QString::number(Version) + "\n" + tr("Le programme de mise à jour n'a pas pu effectuer la tâche!"));
+                }
+                if (result!=1)
+                    return false;
             }
-            int result=0;
-            base.remove();
-            if (a)
+            if (Version == 53)
             {
-                result = 1;
-                UpMessageBox::Watch(this,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
+                /*! dans les anciennes versions du programme antérieures à la 53, pour des raisons d'économie d'espace disque,
+                 * la création d'un dossier n'entraînait pas systématiquement
+                 * la création d'une ligne corresondante dans la table renseignementsmedicauxpatients
+                 * à partir de la version 53, cette ligen est créée systématiquement pour ne pas avoir à on vérifier sa présence
+                 *  à chaque fois qu'on veut enregistrer un renseignement
+                 * A partir de la version 53, cette ligne est systématiquement créée lors de la création d'un dossier
+                 * il n'y a donc plus à faire cette vérification
+                 * cette MAJ crée une ligne pour tous les dossiers n'ayant pas la correspondance dans la table renseignementsmedicauxpatients
+                 */
+                QList<QVariantList> listid =
+                        db->StandardSelectSQL("SELECT idpat FROM " NOM_TABLE_PATIENTS " pat"
+                                              " where  pat.idpat not in (select rmp.idpat from " NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS " rmp)", ok);
+                if (listid.size()>0)
+                {
+                    for (int i=0; i<listid.size(); i++)
+                    {
+                        QString req =   "INSERT INTO " NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS
+                                " (idPat) VALUES (" + listid.at(i).at(0).toString() + ")";
+                        db->StandardSQL(req);
+                    }
+                    UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version), QString::number(listid.size()) + tr(" enregistrements modifiés"));
+                }
+                else
+                    UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
+                db->StandardSQL("UPDATE " NOM_TABLE_PARAMSYSTEME " SET VersionBase = 53");
             }
-            else
-            {
-                QSound::play(NOM_ALARME);
-                UpMessageBox::Watch(this,tr("Echec de la mise à jour vers la version ") + QString::number(Version) + "\n" + tr("Le programme de mise à jour n'a pas pu effectuer la tâche!"));
-            }
-            if (result!=1)
-                return false;
         }
     }
     return true;

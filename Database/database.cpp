@@ -1288,18 +1288,19 @@ void DataBase::loadSocialDataPatient(Patient* patient, bool &ok)
     if(!ok || patlist.size()==0)
         return;
     QJsonObject jData{};
-    jData["adresse1"]   = patlist.at(0).toString();
-    jData["adresse2"]   = patlist.at(1).toString();
-    jData["adresse3"]   = patlist.at(2).toString();
-    jData["codepostal"] = patlist.at(3).toString();
-    jData["ville"]      = patlist.at(4).toString();
-    jData["telephone"]  = patlist.at(5).toString();
-    jData["portable"]   = patlist.at(6).toString();
-    jData["mail"]       = patlist.at(7).toString();
-    jData["NNI"]        = patlist.at(4).toLongLong();
-    jData["ALD"]        = (patlist.at(9).toInt() == 1);
-    jData["CMU"]        = (patlist.at(10).toInt() == 1);
-    jData["profession"] = patlist.at(11).toString();
+    jData["adresse1"]       = patlist.at(0).toString();
+    jData["adresse2"]       = patlist.at(1).toString();
+    jData["adresse3"]       = patlist.at(2).toString();
+    jData["codepostal"]     = patlist.at(3).toString();
+    jData["ville"]          = patlist.at(4).toString();
+    jData["telephone"]      = patlist.at(5).toString();
+    jData["portable"]       = patlist.at(6).toString();
+    jData["mail"]           = patlist.at(7).toString();
+    jData["NNI"]            = patlist.at(4).toLongLong();
+    jData["ALD"]            = (patlist.at(9).toInt() == 1);
+    jData["CMU"]            = (patlist.at(10).toInt() == 1);
+    jData["profession"]     = patlist.at(11).toString();
+    jData["isSocialLoaded"] = true;
     patient->addSocialData(jData);
 }
 
@@ -1329,10 +1330,11 @@ void DataBase::loadMedicalDataPatient(Patient* patient, bool &ok)
     jData["Important"]          = patlist.at(12).toString();
     jData["Resume"]             = patlist.at(13).toString();
     jData["TtOph"]              = patlist.at(14).toString();
+    jData["isMedicalLoaded"]    = true;
     patient->addMedicalData(jData);
 }
 
-Patient* DataBase::loadPatientById(int idPat)
+Patient* DataBase::loadPatientById(int idPat, bool all)
 {
     Patient *patient = new Patient();
     QString req = "SELECT idPat, PatNom, PatPrenom, PatDDN, Sexe, PatCreele, PatCreePar FROM " NOM_TABLE_PATIENTS " where idPat = " + QString::number(idPat);
@@ -1347,10 +1349,26 @@ Patient* DataBase::loadPatientById(int idPat)
     jData["dateDeNaissance"] = patdata.at(3).toDate().toString("yyyy-MM-dd");
     jData["datecreation"] = patdata.at(5).toDate().toString("yyyy-MM-dd");
     jData["idcreateur"] = patdata.at(6).toInt();
+    jData["isMedicalLoaded"] = all;
+    jData["isSocialLoaded"] = all;
     patient->setData(jData);
-
+    if (all)
+    {
+        bool ok;
+        loadSocialDataPatient(patient, ok);
+        loadMedicalDataPatient(patient, ok);
+    }
     return patient;
 }
+
+void DataBase::UpdateMG(Patient *pat, Correspondant *cor)
+{
+    QString id = (cor != Q_NULLPTR ? QString::number(cor->id()) : "null");
+    StandardSQL("update " NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS " set idcormedmg = " + id +
+                " where idpat = " + QString::number(pat->id()));
+    pat->setmg(cor->id());
+}
+
 
 /*
  * MDP
@@ -1454,12 +1472,12 @@ Acte* DataBase::loadActeById(int idActe)
     return acte;
 }
 
-QMap<int, Acte*> DataBase::loadActesByIdPat(int idPat)
+QMap<int, Acte*> DataBase::loadActesByPat(Patient *pat)
 {
     QMap<int, Acte*> list;
-    if( idPat == 0 )
+    if( pat == Q_NULLPTR )
         return list;
-    QString req = createActeRequest(0, idPat);
+    QString req = createActeRequest(0, pat->id());
     QList<QVariantList> actlist = StandardSelectSQL(req,ok);
     if(!ok || actlist.size()==0)
         return list;

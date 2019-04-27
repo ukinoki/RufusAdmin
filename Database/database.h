@@ -188,11 +188,12 @@ public:
     Villes*                 loadVillesAll();
 
     /*
-     * Gestion des Patients
+     * Patients
     */
     void                    loadSocialDataPatient(Patient* patient, bool &ok);
     void                    loadMedicalDataPatient(Patient* patient, bool &ok);
-    Patient*                loadPatientById(int idPat);
+    Patient*                loadPatientById(int idPat, bool all = false);
+    void                    UpdateMG(Patient *pat, Correspondant *cor);
 
     /*
      * Mots de passe
@@ -208,7 +209,7 @@ private:
     QJsonObject             extractActeData(QVariantList actdata);
 public:
     Acte*                   loadActeById(int idActe);
-    QMap<int, Acte*>        loadActesByIdPat(int idPat);
+    QMap<int, Acte*>        loadActesByPat(Patient *pat);
     double                  getActeMontant(int idActe);
 
 
