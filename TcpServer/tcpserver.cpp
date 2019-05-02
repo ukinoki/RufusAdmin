@@ -109,7 +109,7 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
     if (msg.contains(TCPMSG_MsgBAL))
     {
         /* un message de BAL reçu par le tcpserver a la struture
-                * QString contenant la liste des id de destianataires séparés par de virgules
+                * QString contenant la liste des id de destianataires séparés par des virgules
                 * TCPMSG_Separator
                 * QString le nombre de messages
                 * TCPMSG_Separator
@@ -129,13 +129,14 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
             if (listid.contains(QString::number(itthr.value()->idUser())))
                 envoyerA(itthr.value()->idUser(), nbmsg + TCPMSG_MsgBAL);
         }
+        Flags::I()->MAJflagMessages();
     }
     else if (msg.contains(TCPMSG_idUser))
     {
         msg.remove(TCPMSG_idUser);
         SocketFromDescriptor(sktdescriptor)->setIdUser(msg.toInt());
     }
-    else if (msg.contains(TCPMSG_DataSocket))               // les datas  du client qui vient de se connecter reçues par le serveur
+    else if (msg.contains(TCPMSG_DataSocket))         // les datas  du client qui vient de se connecter reçues par le serveur
     {
         msg.remove(TCPMSG_DataSocket);
         //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
@@ -148,13 +149,22 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
         envoieListeSockets();
         AfficheListeSockets(TCPMSG_DataSocket);
     }
-
     else if (msg == TCPMSG_EnvoieListSocket)          // un client a demandé la liste mise à jour des sockets
         envoieListeSockets(sktdescriptor);
     else if (msg.contains(TCPMSG_MAJDocsExternes))
         envoyerATous(msg);
     else if (msg.contains(TCPMSG_TestConnexion))
     {}
+    else if (msg.contains(TCPMSG_MAJSalAttente))
+    {
+        envoyerATous(msg, sktdescriptor);
+        Flags::I()->MAJFlagSalleDAttente();
+    }
+    else if (msg.contains(TCPMSG_MAJCorrespondants))
+    {
+        envoyerATous(msg, sktdescriptor);
+        Flags::I()->MAJflagCorrespondants();
+    }
     else
         envoyerATous(msg, sktdescriptor);
 }

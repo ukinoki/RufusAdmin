@@ -16,7 +16,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tcpsocket.h"
-#include "gbl_datas.h"
 
 TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
 {
@@ -98,11 +97,14 @@ void TcpSocket::envoyerMessage(QString msg)
     QByteArray paquet = msg.toUtf8();
     QString login = Datas::I()->users->getLoginById(idUser());
     QString msg2("");
-    if (msg.contains(TCPMSG_ListeSockets)) msg2 = TCPMSG_ListeSockets;
-    else if (msg.contains(TCPMSG_MAJSalAttente)) msg2 = TCPMSG_MAJSalAttente;
-    else if (msg.contains(TCPMSG_MAJCorrespondants)) msg2 = TCPMSG_MAJCorrespondants;
-    else if (msg.contains(TCPMSG_MAJDocsExternes)) msg2 = TCPMSG_MAJDocsExternes;
-    else if (msg.contains(TCPMSG_MAJCorrespondants)) msg2 = TCPMSG_MAJCorrespondants;
+    if (msg.contains(TCPMSG_ListeSockets))
+        msg2 = TCPMSG_ListeSockets;
+    else if (msg.contains(TCPMSG_MAJSalAttente))
+        msg2 = TCPMSG_MAJSalAttente;
+    else if (msg.contains(TCPMSG_MAJCorrespondants))
+        msg2 = TCPMSG_MAJCorrespondants;
+    else if (msg.contains(TCPMSG_MAJDocsExternes))
+        msg2 = TCPMSG_MAJDocsExternes;
     Logs::MSGSOCKET(msg2 + " - destinataire = " + login);
     //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
     if(socket->state() == QAbstractSocket::ConnectedState)

@@ -25,6 +25,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include <QTime>
 #include "gbl_datas.h"
+#include "flags.h"
 #include "tcpsocket.h"
 
 class TcpServer : public QTcpServer

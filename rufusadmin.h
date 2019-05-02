@@ -72,6 +72,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "database.h"
 #include "cls_user.h"
 #include <QTimer>
+#include "flags.h"
 
 namespace Ui {
 class RufusAdmin;
@@ -91,10 +92,12 @@ private:
     dlg_gestionusers            *Dlg_GestUsr;
     dlg_motifs                  *Dlg_motifs;
     dlg_paramconnexion          *DlgParam;
+    Flags                       *flags;
     bool                        ok;
     int                         idAdminDocs;
     int                         idlieuExercice;
     int                         gMode;
+    int                         m_flagcorrespondants, m_flagsalledattente, m_flagmessages;
     int                         dureeVeille;
     enum gMode                  {Poste, ReseauLocal, Distant};
     QIcon                       gIconRufusAdmin;
@@ -220,19 +223,14 @@ private:
     TcpServer           *TCPServer;
     quint16             PortTCPServer;
     QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;
-    int                 gflagCorrespdts, gflagSalDat, gflagMessages;
     QString             gIPadr, gMacAdress;
     QString             gSocketStatut;
     QDateTime           gDateDernierMessage;
-    int                 GetflagCorrespdts();
-    int                 GetflagMessages();
-    int                 GetflagSalDat();
     void                FermeTCP();
     void                KillSocket(QStringList Data);
     void                ResumeTCPSocketStatut();
 
-    void                VerifModifsSalledAttenteCorrespondantsetNouveauxMessages();
-    void                MAJTcpMsgEtFlagSalDat();
+    void                VerifModifsFlags();
     void                VerifVerrouDossier();
 signals:
     void                ModifEdit(QString txt);

@@ -23,6 +23,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDebug>
 #include "utils.h"
 #include "log.h"
+#include "gbl_datas.h"
 
 /*les règles non écrites
  * pas de classe héritée de thread

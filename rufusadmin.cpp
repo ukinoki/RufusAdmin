@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("28-04-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-05-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -139,6 +139,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     gIPadr                      = Utils::getIpAdress();
     gMacAdress                  = Utils::getMACAdress();
     UtiliseTCP = (gIPadr!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
+    flags                       = Flags::I();
     if (UtiliseTCP)
     {
         TCPServer                   = TcpServer::getInstance();
@@ -149,10 +150,10 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     }
     else
         db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = NULL");
-
-    gflagCorrespdts             = GetflagCorrespdts();
-    gflagSalDat                 = GetflagSalDat();
-
+    flags                       ->setTCP(UtiliseTCP);
+    m_flagcorrespondants        = flags->flagCorrespondants();
+    m_flagmessages              = flags->flagMessages();
+    m_flagsalledattente         = flags->flagSalleDAttente();
 
     gTimerSalDatCorrespMsg      = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants et de l'arrivée de nouveaux messages utilisé par
                                                            pour verifier les modifications faites par les postes distants
@@ -205,6 +206,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(ui->RestaurBaseupPushButton,        SIGNAL(clicked(bool)),              this,   SLOT(Slot_RestaureBase()));
     connect(ui->StockageupPushButton,           SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifDirImagerie()));
     connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(gSocketStatut, 20000);});
+    // MAJ Salle d'attente ----------------------------------------------------------------------------------
+    connect(flags,                              &Flags::UpdSalleDAttente,           this,   [=](int a)  { m_flagsalledattente = a; } );
+    // MAJ Correspondants ----------------------------------------------------------------------------------
+    connect(flags,                              &Flags::UpdCorrespondants,          this,   [=](int a)  { m_flagcorrespondants = a; } );
+    // MAJ messages ----------------------------------------------------------------------------------
+    connect(flags,                              &Flags::UpdMessages,                this,   [=](int a)  { m_flagmessages = a; } );
+
 
 
     widgAppareils = new WidgetButtonFrame(ui->AppareilsConnectesupTableWidget);
@@ -627,7 +635,7 @@ void RufusAdmin::ConnectTimers()
         connect (gTimerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     }
     ConnectTimerInactive();
-    connect (gTimerSalDatCorrespMsg,    &QTimer::timeout,       this,   &RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages);
+    connect (gTimerSalDatCorrespMsg,    &QTimer::timeout,       this,   &RufusAdmin::VerifModifsFlags);
     connect (gTimerVerifVerrou,         &QTimer::timeout,       this,   &RufusAdmin::VerifVerrouDossier);
 }
 
@@ -3023,38 +3031,8 @@ bool RufusAdmin::ImmediateBackup()
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------
-    -- Gestion du flag de mise à jour de la liste des correspondants -----------------------------------------------------------------------------
-    ------------------------------------------------------------------------------------------------------------------------------------*/
-int RufusAdmin::GetflagCorrespdts()
-{
-    QVariantList flagrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMG from " NOM_TABLE_FLAGS, ok);
-    if (ok && flagrcd.size() > 0)
-        return flagrcd.at(0).toInt();
-    return 0;
-}
-
-/*--------------------------------------------------------------------------------------------------------------------------------------
     -- Gestion du flag de mise à jour de l'arrivée de nouveaux messages -----------------------------------------------------------------------------
     ------------------------------------------------------------------------------------------------------------------------------------*/
-int RufusAdmin::GetflagMessages()
-{
-    QVariantList flagmsgrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagMessages from " NOM_TABLE_FLAGS, ok);
-    if (ok && flagmsgrcd.size() > 0)
-        return flagmsgrcd.at(0).toInt();
-    return 0;
-}
-
-/*--------------------------------------------------------------------------------------------------------------------------------------
-    -- Gestion du flag de mise à jour de la salle d'attente -----------------------------------------------------------------------------
-    ------------------------------------------------------------------------------------------------------------------------------------*/
-int RufusAdmin::GetflagSalDat()
-{
-    QVariantList flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
-    if (ok && flagsaldatrcd.size() > 0)
-        return flagsaldatrcd.at(0).toInt();
-    return 0;
-}
-
 void RufusAdmin::FermeTCP()
 {
     if (!UtiliseTCP)
@@ -3170,27 +3148,7 @@ void RufusAdmin::VerifVerrouDossier()
         mettreajourlasalledattente = true;
     }
     if (mettreajourlasalledattente)
-        MAJTcpMsgEtFlagSalDat();
-}
-
-/*------------------------------------------------------------------------------------------------------------------------------------
--- Modifier la table UtilisateursConnectes pour signifier aux autres utilisateurs que la salle d'attente vient d'être modifiée --------------------
-------------------------------------------------------------------------------------------------------------------------------------*/
-void RufusAdmin::MAJTcpMsgEtFlagSalDat()
-{
-    /* envoi du message de MAJ de la salle d'attente aux clients */
-    //TCPServer->envoyerATous(TCPMSG_MAJSalAttente);                      // le slot verifverroudossier a déconnecté un tutilisateur et modifié la salle d'attente si des patients étaient verrouillés
-
-    /* mise à jour du flag pour les utilisateurs distants qui le surveillent et mettent ainsi à jour leur salle d'attente */
-    QVariantList flagsaldatrcd = db->getFirstRecordFromStandardSelectSQL("select MAJflagSalDat from " NOM_TABLE_FLAGS, ok);
-    QString MAJreq = "insert into " NOM_TABLE_FLAGS " (MAJflagSalDat) VALUES (1)";
-    int a = 0;
-    if (ok && flagsaldatrcd.size()>(0)) {
-        a = flagsaldatrcd.at(0).toInt() + 1;
-        MAJreq = "update " NOM_TABLE_FLAGS " set MAJflagSalDat = " + QString::number(a);
-    }
-    db->StandardSQL(MAJreq);
-    gflagSalDat = a;
+        flags->MAJFlagSalleDAttente();
 }
 
 void RufusAdmin::KillSocket(QStringList datas)  //TODO marche mal quand le client se reconnecte, ça ne marche plus
@@ -3202,7 +3160,7 @@ void RufusAdmin::KillSocket(QStringList datas)  //TODO marche mal quand le clien
 }
 
 
-void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
+void RufusAdmin::VerifModifsFlags()
 /* Utilisé pour vérifier
  *      des modifs de la salle d'attente
  *      des modifs de la liste des correspondants
@@ -3210,24 +3168,24 @@ void RufusAdmin::VerifModifsSalledAttenteCorrespondantsetNouveauxMessages()
  *  effectués par des postes distants
  */
 {
-    int flag = GetflagSalDat();
-    if (gflagSalDat < flag)
+    int flag = flags->flagSalleDAttente();
+    if (m_flagsalledattente < flag)
     {
-        gflagSalDat = flag;
+        m_flagsalledattente = flag;
         if (UtiliseTCP)
             TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
-    flag = GetflagCorrespdts();
-    if (gflagCorrespdts < flag)
+    flag = flags->flagCorrespondants();
+    if (m_flagcorrespondants < flag)
     {
-        gflagCorrespdts = flag;
+        m_flagcorrespondants = flag;
         if (UtiliseTCP)
             TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
-    flag = GetflagMessages();
-    if (gflagMessages < flag)
+    flag = flags->flagMessages();
+    if (m_flagmessages < flag)
     {
-        gflagMessages = flag;
+        m_flagmessages = flag;
 
         QString req =
                 "select mess.idMessage, iddestinataire, creele from "

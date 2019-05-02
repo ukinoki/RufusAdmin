@@ -54,7 +54,8 @@ SOURCES += \
     dlg_gestionusers.cpp \
     dlg_motifs.cpp \
     utils.cpp \
-    gbl_datas.cpp
+    gbl_datas.cpp \
+    flags.cpp
 
 HEADERS += \
         rufusadmin.h \
@@ -71,7 +72,8 @@ HEADERS += \
     utils.h \
     gbl_datas.h \
     log.h \
-    icons.h
+    icons.h \
+    flags.h
 
 FORMS += \
         rufusadmin.ui \

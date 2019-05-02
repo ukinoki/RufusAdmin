@@ -52,7 +52,8 @@ SOURCES += \
     dlg_motifs.cpp \
     utils.cpp \
     gbl_datas.cpp \
-    dlg_gestionbanques.cpp
+    dlg_gestionbanques.cpp \
+    flags.cpp
 
 HEADERS += \
         rufusadmin.h \
@@ -69,7 +70,8 @@ HEADERS += \
     gbl_datas.h \
     log.h \
     icons.h \
-    dlg_gestionbanques.h
+    dlg_gestionbanques.h \
+    flags.h
 
 FORMS += \
         rufusadmin.ui \
