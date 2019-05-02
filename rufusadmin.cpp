@@ -150,7 +150,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     }
     else
         db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set AdresseTCPServeur = NULL");
-    flags                       ->setTCP(UtiliseTCP);
+
     m_flagcorrespondants        = flags->flagCorrespondants();
     m_flagmessages              = flags->flagMessages();
     m_flagsalledattente         = flags->flagSalleDAttente();

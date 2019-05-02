@@ -91,8 +91,6 @@ public:
     explicit                Flags(QObject *parent = Q_NULLPTR);
     ~Flags();
 
-    void                    setTCP(bool tcp);
-
     int                     flagCorrespondants();               //!> flag de mise à jour de la liste des corresondants
     int                     flagMessages();                     //!> flag de vérification des messages
     int                     flagSalleDAttente();                //!> flag de mise à jour de la salle d'attente
@@ -102,14 +100,13 @@ public:
     void                    MAJFlagSalleDAttente();             //!<  MAJ du flag de la salle d'attente
 
 signals:
-    void                    UpdCorrespondants(int);             //!< signal de mise à jour de la liste des correspondants
-    void                    UpdMessages(int);                   //!< signal de mise à jour de la messagerie
-    void                    UpdSalleDAttente(int);              //!< signal de mise à jour de la salle d'attente
+    void                    UpdCorrespondants(int);             //!< signal de mise à jour de la liste des correspondants   - l'argument donne la nouvelle valeur du flag
+    void                    UpdMessages(int);                   //!< signal de mise à jour de la messagerie                 - l'argument donne la nouvelle valeur du flag
+    void                    UpdSalleDAttente(int);              //!< signal de mise à jour de la salle d'attente            - l'argument donne la nouvelle valeur du flag
 
 private:
     static Flags            *instance;
     bool                    ok;
-    bool                    TCP;
 };
 
 
