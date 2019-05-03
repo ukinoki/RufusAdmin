@@ -1,24 +1,22 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin or Rufus.
+This file is part of RufusAdmin.
 
-RufusAdmin and Rufus are free software: you can redistribute it and/or modify
+RufusAdmin is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin and Rufus are distributed in the hope that it will be useful,
+RufusAdmin is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "uppushbutton.h"
 #include <QApplication>
-#include "icons.h"
-#include "styles.h"
 
 UpPushButton::UpPushButton(QWidget *parent) : QPushButton(parent)
 {
@@ -27,13 +25,17 @@ UpPushButton::UpPushButton(QWidget *parent) : QPushButton(parent)
     gToolTipMsg = "";
     installEventFilter(this);
     setFlat(false);
-    setStyleSheet(STYLE_UPPUSHBUTTON);
+    setStyleSheet("UpPushButton {border: 1px solid gray; border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px;"
+                  " padding-left: 8px; padding-right: 8px; padding-top: 3px; padding-bottom: 3px; qproperty-iconSize: 30px 30px; qproperty-flat: false;"
+                  " color : #000000;"
+                  " background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);}"
+                  " UpPushButton:focus {color : #000000; border: 2px solid rgb(164, 205, 255); border-radius: 5px;}"
+                  " UpPushButton:pressed {color : gray; background-color: rgb(175, 175, 175);}"
+                  " UpPushButton:!enabled {color : gray;}");
+    giconAnnul  .addFile(QStringLiteral("://Supprime.png"), QSize(30,30), QIcon::Normal, QIcon::Off);
+    giconOK     .addFile(QStringLiteral("://start.png"), QSize(), QIcon::Normal, QIcon::Off);
+    giconImprime.addFile(QStringLiteral("://Imprimer.png"), QSize(25,25), QIcon::Normal, QIcon::Off);
     setContextMenuPolicy(Qt::NoContextMenu);
-}
-
-UpPushButton::UpPushButton(QString text, QWidget *parent) : UpPushButton(parent)
-{
-    setText(text);
 }
 
 UpPushButton::~UpPushButton()
@@ -84,18 +86,18 @@ void UpPushButton::setUpButtonStyle(enum StyleBouton Style, enum TailleBouton Ta
     switch (Style) {
     case OKBUTTON:
         setShortcut(QKeySequence("Meta+Return"));
-        setIcon(Icons::icOK());
+        setIcon(giconOK);
         setText("OK");
         move(parentWidget()->size().width()-width-8,parentWidget()->size().height()-60);
         break;
     case ANNULBUTTON:
         setShortcut(QKeySequence("F12"));
-        setIcon(Icons::icAnnuler());
+        setIcon(giconAnnul);
         setText(tr("Annuler"));
         move(parentWidget()->size().width()-width-width-8,parentWidget()->size().height()-60);
         break;
     case IMPRIMEBUTTON:
-        setIcon(Icons::icImprimer());
+        setIcon(giconImprime);
         setText(tr("Imprimer"));
         move(parentWidget()->size().width()-width-width-width-8,parentWidget()->size().height()-60);
         break;

@@ -17,7 +17,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "upsmallbutton.h"
 #include "icons.h"
-#include "styles.h"
 
 
 UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
@@ -32,7 +31,9 @@ UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
     StyleBouton         = NOBUTTON;
     gLuggage            = -1;
     gToolTipMsg         = "";
-    setStyleSheet(STYLE_UPSMALLBUTTON);
+    setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
+        "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
+        "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
 }
 UpSmallButton::UpSmallButton(QString text, QWidget *parent) : UpSmallButton(parent)
 {
@@ -94,15 +95,17 @@ void UpSmallButton::setText(QString txt)
                             même si txt = "", ce qui entraîne alors obligatoirement le changement de style du bouton*/
     setFocusPolicy(Qt::StrongFocus);
     setFixedHeight(45);
-    setStyleSheet(STYLE_UPSMALLBUTTON);
+    setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
+        "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
+        "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
 }
 
-void UpSmallButton::setData(QVariant var)
+void UpSmallButton::setLuggage(QVariant var)
 {
     gLuggage = var;
 }
 
-QVariant UpSmallButton::Data()
+QVariant UpSmallButton::Luggage()
 {
     return gLuggage;
 }
@@ -202,7 +205,7 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
         if (isEnabled())
         {
             if (ButtonStyle() == PRINTBUTTON)
-                emit clicked(Data());
+                emit clicked(Luggage());
             else
                 emit clicked(getId());
         }

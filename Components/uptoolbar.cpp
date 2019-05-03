@@ -55,10 +55,7 @@ UpToolBar::UpToolBar(bool AvecFinDebut, bool AvecReload, QWidget *parent) : QToo
 UpToolBar::~UpToolBar()
 {
 }
-QString UpToolBar::choix()
-{
-    return action;
-}
+
 void UpToolBar::TBChoix(QAction *choix)
 {
     action = choix->text();

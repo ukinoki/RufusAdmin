@@ -28,8 +28,10 @@ class UpLineEdit : public QLineEdit
 {
     Q_OBJECT
 public:
-    explicit    UpLineEdit(QWidget *parent = Q_NULLPTR);
+    explicit UpLineEdit(QWidget *parent = Q_NULLPTR);
     ~UpLineEdit();
+    void        setCanDepart(bool OK);
+    bool        getCanDepart() const;
     void        setRowTable(int val);
     int         getRowTable() const;
     void        setId(int id);
@@ -38,6 +40,8 @@ public:
     void        setColumnTable(int val);
     void        setData(QVariant data);
     QVariant    getData();
+    void        setPeutEtreVide(bool);
+    bool        getPeutEtreVide();
     void        setValeurAvant(QString valprec);
     QString     getValeurAvant() const;
     void        setValeurApres(QString valpost);
@@ -51,12 +55,15 @@ public:
 private:
     QString     gToolTipMsg;
     bool        eventFilter(QObject *obj, QEvent *event)  ;
+    bool        CanDepart, PeutEtreVide;
     int         RowTable, ColumnTable, id;
     QString     ValeurAvant, ValeurApres, Champ, Table;
     QVariant    linedata;
+    void        ReemitTextEdited();
     void        AfficheToolTip();
 
 signals:
+    void        upTextEdited(QString texte, int row, int col);
     void        TextModified(QString);
     void        mouseEnter(int row);
     void        mouseRelease(int row);

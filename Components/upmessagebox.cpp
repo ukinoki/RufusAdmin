@@ -22,13 +22,13 @@ UpMessageBox::UpMessageBox(QWidget *parent) : UpDialog(parent)
 {
     lblIcon             = new UpLabel();
     Textedt             = new UpLabel();
-    InfoLabel           = new UpLabel();
+    InfoTextedt         = new UpLabel();
     textlayout          = new QVBoxLayout();
     infolayout          = new QHBoxLayout();
     ReponsSmallButton   = Q_NULLPTR;
     ReponsPushButton    = Q_NULLPTR;
     Textedt             ->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
-    InfoLabel           ->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
+    InfoTextedt         ->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
 
     textlayout      ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding));
     textlayout      ->addSpacerItem(new QSpacerItem(350,0,QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -36,8 +36,8 @@ UpMessageBox::UpMessageBox(QWidget *parent) : UpDialog(parent)
     infolayout      ->setSpacing(30);
     textlayout      ->setSpacing(5);
     textlayout      ->setContentsMargins(0,0,0,0);
-    dlglayout()     ->insertLayout(0,infolayout);
-    dlglayout()     ->setSizeConstraint(QLayout::SetFixedSize);
+    dlglayout()    ->insertLayout(0,infolayout);
+    dlglayout()    ->setSizeConstraint(QLayout::SetFixedSize);
 
     setModal(true);
 }
@@ -130,7 +130,7 @@ void UpMessageBox::UpMessageBox::setText(QString Text)
     Textedt         ->setStyleSheet("border: 0px solid; background-color: rgb(200,200,200,0)");
     Textedt         ->setText("<b>" + Text + "</b>");
     Textedt         ->setWordWrap(true);
-    Textedt         ->setFixedSize(Utils::CalcSize(Text));
+    Textedt         ->setFixedSize(CalcSize(Text));
     textlayout      ->insertWidget(1,Textedt);
 }
 
@@ -138,14 +138,14 @@ void UpMessageBox::setInformativeText(QString Text)
 {
     if (Text == "")
         return;
-    InfoLabel     ->setStyleSheet("border: 0px solid; background-color: rgb(200,200,200,0)");
-    InfoLabel     ->setText(Text);
-    InfoLabel     ->setWordWrap(true);
+    InfoTextedt     ->setStyleSheet("border: 0px solid; background-color: rgb(200,200,200,0)");
+    InfoTextedt     ->setText(Text);
+    InfoTextedt     ->setWordWrap(true);
     int position = 1;
     if (dynamic_cast<QLabel*>(textlayout->itemAt(1)->widget()) != Q_NULLPTR)
         position += 1;
-    InfoLabel     ->setFixedSize(Utils::CalcSize(Text));
-    textlayout      ->insertWidget(position,InfoLabel);
+    InfoTextedt     ->setFixedSize(CalcSize(Text));
+    textlayout      ->insertWidget(position,InfoTextedt);
     textlayout      ->setSizeConstraint(QLayout::SetFixedSize);
 }
 
@@ -153,6 +153,25 @@ void UpMessageBox::setDefaultButton(QPushButton *butt)
 {
     butt->setDefault(true);
     butt->setFocus();
+}
+
+QSize UpMessageBox::CalcSize(QString txt)
+{
+    QTextEdit txtedit;
+    txtedit.setText(txt);
+    txt = txtedit.toPlainText();
+    QFont fm = qApp->font();
+    QStringList lmsg            = txt.split("\n");
+    int         w               = 0;
+    double      hauteurligne    = QFontMetrics(fm).height()*1.2;
+    int         nlignes         = lmsg.size();
+    for (int k=0; k<nlignes; k++)
+    {
+        int x   = int(QFontMetrics(fm).width(lmsg.at(k))*1.2); //le 1.1 est là pour tenir compte des éventuels caractères gras
+        w       = (x>w? x : w);
+        //qDebug() << lmsg.at(k) + " - ligne = " + QString::number(k+1) + " - largeur = " + QString::number(w);
+    }
+    return QSize(w,int(hauteurligne*nlignes));
 }
 
 void UpMessageBox::Show(QWidget *parent, QString Text, QString InfoText)
@@ -165,8 +184,8 @@ void UpMessageBox::Show(QWidget *parent, QString Text, QString InfoText)
     msgbox  ->AjouteLayButtons(UpDialog::ButtonOK);
     msgbox  ->dlglayout()       ->setSizeConstraint(QLayout::SetFixedSize);
     msgbox  ->buttonslayout()   ->setSpacing(50);
-    msgbox  ->Textedt           ->setFixedSize(Utils::CalcSize(Text));
-    msgbox  ->InfoLabel       ->setFixedSize(Utils::CalcSize(InfoText));
+    msgbox  ->Textedt           ->setFixedSize(msgbox->CalcSize(Text));
+    msgbox  ->InfoTextedt       ->setFixedSize(msgbox->CalcSize(InfoText));
 
     for (int i=0; i<msgbox->buttonslayout()->count();i++)
     {
@@ -205,8 +224,8 @@ int UpMessageBox::Watch(QWidget *parent, QString Text, QString InfoText, Buttons
     }
     msgbox  ->dlglayout()       ->setSizeConstraint(QLayout::SetFixedSize);
     msgbox  ->buttonslayout()   ->setSpacing(50);
-    msgbox  ->Textedt           ->setFixedSize(Utils::CalcSize(Text));
-    msgbox  ->InfoLabel       ->setFixedSize(Utils::CalcSize(InfoText));
+    msgbox  ->Textedt           ->setFixedSize(msgbox->CalcSize(Text));
+    msgbox  ->InfoTextedt       ->setFixedSize(msgbox->CalcSize(InfoText));
     if (msgbox  ->exec()>0)
         return msgbox->clickedButton()->ButtonStyle();
     else return UpSmallButton::CANCELBUTTON;
@@ -234,8 +253,8 @@ int UpMessageBox::Question(QWidget *parent, QString Text, QString InfoText, Butt
             connect(butt, &QPushButton::clicked, msgbox, [=] {msgbox->Repons(butt);});
         }
     }
-    msgbox  ->Textedt           ->setFixedSize(Utils::CalcSize(Text));
-    msgbox  ->InfoLabel       ->setFixedSize(Utils::CalcSize(InfoText));
+    msgbox  ->Textedt           ->setFixedSize(msgbox->CalcSize(Text));
+    msgbox  ->InfoTextedt       ->setFixedSize(msgbox->CalcSize(InfoText));
     msgbox  ->dlglayout()       ->setSizeConstraint(QLayout::SetFixedSize);
     msgbox  ->buttonslayout()   ->setSpacing(50);
     if (msgbox  ->exec()>0)
@@ -253,8 +272,8 @@ void UpMessageBox::Information(QWidget *parent, QString Text, QString InfoText)
 
     msgbox  ->AjouteLayButtons(UpDialog::ButtonOK);
     connect (msgbox->OKButton, &QPushButton::clicked, msgbox, [=] {msgbox->accept();});
-    msgbox  ->Textedt       ->setFixedSize(Utils::CalcSize(Text));
-    msgbox  ->InfoLabel   ->setFixedSize(Utils::CalcSize(InfoText));
+    msgbox  ->Textedt       ->setFixedSize(msgbox->CalcSize(Text));
+    msgbox  ->InfoTextedt   ->setFixedSize(msgbox->CalcSize(InfoText));
     msgbox  ->dlglayout()   ->setSizeConstraint(QLayout::SetFixedSize);
     msgbox  ->exec();
 }

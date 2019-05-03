@@ -19,6 +19,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 UpLineEdit::UpLineEdit(QWidget *parent) : QLineEdit(parent)
 {
+    CanDepart       = true;
+    PeutEtreVide    = true;
     RowTable        = -1;
     ColumnTable     = -1;
     id              = -1;
@@ -28,6 +30,8 @@ UpLineEdit::UpLineEdit(QWidget *parent) : QLineEdit(parent)
     Table           = "";
     linedata        = QVariant();
     installEventFilter(this);
+    connect(this, &QLineEdit::textEdited,       this, &UpLineEdit::ReemitTextEdited);
+    // connect(this, &QLineEdit::inputRejected,    this, [=] {QSound::play(NOM_ALARME);}); le signal inpuRejected n'est pas reconnu par osx...
     setContextMenuPolicy(Qt::NoContextMenu);
 }
 
@@ -86,6 +90,16 @@ void UpLineEdit::setImmediateToolTip(QString Msg)
     gToolTipMsg = Msg;
 }
 
+void UpLineEdit::setCanDepart(bool OK)
+{
+    CanDepart = OK;
+}
+
+bool UpLineEdit::getCanDepart() const
+{
+    return CanDepart;
+}
+
 void UpLineEdit::setData(QVariant data)
 {
     linedata = data;
@@ -94,6 +108,16 @@ void UpLineEdit::setData(QVariant data)
 QVariant UpLineEdit::getData()
 {
     return linedata;
+}
+
+void UpLineEdit::setPeutEtreVide(bool OK)
+{
+    PeutEtreVide = OK;
+}
+
+bool UpLineEdit::getPeutEtreVide()
+{
+    return PeutEtreVide;
 }
 
 void UpLineEdit::setId(int Id)
@@ -162,3 +186,7 @@ QString UpLineEdit::getTableCorrespondant() const
     return Table;
 }
 
+void UpLineEdit::ReemitTextEdited()
+{
+    emit upTextEdited(text(), RowTable, ColumnTable);
+}

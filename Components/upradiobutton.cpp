@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin or Rufus.
+This file is part of RufusAdmin.
 
-RufusAdmin and Rufus are free software: you can redistribute it and/or modify
+RufusAdmin is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin and Rufus are distributed in the hope that it will be useful,
+RufusAdmin is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upradiobutton.h"
@@ -21,19 +21,9 @@ UpRadioButton::UpRadioButton(QWidget *parent) : QRadioButton(parent)
 {
     installEventFilter(this);
     setContextMenuPolicy(Qt::NoContextMenu);
-    gid         = -1;
-    Toggable    = true;
-    m_item    = Q_NULLPTR;
-}
-
-UpRadioButton::UpRadioButton(const QString Title, QWidget *parent) : QRadioButton(Title, parent)
-{
-    installEventFilter(this);
-    setContextMenuPolicy(Qt::NoContextMenu);
     gid          = -1;
     Toggable  = true;
 }
-
 void UpRadioButton::AfficheToolTip()
 {
     if (gToolTipMsg != "" && isEnabled())
@@ -74,13 +64,4 @@ void UpRadioButton::setiD(int val)
 int UpRadioButton::iD() const
 {
     return gid;
-}
-
-void UpRadioButton::setItem(Item* item)
-{
-    m_item = item;
-}
-Item* UpRadioButton::getItem()
-{
-    return m_item;
 }

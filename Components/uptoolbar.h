@@ -32,9 +32,9 @@ public:
     QAction*            Next();
     QAction*            Prec();
     QAction*            Reload();
-    QString             choix();
-private:
     QString             action;
+private:
+    void                EmetReponse();
     QAction             *debut, *prec, *suiv, *fin, *reload;
     void                TBChoix(QAction *choix);
 signals:
