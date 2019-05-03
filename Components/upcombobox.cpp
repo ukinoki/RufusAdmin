@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upcombobox.h"
@@ -28,11 +28,17 @@ UpComboBox::UpComboBox(QWidget *parent) : QComboBox (parent)
     gToolTipMsg     = "";
     setContextMenuPolicy(Qt::NoContextMenu);
     installEventFilter(this);
+    connect(this, QOverload<int>::of(&QComboBox::currentIndexChanged),  this, &UpComboBox::clearImmediateToolTip);
 }
 
 UpComboBox::~UpComboBox()
 {
 
+}
+
+void UpComboBox::clearImmediateToolTip()
+{
+    if (currentIndex()==-1) setImmediateToolTip("");
 }
 
 // ------------------------------------------------------------------------------------------
@@ -44,7 +50,7 @@ bool UpComboBox::eventFilter(QObject *obj, QEvent *event)
         setValeurAvant(currentText());
     if (event->type() == QEvent::FocusOut)
     {
-        if (lineEdit()!=NULL)
+        if (lineEdit()!=Q_NULLPTR)
         {
             if (lineEdit()->text() != "")
             {

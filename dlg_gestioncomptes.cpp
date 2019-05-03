@@ -23,7 +23,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDialog(parent), ui(new Ui::dlg_gestioncomptes)
 {
     ui->setupUi(this);
-    db                      = DataBase::getInstance();
+    db                      = DataBase::I();
     gDataUser               = DataUser;
 
     gidUser                 = gDataUser->id();

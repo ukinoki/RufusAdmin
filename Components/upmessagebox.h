@@ -25,6 +25,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QApplication>
 #include <QTextEdit>
 #include "macros.h"
+#include "utils.h"
 
 class UpMessageBox : public UpDialog
 {
@@ -50,8 +51,7 @@ public:
     void            setDefaultButton(QPushButton*);
 
 private:
-    QSize           CalcSize(QString);
-    UpLabel         *lblIcon, *Textedt, *InfoTextedt;
+    UpLabel         *lblIcon, *Textedt, *InfoLabel;
     QHBoxLayout     *infolayout;
     QVBoxLayout     *textlayout;
     UpSmallButton   *ReponsSmallButton;

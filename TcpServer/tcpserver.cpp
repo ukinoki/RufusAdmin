@@ -20,7 +20,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 TcpServer* TcpServer::instance = Q_NULLPTR;
 
-TcpServer* TcpServer::getInstance()
+TcpServer* TcpServer::I()
 {
     if( !instance )
         instance = new TcpServer();

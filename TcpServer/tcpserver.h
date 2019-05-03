@@ -32,7 +32,7 @@ class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    static      TcpServer* getInstance();
+    static      TcpServer* I();
     bool        start();
     QString     ListeSockets();
     void        setId(int id);

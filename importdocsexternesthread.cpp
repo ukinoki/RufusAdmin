@@ -21,7 +21,7 @@ ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool 
 {
     thread          = new QThread;
     moveToThread(thread);
-    db              = DataBase::getInstance();
+    db              = DataBase::I();
     idAdminDocs     = iduser;
     idLieuExercice  = idlieu;
     Acces           = (local? Local : Distant);

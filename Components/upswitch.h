@@ -15,30 +15,33 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UPTOOLBAR_H
-#define UPTOOLBAR_H
+#ifndef UPSWITCH_H
+#define UPSWITCH_H
 
-#include <QToolBar>
+#include <QFrame>
+#include <QLabel>
+#include <QPixmap>
 #include <QEvent>
+#include "styles.h"
 
-class UpToolBar : public QToolBar
+class UpSwitch : public QFrame
 {
     Q_OBJECT
 public:
-    explicit    UpToolBar(bool AvecFinDebut = true, bool AvecReload = false, QWidget *parent = Q_NULLPTR);
-    ~UpToolBar();
-    QAction*            First();
-    QAction*            Last();
-    QAction*            Next();
-    QAction*            Prec();
-    QAction*            Reload();
-    QString             choix();
+    explicit UpSwitch(QWidget *parent = Q_NULLPTR);
+    int     PosSwitch();
+
 private:
-    QString             action;
-    QAction             *debut, *prec, *suiv, *fin, *reload;
-    void                TBChoix(QAction *choix);
+    int     pos;
+    QLabel  *Activelbl;
+    bool    eventFilter(QObject *watched, QEvent *event);
+    void    BasculeSwitch();
+    QLabel  *datelbl, *cursorlbl, *typelbl;
+
 signals:
-    void                TBSignal();
+    void    Bascule();
+
+public slots:
 };
 
-#endif // UPTOOLBAR_H
+#endif // UPSWITCH_H

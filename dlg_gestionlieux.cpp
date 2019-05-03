@@ -22,7 +22,7 @@ dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
     : UpDialog(QDir::homePath() + NOMFIC_INI, "PositionsFiches/PositionLieux", parent)
 {
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    db              = DataBase::getInstance();
+    db              = DataBase::I();
     AjouteLayButtons(UpDialog::ButtonClose);
     connect(CloseButton, SIGNAL(clicked(bool)), this, SLOT(Slot_EnregLieux()));
 

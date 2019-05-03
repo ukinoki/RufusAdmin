@@ -23,7 +23,7 @@ dlg_paramconnexion::dlg_paramconnexion(QWidget *parent) :
     ui(new Ui::dlg_paramconnexion)
 {
     ui->setupUi(this);
-    db = DataBase::getInstance();
+    db = DataBase::I();
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
     QStringList ports;
@@ -58,7 +58,7 @@ void dlg_paramconnexion::Slot_Verif()
 
 QSqlDatabase dlg_paramconnexion::getdatabase()
 {
-    return DataBase::getInstance()->getDataBase();
+    return DataBase::I()->getDataBase();
 }
 
 bool dlg_paramconnexion::TestConnexion()

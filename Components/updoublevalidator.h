@@ -15,30 +15,18 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UPTOOLBAR_H
-#define UPTOOLBAR_H
+#ifndef UPDOUBLEVALIDATOR_H
+#define UPDOUBLEVALIDATOR_H
 
-#include <QToolBar>
-#include <QEvent>
+#include <QDoubleValidator>
+#include <QValidator>
+#include <QLocale>
 
-class UpToolBar : public QToolBar
+class upDoubleValidator: public QDoubleValidator
 {
-    Q_OBJECT
 public:
-    explicit    UpToolBar(bool AvecFinDebut = true, bool AvecReload = false, QWidget *parent = Q_NULLPTR);
-    ~UpToolBar();
-    QAction*            First();
-    QAction*            Last();
-    QAction*            Next();
-    QAction*            Prec();
-    QAction*            Reload();
-    QString             choix();
-private:
-    QString             action;
-    QAction             *debut, *prec, *suiv, *fin, *reload;
-    void                TBChoix(QAction *choix);
-signals:
-    void                TBSignal();
+    upDoubleValidator(double bottom, double top, int decimals, QObject * parent);
+    QValidator::State validate(QString &s, int &i) const;
 };
 
-#endif // UPTOOLBAR_H
+#endif // UPDOUBLEVALIDATOR_H

@@ -15,30 +15,24 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UPTOOLBAR_H
-#define UPTOOLBAR_H
+#include "updoublevalidator.h"
 
-#include <QToolBar>
-#include <QEvent>
-
-class UpToolBar : public QToolBar
+upDoubleValidator::upDoubleValidator(double bottom, double top, int decimals, QObject * parent) :
+    QDoubleValidator(bottom, top, decimals, parent)
 {
-    Q_OBJECT
-public:
-    explicit    UpToolBar(bool AvecFinDebut = true, bool AvecReload = false, QWidget *parent = Q_NULLPTR);
-    ~UpToolBar();
-    QAction*            First();
-    QAction*            Last();
-    QAction*            Next();
-    QAction*            Prec();
-    QAction*            Reload();
-    QString             choix();
-private:
-    QString             action;
-    QAction             *debut, *prec, *suiv, *fin, *reload;
-    void                TBChoix(QAction *choix);
-signals:
-    void                TBSignal();
-};
+}
 
-#endif // UPTOOLBAR_H
+QValidator::State upDoubleValidator::validate(QString &s, int &i) const
+{
+    bool ok;
+    i = 0;
+    double d = QLocale().toDouble(s, &ok);
+
+    if (s.isEmpty() || (ok && d==0.0))
+        return QValidator::Intermediate;
+
+    if (ok && d >= bottom() && d <= top())
+        return QValidator::Acceptable;
+    else
+        return QValidator::Invalid;
+}

@@ -514,7 +514,7 @@ void dlg_motifs::CreeMotif()
 void dlg_motifs::MAJMotifs()
 {
     Datas::I()->motifs->clearAll();
-    QList<Motif*> listMotifs = DataBase::getInstance()->loadMotifs();
+    QList<Motif*> listMotifs = DataBase::I()->loadMotifs();
     for(QList<Motif*>::const_iterator itmtf = listMotifs.constBegin(); itmtf != listMotifs.constEnd(); ++itmtf )
     {
         Motif *mt = const_cast<Motif*>(*itmtf);
@@ -535,7 +535,7 @@ void dlg_motifs::Slot_EnregistreMotifs()
         }
     }
     //vider la table MotifsRDV
-    DataBase::getInstance()->StandardSQL("delete from " NOM_TABLE_MOTIFSRDV);
+    DataBase::I()->StandardSQL("delete from " NOM_TABLE_MOTIFSRDV);
     //la remplir avec les nouvelles valeurs
     QString req = "insert into " NOM_TABLE_MOTIFSRDV " (Utiliser, Motif, raccourci, couleur, ParDefaut, NoOrdre) Values\n";
     for (int j=0; j<ui->MotifsupTableWidget->rowCount(); j++)
@@ -558,7 +558,7 @@ void dlg_motifs::Slot_EnregistreMotifs()
         req += a + ",";
         req += QString::number(j+1) + ")";
     }
-    DataBase::getInstance()->StandardSQL(req);
+    DataBase::I()->StandardSQL(req);
     MAJMotifs();
     accept();
 }

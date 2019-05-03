@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("02-05-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("03-05-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -117,7 +117,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         if (listmdp.at(0).at(0).toString() == "")
             db->StandardSQL("update " NOM_TABLE_PARAMSYSTEME " set mdpadmin = '" + db->getDataBase().password() + "'");
     }
-    UserAdmin = new User(DataBase::getInstance()->loadAdminData());
+    UserAdmin = new User(DataBase::I()->loadAdminData());
     idAdminDocs = UserAdmin->id();
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
@@ -142,7 +142,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     flags                       = Flags::I();
     if (UtiliseTCP)
     {
-        TCPServer                   = TcpServer::getInstance();
+        TCPServer                   = TcpServer::I();
         TCPServer                   ->setId(idAdminDocs);
         connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         TCPServer                   ->start();
@@ -687,7 +687,7 @@ void RufusAdmin::ConnexionBase()
 {
     DlgParam = new dlg_paramconnexion();
     if (DlgParam->exec()>0)
-        db = DataBase::getInstance();
+        db = DataBase::I();
     else
         exit(0);
     gMode = db->getMode();

@@ -1,23 +1,23 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "uplabel.h"
 
-UpLabel::UpLabel(QWidget *parent, QString txt) : QLabel(txt, parent)
+UpLabel::UpLabel(QWidget *parent, QString txt) : QLabel(txt, parent)  //je ne sais plus pourquoi j'ai mis le parent avant le texte mais il y une raison à un moment donné du code...
 {
     id          = -1;
     row         = -1;
@@ -55,6 +55,16 @@ bool UpLabel::eventFilter(QObject *obj, QEvent *event)
         return true;
     }
    return QWidget::eventFilter(obj, event);
+}
+
+void UpLabel::setData(QMap<QString, QVariant> data)
+{
+    datas = data;
+}
+
+QMap<QString, QVariant> UpLabel::getData() const
+{
+    return datas;
 }
 
 void UpLabel::setId(int idadef)
