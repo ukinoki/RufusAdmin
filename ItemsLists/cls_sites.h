@@ -15,33 +15,28 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_BANQUE_H
-#define CLS_BANQUE_H
+#ifndef SITES_H
+#define SITES_H
 
-#include "cls_item.h"
+#include "cls_site.h"
+#include "database.h"
 
-/*!
- * \brief Banque class
- * l'ensemble des informations concernant une banque
- */
-
-
-class Banque : public Item
+class Sites
 {
-
 private:
-    int m_id, m_codebanque;
-    QString m_idbanqueabrege, m_nombanque;
+    QMap<int, Site*> *m_sites;    //!<Collection de tous les sites sans exception, généralistes ou pas
 
 public:
-    explicit Banque(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
-    void setData(QJsonObject data);
+    //GETTER
+    QMap<int, Site *> *sites()     const;
 
-    int id() const;
-    int CodeBanque() const;
-    QString NomBanqueAbrege() const;
-    QString NomBanque() const;
+    Sites();
+
+    bool add(Site *sit);
+    Site* getById(int id);
+    void remove(Site* sit);
+    void clearAll();
+    void initListe();
 };
 
-
-#endif // CLS_BANQUE_H
+#endif // SITES_H

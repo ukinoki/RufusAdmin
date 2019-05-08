@@ -55,8 +55,8 @@ void Correspondants::remove(Correspondant *cor)
 
 /*!
  * \brief Correspondants::add
- * Cette fonction va ajouter le correspondant passé en paramètre
- *
+ * ajoute le correspondant passé en paramètre
+ * à la liste des correspondants
  * \param Correspondant le correspondant que l'on veut ajouter
  * \return true si le correspondant est ajouté
  * \return false si le paramètre correspondant est un Q_NULLPTR
@@ -115,7 +115,6 @@ Correspondant* Correspondants::getById(int id, bool loadDetails, bool addToList)
  */
 void Correspondants::initListe(bool all)
 {
-
     clearAll();
     QList<Correspondant*> listcorrespondants;
     if (all)
