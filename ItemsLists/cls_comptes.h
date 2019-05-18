@@ -15,35 +15,31 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef GBL_DATAS_H
-#define GBL_DATAS_H
+#ifndef CLS_COMPTES_H
+#define CLS_COMPTES_H
 
-#include <QObject>
-#include "cls_banques.h"
-#include "cls_comptes.h"
-#include "cls_motifs.h"
-#include <cls_users.h>
+#include "cls_compte.h"
+#include "database.h"
 
-class Datas : public QObject
+class Comptes : public QObject
 {
-    Q_OBJECT
 private:
-    Datas();
-    static Datas *instance;
+    QMap<int, Compte*> *m_comptes = Q_NULLPTR;  //!< la liste de tous les comptes
 
 public:
-    static Datas *I();
+    explicit Comptes(QObject *parent = Q_NULLPTR);
+    ~Comptes();
 
-    User *userConnected;
-    Users *users;                       //!< Les users
-    Comptes *comptes;                   //!< tous les comptes bancaires
-    Banques *banques;                   //!< toutes les banques
-    Motifs *motifs;                     //!< tous les motifs d'actes
+    QMap<int, Compte*>* comptes() const;
 
-signals:
+    void add(Compte *compte);
+    void addList(QList<Compte*> listCompte);
+    void removeCompte(Compte* cpt);
+    void clearAll();
+    Compte* getCompteById(int id);
+    void reloadCompte(Compte*compte);
 
-
-public slots:
+    void initListe();
 };
 
-#endif // GBL_DATAS_H
+#endif // CLS_COMPTES_H

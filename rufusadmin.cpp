@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("13-05-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("18-05-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -290,6 +290,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->StockageupLineEdit->setText(gsettingsIni->value(Base + "DossierImagerie").toString());
 
     ReconstruitListeLieuxExercice();
+    Datas::I()->comptes->initListe();
 
     QString VerifBasereq = "select VersionBase from " NOM_TABLE_PARAMSYSTEME;
     QList<QVariantList> listversion = db->StandardSelectSQL(VerifBasereq, ok);
@@ -978,6 +979,40 @@ void RufusAdmin::setPosteImportDocs(bool a)
     db->StandardSQL(req);
     if (a)
         Slot_MetAJourLaConnexion();
+}
+
+/*!
+ * \brief Procedures::SetUserAllData(User *usr)
+ * Charge le sodnnées d'un utilisateur, y compris ses données bancaires
+ * cette fonction fait appel aux deux classes cls_user et cls_compte
+ * et ne peut pas figurer dans la classe cls_user
+ * en raison de référence croisées
+ */
+bool RufusAdmin::SetUserAllData(User *usr)
+{
+    if (!usr->isAllLoaded())
+    {
+        QJsonObject data = db->loadUserData(usr->id());
+        if(data.isEmpty())
+        {
+            UpMessageBox::Watch(Q_NULLPTR,tr("Les paramètres de ")
+                                + usr->getLogin() + tr("ne sont pas retrouvés"));
+            return false;
+        }
+        usr->setData( data ); //on charge le reste des données
+    }
+    QList<Compte *> *listcomptes = new QList<Compte*>();
+    if (Datas::I()->comptes->comptes()->size() == 0)
+        Datas::I()->comptes->initListe();
+    for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
+    {
+        if (itcpt.value()->idUser() == usr->id())
+            listcomptes->append(itcpt.value());
+    }
+    usr->setComptes(listcomptes);
+    usr->setCompteParDefaut(Datas::I()->comptes->getCompteById(usr->getIdCompteParDefaut()));
+    usr->setCompteEncaissement(Datas::I()->comptes->getCompteById(usr->getIdCompteEncaissHonoraires()));
+    return true;
 }
 
 void RufusAdmin::Slot_ChoixButtonFrame(int i)

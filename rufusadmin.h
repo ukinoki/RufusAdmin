@@ -141,6 +141,7 @@ private:
     void                        SupprAppareil();
     void                        SupprimerDocsEtFactures();
     void                        setPosteImportDocs(bool a = true);
+    bool                        SetUserAllData(User *usr);
     void                        ReconstruitListeLieuxExercice();
     bool                        VerifBase();
     bool                        VerifMDP(QString MDP, QString Msg);
