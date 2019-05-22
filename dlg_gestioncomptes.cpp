@@ -120,7 +120,7 @@ void dlg_gestioncomptes::closeEvent(QCloseEvent *event)
 void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem *)
 {
     int idCompte = ui->ComptesuptableWidget->item(pitem->row(),0)->text().toInt();
-    CompteEnCours = Datas::I()->comptes->getCompteById(idCompte);
+    CompteEnCours = Datas::I()->comptes ->getById(idCompte);
         ui->BanqueupcomboBox            ->setCurrentText(CompteEnCours->nombanque());
         ui->IBANuplineEdit              ->setText(CompteEnCours->iban());
         ui->IntituleCompteuplineEdit    ->setText(CompteEnCours->intitulecompte());
@@ -354,7 +354,7 @@ void dlg_gestioncomptes::SupprCompte()
     if (msgbox.clickedButton() != &OKBouton)
         return;
     db->StandardSQL("delete from " NOM_TABLE_COMPTES " where idCompte = " + QString::number(CompteEnCours->id()));
-    Datas::I()->comptes->removeCompte(Datas::I()->comptes->getCompteById(ui->idCompteupLineEdit->text().toInt()));
+    Datas::I()->comptes->removeCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     m_comptesusr->clear();
     for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
     {
@@ -405,7 +405,7 @@ void dlg_gestioncomptes::ValidCompte()
         db->UpdateTable(NOM_TABLE_COMPTES,
                         listsets,
                         "where idCompte = "          + ui->idCompteupLineEdit->text());
-        Datas::I()->comptes->reloadCompte(Datas::I()->comptes->getCompteById(ui->idCompteupLineEdit->text().toInt()));
+        Datas::I()->comptes->reloadCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     }
     else if (gMode == Nouv)
     {
@@ -432,7 +432,7 @@ void dlg_gestioncomptes::ValidCompte()
             m_comptesusr->append(itcpt.value());
     }
     gDataUser     ->setComptes(m_comptesusr);
-    CompteEnCours = Datas::I()->comptes->getCompteById(idcompte);
+    CompteEnCours = Datas::I()->comptes->getById(idcompte);
 
     RemplirTableView();
     ui->OKModifupSmallButton->setVisible(false);

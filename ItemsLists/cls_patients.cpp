@@ -21,7 +21,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
  * \brief Patients::Patients
  * Initialise la map Patient
  */
-Patients::Patients()
+Patients::Patients(QObject *parent) : ItemsList(parent)
 {
     m_patients = new QMap<int, Patient*>();
     m_full  = false;
@@ -43,16 +43,16 @@ bool Patients::isfull()
  * \return Q_NULLPTR si aucun patient trouvé
  * \return Patient* le patient correspondant à l'id
  */
-Patient* Patients::getById(int id, bool all)
+Patient* Patients::getById(int id, LOADDETAILS loadDetails)
 {
     Patient *pat = Q_NULLPTR;
     QMap<int, Patient*>::const_iterator itpat = m_patients->find(id);
     if (itpat == m_patients->constEnd())
-        pat = DataBase::I()->loadPatientById(id, pat, all);
+        pat = DataBase::I()->loadPatientById(id, pat, loadDetails);
     else
     {
         pat = itpat.value();
-        if (all)
+        if (loadDetails == LoadDetails)
             if (!pat->isalloaded())
             {
                 QJsonObject jsonPatient = DataBase::I()->loadAllDataPatientById(id);
@@ -77,6 +77,27 @@ void Patients::loadAll(Patient *pat)
             pat->setData(jsonPatient);
     }
 }
+
+void Patients::reloadMedicalData(Patient *pat)
+{
+    QJsonObject jData{};
+    jData["id"] = pat->id();
+    bool ok;
+    DataBase::I()->loadMedicalDataPatient(jData, ok);
+    if( !jData.isEmpty() )
+        pat->setMedicalData(jData);
+}
+
+void Patients::reloadSocialData(Patient *pat)
+{
+    QJsonObject jData{};
+    jData["id"] = pat->id();
+    bool ok;
+    DataBase::I()->loadSocialDataPatient(jData, ok);
+    if( !jData.isEmpty() )
+        pat->setSocialData(jData);
+}
+
 
 /*!
  * \brief Patients::addPatient

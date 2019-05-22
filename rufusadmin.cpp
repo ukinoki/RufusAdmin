@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("18-05-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("21-05-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1010,8 +1010,8 @@ bool RufusAdmin::SetUserAllData(User *usr)
             listcomptes->append(itcpt.value());
     }
     usr->setComptes(listcomptes);
-    usr->setCompteParDefaut(Datas::I()->comptes->getCompteById(usr->getIdCompteParDefaut()));
-    usr->setCompteEncaissement(Datas::I()->comptes->getCompteById(usr->getIdCompteEncaissHonoraires()));
+    usr->setCompteParDefaut(Datas::I()->comptes->getById(usr->getIdCompteParDefaut()));
+    usr->setCompteEncaissement(Datas::I()->comptes->getById(usr->getIdCompteEncaissHonoraires()));
     return true;
 }
 

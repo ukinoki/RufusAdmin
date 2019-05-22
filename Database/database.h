@@ -281,6 +281,7 @@ private:
     QJsonObject             loadActeData(QVariantList actdata);                 //! attribue le liste des datas à un acte
 public:
     Acte*                   loadActeById(int idActe);                           //! charge un Acte à partir de son id
+    QJsonObject             loadActeAllData(int idacte);                        //! charge toutes les données d'un acte défini par son id - utilisé pour renouveler les données en cas de modification
     QMap<int, Acte*>        loadActesByPat(Patient *pat);                       //! chrage les actes d'un patient
     double                  getActePaye(int idActe);                            //! retrouve le total des paiements pour un acte
 

@@ -142,7 +142,9 @@ Site* User::getSite() const                         { return m_Site; }
 void User::setSite(Site *Site)                      { m_Site = Site; }
 
 QList<Compte*>* User::getComptes(bool avecdesactive) const
-                                                    { return (avecdesactive? m_comptesall : m_comptes); }
+{
+    return (avecdesactive? m_comptesall : m_comptes);
+}
 
 void User::setComptes(QList<Compte *> *comptes)
 {
@@ -151,7 +153,7 @@ void User::setComptes(QList<Compte *> *comptes)
     if (m_comptes != Q_NULLPTR)
         m_comptes->clear();
     else
-        m_comptes = new QList<Compte*>();
+        m_comptes = new QList<Compte*>();       //! si on le laisse à Q_NULLPTR, le append() qui suit plantera le prg
     if (m_comptesall != Q_NULLPTR)
         m_comptesall->clear();
     m_comptesall = comptes;
@@ -193,7 +195,6 @@ bool User::isDesactive()                            { return m_desactive; }
 /*!
  * \brief User::getStatus
  * génére un résumé des informations de l'utilisateur sur la session courante.
- *
  * \return Chaine de caractères
  */
 QString User::getStatus() const

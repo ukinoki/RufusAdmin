@@ -1763,6 +1763,15 @@ Acte* DataBase::loadActeById(int idActe)
     return acte;
 }
 
+QJsonObject DataBase::loadActeAllData(int idacte)
+{
+    QString req = loadActeRequest(idacte, 0);
+    QVariantList actdata = getFirstRecordFromStandardSelectSQL(req,ok);
+    if( !ok || actdata.size()==0 )
+        return QJsonObject{};
+    return loadActeData(actdata);
+}
+
 QMap<int, Acte*> DataBase::loadActesByPat(Patient *pat)
 {
     QMap<int, Acte*> list;
