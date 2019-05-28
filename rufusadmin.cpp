@@ -75,6 +75,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->ImmediatBackupupPushButton  ->setIcon(giconBackup);
 
     setWindowIcon(giconSunglasses);
+
     ui->FermepushButton->setUpButtonStyle(UpSmallButton::CLOSEBUTTON);
     gnomFichIni         = QDir::homePath() + NOMFIC_INI;
     gsettingsIni        = new QSettings(gnomFichIni, QSettings::IniFormat);
