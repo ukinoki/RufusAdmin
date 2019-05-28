@@ -75,7 +75,7 @@
         <file>egyptian-eye.png</file>
         <file>RARFile.ico</file>
         <file>accueil.png</file>
-        <file>credit_cards_256.png</file>
+        <file>credit_cards.png</file>
         <file>wrench-screwdriver.png</file>
         <file>check.ico</file>
         <file>women.png</file>
@@ -146,6 +146,7 @@
         <file>airtonometer.png</file>
         <file>password.png</file>
         <file>Rufus2.jpg</file>
+        <file>rufus3.jpg</file>
         <file>startpushed.png</file>
         <file>start.png</file>
         <file>3Dmessage.png</file>
@@ -182,9 +183,9 @@
         <file>camera.png</file>
         <file>movie.png</file>
         <file>stamp.png</file>
-        <file>rufusadmin.jpg</file>
         <file>qwant.png</file>
         <file>button_blue_refresh.png</file>
         <file>home.png</file>
+        <file>clinic.png</file>
     </qresource>
 </RCC>

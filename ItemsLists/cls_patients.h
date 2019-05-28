@@ -32,7 +32,7 @@ public:
     QMap<int, Patient*> *patients() const;
 
 
-    Patient* getById(int id, LOADDETAILS loadDetails = NoLoadDetails);                      /*! charge les données du patient corresondant à l'id
+    Patient* getById(int id, Item::LOADDETAILS loadDetails = Item::NoLoadDetails);          /*! charge les données du patient corresondant à l'id
                                                                                              * \brief Patients::getById
                                                                                              * \param id l'id du patient recherché
                                                                                              * \param loadDetails = NoLoadDetails  -> ne charge que les données d'identité - = LoadDetails -> charge les données sociales et médicales
@@ -42,7 +42,9 @@ public:
     bool isfull();                                                                          /*! la liste contient tous les patients de la base */
     bool add(Patient *patient);
     void addList(QList<Patient*> listpatientss);
-    void loadAll(Patient *pat);
+    void loadAll(Patient *pat, Item::UPDATE upd = Item::NoUpdate);                          /*! charge toutes les données d'un  patient si ce n'est pas le cas
+                                                                                             * \param upd force ou non la recharge depuis la BDD si elles sont déjà chargées
+                                                                                             */
     void reloadMedicalData(Patient* pat);                                                   //!> recharge les données médicales d'un patient
     void reloadSocialData(Patient* pat);                                                    //!> recharge les données sociales d'un patient
     void remove(Patient* patient);
@@ -55,8 +57,30 @@ public:
     void initListeByDDN(QDate DDN = QDate());                                               /*! crée une liste de tous les patients pour une date de naissance
                                                                                             * \param DDN la date de naissance */
 private:
-    QMap<int, Patient*> *m_patients;                                                            //!< une liste de patients
+    QMap<int, Patient*> *m_patients;                                                        //!< une liste de patients
     bool m_full;                                                                            //! la liste contient tous les patients de la base
+
+
+public:
+
+
+    //!> actions combinées sur l'item et l'enregistrement correspondant en base de données
+
+    //!> actions sur les champs
+    void    updatePatientData(Patient *pat, QString nomchamp, QVariant value);              //! met à jour la valeur d'un champ de la table et sa propriété correspondante pour le patient
+    void    updateCorrespondant(Patient *pat,                                               //! met à jour un des correspondants d'un patient
+                                DataBase::typecorrespondant type,
+                                Correspondant *cor = Q_NULLPTR);
+
+
+    //!> actions sur les enregistrements
+    void        SupprimePatient(Patient *pat);
+    Patient*    CreationPatient(QString nom, QString prenom, QDate datedenaissance, QString sexe = "");
+
+    //!< action sur toutes les données
+    void    updatePatient(Patient* pat);                                                    //!> met à jour les datas d'un patient à partir des données enregistrées dans la base
+
+
 };
 
 #endif // CLS_PATIENTS_H

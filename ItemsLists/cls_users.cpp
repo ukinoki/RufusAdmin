@@ -96,7 +96,7 @@ bool Users::add(User *usr)
  * \return Q_NULLPTR si aucun utilisateur trouvé
  * \return User* l'utilisateur correspondant à l'id
  */
-User* Users::getById(int id, LOADDETAILS loadDetails, ADDTOLIST addToList)
+User* Users::getById(int id, Item::LOADDETAILS loadDetails, ADDTOLIST addToList)
 {
     QMap<int, User*>::const_iterator user = m_users->find(id);
     User *result;
@@ -105,7 +105,7 @@ User* Users::getById(int id, LOADDETAILS loadDetails, ADDTOLIST addToList)
     else
     {
         result = user.value();
-        if(loadDetails == NoLoadDetails)
+        if(loadDetails == Item::NoLoadDetails)
             return result;
         addToList = NoAddToList;
     }
@@ -114,7 +114,10 @@ User* Users::getById(int id, LOADDETAILS loadDetails, ADDTOLIST addToList)
     {
         QJsonObject jsonUser = DataBase::I()->loadUserData(id);
         if( jsonUser.isEmpty() )
-            return result;
+        {
+            delete result;
+            return Q_NULLPTR;
+        }
         else
             result->setData(jsonUser);
     }
@@ -152,4 +155,3 @@ void Users::initListe()
         add( usr );
     }
 }
-

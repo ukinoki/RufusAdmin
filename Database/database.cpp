@@ -1428,7 +1428,7 @@ void DataBase::loadSocialDataPatient(QJsonObject &jData, bool &ok)
     jData["telephone"]      = patlist.at(5).toString();
     jData["portable"]       = patlist.at(6).toString();
     jData["mail"]           = patlist.at(7).toString();
-    jData["NNI"]            = patlist.at(4).toLongLong();
+    jData["NNI"]            = patlist.at(8).toLongLong();
     jData["ALD"]            = (patlist.at(9).toInt() == 1);
     jData["CMU"]            = (patlist.at(10).toInt() == 1);
     jData["profession"]     = patlist.at(11).toString();
@@ -1466,7 +1466,7 @@ void DataBase::loadMedicalDataPatient(QJsonObject &jData, bool &ok)
     jData["isMedicalLoaded"]    = true;
 }
 
-QJsonObject DataBase::loadAllDataPatientById(int idPat)
+QJsonObject DataBase::loadPatientAllData(int idPat)
 {
     QJsonObject jData{};
     QString req = "SELECT PatNom, PatPrenom, PatDDN, Sexe, PatCreele, PatCreePar FROM " NOM_TABLE_PATIENTS " where idPat = " + QString::number(idPat);
@@ -1605,62 +1605,6 @@ QMap<int, Patient *> *DataBase::loadPatientsByDDN(QDate DDN)
     return listpatients;
 }
 
-Patient* DataBase::CreationPatient(QString nom, QString prenom, QDate datedenaissance, QString sexe)
-{
-    bool ok;
-    QString req;
-    locktables(QStringList() << NOM_TABLE_PATIENTS << NOM_TABLE_DONNEESSOCIALESPATIENTS << NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS);
-    req =   "INSERT INTO " NOM_TABLE_PATIENTS
-            " (PatNom, PatPrenom, PatDDN, PatCreele, PatCreePar, Sexe) "
-            " VALUES ('" +
-            Utils::correctquoteSQL(nom) + "', '" +
-            Utils::correctquoteSQL(prenom) + "', '" +
-            datedenaissance.toString("yyyy-MM-dd") +
-            "', NOW(), '" +
-            QString::number(getUserConnected()->id()) +"' , '" +
-            sexe +
-            "');";
-    if (!StandardSQL(req, tr("Impossible de créer le dossier")))
-        return Q_NULLPTR;
-
-    // Récupération de l'idPatient créé ------------------------------------
-    QString recuprequete =  "SELECT  idPat, PatNom, PatPrenom FROM " NOM_TABLE_PATIENTS
-            " WHERE PatNom = '" + Utils::correctquoteSQL(nom) +
-            "' AND PatPrenom = '" + Utils::correctquoteSQL(prenom) +
-            "' AND PatDDN = '" + datedenaissance.toString("yyyy-MM-dd") + "'";
-    QVariantList patdata = getFirstRecordFromStandardSelectSQL(recuprequete, ok, tr("Impossible de sélectionner les enregistrements"));
-    if (!ok ||  patdata.size() == 0)
-        return Q_NULLPTR;
-    Patient *pat = loadPatientById(patdata.at(0).toInt());
-    req = "INSERT INTO " NOM_TABLE_DONNEESSOCIALESPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
-    StandardSQL(req,tr("Impossible de créer les données sociales"));
-    req = "INSERT INTO " NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
-    StandardSQL(req,tr("Impossible de créer les renseignements médicaux"));
-    unlocktables();
-    return pat;
-}
-
-void DataBase::UpdateCorrespondant(Patient *pat, typecorrespondant type, Correspondant *cor)
-{
-    QString id = (cor != Q_NULLPTR ? QString::number(cor->id()) : "null");
-    QString field;
-    switch (type) {
-    case MG:
-        field = "idCorMedMG";
-        break;
-    case Spe1:
-        field = "idCorMedSpe1";
-        break;
-    case Spe2:
-        field = "idCorMedSpe2";
-    }
-    StandardSQL("update " NOM_TABLE_RENSEIGNEMENTSMEDICAUXPATIENTS " set " + field + " = " + id +
-                " where idpat = " + QString::number(pat->id()));
-    if (cor != Q_NULLPTR && type == MG)
-        pat->setmg(cor->id());
-}
-
-
 /*
  * MDP
 */
@@ -1680,36 +1624,6 @@ QString DataBase::getMDPAdmin()
 /*
  * Actes
 */
-QString DataBase::loadActeRequest(int idActe, int idPat)
-{
-    QString subRequestRankAct = "SELECT idActe, idPat, "
-                                  " CASE WHEN @prevRank = idPat THEN @curRank := @curRank + 1 WHEN @prevRank := idPat THEN @curRank := 1 END AS rank "
-                                " FROM " NOM_TABLE_ACTES ", (SELECT @curRank := 0, @prevRank := NULL) r "
-                                " ORDER BY idPat, idActe ";
-    QString subRequestMinMaxAct = "SELECT min(idActe) as idActeMin, max(idActe) as idActeMax, count(idActe) as total, idPat "
-                                " FROM " NOM_TABLE_ACTES
-                                " GROUP BY idPat ";
-    QString requete = "SELECT act.idActe, act.idPat, act.idUser, "
-                        " act.ActeDate, act.ActeMotif, act.ActeTexte, act.ActeConclusion, "
-                        " act.ActeCourrierAFaire, act.ActeCotation, act.ActeMontant, act.ActeMonnaie, "
-                        " act.CreePar, act.UserComptable, act.UserParent, "
-                        " pat.PatDDN, ll2.rank, ll.idActeMin, ll.idActeMax, ll.total, "
-                        " tpm.TypePaiement, tpm.Tiers "
-                      " FROM " NOM_TABLE_ACTES " act "
-                      " LEFT JOIN " NOM_TABLE_PATIENTS " pat on pat.idPat = act.idPat "
-                      " JOIN ( "+ subRequestMinMaxAct + " ) ll on ll.idPat = act.idPat "
-                      " JOIN ( "+ subRequestRankAct + " ) ll2 on ll2.idPat = act.idPat and ll2.idActe = act.idActe "
-                      " LEFT JOIN " NOM_TABLE_TYPEPAIEMENTACTES " tpm on tpm.idActe = act.idActe ";
-    if( idActe > 0 )
-        requete += " WHERE act.idActe = '" + QString::number(idActe) + "'";
-    else if( idPat > 0 )
-    {
-        requete += " WHERE act.idPat = '" + QString::number(idPat) + "' "
-                   " ORDER BY act.idActe DESC";
-    }
-
-    return requete;
-}
 QJsonObject DataBase::loadActeData(QVariantList actdata)
 {
     QJsonObject data{};
@@ -1733,39 +1647,43 @@ QJsonObject DataBase::loadActeData(QVariantList actdata)
     else
         data["agePatient"] = QDateTime(actdata.at(14).toDate()).toMSecsSinceEpoch();
 
-    data["noActe"] = actdata.at(15).toInt();
-    data["idActeMin"] = actdata.at(16).toInt();
-    data["idActeMax"] = actdata.at(17).toInt();
-    data["nbActes"] = actdata.at(18).toInt();
-
-    if( actdata.at(19).isNull() )
+    if( actdata.at(15).isNull() )
         data["paiementType"] = "";
     else
-        data["paiementType"] = actdata.at(19).toString();
+        data["paiementType"] = actdata.at(15).toString();
 
-    if( actdata.at(20).isNull() )
+    if( actdata.at(16).isNull() )
         data["paiementTiers"] = "";
     else
-        data["paiementTiers"] = actdata.at(20).toString();
+        data["paiementTiers"] = actdata.at(16).toString();
+    data["NumCentre"] = actdata.at(17).toInt();
+    data["idLieu"] = actdata.at(18).toInt();
 
     return data;
 }
 
 Acte* DataBase::loadActeById(int idActe)
 {
-    Acte *acte = new Acte(idActe, 0, 0);
-    QString req = loadActeRequest(idActe, 0);
-    QVariantList actdata = getFirstRecordFromStandardSelectSQL(req,ok);
-    if( !ok || actdata.size()==0 )
+    Acte *acte = new Acte();
+    QJsonObject data = loadActeAllData(idActe);
+    if (data == QJsonObject{})
         return Q_NULLPTR;
-    QJsonObject data = loadActeData(actdata);
     acte->setData(data);
     return acte;
 }
 
-QJsonObject DataBase::loadActeAllData(int idacte)
+QJsonObject DataBase::loadActeAllData(int idActe)
 {
-    QString req = loadActeRequest(idacte, 0);
+    QString req = "SELECT act.idActe, act.idPat, act.idUser, "
+                  " act.ActeDate, act.ActeMotif, act.ActeTexte, act.ActeConclusion, "
+                  " act.ActeCourrierAFaire, act.ActeCotation, act.ActeMontant, act.ActeMonnaie, "
+                  " act.CreePar, act.UserComptable, act.UserParent, "
+                  " pat.PatDDN, "
+                  " tpm.TypePaiement, tpm.Tiers, act.NumCentre, idLieu "
+                  " FROM " NOM_TABLE_ACTES " act "
+                  " LEFT JOIN " NOM_TABLE_PATIENTS " pat on pat.idPat = act.idPat "
+                  " LEFT JOIN " NOM_TABLE_TYPEPAIEMENTACTES " tpm on tpm.idActe = act.idActe "
+                  " WHERE act.idActe = '" + QString::number(idActe) + "'";
     QVariantList actdata = getFirstRecordFromStandardSelectSQL(req,ok);
     if( !ok || actdata.size()==0 )
         return QJsonObject{};
@@ -1777,7 +1695,17 @@ QMap<int, Acte*> DataBase::loadActesByPat(Patient *pat)
     QMap<int, Acte*> list;
     if( pat == Q_NULLPTR )
         return list;
-    QString req = loadActeRequest(0, pat->id());
+    QString req = "SELECT act.idActe, act.idPat, act.idUser, "
+                  " act.ActeDate, act.ActeMotif, act.ActeTexte, act.ActeConclusion, "
+                  " act.ActeCourrierAFaire, act.ActeCotation, act.ActeMontant, act.ActeMonnaie, "
+                  " act.CreePar, act.UserComptable, act.UserParent, "
+                  " pat.PatDDN, "
+                  " tpm.TypePaiement, tpm.Tiers, act.NumCentre, idLieu "
+                  " FROM " NOM_TABLE_ACTES " act "
+                  " LEFT JOIN " NOM_TABLE_PATIENTS " pat on pat.idPat = act.idPat "
+                  " LEFT JOIN " NOM_TABLE_TYPEPAIEMENTACTES " tpm on tpm.idActe = act.idActe "
+                  " WHERE act.idPat = '" + QString::number(pat->id()) + "' "
+                  " ORDER BY act.idActe DESC";
     QList<QVariantList> actlist = StandardSelectSQL(req,ok);
     if(!ok || actlist.size()==0)
         return list;

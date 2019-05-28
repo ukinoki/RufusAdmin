@@ -246,26 +246,22 @@ public:
     /*
      * Patients
     */
-    QJsonObject             loadAllDataPatientById(int idPat);
-    void                    loadSocialDataPatient(QJsonObject &jData, bool &ok);      //! charge les donnéess sociales d'un patient à partir de la table donneessocialespatients
-    void                    loadMedicalDataPatient(QJsonObject &jData, bool &ok);     //! charge les donnéess médicales d'un patient à partir de la table renseignementsmedicauxpatients
-    Patient*                loadPatientById(int idPat, Patient *pat = Q_NULLPTR, bool all = false);           //! charge un patient par son id à partir de la table patients
-    qint64                  countPatientsAll(QString nom = "", QString prenom = "");
-                                                                                /*! compte le nombre de patients
-                                                                                * \param patnom filtrer sur le nom de patient
-                                                                                * \param patprenom filtrer sur le prénom de patient */
-    QMap<int,Patient*>*        loadPatientsAll(QString nom = "", QString prenom = "", bool filtre = false);
-                                                                                /*! charge la liste de tous les patients à partir de la table patients
-                                                                                * \param patnom filtrer sur le nom de patient
-                                                                                * \param patprenom filtrer sur le prénom de patient
-                                                                                * \param le filtre se fait sur des valeurs aprrochantes */
-    QMap<int,Patient *>*      loadPatientsByDDN(QDate DDN);
-                                                                                /*! charge la liste de tous les patients pour une date de naissance
-                                                                                * \param DDN la date de naissance */
-    Patient*                CreationPatient(QString nom, QString prenom, QDate datedenaissance, QString sexe);
-                                                                                //! crée un patient àa partir des 4 paramètres nom, prenom, DDN, sexe
-    void                    UpdateCorrespondant(Patient *pat, typecorrespondant type, Correspondant *cor);
-                                                                                //! met à jour un des correspondants d'un patient
+    QJsonObject             loadPatientAllData(int idPat);                                                  //! charge toutes les données d'un patient défini par son id - utilisé pour renouveler les données en cas de modification
+    void                    loadSocialDataPatient(QJsonObject &jData, bool &ok);                            //! charge les donnéess sociales d'un patient à partir de la table donneessocialespatients
+    void                    loadMedicalDataPatient(QJsonObject &jData, bool &ok);                           //! charge les donnéess médicales d'un patient à partir de la table renseignementsmedicauxpatients
+    Patient*                loadPatientById(int idPat, Patient *pat = Q_NULLPTR, bool all = false);         //! charge un patient par son id à partir de la table patients
+
+    qint64                  countPatientsAll(QString nom = "", QString prenom = "");                        /*! compte le nombre de patients
+                                                                                                            * \param patnom filtrer sur le nom de patient
+                                                                                                            * \param patprenom filtrer sur le prénom de patient */
+
+    QMap<int,Patient*>*     loadPatientsAll(QString nom = "", QString prenom = "", bool filtre = false);    /*! charge la liste de tous les patients à partir de la table patients
+                                                                                                            * \param patnom filtrer sur le nom de patient
+                                                                                                            * \param patprenom filtrer sur le prénom de patient
+                                                                                                            * \param le filtre se fait sur des valeurs aprrochantes */
+
+    QMap<int,Patient *>*    loadPatientsByDDN(QDate DDN);                                                   /*! charge la liste de tous les patients pour une date de naissance
+                                                                                                             * \param DDN la date de naissance */
 
     /*
      * Mots de passe
@@ -277,11 +273,10 @@ public:
      * Actes
     */
 private:
-    QString                 loadActeRequest(int idActe, int idPat);             //! création de la requête de selection d'un ou plusieurs actes
     QJsonObject             loadActeData(QVariantList actdata);                 //! attribue le liste des datas à un acte
 public:
     Acte*                   loadActeById(int idActe);                           //! charge un Acte à partir de son id
-    QJsonObject             loadActeAllData(int idacte);                        //! charge toutes les données d'un acte défini par son id - utilisé pour renouveler les données en cas de modification
+    QJsonObject             loadActeAllData(int idActe);                        //! charge toutes les données d'un acte défini par son id - utilisé pour renouveler les données en cas de modification
     QMap<int, Acte*>        loadActesByPat(Patient *pat);                       //! chrage les actes d'un patient
     double                  getActePaye(int idActe);                            //! retrouve le total des paiements pour un acte
 

@@ -31,8 +31,8 @@ class Users : public ItemsList
 private:
     QMap<int, User*> *m_users = Q_NULLPTR;           //!<Collection de tous les User
     QMap<int, User*> *m_superviseurs = Q_NULLPTR;    //!<Collection des superviseurs : User->isResponsable()
-    QMap<int, User*> *m_parents = Q_NULLPTR;         //!<Collection des parents : User->isLiberal()
-    QMap<int, User*> *m_liberaux = Q_NULLPTR;        //!<Collection des liberaux : User->isSoignant() && !User->isRemplacant()
+    QMap<int, User*> *m_parents = Q_NULLPTR;         //!<Collection des parents : User->isSoignant() && !User->isRemplacant()
+    QMap<int, User*> *m_liberaux = Q_NULLPTR;        //!<Collection des liberaux : User->isLiberal()
     QMap<int, User*> *m_comptables = Q_NULLPTR;      //!<Collection des comptables : User->isSocComptable() || User->isLiberal()
 
 public:
@@ -45,9 +45,10 @@ public:
 
     Users(QObject *parent = Q_NULLPTR);
     bool add(User *usr);
-    User* getById(int id, LOADDETAILS loadDetails = NoLoadDetails, ADDTOLIST addToList = AddToList);
+    User* getById(int id, Item::LOADDETAILS loadDetails = Item::NoLoadDetails, ADDTOLIST addToList = AddToList);
     QString getLoginById(int id);
     void initListe();
+
 };
 
 #endif // CLS_USERS_H
