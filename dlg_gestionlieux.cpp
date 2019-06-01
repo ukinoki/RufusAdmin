@@ -19,7 +19,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 
 dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
-    : UpDialog(QDir::homePath() + NOMFIC_INI, "PositionsFiches/PositionLieux", parent)
+    : UpDialog(QDir::homePath() + FILE_INI, "PositionsFiches/PositionLieux", parent)
 {
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     db              = DataBase::I();
@@ -99,7 +99,7 @@ void dlg_GestionLieux::Slot_AfficheDetails(QModelIndex idx, QModelIndex)
         }
     }
     Adressuplbl->setText(data);
-    widg->moinsBouton->setEnabled(db->StandardSelectSQL("select iduser from " NOM_TABLE_JOINTURESLIEUX " where idlieu = " + tabModel->itemData(tabModel->index(row,0)).value(0).toString(), ok).size() == 0
+    widg->moinsBouton->setEnabled(db->StandardSelectSQL("select iduser from " TBL_JOINTURESLIEUX " where idlieu = " + tabModel->itemData(tabModel->index(row,0)).value(0).toString(), ok).size() == 0
                                   && tabModel->itemData(tabModel->index(row,0)).value(0).toInt() != idlieuserveur);
 }
 
@@ -143,7 +143,7 @@ void dlg_GestionLieux::Slot_EnregNouvLieu()
 {
     if (ValidationFiche())
     {
-        QString req = "insert into " NOM_TABLE_LIEUXEXERCICE "(NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax)  values("
+        QString req = "insert into " TBL_LIEUXEXERCICE "(NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax)  values("
                         "'" + Utils::correctquoteSQL(Utils::capitilize(leditnom->text())) + "', "
                         "'" + Utils::correctquoteSQL(Utils::capitilize(leditadr1->text())) + "', "
                         "'" + Utils::correctquoteSQL(Utils::capitilize(leditadr2->text())) + "', "
@@ -263,7 +263,7 @@ void dlg_GestionLieux::ModifLieu()
 {
     ModifLieuxDialog();
     idLieuAModifier = tabModel->itemData(tabModel->index(tabLM->currentIndex().row(),0)).value(0).toInt();
-    QString req = "select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " NOM_TABLE_LIEUXEXERCICE
+    QString req = "select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " TBL_LIEUXEXERCICE
                   " where idLieu = " + QString::number(idLieuAModifier);
     //qDebug() << req;
     QVariantList lieurcd= db->getFirstRecordFromStandardSelectSQL(req,ok);
@@ -290,7 +290,7 @@ void dlg_GestionLieux::Slot_ModifLieu()
 
     if (ValidationFiche())
     {
-        QString req = "update " NOM_TABLE_LIEUXEXERCICE " set "
+        QString req = "update " TBL_LIEUXEXERCICE " set "
                         "NomLieu = '"       + Utils::correctquoteSQL(Utils::capitilize(leditnom->text())) + "', "
                         "LieuAdresse1 = '"  + Utils::correctquoteSQL(Utils::capitilize(leditadr1->text())) + "', "
                         "LieuAdresse2 = '"  + Utils::correctquoteSQL(Utils::capitilize(leditadr2->text())) + "', "
@@ -316,7 +316,7 @@ void dlg_GestionLieux::SupprLieu()
     QString lieu = tabModel->itemData(tabModel->index(tabLM->currentIndex().row(),1)).value(0).toString();
     if (UpMessageBox::Question(this,tr("Suppression d'un lieu de soins"),tr("voulez vous vraiment supprimer") + "\n" + lieu + " ?") == UpSmallButton::STARTBUTTON)
     {
-        db->SupprRecordFromTable(idLieuASupprimer,"idlieu", NOM_TABLE_LIEUXEXERCICE);
+        db->SupprRecordFromTable(idLieuASupprimer,"idlieu", TBL_LIEUXEXERCICE);
         ReconstruitModel();
         dlg_message(QStringList() << lieu + " supprimé", 3000);
         ReconstruitModel();
@@ -366,7 +366,7 @@ void dlg_GestionLieux::ReconstruitModel()
     QStandardItem *pitem7;
     QStandardItem *pitem8;
 
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " NOM_TABLE_LIEUXEXERCICE, ok);
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " TBL_LIEUXEXERCICE, ok);
     for (int i=0; i<listlieux.size(); i++)
     {
         pitem0 = new QStandardItem(listlieux.at(i).at(0).toString());
@@ -428,7 +428,7 @@ void dlg_GestionLieux::ReconstruitModel()
     tabLM   ->setFixedWidth(larg+2);
     bool ok;
     idlieuserveur = -1;
-    QVariantList serveurLieudata = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " NOM_TABLE_PARAMSYSTEME, ok);
+    QVariantList serveurLieudata = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " TBL_PARAMSYSTEME, ok);
     if (ok && serveurLieudata.size()>0)
         idlieuserveur = serveurLieudata.at(0).toInt();
 }

@@ -43,15 +43,18 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_depense.h"
 #include "cls_docexterne.h"
 #include "cls_document.h"
+#include "cls_lignepaiement.h"
 #include "cls_motif.h"
 #include "cls_paiementtiers.h"
 #include "cls_patient.h"
+#include "cls_patientencours.h"
 #include "cls_recette.h"
 #include "cls_tiers.h"
 #include "cls_user.h"
 #include "cls_site.h"
 #include "cls_ville.h"
 #include "cls_compte.h"
+#include "cls_parametressysteme.h"
 
 #include "log.h"
 #include "utils.h"
@@ -70,6 +73,7 @@ private:
     static DataBase *instance;
 
     User *m_userConnected = Q_NULLPTR;
+    ParametresSysteme *m_parametres = Q_NULLPTR;
 
 
     int m_mode;
@@ -159,6 +163,33 @@ public:
                                                                 * renvoie la réponse sous forme de QVariantList
                                                                 * la variable ok sert à pointer les erreurs sur requête pour les différencier des réponses vides */
     /*
+     * Parametres système
+    */
+    void initParametres();                           //! charge les parametres susteme
+    ParametresSysteme*      parametres();                               //! renvoie les parametres système
+    void setmdpadmin(QString mdp = "");
+    void setnumcentre(int id);
+    void setidlieupardefaut(int id);
+    void setdocscomprimes(bool one);
+    void setversionbase(int version);
+    void setaveccompta(bool one);
+    void setadresseserveurlocal(QString  adress = "");
+    void setadresseserveurdistant(QString adress = "");
+    void setutilisetcp(bool one);
+    void setadresseserveurtcp(QString adress = "");
+    void setporttcp(int port);
+    void setdirimagerie(QString adress = "");
+    void setlundibkup(bool one);
+    void setmardibkup(bool one);
+    void setmercredibkup(bool one);
+    void setjeudibkup(bool one);
+    void setvendredibkup(bool one);
+    void setsamedibkup(bool one);
+    void setdimanchebkup(bool one);
+    void setheurebkup(QTime time = QTime());
+    void setdirbkup(QString adress = "");
+
+    /*
      * Users
     */
     QJsonObject             login(QString login, QString password);     /*! connecte à la base mYSQL SQL avec le login login et le password password
@@ -212,10 +243,12 @@ public:
     QList<Tiers*>           loadTiersPayants();                         //! charge tous les organismes de tiers payants de la table tiers
     QList<TypeTiers*>       loadTypesTiers();                           //! charge tous les types de tiers payants (AME, CMU, AT...) à partir de la table rufus.listetiers
 
-    QMap<int, Recette*>*    loadRecettesByDate(QDate datedebut, QDate datefin);
+    QList<Recette*>         loadRecettesByDate(QDate datedebut, QDate datefin);
                                                                         //! charge toutes les recettes pour la période spécifiée
 
-    QMap<int, PaiementTiers*>*  loadPaiementTiersByUser(User *usr);    //! charge tous les paiements par tiers pour un utilisateur pour la période spécifiée
+    QList<PaiementTiers *>  loadPaiementTiersByUser(User *usr);    //! charge tous les paiements par tiers pour un utilisateur pour la période spécifiée
+
+    QList<LignePaiement*>   loadlignespaiementsByPatient(Patient *pat); //!> charge toutes les lignes de paiements des actes d'un patient
 
     /*
      * Cotations
@@ -244,6 +277,14 @@ public:
     QList<Ville *>          loadVilles();                                //! charge toutes les villes et leur code postal à partir de la table villes
 
     /*
+     * PatientsEnCours r
+    */
+    PatientEnCours*             loadPatientEnCoursById(int idPat);                                          //! charge toutes les données d'un patient défini par son id - utilisé pour renouveler les données en cas de modification
+    QJsonObject                 loadPatientEnCoursData(QVariantList patdata);                               //! crée le QJsonObject des data d'un patient à partir des résultats de la requête en BDD
+    QJsonObject                 loadPatientEnCoursDataById(int idPat);                                   //! charge toutes les données d'un patient défini par son id - utilisé pour renouveler les données en cas de modification
+    QList<PatientEnCours *>     loadPatientsenCoursAll();                                                   /*! charge la liste de tous les patients à partir de la table salledattente*/
+
+    /*
      * Patients
     */
     QJsonObject             loadPatientAllData(int idPat);                                                  //! charge toutes les données d'un patient défini par son id - utilisé pour renouveler les données en cas de modification
@@ -255,12 +296,12 @@ public:
                                                                                                             * \param patnom filtrer sur le nom de patient
                                                                                                             * \param patprenom filtrer sur le prénom de patient */
 
-    QMap<int,Patient*>*     loadPatientsAll(QString nom = "", QString prenom = "", bool filtre = false);    /*! charge la liste de tous les patients à partir de la table patients
+    QList<Patient*>         loadPatientsAll(QString nom = "", QString prenom = "", bool filtre = false);    /*! charge la liste de tous les patients à partir de la table patients
                                                                                                             * \param patnom filtrer sur le nom de patient
                                                                                                             * \param patprenom filtrer sur le prénom de patient
                                                                                                             * \param le filtre se fait sur des valeurs aprrochantes */
 
-    QMap<int,Patient *>*    loadPatientsByDDN(QDate DDN);                                                   /*! charge la liste de tous les patients pour une date de naissance
+    QList<Patient *>        loadPatientsByDDN(QDate DDN);                                                   /*! charge la liste de tous les patients pour une date de naissance
                                                                                                              * \param DDN la date de naissance */
 
     /*
@@ -277,7 +318,8 @@ private:
 public:
     Acte*                   loadActeById(int idActe);                           //! charge un Acte à partir de son id
     QJsonObject             loadActeAllData(int idActe);                        //! charge toutes les données d'un acte défini par son id - utilisé pour renouveler les données en cas de modification
-    QMap<int, Acte*>        loadActesByPat(Patient *pat);                       //! chrage les actes d'un patient
+    QList<Acte*>            loadActesByPat(Patient *pat);                       //! chrage les actes d'un patient
+    QList<Acte*>            loadIdActesByPat(Patient *pat);                     //! chrage les actes d'un patient en ne retenant que les id
     double                  getActePaye(int idActe);                            //! retrouve le total des paiements pour un acte
 
 };

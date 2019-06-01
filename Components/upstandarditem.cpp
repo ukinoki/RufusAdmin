@@ -15,36 +15,22 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_MOTIF_H
-#define CLS_MOTIF_H
+#include "upstandarditem.h"
 
-#include "cls_item.h"
-
-/*!
- * \brief Motif class
- * l'ensemble des informations concernant un motif d'acte
- */
-
-class Motif : public Item
+UpStandardItem::UpStandardItem()
 {
+}
 
-private:
-    int m_id, m_duree, m_noordre;
-    QString m_motif, m_raccourci, m_couleur;
-    bool m_pardefaut, m_utiliser;
+UpStandardItem::UpStandardItem(QString txt) : QStandardItem(txt)
+{
+}
 
-public:
-    explicit Motif(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
-    void setData(QJsonObject data);
+void UpStandardItem::setItem(Item* item)
+{
+    m_item = item;
+}
 
-    int id() const;
-    QString motif() const;
-    QString raccourci() const;
-    QString couleur() const;
-    int duree() const;
-    bool pardefaut() const;
-    bool utiliser() const;
-    int noordre() const;
-};
-
-#endif // CLS_MOTIF_H
+Item* UpStandardItem::item()
+{
+    return m_item;
+}

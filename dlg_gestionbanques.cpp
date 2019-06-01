@@ -122,7 +122,7 @@ void dlg_gestionbanques::AfficheBanque()
     int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
     bool ok = true;
     QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << "NomBanque" << "idBanqueAbrege" << "idbanque",
-                                                                    NOM_TABLE_BANQUES, ok,
+                                                                    TBL_BANQUES, ok,
                                                                     "where idBanque = " + QString::number(idBanque));
     if (listbanques.size()>0)
     {
@@ -132,7 +132,7 @@ void dlg_gestionbanques::AfficheBanque()
     }
     widgButtons->moinsBouton->setEnabled(true);
     QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idBanque",
-                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    TBL_COMPTES, ok,
                                                                     "where idBanque = " + listbanques.at(0).at(2).toString());
     if (listcomptes.size()>0)
         widgButtons->moinsBouton->setEnabled(false);
@@ -209,7 +209,7 @@ void dlg_gestionbanques::SupprBanque()
        return;
     bool ok = true;
     QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idBanque",
-                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    TBL_COMPTES, ok,
                                                                     "where idBanque = " + QString::number(idBanque));
     if (listcomptes.size()>0)
     {
@@ -217,7 +217,7 @@ void dlg_gestionbanques::SupprBanque()
         return;
     }
     Datas::I()->banques->initListe();
-    db->SupprRecordFromTable(idBanque,"idBanque",NOM_TABLE_BANQUES);
+    db->SupprRecordFromTable(idBanque,"idBanque",TBL_BANQUES);
     RemplirTableView();
     AfficheBanque();
 }
@@ -249,7 +249,7 @@ void dlg_gestionbanques::ValideModifBanque()
             }
         }
         bool ok = true;
-        QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege", NOM_TABLE_BANQUES, ok);
+        QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege", TBL_BANQUES, ok);
         if (listabreges.size()>0)
             for (int i=0; i<listabreges.size(); i++)
                 if (listabreges.at(i).at(0).toString() == ui->NomAbregeupLineEdit->text())
@@ -259,7 +259,7 @@ void dlg_gestionbanques::ValideModifBanque()
                     return;
                 }
         listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
-                                                                      NOM_TABLE_BANQUES, ok,
+                                                                      TBL_BANQUES, ok,
                                                                       "where idbanqueabrege = '" + ui->NomAbregeupLineEdit->text() + "'");
         if(listabreges.size()>0)
         {
@@ -270,7 +270,7 @@ void dlg_gestionbanques::ValideModifBanque()
         QHash<QString, QString> listsets;
         listsets.insert("idbanqueabrege",   ui->NomAbregeupLineEdit->text());
         listsets.insert("nombanque",        nombanque);
-        db->InsertIntoTable(NOM_TABLE_BANQUES, listsets);
+        db->InsertIntoTable(TBL_BANQUES, listsets);
         Datas::I()->banques->initListe();
         if (gFermeApresValidation)
         {
@@ -286,7 +286,7 @@ void dlg_gestionbanques::ValideModifBanque()
         int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
         bool ok = true;
         QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << "nombanque",
-                                                                                             NOM_TABLE_BANQUES, ok,
+                                                                                             TBL_BANQUES, ok,
                                                                                              "where idbanque <> " + QString::number(idBanque));
         if (listabreges.size()>0)
             for (int i=0; i<listabreges.size(); i++)
@@ -297,7 +297,7 @@ void dlg_gestionbanques::ValideModifBanque()
                     return;
                 }
         listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
-                                                                      NOM_TABLE_BANQUES, ok,
+                                                                      TBL_BANQUES, ok,
                                                                       "where idbanque <> " + QString::number(idBanque));
         if (listabreges.size()>0)
             for (int i=0; i<listabreges.size(); i++)
@@ -310,7 +310,7 @@ void dlg_gestionbanques::ValideModifBanque()
         QHash<QString, QString> listsets;
         listsets.insert("nombanque",      nombanque);
         listsets.insert("idbanqueabrege", ui->NomAbregeupLineEdit->text());
-        DataBase:: I()->UpdateTable(NOM_TABLE_BANQUES,
+        DataBase:: I()->UpdateTable(TBL_BANQUES,
                                               listsets,
                                               "where idBanque = " + QString::number(idBanque));
         Datas::I()->banques->initListe();
@@ -348,7 +348,7 @@ void dlg_gestionbanques::RemplirTableView()
     UpLabel             *label1;
     bool ok = true;
     QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << "idbanque" << "nombanque",
-                                                                                         NOM_TABLE_BANQUES, ok,
+                                                                                         TBL_BANQUES, ok,
                                                                                          "",
                                                                                          "order by nomBanque");
     if (listbanques.size() > 0)

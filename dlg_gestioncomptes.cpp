@@ -133,15 +133,15 @@ void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem
     /*On ne peut pas supprimer un compte s'il est utilisé ou s'il y a déjà eu des ecritures bancaires*/
     bool autorsupprimer = false;
     bool ok = true;
-    QString req = "select iduser from " NOM_TABLE_UTILISATEURS
+    QString req = "select iduser from " TBL_UTILISATEURS
                   " where IdCompteParDefaut = " + QString::number(idCompte) +
                   " limit 1";
     if (db->StandardSelectSQL(req, ok).size()==0)                       // on ne peut pas supprimer un compte si quelqu'un l'utilise
     {
-        req = "select idcompte from " NOM_TABLE_ARCHIVESBANQUE
+        req = "select idcompte from " TBL_ARCHIVESBANQUE
               " where idcompte = " + QString::number(idCompte) +
               " union"
-              " select idcompte from " NOM_TABLE_LIGNESCOMPTES
+              " select idcompte from " TBL_LIGNESCOMPTES
               " where idcompte = " + QString::number(idCompte) +
               " limit 1";
         autorsupprimer = (db->StandardSelectSQL(req, ok).size()==0);    // on ne peut pas supprimer un compte s'il y a des écritures
@@ -186,7 +186,7 @@ void dlg_gestioncomptes::DesactiveCompte()
         */
         bool ok = true;
         QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idcompte",
-                                                                        NOM_TABLE_LIGNESCOMPTES, ok,
+                                                                        TBL_LIGNESCOMPTES, ok,
                                                                         "where iduser = " + QString::number(gidUser) + " and desactive is null");
         ui->DesactiveComptecheckBox ->setEnabled(listcomptes.size()>1);
     }
@@ -239,13 +239,13 @@ void dlg_gestioncomptes::CompteFactice()
         int idbanq = 0;
         bool ok = true;
         QList<QVariantList> listPaPRS = db->SelectRecordsFromTable(QStringList() << "idbanque",
-                                                                      NOM_TABLE_BANQUES, ok,
+                                                                      TBL_BANQUES, ok,
                                                                       "where idbanqueabrege = 'PaPRS'");
         if (listPaPRS.size()==0)
         {
-            db->StandardSQL("insert into " NOM_TABLE_BANQUES " (idbanqueAbrege, Nombanque) values ('PaPRS','Panama Papers')");
+            db->StandardSQL("insert into " TBL_BANQUES " (idbanqueAbrege, Nombanque) values ('PaPRS','Panama Papers')");
             listPaPRS = db->SelectRecordsFromTable(QStringList() << "idbanque",
-                                                   NOM_TABLE_BANQUES, ok,
+                                                   TBL_BANQUES, ok,
                                                    "where idbanqueabrege = 'PaPRS'");
         }
         idbanq = listPaPRS.at(0).at(0).toInt();
@@ -297,7 +297,7 @@ void dlg_gestioncomptes::ModifCompte()
     */
     bool ok = true;
     QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idcompte",
-                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    TBL_COMPTES, ok,
                                                                     "where iduser = " + QString::number(gidUser) + " and desactive is null");
     if (!ui->DesactiveComptecheckBox->isChecked())
         ui->DesactiveComptecheckBox ->setEnabled(listcomptes.size()>1);
@@ -353,7 +353,7 @@ void dlg_gestioncomptes::SupprCompte()
     msgbox.exec();
     if (msgbox.clickedButton() != &OKBouton)
         return;
-    db->StandardSQL("delete from " NOM_TABLE_COMPTES " where idCompte = " + QString::number(CompteEnCours->id()));
+    db->StandardSQL("delete from " TBL_COMPTES " where idCompte = " + QString::number(CompteEnCours->id()));
     Datas::I()->comptes->removeCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     m_comptesusr->clear();
     for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
@@ -389,7 +389,7 @@ void dlg_gestioncomptes::ValidCompte()
     ui->OKModifupSmallButton->setVisible(false);
     bool ok = true;
     QList<QVariantList> listbanq = db->SelectRecordsFromTable(QStringList() << "idbanque",
-                                                                  NOM_TABLE_BANQUES, ok,
+                                                                  TBL_BANQUES, ok,
                                                                   "where nomBanque = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
     int idbanque = listbanq.at(0).at(0).toInt();
     if (gMode == Modif)
@@ -402,7 +402,7 @@ void dlg_gestioncomptes::ValidCompte()
         listsets.insert("idbanque"              , QString::number(idbanque));
         listsets.insert("partage"               , (ui->CompteSocietecheckBox->isChecked()? "1" : "null"));
         listsets.insert("desactive"             , (ui->DesactiveComptecheckBox->isChecked()? "1" : "null"));
-        db->UpdateTable(NOM_TABLE_COMPTES,
+        db->UpdateTable(TBL_COMPTES,
                         listsets,
                         "where idCompte = "          + ui->idCompteupLineEdit->text());
         Datas::I()->comptes->reloadCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
@@ -418,8 +418,8 @@ void dlg_gestioncomptes::ValidCompte()
         listsets.insert("SoldeSurDernierReleve" , "0");
         listsets.insert("partage"               , (ui->CompteSocietecheckBox->isChecked()? "1" : "null"));
         listsets.insert("desactive"             , (ui->DesactiveComptecheckBox->isChecked()? "1" : "null"));
-        db->InsertIntoTable(NOM_TABLE_COMPTES, listsets);
-        idcompte = db->selectMaxFromTable("idcompte",NOM_TABLE_COMPTES, ok);
+        db->InsertIntoTable(TBL_COMPTES, listsets);
+        idcompte = db->selectMaxFromTable("idcompte",TBL_COMPTES, ok);
         UpMessageBox::Watch(this, tr("Le compte ") + ui->IntituleCompteuplineEdit->text() + tr(" a été enregistré."),
                                   tr("le solde a été fixé à 0,00 euros et devra être corrigé par le propriétaire du compte"));
         Compte *cpt = new Compte(db->loadCompteById(idcompte));
@@ -449,7 +449,7 @@ void dlg_gestioncomptes::MetAJourListeBanques()
 {
     bool ok = true;
     QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << "nombanque" << "idbanque",
-                                                                  NOM_TABLE_BANQUES, ok);
+                                                                  TBL_BANQUES, ok);
     ui->BanqueupcomboBox->clear();
     for (int i=0; i<listbanques.size(); i++)
         ui->BanqueupcomboBox->insertItem(0, listbanques.at(i).at(0).toString(), listbanques.at(i).at(1).toInt());
@@ -521,14 +521,14 @@ bool dlg_gestioncomptes::VerifCompte()
     int idbanque = -1;
     bool ok = true;
     QList<QVariantList> listbanq = db->SelectRecordsFromTable(QStringList() << "idbanque",
-                                                                  NOM_TABLE_BANQUES, ok,
+                                                                  TBL_BANQUES, ok,
                                                                   "where nomBanque = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
     idbanque = listbanq.at(0).at(0).toInt();
 
     if (gMode == Nouv)
     {
         QList<QVariantList> listcpt = db->SelectRecordsFromTable(QStringList() << "idbanque",
-                                                                      NOM_TABLE_COMPTES, ok,
+                                                                      TBL_COMPTES, ok,
                                                                       "where idUser = " + QString::number(gidUser) + " and idbanque = " + QString::number(idbanque));
         if (listcpt.size()>0)
         {
@@ -536,14 +536,14 @@ bool dlg_gestioncomptes::VerifCompte()
             return false;
         }
         QList<QVariantList> listnomcpt = db->SelectRecordsFromTable(QStringList() << "nomcompteabrege",
-                                                                      NOM_TABLE_COMPTES, ok,
+                                                                      TBL_COMPTES, ok,
                                                                       "where idUser = " + QString::number(gidUser) + " and nomcompteabrege = '" + Utils::correctquoteSQL(ui->NomCompteAbregeuplineEdit->text()) + "'");
         if (listnomcpt.size()>0)
         {
             UpMessageBox::Watch(this,tr(" Vous avez déjà un compte enregistré avec ce nom abrégé!"));
             return false;
         }
-        QList<QVariantList> listiban = db->SelectRecordsFromTable(QStringList() << "IBAN", NOM_TABLE_COMPTES, ok);
+        QList<QVariantList> listiban = db->SelectRecordsFromTable(QStringList() << "IBAN", TBL_COMPTES, ok);
         if (listiban.size()>0)
         {
             QStringList ibanlist;
@@ -559,7 +559,7 @@ bool dlg_gestioncomptes::VerifCompte()
     else if (gMode == Modif)
     {
         QList<QVariantList> listcpt = db->SelectRecordsFromTable(QStringList() << "idbanque",
-                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    TBL_COMPTES, ok,
                                                                     "where idUser = " + QString::number(gidUser) +
                                                                     " and idbanque = " + QString::number(idbanque) +
                                                                     " and idcompte <> " + ui->idCompteupLineEdit->text());
@@ -569,7 +569,7 @@ bool dlg_gestioncomptes::VerifCompte()
             return false;
         }
         QList<QVariantList> listnomabrg = db->SelectRecordsFromTable(QStringList() << "nomcompteabrege",
-                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    TBL_COMPTES, ok,
                                                                     "where idUser = " + QString::number(gidUser) +
                                                                     " and nomcompteabrege = '" + ui->NomCompteAbregeuplineEdit->text() + "'" +
                                                                     " and idcompte <> " + ui->idCompteupLineEdit->text());
@@ -579,7 +579,7 @@ bool dlg_gestioncomptes::VerifCompte()
             return false;
         }
         QList<QVariantList> listiban = db->SelectRecordsFromTable(QStringList() << "IBAN",
-                                                                    NOM_TABLE_COMPTES, ok,
+                                                                    TBL_COMPTES, ok,
                                                                     "where idcompte <> " + ui->ComptesuptableWidget->item(ui->ComptesuptableWidget->currentRow(),0)->text());
         if (listiban.size()>0)
         {

@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include "cls_docsexternes.h"
 
 DocsExternes::DocsExternes(QObject *parent) : ItemsList(parent)
@@ -76,12 +75,12 @@ void DocsExternes::setNouveauDocumentFalse()
 
 void DocsExternes::setsoustype(DocExterne* docmt, QString soustype)
 {
+    docmt->setsoustype(soustype);
     if (soustype == "")
         soustype = "null";
     else
         soustype = "'" + Utils::correctquoteSQL(soustype) + "'";
-    DataBase::I()->StandardSQL("update " NOM_TABLE_IMPRESSIONS " set soustypedoc = " + soustype + " where idimpression = " + QString::number(docmt->id()));
-    docmt->setsoustype(soustype);
+    DataBase::I()->StandardSQL("update " TBL_IMPRESSIONS " set soustypedoc = " + soustype + " where idimpression = " + QString::number(docmt->id()));
 }
 
 bool DocsExternes::add(DocExterne *doc)
@@ -133,10 +132,10 @@ void DocsExternes::initListeByPatient(Patient *pat)
 
 bool DocsExternes::SupprimeDocExterne(DocExterne* doc)
 {
-    DataBase::I()->StandardSQL("delete from " NOM_TABLE_REFRACTION " where idrefraction = (select idrefraction from " NOM_TABLE_IMPRESSIONS
+    DataBase::I()->StandardSQL("delete from " TBL_REFRACTION " where idrefraction = (select idrefraction from " TBL_IMPRESSIONS
                     " where idimpression = " + QString::number(doc->id()) + ")");
-    DataBase::I()->StandardSQL("delete from " NOM_TABLE_IMPRESSIONS " where idimpression = " + QString::number(doc->id()));
-    DataBase::I()->StandardSQL("delete from " NOM_TABLE_ECHANGEIMAGES " where idimpression = " + QString::number(doc->id()));
+    DataBase::I()->StandardSQL("delete from " TBL_IMPRESSIONS " where idimpression = " + QString::number(doc->id()));
+    DataBase::I()->StandardSQL("delete from " TBL_ECHANGEIMAGES " where idimpression = " + QString::number(doc->id()));
     remove(doc);
     return true;
 }

@@ -76,7 +76,7 @@ bool dlg_paramconnexion::TestConnexion()
     if ( Password.isEmpty() ) {UpMessageBox::Watch(this,tr("Vous n'avez pas précisé votre mot de passe!"));   ui->MDPlineEdit->setFocus();    return 0;}
     //à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
     db->initFromFirstConnexion("BDD_POSTE", "localhost", ui->PortcomboBox->currentText().toInt(), false);
-    error = db->connectToDataBase(NOM_BASE_CONSULTS, Login, Password);
+    error = db->connectToDataBase(DB_CONSULTS, Login, Password);
 
     if( error.size() )
     {

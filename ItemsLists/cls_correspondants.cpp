@@ -68,6 +68,13 @@ bool Correspondants::add(Correspondant *cor)
     return true;
 }
 
+void Correspondants::addList(QList<Correspondant*> listcor)
+{
+    QList<Correspondant*>::const_iterator it;
+    for( it = listcor.constBegin(); it != listcor.constEnd(); ++it )
+        add( *it );
+}
+
 /*!
  * \brief Correspondants::getById
  * \param id l'id du correspondant recherché
@@ -76,7 +83,7 @@ bool Correspondants::add(Correspondant *cor)
  * \return Q_NULLPTR si aucun correspondant trouvé
  * \return Correspondant* le correspondant correspondant à l'id
  */
-Correspondant* Correspondants::getById(int id, bool loadDetails, bool addToList)
+Correspondant* Correspondants::getById(int id, Item::LOADDETAILS loaddetails, bool addToList)
 {
     QMap<int, Correspondant*>::const_iterator itcor = m_correspondants->find(id);
     Correspondant *result;
@@ -85,7 +92,7 @@ Correspondant* Correspondants::getById(int id, bool loadDetails, bool addToList)
     else
     {
         result = itcor.value();
-        if(!loadDetails)
+        if(loaddetails == Item::NoLoadDetails)
             return result;
         addToList = false;
     }
@@ -120,10 +127,5 @@ void Correspondants::initListe(bool all)
         listcorrespondants = DataBase::I()->loadCorrespondantsALL();
     else
         listcorrespondants = DataBase::I()->loadCorrespondants();
-    QList<Correspondant*>::const_iterator itcorrespondants;
-    for( itcorrespondants = listcorrespondants.constBegin(); itcorrespondants != listcorrespondants.constEnd(); ++itcorrespondants )
-    {
-        Correspondant *cor = const_cast<Correspondant*>(*itcorrespondants);
-        add(cor);
-    }
+    addList(listcorrespondants);
 }
