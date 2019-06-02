@@ -491,35 +491,22 @@ void dlg_motifs::CreeMotif()
     ui->MotifsupTableWidget->clearSelection();
 
     int row = ui->MotifsupTableWidget->rowCount();
+    Motif *motif = Datas::I()->motifs->CreationMotif(tr("Nouveau motif"),   //! Motif
+                                             "NM",                          //! Raccourci
+                                             "FFFFFF",                      //! Couleur
+                                             0,                             //! duree
+                                             false,                         //! pardefaut
+                                             true,                          //! utiliser
+                                             row+1);                        //! noOrdreidSalDat
+    if (motif == Q_NULLPTR)
+        return;
     ui->MotifsupTableWidget->insertRow(row);
-    QJsonObject jmotif{};
-    jmotif["id"] = 0;
-    jmotif["motif"] = tr("Nouveau motif");
-    jmotif["raccourci"] = "NM";
-    jmotif["couleur"] = "FFFFFF";
-    jmotif["duree"] = 0;
-    jmotif["pardefaut"] = false;
-    jmotif["utiliser"] = true;
-    jmotif["noordre"] = row+1;
-    Motif *motif = new Motif(jmotif);
-    Datas::I()->motifs->add(motif);
     SetMotifToRow(motif,row);
 
     QFontMetrics fm(qApp->font());
     ui->MotifsupTableWidget->setRowHeight(row,int(fm.height()*1.3));
     ui->MotifsupTableWidget->selectRow(row);
     OKButton->setEnabled(true);
-}
-
-void dlg_motifs::MAJMotifs()
-{
-    Datas::I()->motifs->clearAll();
-    QList<Motif*> listMotifs = DataBase::I()->loadMotifs();
-    for(QList<Motif*>::const_iterator itmtf = listMotifs.constBegin(); itmtf != listMotifs.constEnd(); ++itmtf )
-    {
-        Motif *mt = const_cast<Motif*>(*itmtf);
-        Datas::I()->motifs->add( mt );
-    }
 }
 
 void dlg_motifs::Slot_EnregistreMotifs()
@@ -559,7 +546,7 @@ void dlg_motifs::Slot_EnregistreMotifs()
         req += QString::number(j+1) + ")";
     }
     DataBase::I()->StandardSQL(req);
-    MAJMotifs();
+    Datas::I()->motifs->initListe();
     accept();
 }
 

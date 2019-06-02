@@ -121,7 +121,7 @@ void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem
 {
     int idCompte = ui->ComptesuptableWidget->item(pitem->row(),0)->text().toInt();
     CompteEnCours = Datas::I()->comptes ->getById(idCompte);
-        ui->BanqueupcomboBox            ->setCurrentText(CompteEnCours->nombanque());
+        ui->BanqueupcomboBox            ->setCurrentText(Datas::I()->banques->getById(CompteEnCours->id())->NomBanqueAbrege());
         ui->IBANuplineEdit              ->setText(CompteEnCours->iban());
         ui->IntituleCompteuplineEdit    ->setText(CompteEnCours->intitulecompte());
         ui->NomCompteAbregeuplineEdit   ->setText(CompteEnCours->nom());
@@ -349,12 +349,11 @@ void dlg_gestioncomptes::SupprCompte()
     msgbox.setIcon(UpMessageBox::Warning);
     msgbox.addButton(&NoBouton, UpSmallButton::CANCELBUTTON);
     msgbox.addButton(&OKBouton, UpSmallButton::SUPPRBUTTON);
-    msgbox.setInformativeText(tr("Supprimer le compte ") + CompteEnCours->nombanque() + " - " + CompteEnCours->intitulecompte() + "?");
+    msgbox.setInformativeText(tr("Supprimer le compte ") + Datas::I()->banques->getById(CompteEnCours->id())->NomBanqueAbrege() + " - " + CompteEnCours->intitulecompte() + "?");
     msgbox.exec();
     if (msgbox.clickedButton() != &OKBouton)
         return;
-    db->StandardSQL("delete from " TBL_COMPTES " where idCompte = " + QString::number(CompteEnCours->id()));
-    Datas::I()->comptes->removeCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
+    Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     m_comptesusr->clear();
     for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
     {
@@ -408,23 +407,14 @@ void dlg_gestioncomptes::ValidCompte()
         Datas::I()->comptes->reloadCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     }
     else if (gMode == Nouv)
-    {
-        QHash<QString, QString> listsets;
-        listsets.insert("iduser"                , QString::number(gidUser));
-        listsets.insert("idbanque"              , QString::number(idbanque));
-        listsets.insert("IBAN"                  , ui->IBANuplineEdit->text());
-        listsets.insert("IntituleCompte"        , ui->IntituleCompteuplineEdit->text());
-        listsets.insert("NomCompteABrege"       , ui->NomCompteAbregeuplineEdit->text());
-        listsets.insert("SoldeSurDernierReleve" , "0");
-        listsets.insert("partage"               , (ui->CompteSocietecheckBox->isChecked()? "1" : "null"));
-        listsets.insert("desactive"             , (ui->DesactiveComptecheckBox->isChecked()? "1" : "null"));
-        db->InsertIntoTable(TBL_COMPTES, listsets);
-        idcompte = db->selectMaxFromTable("idcompte",TBL_COMPTES, ok);
-        UpMessageBox::Watch(this, tr("Le compte ") + ui->IntituleCompteuplineEdit->text() + tr(" a été enregistré."),
-                                  tr("le solde a été fixé à 0,00 euros et devra être corrigé par le propriétaire du compte"));
-        Compte *cpt = new Compte(db->loadCompteById(idcompte));
-        Datas::I()->comptes->add(cpt);
-    }
+        Datas::I()->comptes->CreationCompte(idbanque,                                          //! idBanque
+                                            gidUser,                                           //! idUser
+                                            ui->IBANuplineEdit->text(),                        //! IBAN
+                                            ui->IntituleCompteuplineEdit->text(),              //! IntituleCompte
+                                            ui->NomCompteAbregeuplineEdit->text(),             //! NomCompteAbrege
+                                            0,                                                 //! SoldeSurDernierReleve
+                                            ui->CompteSocietecheckBox->isChecked(),            //! Partage
+                                            ui->DesactiveComptecheckBox->isChecked());         //! Desactive
     m_comptesusr->clear();
     for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
     {
