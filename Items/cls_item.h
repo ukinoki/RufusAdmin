@@ -22,6 +22,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QObject>
 #include <QVariant>
 #include <QDate>
+#include "macros.h"
 
 class Item : public QObject
 {
@@ -31,9 +32,11 @@ public:
     enum LOADDETAILS {LoadDetails, NoLoadDetails};
     enum UPDATE {NoUpdate, ForceUpdate};
     explicit Item(QObject *parent = Q_NULLPTR);
-    int id() const { return m_id; }
-    QString stringid() const  { return m_stringid; }
-    QJsonObject datas() const { return m_data; }
+    int id() const                      { return m_id; }
+    void setid(int id)                  { m_id = id; }
+    QString stringid() const            { return m_stringid; }
+    void setstringid(QString stringid)  { m_stringid = stringid; }
+    QJsonObject datas() const           { return m_data; }
 
 protected:
 

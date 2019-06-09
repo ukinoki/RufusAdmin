@@ -17,7 +17,23 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "tcpsocket.h"
 
-TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
+TcpSocket* TcpSocket::instance = Q_NULLPTR;
+
+TcpSocket* TcpSocket::I()
+{
+    if (instance == Q_NULLPTR)
+        instance = new TcpSocket();
+    return instance;
+}
+
+TcpSocket::TcpSocket()
+{
+    buffer.clear();
+    sizedata = 0;
+    socket = this;
+}
+
+TcpSocket::TcpSocket(qintptr ID, QTcpSocket *parent) : QTcpSocket (parent)
 {
     moveToThread(&thread);
     sktdescriptor = ID;
@@ -131,3 +147,40 @@ void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
         "The remote host closed the connection"
     */
 }
+
+bool TcpSocket::TcpConnectToServer(QString ipadrserver)
+{
+    if (ipadrserver == "")
+        ipadrserver    = DataBase::I()->parametres()->adresseserveurtcp();
+    if (ipadrserver == "")
+        return false;
+    QString port        = NOM_PORT_TCPSERVEUR;
+    PortTCPServer       = port.toUShort();
+    /*
+     * The main difference between close() and disconnectFromHost() is that the first actually closes the OS socket, while the second does not.
+     * The problem is, after a socket was closed, you cannot use it to create a new connection.
+     * Thus, if you want to reuse the socket, use disconnectFromHost() otherwise close()
+    */
+    disconnect();
+    if (state() == QAbstractSocket::ConnectedState || state() == QAbstractSocket::ConnectingState)
+        disconnectFromHost();
+    connect(this,     &QTcpSocket::hostFound, this,   [=] {
+                                                            qDebug() << "Serveur trouvé";
+                                                            Logs::MSGSOCKET("Serveur trouvé");
+                                                          });
+    connectToHost(ipadrserver,PortTCPServer);     // On se connecte au serveur
+    if (waitForConnected(30000))
+    {
+        connect(this,                 &QTcpSocket::readyRead,                                              this,   &TcpSocket::TraiteDonneesRecues);
+        connect(this,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &TcpSocket::erreurSocket);
+        return true;
+    }
+    else
+    {
+        disconnect();
+        disconnectFromHost();
+        instance = Q_NULLPTR;
+        return false;
+    }
+}
+

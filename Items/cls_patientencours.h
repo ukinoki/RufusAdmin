@@ -58,12 +58,11 @@ public:
     int iduserencoursexam() const       { return m_iduserencoursexam; }
     int idsaldat() const                { return m_idsaldat; }
 
-    void setid(int id)                  { m_id = id; }
     void setiduser(int id)              { m_iduser = id; }
     void setstatut(QString txt)         { m_statut = txt; }
     void setheurestatut(QTime time)     { m_heurestatut = time; }
     void setheurerdv(QTime time)        { m_heurerdv = time; }
-    void setheurerarrivee(QTime time)   { m_heurearrivee = time; }
+    void setheurearrivee(QTime time)    { m_heurearrivee = time; }
     void setmotif(QString txt)          { m_motif = txt; }
     void setmessage(QString txt)        { m_message = txt; }
     void setidacteapayer(int id)        { m_idacteapayer = id; }

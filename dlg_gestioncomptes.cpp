@@ -121,10 +121,10 @@ void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem
 {
     int idCompte = ui->ComptesuptableWidget->item(pitem->row(),0)->text().toInt();
     CompteEnCours = Datas::I()->comptes ->getById(idCompte);
-        ui->BanqueupcomboBox            ->setCurrentText(Datas::I()->banques->getById(CompteEnCours->id())->NomBanqueAbrege());
+        ui->BanqueupcomboBox            ->setCurrentText(Datas::I()->banques->getById(CompteEnCours->id())->nomabrege());
         ui->IBANuplineEdit              ->setText(CompteEnCours->iban());
         ui->IntituleCompteuplineEdit    ->setText(CompteEnCours->intitulecompte());
-        ui->NomCompteAbregeuplineEdit   ->setText(CompteEnCours->nom());
+        ui->NomCompteAbregeuplineEdit   ->setText(CompteEnCours->nomabrege());
         ui->idCompteupLineEdit          ->setText(QString::number(CompteEnCours->id()));
         ui->DesactiveComptecheckBox     ->setChecked(CompteEnCours->isDesactive());
         ui->CompteSocietecheckBox       ->setChecked(CompteEnCours->isPartage());
@@ -349,7 +349,7 @@ void dlg_gestioncomptes::SupprCompte()
     msgbox.setIcon(UpMessageBox::Warning);
     msgbox.addButton(&NoBouton, UpSmallButton::CANCELBUTTON);
     msgbox.addButton(&OKBouton, UpSmallButton::SUPPRBUTTON);
-    msgbox.setInformativeText(tr("Supprimer le compte ") + Datas::I()->banques->getById(CompteEnCours->id())->NomBanqueAbrege() + " - " + CompteEnCours->intitulecompte() + "?");
+    msgbox.setInformativeText(tr("Supprimer le compte ") + Datas::I()->banques->getById(CompteEnCours->id())->nomabrege() + " - " + CompteEnCours->intitulecompte() + "?");
     msgbox.exec();
     if (msgbox.clickedButton() != &OKBouton)
         return;
@@ -474,7 +474,7 @@ void dlg_gestioncomptes::RemplirTableView(int idcompte)
             pitem0 = new QTableWidgetItem;
             pitem1 = new QTableWidgetItem;
             pitem0->setText(QString::number(cpt->id()));
-            pitem1->setText(cpt->nom());
+            pitem1->setText(cpt->nomabrege());
             ui->ComptesuptableWidget->setItem(i,0,pitem0);
             ui->ComptesuptableWidget->setItem(i,1,pitem1);
             ui->ComptesuptableWidget->setRowHeight(i,int(QFontMetrics(qApp->font()).height()*1.3));

@@ -87,17 +87,80 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TBL_VILLES                            "rufus.Villes"
 
 // Les champs
+#define CP_ISALLLOADED                               "isallloaded"
+#define CP_ISMEDICALlOADED                           "ismedicalloaded"
+#define CP_ISSOCIALlOADED                            "issocialloaded"
+
+                            //! Table Rufus.Patients
+#define CP_IDPAT_PATIENTS                            "idPat"
+#define CP_NOM_PATIENTS                              "PatNom"
+#define CP_PRENOM_PATIENTS                           "PatPrenom"
+#define CP_DDN_PATIENTS                              "PatDDN"
+#define CP_SEXE_PATIENTS                             "Sexe"
+#define CP_DATECREATION_PATIENTS                     "PatCreeLe"
+#define CP_IDCREATEUR_PATIENTS                       "PatCreePar"
+#define CP_IDLIEU_PATIENTS                           "NumCentre"
+#define CP_COMMENTAIRE_PATIENTS                      "Commentaire"
+
+                            //! Table Rufus.donneessocialespatients
+#define CP_IDPAT_DSP                                 "idPat"
+#define CP_ADRESSE1_DSP                              "PatAdresse1"
+#define CP_ADRESSE2_DSP                              "PatAdresse2"
+#define CP_ADRESSE3_DSP                              "PatAdresse3"
+#define CP_CODEPOSTAL_DSP                            "PatCodepostal"
+#define CP_VILLE_DSP                                 "PatVille"
+#define CP_TELEPHONE_DSP                             "PatTelephone"
+#define CP_PORTABLE_DSP                              "PatPortable"
+#define CP_MAIL_DSP                                  "PatMail"
+#define CP_NNI_DSP                                   "PatNNI"
+#define CP_ALD_DSP                                   "PatALD"
+#define CP_CMU_DSP                                   "PatCMU"
+#define CP_PROFESSION_DSP                            "PatProfession"
+
+                            //! Table Rufus.renseignementsmedicauxpatients
+#define CP_IDPAT_RMP                                 "idPat"
+#define CP_ATCDTSOPH_RMP                             "RMPAtcdtsOphs"
+#define CP_TRAITMTOPH_RMP                            "RMPTtOphs"
+#define CP_IMPORTANT_RMP                             "Important"
+#define CP_RESUME_RMP                                "Resume"
+#define CP_ATCDTSPERSOS_RMP                          "RMPAtcdtsPersos"
+#define CP_ATCDTSFAMLXS_RMP                          "RMPAtcdtsFamiliaux"
+#define CP_TRAITMTGEN_RMP                            "RMPTtGeneral"
+#define CP_AUTRESTOXIQUES_RMP                        "Autrestoxiques"
+#define CP_GENCORRESPONDANT_RMP                      "Gencorresp"
+#define CP_IDMG_RMP                                  "idCorMedMG"
+#define CP_IDSPE1_RMP                                "idCorMedSpe1"
+#define CP_IDSPE2_RMP                                "idCorMedSpe2"
+#define CP_IDSPE3_RMP                                "idCorMedSpe3"
+#define CP_IDCORNONMED_RMP                           "idCorNonMed"
+#define CP_TABAC_RMP                                 "Tabac"
+
+
                             //! Table Actes
+#define CP_IDACTE_ACTES                              "idActe"
+#define CP_IDPAT_ACTES                               "idPat"
+#define CP_IDUSER_ACTES                              "idUser"
+#define CP_IDSESSION_ACTES                           "idSession"    //!> pas utilisé
 #define CP_MOTIF_ACTES                               "ActeMotif"
 #define CP_TEXTE_ACTES                               "ActeTexte"
 #define CP_CONCLUSION_ACTES                          "ActeConclusion"
-#define CP_ACTEDATE_ACTES                            "ActeDate"
-#define CP_IDUSER_ACTES                              "idUser"
-#define CP_IDUSERPARENT_ACTES                        "UserParent"
-#define CP_IDUSERCOMPTABLE_ACTES                     "UserComptable"
 #define CP_COURRIERAFAIRE_ACTES                      "ActeCourrierafaire"
+#define CP_COTATION_ACTES                            "ActeCotation"
+#define CP_MONTANT_ACTES                             "ActeMontant"
+#define CP_MONNNAIE_ACTES                            "ActeMonnaie"
+#define CP_DATE_ACTES                                "ActeDate"
+#define CP_HEURE_ACTES                               "ActeHeure"
+#define CP_IDUSERCREATEUR_ACTES                      "CreePar"
+#define CP_IDUSERCOMPTABLE_ACTES                     "UserComptable"
+#define CP_IDUSERPARENT_ACTES                        "UserParent"
+#define CP_SUPERVISEURREMPLACANT_ACTES               "SuperViseurRemplacant"
+#define CP_NUMCENTRE_ACTES                           "NumCentre"
+#define CP_IDLIEU_ACTES                              "idLieu"
+#define CP_IMPORTANT_ACTES                           "PointImportant"
+#define CP_YEXTIMPORTANT_ACTES                       "CommentPointImportant"
+#define CP_NOCOTATION_ACTES                          "SansCotation"
 
-//! Table Rufus.Impressions
+                            //! Table Rufus.Impressions
 #define CP_IDIMPRESSION_IMPRESSIONS                  "idImpression"
 #define CP_IDUSER_IMPRESSIONS                        "idUser"
 #define CP_IDPAT_IMPRESSIONS                         "idPat"
@@ -109,15 +172,15 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_TEXTORIGINE_IMPRESSIONS                   "TextOrigine"
 #define CP_TEXTPIED_IMPRESSIONS                      "TextPied"
 #define CP_DATE_IMPRESSIONS                          "DateImpression"
-#define CP_ISPDF_IMPRESSIONS                         "pdf"
-#define CP_ISCOMPRESSION_IMPRESSIONS                 "Compression"
-#define CP_ISJPG_IMPRESSIONS                         "jpg"
-#define CP_ISAUTRE_IMPRESSIONS                       "autre"
+#define CP_PDF_IMPRESSIONS                           "pdf"
+#define CP_COMPRESSION_IMPRESSIONS                   "Compression"
+#define CP_JPG_IMPRESSIONS                           "jpg"
+#define CP_AUTRE_IMPRESSIONS                         "autre"
 #define CP_FORMATAUTRE_IMPRESSIONS                   "formatautre"
 #define CP_LIENFICHIER_IMPRESSIONS                   "lienversfichier"
 #define CP_LIENFICHIERDISTANT_IMPRESSIONS            "LienFichierDistant"
 #define CP_IDREFRACTION_IMPRESSIONS                  "idRefraction"
-#define CP_ISALD_IMPRESSIONS                         "ALD"
+#define CP_ALD_IMPRESSIONS                           "ALD"
 #define CP_IDEMETTEUR_IMPRESSIONS                    "UserEmetteur"
 #define CP_CONCLUSION_IMPRESSIONS                    "Conclusion"
 #define CP_EMISORRECU_IMPRESSIONS                    "EmisRecu"
@@ -125,24 +188,10 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDLIEU_IMPRESSIONS                        "idLieu"
 #define CP_IMPORTANCE_IMPRESSIONS                    "Importance"
 
-                            //! Table renseignementsmedicauxpatients
-#define CP_ATCDTSOPH_RMP                             "RMPAtcdtsOphs"
-#define CP_TRAITMTOPH_RMP                            "RMPTtOphs"
-#define CP_IMPORTANT_RMP                             "Important"
-#define CP_RESUME_RMP                                "Resume"
-#define CP_ATCDTSPERSOS_RMP                          "RMPAtcdtsPersos"
-#define CP_ATCDTSFAMLXS_RMP                          "RMPAtcdtsFamiliaux"
-#define CP_TRAITMTGEN_RMP                            "RMPTtGeneral"
-#define CP_AUTRESTOXIQUES_RMP                        "Autrestoxiques"
-#define CP_IDMG_RMP                                  "idCorMedMG"
-#define CP_IDSPE1_RMP                                "idCorMedSpe1"
-#define CP_IDSPE2_RMP                                "idCorMedSpe2"
-#define CP_TABAC_RMP                                 "Tabac"
-
-                            //! Table Messagerie
+                            //! Table Rufus.Messagerie
 #define CP_TEXTMSG_MESSAGERIE                        "TexteMessage"
 
-                            //! Table salledattente
+                            //! Table Rufus.salledattente
 #define CP_IDPAT_SALDAT                              "idPat"
 #define CP_IDUSER_SALDAT                             "idUser"
 #define CP_STATUT_SALDAT                             "Statut"
@@ -158,9 +207,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
                             //! Table ComptaMedicale.banques
 #define CP_IDBANQUE_BANQUES                          "idBanque"
-#define CP_IDABREGE_BANQUES                          "idBanqueAbrege"
+#define CP_NOMABREGE_BANQUES                         "idBanqueAbrege"
 #define CP_NOMBANQUE_BANQUES                         "NomBanque"
-#define CP_NOMABREGE_BANQUES                         "Codeanque"
+#define CP_CODE_BANQUES                              "Codeanque"
 
                             //! Table ComptaMedicale.Comptes
 #define CP_IDCOMPTE_COMPTES                          "idCompte"

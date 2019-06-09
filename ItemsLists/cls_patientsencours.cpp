@@ -70,6 +70,8 @@ void PatientsEnCours::initListeAll()
 
 void PatientsEnCours::SupprimePatientEnCours(PatientEnCours *pat)
 {
+    if (pat == Q_NULLPTR)
+        return;
     //!. Suppression du patient
     DataBase::I()->SupprRecordFromTable(pat->id(), "idPat", TBL_SALLEDATTENTE);
     remove(m_patientsencours, pat);
@@ -77,89 +79,17 @@ void PatientsEnCours::SupprimePatientEnCours(PatientEnCours *pat)
 
 void PatientsEnCours::updatePatientEnCours(PatientEnCours *pat)
 {
+    if (pat == Q_NULLPTR)
+        return;
     pat->setData(DataBase::I()->loadPatientEnCoursDataById(pat->id()));
 }
 
-void PatientsEnCours::updatePatientEnCoursData(PatientEnCours *pat, QString nomchamp, QVariant value)
-{
-    QString newvalue;
-    if (nomchamp == CP_IDPAT_SALDAT)
-    {
-        pat->setid(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    else if (nomchamp == CP_IDUSER_SALDAT)
-    {
-        pat->setiduser(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    else if (nomchamp == CP_STATUT_SALDAT)
-    {
-        pat->setstatut(value.toString());
-        newvalue = (value.toString() != ""? "'" + Utils::correctquoteSQL(value.toString()) + "'" : "null");
-    }
-    else if (nomchamp == CP_HEURESTATUT_SALDAT)
-    {
-        pat->setheurestatut(value.toTime());
-        newvalue = (value.toTime().isValid()? "'" + value.toTime().toString("HH:mm:ss") + "'" : "null");
-    }
-    else if (nomchamp == CP_HEUREARRIVEE_SALDAT)
-    {
-        pat->setheurerarrivee(value.toTime());
-        newvalue = (value.toTime().isValid()? "'" + value.toTime().toString("HH:mm:ss") + "'" : "null");
-
-    }
-    else if (nomchamp == CP_HEURERDV_SALDAT)
-    {
-        pat->setheurerdv(value.toTime());
-        newvalue = (value.toTime().isValid()? "'" + value.toTime().toString("HH:mm:ss") + "'" : "null");
-
-    }
-    else if (nomchamp == CP_MOTIF_SALDAT)
-    {
-        pat->setmotif(value.toString());
-        newvalue = (value.toString() != ""? "'" + Utils::correctquoteSQL(value.toString()) + "'" : "null");
-    }
-    else if (nomchamp == CP_MESSAGE_SALDAT)
-    {
-        pat->setmessage(value.toString());
-        newvalue = (value.toString() != ""? "'" + Utils::correctquoteSQL(value.toString()) + "'" : "null");
-    }
-    else if (nomchamp == CP_IDACTEAPAYER_SALDAT)
-    {
-        pat->setidacteapayer(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    else if (nomchamp == CP_POSTEEXAMEN_SALDAT)
-    {
-        pat->setmessage(value.toString());
-        newvalue = (value.toString() != ""? "'" + Utils::correctquoteSQL(value.toString()) + "'" : "null");
-    }
-    else if (nomchamp == CP_IDUSERENCOURSEXAM_SALDAT)
-    {
-        pat->setiduserencoursexam(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    else if (nomchamp == CP_IDSALDAT_SALDAT)
-    {
-        pat->setidsaldat(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    QString requete = "UPDATE " TBL_SALLEDATTENTE " SET " + nomchamp + " = " + newvalue + " WHERE idPat = " + QString::number(pat->id());
-    DataBase::I()->StandardSQL(requete);
-}
 
 PatientEnCours* PatientsEnCours::CreationPatient(int idPat, int idUser , QString Statut, QTime heureStatut, QTime heureRDV,
                                                  QTime heureArrivee, QString Motif, QString Message, int idActeAPayer, QString PosteExamen,
                                                  int idUserEnCours, int idSalDat)
 
 {
-    PatientEnCours *pat = Q_NULLPTR;
     bool ok;
     QString iduser          = (idUser == 0?             QString::number(DataBase::I()->getUserConnected()->getIdUserActeSuperviseur()) : QString::number(idUser));
     QString statut          = (Statut == ""?            "null" : "'" + Utils::correctquoteSQL(Statut) + "'");
@@ -172,7 +102,7 @@ PatientEnCours* PatientsEnCours::CreationPatient(int idPat, int idUser , QString
     QString posteexamen     = (PosteExamen == ""?       "null" : "'" + Utils::correctquoteSQL(PosteExamen) + "'");
     QString iduserencours   = (idUserEnCours == 0?      "null" : QString::number(idUserEnCours));
     QString idsaldat        = (idSalDat == 0?           "null" : QString::number(idSalDat));
-    QString req =     "INSERT INTO " TBL_SALLEDATTENTE
+    QString req = "INSERT INTO " TBL_SALLEDATTENTE
                         " (idPat, idUser, Statut, HeureStatut, heureRDV, heureArrivee, Motif, Message, idActeAPayer, PosteExamen, idUserEnCoursExam, idSalDat)"
                         " VALUES (" +   QString::number(idPat) + "," +
                                         iduser + "," +
@@ -186,7 +116,7 @@ PatientEnCours* PatientsEnCours::CreationPatient(int idPat, int idUser , QString
                                         posteexamen    + "," +
                                         iduserencours  + "," +
                                         idsaldat +")";
-    QString MsgErreur           = tr("Impossible de mettre ce dossier en salle d'attente");
+    QString MsgErreur = tr("Impossible de mettre ce dossier en salle d'attente");
     DataBase::I()->locktables(QStringList() << TBL_SALLEDATTENTE);
     if (!DataBase::I()->StandardSQL(req, MsgErreur))
     {
@@ -198,7 +128,29 @@ PatientEnCours* PatientsEnCours::CreationPatient(int idPat, int idUser , QString
     DataBase::I()->unlocktables();
     if (!ok ||  idpat == 0)
         return Q_NULLPTR;
-    pat =   DataBase::I()->loadPatientEnCoursById(idpat);
+    PatientEnCours *pat = new PatientEnCours();
+    pat->setid(idpat);
+    pat->setiduser(idUser == 0? DataBase::I()->getUserConnected()->getIdUserActeSuperviseur() : idUser);
+    if (Statut != "")
+        pat->setstatut(Statut);
+    if (heureStatut != QTime())
+        pat->setheurestatut(heureStatut);
+    if (heureRDV != QTime())
+        pat->setheurerdv(heureRDV);
+    if (heureArrivee != QTime())
+        pat->setheurearrivee(heureArrivee);
+    if (Motif != "")
+        pat->setmotif(Motif);
+    if (Message != "")
+        pat->setmessage(Message);
+    if (idActeAPayer != 0)
+        pat->setidacteapayer(idActeAPayer);
+    if (PosteExamen != "")
+        pat->setposteexamen(PosteExamen);
+    if (idUserEnCours != 0)
+        pat->setiduserencoursexam(idUserEnCours);
+    if (idSalDat != 0)
+        pat->setidsaldat(idSalDat);
     add(m_patientsencours, pat->id(), pat);
     return pat;
 }

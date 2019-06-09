@@ -154,7 +154,9 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
     else if (msg.contains(TCPMSG_MAJDocsExternes))
         envoyerATous(msg);
     else if (msg.contains(TCPMSG_TestConnexion))
-    {}
+    {
+        qDebug() << msg;
+    }
     else if (msg.contains(TCPMSG_MAJSalAttente))
     {
         envoyerATous(msg, sktdescriptor);

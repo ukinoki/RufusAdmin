@@ -67,6 +67,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "widgetbuttonframe.h"
 #include "utils.h"
 #include "tcpserver.h"
+#include "tcpsocket.h"
 #include "gbl_datas.h"
 #include "cls_item.h"
 #include "database.h"
@@ -222,6 +223,7 @@ private:
     // TCPServer, TCPSocket
     bool                UtiliseTCP;
     TcpServer           *TCPServer;
+    TcpSocket           *TCPConnect;
     quint16             PortTCPServer;
     QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;
     QString             gIPadr, gMacAdress;

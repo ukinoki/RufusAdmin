@@ -57,10 +57,8 @@ private:
     QString m_paiementType;     //!< moyen de paiement
     QString m_paiementTiers;    //!< //TODO : à compléter : je ne sais pas
 
-    QDateTime m_date;           //!< date de la création de l'acte
+    QDate m_date;               //!< date de la création de l'acte
     QTime m_heure;              //!< heure de la création de l'acte
-    QDateTime m_agePatient;     //!< age du Patient au moment de l'acte
-
 
 public:
     Acte(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
@@ -79,7 +77,6 @@ public:
     QString courrierStatus() const;
     int idCreatedBy() const;
     int idPatient() const;
-    QDate agePatient() const;
     QString cotation() const;
     double montant() const;
     QString paiementType() const;
@@ -93,16 +90,22 @@ public:
     int idParent() const;
     int idComptable() const;
 
+    void setdate(QDate date)                { m_date = date; }
+    void setheure(QTime heure)              { m_heure = heure; }
     void setcotation(QString cot)           { m_cotation = cot; }
     void setcourrierafaire(bool caf)        { m_courrierStatus = (caf? "T" : ""); }
-    void setdate(QDate date)                { m_date = QDateTime(date); }
     void setmontant(double montant)         { m_montant = montant; }
-    void setiduser(int idusr)               { m_idUser = idusr; }
-    void setidusercomptable(int idusr)      { m_idUserComptable = idusr; }
-    void setiduserparent(int idusr)         { m_idUserParent = idusr; }
+    void setiduser(int id)                  { m_idUser = id; }
+    void setidpatient(int id)               { m_idPatient = id; }
+    void setidusercomptable(int id)         { m_idUserComptable = id; }
+    void setidusercreateur(int id)          { m_idCreatedBy = id; }
+    void setidlieu(int id)                  { m_idLieu = id; }
+    void setiduserparent(int id)            { m_idUserParent = id; }
+    void setnumcentre(int id)               { m_numCentre = id; }
     void setmotif(QString motif)            { m_motif = motif; }
     void settexte(QString texte)            { m_texte = texte; }
     void setconclusion(QString conclusion)  { m_conclusion = conclusion; }
+    void seteffectueparremplacant(bool logic) { m_remplacant = logic; }
 };
 
 #endif // CLS_ACTE_H

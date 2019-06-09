@@ -2,7 +2,12 @@
 #define CLS_ITEMSLIST_H
 
 #include "QObject"
-#include "cls_item.h"
+#include "cls_acte.h"
+#include "cls_docexterne.h"
+#include "cls_patientencours.h"
+#include "macros.h"
+#include "database.h"
+#include "upmessagebox.h"
 
 class ItemsList : public QObject
 {
@@ -11,6 +16,8 @@ public:
     explicit ItemsList(QObject *parent = Q_NULLPTR);
     enum ADDTOLIST {AddToList, NoAddToList};
     enum POSITION {Debut, Prec, Suiv, Fin};
+
+    static bool update(Item*item, QString field, QVariant newvalue = QVariant());
 
     /*!
      * \brief ItemsList::clearAll
@@ -24,6 +31,8 @@ public:
             delete it.value();
         m_map->clear();
     }
+
+    /*! le même avec des QString en key */
     template <typename T>
     void clearAll(QMap<QString, T*> *m_map)
     {
@@ -40,6 +49,7 @@ protected:
      * \param m_map le QMap dnas lequel on veut ajouter l'item
      * \param id l'id de l'item que l'on veut ajouter en key du QMap
      * \param item l'item que l'on veut ajouter
+     * \param Item::UPDATE - si ForceUpdate, force l'update de l'item s'il est déjà présent dans le QMap
      * \return true si l'item est ajouté
      * \return false si l'item est un Q_NULLPTR
      * \return false si l'item est déjà présent dans le QMap et delete l'item dans ce cas
@@ -63,6 +73,8 @@ protected:
         m_map->insert(id, item);
         return true;
     }
+
+    /*! le même avec des QString en key */
     template <typename T>
     bool add(QMap<QString, T*> *m_map, QString stringid, T* item, Item::UPDATE upd = Item::NoUpdate)
     {
@@ -88,7 +100,7 @@ protected:
      * \brief ItemsList::remove
      * Cette fonction va retirer un item d'un QMap
      * \param m_map le QMap dans lequel on veut retirer l'item
-     * \param item l'e patient'item que l'on veut ajouter
+     * \param item l'item que l'on veut retirer
      */
     template <typename T>
     void remove(QMap<int, T*> *m_map, T* item)
@@ -99,6 +111,8 @@ protected:
         delete item;
     }
     template <typename T>
+
+    /*! le même avec des QString en key */
     void remove(QMap<QString, T*> *m_map, T* item)
     {
         if (item == Q_NULLPTR)

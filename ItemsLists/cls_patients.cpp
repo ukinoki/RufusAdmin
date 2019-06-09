@@ -71,6 +71,8 @@ Patient* Patients::getById(int id, Item::LOADDETAILS loadDetails)
 
 void Patients::loadAll(Patient *pat, Item::UPDATE upd)
 {
+    if (pat == Q_NULLPTR)
+        return;
     if (!pat->isalloaded() || upd == Item::ForceUpdate)
     {
         QJsonObject jsonPatient = DataBase::I()->loadPatientAllData(pat->id());
@@ -84,8 +86,10 @@ void Patients::loadAll(Patient *pat, Item::UPDATE upd)
 
 void Patients::reloadMedicalData(Patient *pat)
 {
+    if (pat == Q_NULLPTR)
+        return;
     QJsonObject jData{};
-    jData["id"] = pat->id();
+    jData[CP_IDPAT_PATIENTS] = pat->id();
     bool ok;
     DataBase::I()->loadMedicalDataPatient(jData, ok);
     if( !jData.isEmpty() )
@@ -94,8 +98,10 @@ void Patients::reloadMedicalData(Patient *pat)
 
 void Patients::reloadSocialData(Patient *pat)
 {
+    if (pat == Q_NULLPTR)
+        return;
     QJsonObject jData{};
-    jData["id"] = pat->id();
+    jData[CP_IDPAT_PATIENTS] = pat->id();
     bool ok;
     DataBase::I()->loadSocialDataPatient(jData, ok);
     if( !jData.isEmpty() )
@@ -132,6 +138,8 @@ void Patients::initListeByDDN(QDate DDN)
 
 void Patients::SupprimePatient(Patient *pat)
 {
+    if (pat == Q_NULLPTR)
+        return;
     //!. Suppression des bilans orthoptiques
     QString requete;
     DataBase::I()->StandardSQL("DELETE FROM " TBL_BILANORTHO " WHERE idbilanortho in (SELECT idActe from " TBL_ACTES " where idPat = " + QString::number(pat->id()) + ")");
@@ -155,52 +163,17 @@ void Patients::SupprimePatient(Patient *pat)
     remove(m_patients, pat);
 }
 
-Patient* Patients::CreationPatient(QString nom, QString prenom, QDate datedenaissance, QString sexe)
-{
-    Patient *pat =  Q_NULLPTR;
-    bool ok;
-    QString req;
-    req =   "INSERT INTO " TBL_PATIENTS
-            " (PatNom, PatPrenom, PatDDN, PatCreele, PatCreePar, Sexe) "
-            " VALUES ('" +
-            Utils::correctquoteSQL(nom) + "', '" +
-            Utils::correctquoteSQL(prenom) + "', '" +
-            datedenaissance.toString("yyyy-MM-dd") +
-            "', NOW(), '" +
-            QString::number(DataBase::I()->getUserConnected()->id()) +"' , '" +
-            sexe +
-            "');";
-
-    DataBase::I()->locktables(QStringList() << TBL_PATIENTS << TBL_DONNEESSOCIALESPATIENTS << TBL_RENSEIGNEMENTSMEDICAUXPATIENTS);
-    if (!DataBase::I()->StandardSQL(req, tr("Impossible de créer le dossier")))
-    {
-        DataBase::I()->unlocktables();
-        return Q_NULLPTR;
-    }
-    // Récupération de l'idPatient créé ------------------------------------
-    int idpat = DataBase::I()->selectMaxFromTable("idPat", TBL_PATIENTS, ok, tr("Impossible de sélectionner les enregistrements"));
-    if (!ok ||  idpat == 0)
-    {
-        DataBase::I()->unlocktables();
-        return Q_NULLPTR;
-    }
-
-    pat = DataBase::I()->loadPatientById(idpat);
-    req = "INSERT INTO " TBL_DONNEESSOCIALESPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
-    DataBase::I()->StandardSQL(req,tr("Impossible de créer les données sociales"));
-    req = "INSERT INTO " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
-    DataBase::I()->StandardSQL(req,tr("Impossible de créer les renseignements médicaux"));
-    DataBase::I()->unlocktables();
-    return pat;
-}
-
 void Patients::updatePatient(Patient *pat)
 {
+    if (pat == Q_NULLPTR)
+        return;
     pat->setData(DataBase::I()->loadPatientAllData(pat->id()));
 }
 
 void Patients::updatePatientData(Patient *pat, QString nomchamp, QVariant value)
 {
+    if (pat == Q_NULLPTR)
+        return;
     QString table, newvalue;
     if (nomchamp == CP_ATCDTSOPH_RMP)
     {
@@ -282,6 +255,8 @@ void Patients::updatePatientData(Patient *pat, QString nomchamp, QVariant value)
 
 void Patients::updateCorrespondant(Patient *pat, DataBase::typecorrespondant type, Correspondant *cor)
 {
+    if (pat == Q_NULLPTR)
+        return;
     int id = (cor != Q_NULLPTR ? cor->id() : 0);
     QString field;
     switch (type) {
@@ -301,4 +276,65 @@ void Patients::updateCorrespondant(Patient *pat, DataBase::typecorrespondant typ
     DataBase::I()->StandardSQL("update " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " set " + field + " = " + idsql +
                 " where idpat = " + QString::number(pat->id()));
 }
+
+Patient* Patients::CreationPatient(QHash<QString, QVariant> sets)
+{
+    Patient *pat = Q_NULLPTR;
+    DataBase::I()->locktables(QStringList() << TBL_PATIENTS << TBL_DONNEESSOCIALESPATIENTS << TBL_RENSEIGNEMENTSMEDICAUXPATIENTS );
+    sets[CP_DATECREATION_PATIENTS] = QDate::currentDate();
+    sets[CP_IDCREATEUR_PATIENTS]   = DataBase::I()->getUserConnected()->id();
+    bool result = DataBase::I()->InsertSQLByBinds(TBL_PATIENTS, sets);
+    if (!result)
+    {
+        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible d'enregistrer ce patient dans la base!"));
+        DataBase::I()->unlocktables();
+        return pat;
+    }
+    // Récupération de l'idpatient créé ------------------------------------
+    int id = 0;
+    QHash<QString, QVariant>::const_iterator itx = sets.find(CP_IDPAT_PATIENTS);
+    if (itx != sets.constEnd())
+        id = itx.value().toInt();
+    else
+    {
+        bool ok;
+        id = DataBase::I()->selectMaxFromTable(CP_IDPAT_PATIENTS, TBL_PATIENTS, ok, tr("Impossible de sélectionner les enregistrements"));
+        if (!ok)
+        {
+            DataBase::I()->unlocktables();
+            return Q_NULLPTR;
+        }
+    }
+    if (id == 0)
+    {
+        DataBase::I()->unlocktables();
+        return Q_NULLPTR;
+    }
+    QJsonObject  data = QJsonObject{};
+    data[CP_IDPAT_PATIENTS] = id;
+    data[CP_IDCREATEUR_PATIENTS] = DataBase::I()->getUserConnected()->id();
+    data[CP_DATECREATION_PATIENTS] = QDate::currentDate().toString("yyyy-MM-dd");
+    QString champ;
+    QVariant value;
+    for (QHash<QString, QVariant>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
+    {
+        champ  = itset.key();
+        if (champ == CP_NOM_PATIENTS)                   data[champ] = itset.value().toString();
+        else if (champ == CP_PRENOM_PATIENTS)           data[champ] = itset.value().toString();
+        else if (champ == CP_DDN_PATIENTS)              data[champ] = itset.value().toDate().toString("yyyy-MM-dd");
+        else if (champ == CP_SEXE_PATIENTS)             data[champ] = itset.value().toString();
+        else if (champ == CP_DATECREATION_PATIENTS)     data[champ] = itset.value().toDate().toString("yyyy-MM-dd");
+        else if (champ == CP_IDCREATEUR_PATIENTS)       data[champ] = itset.value().toInt();
+        else if (champ == CP_IDLIEU_PATIENTS)           data[champ] = itset.value().toInt();
+        else if (champ == CP_COMMENTAIRE_PATIENTS)      data[champ] = itset.value().toString();
+    }
+    pat = new Patient(data);
+    QString req = "INSERT INTO " TBL_DONNEESSOCIALESPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
+    DataBase::I()->StandardSQL(req,tr("Impossible de créer les données sociales"));
+    req = "INSERT INTO " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
+    DataBase::I()->StandardSQL(req,tr("Impossible de créer les renseignements médicaux"));
+    DataBase::I()->unlocktables();
+    return pat;
+}
+
 

@@ -22,6 +22,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTcpSocket>
 #include <QDebug>
 #include "utils.h"
+#include "database.h"
 #include "log.h"
 #include "gbl_datas.h"
 
@@ -62,11 +63,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
  * pas de slot appelé dans un thread depuis l'extérieur autrement que par un signal
  */
 
-class TcpSocket : public QObject
+class TcpSocket : public QTcpSocket
 {
     Q_OBJECT
 public:
-    explicit        TcpSocket(qintptr ID, QObject *parent = Q_NULLPTR);
+    static TcpSocket*   I();
+    TcpSocket(qintptr ID, QTcpSocket *parent = Q_NULLPTR);
     ~TcpSocket();
     QThread         thread;
     qintptr         sktdescriptor;
@@ -76,6 +78,7 @@ public:
     int             idUser();
     void            setData(QString datas);
     QString         getData();
+    bool            TcpConnectToServer(QString ipadrserver = "");   /* Crée la connexion avec le TcpServer sur le réseau */
 
 signals:
     void            error(QTcpSocket::SocketError socketerror);
@@ -88,7 +91,10 @@ public slots:
 
 private:
     int a;
+    TcpSocket();
+    static TcpSocket    *instance;
     QTcpSocket      *socket;
+    quint16             PortTCPServer;
     QByteArray      buffer;                                                 // le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
     qint32          sizedata;                                               // le stockage de la taille permet de savoir si le bloc a été reçu
     int             iduser;                                                 // stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie

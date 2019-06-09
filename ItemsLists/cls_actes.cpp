@@ -34,6 +34,8 @@ QMap<int, Acte *> *Actes::actes() const
  */
 void Actes::initListeByPatient(Patient *pat, Item::UPDATE upd, bool quelesid)
 {
+    if (pat == Q_NULLPTR)
+        return;
     if (upd == Item::NoUpdate)
         clearAll(m_actes);
     QList<Acte*> listActes;
@@ -132,6 +134,8 @@ QMap<int, Acte*>::const_iterator Actes::getAt(int idx)
 
 void Actes::updateActe(Acte* acte)
 {
+    if (acte == Q_NULLPTR)
+        return;
     acte->setData(DataBase::I()->loadActeAllData(acte->id()));
 }
 
@@ -157,60 +161,10 @@ void Actes::setMontantCotation(Acte *act, QString Cotation, double montant)
     act->setmontant(montant);
 }
 
-void Actes::updateActeData(Acte *act, QString nomchamp, QVariant value)
-{
-    QString newvalue;
-    if (nomchamp == CP_MOTIF_ACTES)
-    {
-        act->setmotif(value.toString());
-        newvalue = (value.toString() != ""? "'" + Utils::correctquoteSQL(value.toString()) + "'" : "null");
-    }
-    else if (nomchamp == CP_TEXTE_ACTES)
-    {
-        act->settexte(value.toString());
-        newvalue = (value.toString() != ""? "'" + Utils::correctquoteSQL(value.toString()) + "'" : "null");
-    }
-    else if (nomchamp == CP_CONCLUSION_ACTES)
-    {
-        act->setconclusion(value.toString());
-        newvalue = (value.toString() != ""? "'" + Utils::correctquoteSQL(value.toString()) + "'" : "null");
-    }
-    else if (nomchamp == CP_ACTEDATE_ACTES)
-    {
-        act->setdate(value.toDate());
-        newvalue = (value.toDate().isValid()? "'" + value.toDate().toString("yyyy-MM-dd") + "'" : "null");
-    }
-    else if (nomchamp == CP_COURRIERAFAIRE_ACTES)
-    {
-        act->setcourrierafaire(value.toString()== "T" || value.toString()== "1");
-        newvalue = ((value.toString() == "T" || value.toString()== "1")? "'T'" : "null");
-    }
-    else if (nomchamp == CP_IDUSER_ACTES)
-    {
-        act->setiduser(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    else if (nomchamp == CP_IDUSERPARENT_ACTES)
-    {
-        act->setiduserparent(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    else if (nomchamp == CP_IDUSERCOMPTABLE_ACTES)
-    {
-        act->setidusercomptable(value.toInt());
-        newvalue = (value.toInt() != 0? value.toString() : "null");
-
-    }
-    QString requete = "UPDATE " TBL_ACTES
-                      " SET " + nomchamp + " = " + newvalue +
-                      " WHERE idActe = " + QString::number(act->id());
-    DataBase::I()->StandardSQL(requete);
-}
-
 void Actes::SupprimeActe(Acte* act)
 {
+    if (act == Q_NULLPTR)
+        return;
     DataBase::I()->StandardSQL("DELETE FROM " TBL_ACTES " WHERE idActe = " + QString::number(act->id()));
     remove(m_actes, act);
 }
@@ -251,19 +205,18 @@ Acte* Actes::CreationActe(Patient *pat, int idcentre)
         return Q_NULLPTR;
     }
     DataBase::I()->unlocktables();
-    QJsonObject data{};
-    data["id"] = idacte;
-    data["idPatient"] = pat->id();
-    data["idUser"] = usr->getIdUserActeSuperviseur();
-    data["date"] = QDateTime(QDate::currentDate()).toMSecsSinceEpoch();
-    data["heure"] = QTime::currentTime().toString("HH:mm:ss");
-    data["idCreatedBy"] = usr->id();
-    data["idUserComptable"] = usr->getIdUserComptable();
-    data["idUserParent"] = usr->getIdUserParent();
-    data["remplacant"] = (rempla == "1");
-    data["NumCentre"] = idcentre;
-    data["idLieu"] = usr->getSite()->id();
-    act = new Acte(data);
+    act = new Acte();
+    act->setid(idacte);
+    act->setidpatient(pat->id());
+    act->setiduser(usr->getIdUserActeSuperviseur());
+    act->setdate(QDate::currentDate());
+    act->setheure(QTime::currentTime());
+    act->setidusercreateur(usr->id());
+    act->setidusercomptable(usr->getIdUserComptable());
+    act->setiduserparent(usr->getIdUserParent());
+    act->seteffectueparremplacant(rempla == "1");
+    act->setnumcentre(idcentre);
+    act->setidlieu(usr->getSite()->id());
     add(m_actes, idacte, act);
     return act;
 }

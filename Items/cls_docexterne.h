@@ -39,10 +39,11 @@ private:
     QString m_typedoc;              //!> le type de document (Video, RNM, OCT, Echo...
     QString m_titre;                //!> le titre du document
     QDateTime m_dateimpression;     //!< la date d'émission du document
-    bool m_ald;                     //!< l'ordonnance est une ordo ALD
+    int  m_ald;                     //!< l'ordonnance est une ordo ALD
     bool m_isAllLoaded = false;     /*! toutes les datas sont chargées
+                                     * pour des raisons de temps et d'encombrement du réseau
                                      * le contenu du document (entête, pied, corps pour les documents imprimés - fichier pour les images)
-                                     * n'est a priori pas chargé et ne l'est que si on demande de l'afficher) */
+                                     * n'est a priori pas chargé et ne l'est que quand on demande de l'afficher) */
 
     //! les documents texte
     QString m_soustypedoc;          //!< le soustype du document - en général, des indications sur l'appareil qui a émis le document
@@ -52,7 +53,14 @@ private:
     QString m_textpied;             //!< le pied du document imprimé
 
     //! les documents d'imagerie
-    int m_compression;              //!> indique si on comprime les pdf - 0 si non, 1, si oui (pas utilisé, toujours à 0 - la compression des pdf ne donne quasiment rien)
+    int m_compression;              /*! indique si on comprime les pdf - 0 si non, 1, si oui
+                                     * pas utilisé, toujours à 0
+                                     * parce que la compression des pdf ne donne quasiment rien
+                                     * il faudrait pouvoir déconstruire le pdf, en sortir les images jpg, les comprimer et les remettre dans le pdf
+                                     * mais je ne sais pas faire
+                                     */
+    int m_emisrecu;                 //!< 0 si document emis par le cabinet, 1 si document reçu
+    int m_idlieu;                   //!< l'id du site où a été créé le document
     QString m_formatdoc;            //!< le format du document quand il s'agit d'un document d'imagerie: jpg, pdf, video...etc...
     QString m_lienversfichier;      //!< le lien vers le fichier d'imagerie
 

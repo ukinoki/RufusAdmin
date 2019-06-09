@@ -47,7 +47,7 @@ DocExterne* DocsExternes::getById(int id, Item::LOADDETAILS loadDetails, ADDTOLI
         addToList = ItemsList::NoAddToList;
     }
 
-    if( loadDetails == Item::LoadDetails && !result->isAllLoaded() )
+    if( !result->isAllLoaded() )
     {
         QJsonObject jsonDocExterne = DataBase::I()->loadDocExterneData(id);
         if( jsonDocExterne.isEmpty() )
@@ -73,20 +73,13 @@ void DocsExternes::setNouveauDocumentFalse()
     m_nouveaudocument = false;
 }
 
-void DocsExternes::setsoustype(DocExterne* docmt, QString soustype)
-{
-    if (soustype == "")
-        soustype = "null";
-    else
-        soustype = "'" + Utils::correctquoteSQL(soustype) + "'";
-    DataBase::I()->StandardSQL("update " TBL_IMPRESSIONS " set soustypedoc = " + soustype + " where idimpression = " + QString::number(docmt->id()));
-}
-
 void DocsExternes::addList(QList<DocExterne*> listdocs)
 {
     for(QList<DocExterne*>::const_iterator it = listdocs.constBegin(); it != listdocs.constEnd(); ++it )
     {
         DocExterne *doc = const_cast<DocExterne*>(*it);
+        if(!m_docsexternes->contains(doc->id()))
+            m_nouveaudocument = true;
         add(m_docsexternes, doc->id(), doc);
     }
 }
@@ -105,6 +98,8 @@ void DocsExternes::initListeByPatient(Patient *pat)
 
 void DocsExternes::SupprimeDocument(DocExterne *doc)
 {
+    if (doc == Q_NULLPTR)
+        return;
     DataBase::I()->StandardSQL("delete from " TBL_REFRACTION " where idrefraction = (select idrefraction from " TBL_IMPRESSIONS
                     " where idimpression = " + QString::number(doc->id()) + ")");
     DataBase::I()->StandardSQL("delete from " TBL_ECHANGEIMAGES " where idimpression = " + QString::number(doc->id()));
@@ -112,13 +107,62 @@ void DocsExternes::SupprimeDocument(DocExterne *doc)
     remove(m_docsexternes, doc);
 }
 
-DocExterne* DocsExternes::CreationDocument(int idImpression, int idUser, int idPat, QString TypeDoc, QString SousTypeDoc,
-                                     QString Titre, QString TextEntete, QString TextCorps, QString TextOrigine, QString  TextPied,
-                                     QDateTime DateImpression, QByteArray pdf, bool Compression, QByteArray jpg, QByteArray autre,
-                                     QString formatautre, QString lienversfichier, QString LienFichierDistant, int idRefraction, bool ALD,
-                                     int UserEmetteur, QString Conclusion, int EmisRecu, QString FormatDoc, int idLieu,
-                                     int Importance)
+DocExterne* DocsExternes::CreationDocument(QHash<QString, QVariant> sets)
 {
-    return Q_NULLPTR;
+    DocExterne *doc = Q_NULLPTR;
+    DataBase::I()->locktables(QStringList() << TBL_IMPRESSIONS);
+    bool result = DataBase::I()->InsertSQLByBinds(TBL_IMPRESSIONS, sets);
+    if (!result)
+    {
+        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible d'enregistrer ce document dans la base!"));
+        DataBase::I()->unlocktables();
+        return doc;
+    }
+    // Récupération de l'iddocument créé ------------------------------------
+    int iddoc = 0;
+    QHash<QString, QVariant>::const_iterator itx = sets.find(CP_IDIMPRESSION_IMPRESSIONS);
+    if (itx != sets.constEnd())
+        iddoc = itx.value().toInt();
+    else
+    {
+        bool ok;
+        iddoc = DataBase::I()->selectMaxFromTable(CP_IDIMPRESSION_IMPRESSIONS, TBL_IMPRESSIONS, ok, tr("Impossible de sélectionner les enregistrements"));
+        if (!ok)
+        {
+            DataBase::I()->unlocktables();
+            return Q_NULLPTR;
+        }
+    }
+    DataBase::I()->unlocktables();
+    if (iddoc == 0)
+        return Q_NULLPTR;
+    QJsonObject  data = QJsonObject{};
+    data[CP_IDIMPRESSION_IMPRESSIONS] = iddoc;
+    QString champ;
+    QVariant value;
+    for (QHash<QString, QVariant>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
+    {
+        champ  = itset.key();
+        if (champ == CP_IDUSER_IMPRESSIONS)                 data[champ] = itset.value().toInt();
+        else if (champ == CP_IDPAT_IMPRESSIONS)             data[champ] = itset.value().toInt();
+        else if (champ == CP_TYPEDOC_IMPRESSIONS)           data[champ] = itset.value().toString();
+        else if (champ == CP_SOUSTYPEDOC_IMPRESSIONS)       data[champ] = itset.value().toString();
+        else if (champ == CP_TITRE_IMPRESSIONS)             data[champ] = itset.value().toString();
+        else if (champ == CP_TEXTENTETE_IMPRESSIONS)        data[champ] = itset.value().toString();
+        else if (champ == CP_TEXTCORPS_IMPRESSIONS)         data[champ] = itset.value().toString();
+        else if (champ == CP_TEXTORIGINE_IMPRESSIONS)       data[champ] = itset.value().toString();
+        else if (champ == CP_TEXTPIED_IMPRESSIONS)          data[champ] = itset.value().toString();
+        else if (champ == CP_DATE_IMPRESSIONS)              data[champ] = QDateTime(itset.value().toDate(), itset.value().toTime()).toMSecsSinceEpoch();
+        else if (champ == CP_COMPRESSION_IMPRESSIONS)       data[champ] = itset.value().toInt();
+        else if (champ == CP_LIENFICHIER_IMPRESSIONS)       data[champ] = itset.value().toString();
+        else if (champ == CP_ALD_IMPRESSIONS)               data[champ] = itset.value().toInt();
+        else if (champ == CP_IDEMETTEUR_IMPRESSIONS)        data[champ] = itset.value().toInt();
+        else if (champ == CP_FORMATDOC_IMPRESSIONS)         data[champ] = itset.value().toString();
+        else if (champ == CP_IMPORTANCE_IMPRESSIONS)        data[champ] = itset.value().toInt();
+        else if (champ == CP_EMISORRECU_IMPRESSIONS)        data[champ] = itset.value().toInt();
+        else if (champ == CP_IDLIEU_IMPRESSIONS)            data[champ] = itset.value().toInt();
+    }
+    doc = new DocExterne(data);
+    return doc;
 }
 

@@ -66,7 +66,7 @@ Correspondant* Correspondants::getById(int id, Item::LOADDETAILS loaddetails, AD
         addToList = ItemsList::NoAddToList;
     }
 
-    if( !result->isAllLoaded() && loaddetails == Item::LoadDetails)
+    if( !result->isAllLoaded())
     {
         QJsonObject jsonCorrespondant = DataBase::I()->loadCorrespondantData(id);
         if( jsonCorrespondant.isEmpty() )
