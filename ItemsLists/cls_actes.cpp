@@ -20,6 +20,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 Actes::Actes(QObject *parent) : ItemsList(parent)
 {
     m_actes = new QMap<int, Acte*>();
+    m_actesmodel = Q_NULLPTR;
 }
 
 QMap<int, Acte *> *Actes::actes() const

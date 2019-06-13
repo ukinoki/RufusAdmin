@@ -155,7 +155,7 @@ void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)
         envoyerATous(msg);
     else if (msg.contains(TCPMSG_TestConnexion))
     {
-        qDebug() << msg;
+        qDebug() << msg + " - " + QTime::currentTime().toString("HH:mm");
     }
     else if (msg.contains(TCPMSG_MAJSalAttente))
     {

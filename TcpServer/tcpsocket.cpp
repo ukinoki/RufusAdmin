@@ -30,10 +30,10 @@ TcpSocket::TcpSocket()
 {
     buffer.clear();
     sizedata = 0;
-    socket = this;
+    socket = new QTcpSocket();
 }
 
-TcpSocket::TcpSocket(qintptr ID, QTcpSocket *parent) : QTcpSocket (parent)
+TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
 {
     moveToThread(&thread);
     sktdescriptor = ID;
@@ -156,29 +156,28 @@ bool TcpSocket::TcpConnectToServer(QString ipadrserver)
         return false;
     QString port        = NOM_PORT_TCPSERVEUR;
     PortTCPServer       = port.toUShort();
-    /*
+    /*!
      * The main difference between close() and disconnectFromHost() is that the first actually closes the OS socket, while the second does not.
      * The problem is, after a socket was closed, you cannot use it to create a new connection.
      * Thus, if you want to reuse the socket, use disconnectFromHost() otherwise close()
     */
-    disconnect();
+    socket->disconnect();
     if (state() == QAbstractSocket::ConnectedState || state() == QAbstractSocket::ConnectingState)
-        disconnectFromHost();
-    connect(this,     &QTcpSocket::hostFound, this,   [=] {
+        socket->disconnectFromHost();
+    connect(socket,     &QTcpSocket::hostFound, this,   [=] {
                                                             qDebug() << "Serveur trouvé";
                                                             Logs::MSGSOCKET("Serveur trouvé");
                                                           });
-    connectToHost(ipadrserver,PortTCPServer);     // On se connecte au serveur
-    if (waitForConnected(30000))
+    socket->connectToHost(ipadrserver,PortTCPServer);     // On se connecte au serveur
+    if (socket->waitForConnected(30000))
     {
-        connect(this,                 &QTcpSocket::readyRead,                                              this,   &TcpSocket::TraiteDonneesRecues);
-        connect(this,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &TcpSocket::erreurSocket);
+        connect(socket,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &TcpSocket::erreurSocket);
         return true;
     }
     else
     {
-        disconnect();
-        disconnectFromHost();
+        socket->disconnect();
+        socket->disconnectFromHost();
         instance = Q_NULLPTR;
         return false;
     }

@@ -142,6 +142,12 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
     return m_db.lastError().text();
 }
 
+QDateTime DataBase::ServerDateTime()
+{
+    bool ok;
+    return getFirstRecordFromStandardSelectSQL("select now()",ok).at(0).toDateTime();
+}
+
 bool DataBase::createtransaction(QStringList ListTables, QString ModeBlocage)
 {
     bool a = true;
@@ -360,10 +366,10 @@ void DataBase::initParametres()
     QJsonObject paramData{};
 
     QString req = "select MDPAdmin, NumCentre, idLieuParDefaut, DocsComprimes, VersionBase,"
-                  " SansCompta, AdresseServeurLocal, AdresseServeurDistant, UtiliseTCP, AdresseTCPServeur,"
-                  " PortTCPServeur, DirImagerie, LundiBkup, MardiBkup, MercrediBkup,"
-                  " JeudiBkup, VendrediBkup, SamediBkup, DimancheBkup, HeureBkup,"
-                  " DirBkup from " TBL_PARAMSYSTEME;
+                  " SansCompta, AdresseServeurLocal, AdresseServeurDistant, AdresseTCPServeur, DirImagerie,"
+                  " LundiBkup, MardiBkup, MercrediBkup, JeudiBkup, VendrediBkup,"
+                  " SamediBkup, DimancheBkup, HeureBkup, DirBkup"
+                  " from " TBL_PARAMSYSTEME;
     QVariantList paramdata = getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver les paramètres du système"));
     if(!ok || paramdata.size() == 0)
     {
@@ -379,19 +385,17 @@ void DataBase::initParametres()
     paramData["aveccompta"]             = (paramdata.at(5).toInt() == 1);
     paramData["adresseserveurlocal"]    = paramdata.at(6).toString();
     paramData["adresseserveurdistant"]  = paramdata.at(7).toString();
-    paramData["utilisetcp"]             = (paramdata.at(8).toInt() == 1);
-    paramData["adresseserveurtcp"]      = paramdata.at(9).toString();
-    paramData["portserveurtcp"]         = paramdata.at(10).toInt();
-    paramData["dirimagerie"]            = paramdata.at(11).toString();
-    paramData["lundibkup"]              = (paramdata.at(12).toInt() == 1);
-    paramData["mardibkup"]              = (paramdata.at(13).toInt() == 1);
-    paramData["mercredibkup"]           = (paramdata.at(14).toInt() == 1);
-    paramData["jeudibkup"]              = (paramdata.at(15).toInt() == 1);
-    paramData["vendredibkup"]           = (paramdata.at(16).toInt() == 1);
-    paramData["samedibkup"]             = (paramdata.at(17).toInt() == 1);
-    paramData["dimanchebkup"]           = (paramdata.at(18).toInt() == 1);
-    paramData["heurebkup"]              = paramdata.at(19).toTime().toString("HH:mm:ss");
-    paramData["dirbkup"]                = paramdata.at(20).toString();
+    paramData["adresseserveurtcp"]      = paramdata.at(8).toString();
+    paramData["dirimagerie"]            = paramdata.at(9).toString();
+    paramData["lundibkup"]              = (paramdata.at(10).toInt() == 1);
+    paramData["mardibkup"]              = (paramdata.at(11).toInt() == 1);
+    paramData["mercredibkup"]           = (paramdata.at(12).toInt() == 1);
+    paramData["jeudibkup"]              = (paramdata.at(13).toInt() == 1);
+    paramData["vendredibkup"]           = (paramdata.at(14).toInt() == 1);
+    paramData["samedibkup"]             = (paramdata.at(15).toInt() == 1);
+    paramData["dimanchebkup"]           = (paramdata.at(16).toInt() == 1);
+    paramData["heurebkup"]              = paramdata.at(17).toTime().toString("HH:mm:ss");
+    paramData["dirbkup"]                = paramdata.at(18).toString();
     m_parametres->setData(paramData);
     return;
 }
@@ -446,12 +450,6 @@ void DataBase::setadresseserveurdistant(QString adress)
     QString value = (adress != ""? "'" + Utils::correctquoteSQL(adress) + "'" : "null");
     StandardSQL("update " TBL_PARAMSYSTEME " set AdresseServeurDistant = " + value);
     m_parametres->setadresseserveurdistant(adress);
-}
-void DataBase::setutilisetcp(bool one)
-{
-    QString a = (one? "'1'" : "null");
-    StandardSQL("update " TBL_PARAMSYSTEME " set UtiliseTCP = " + a);
-    m_parametres->setutilisetcp(one);
 }
 void DataBase::setadresseserveurtcp(QString adress)
 {
@@ -670,6 +668,72 @@ QList<User*> DataBase::loadUsers()
         jData["nomCompteAbrege"]            = usrlist.at(i).at(8).toString();
         jData["isAllLoaded"]                = false;
         User *usr = new User(jData);
+        users << usr;
+    }
+    return users;
+}
+
+/*
+ * Users connectes
+*/
+QJsonObject DataBase::loadUserConnecteData(int iduser, QString macadress)
+{
+    QJsonObject userData{};
+    QString req = "select NomPosteConnecte, AccesDistant, UserSuperviseur,"
+                  " UserComptable, UserParent, idLieu, HeureDerniereConnexion, idPat,"
+                  " NewIdModifSalDat, LastIdModifSaldat"
+                  " from " TBL_USERSCONNECTES
+                  " where idUser = " + QString::number(iduser) +
+                  " and " CP_MACADRESS_USRCONNECT " = " + macadress;
+    QList<QVariantList> usrlist = StandardSelectSQL(req, ok);
+    if( !ok || usrlist.size()==0 )
+        return userData;
+    for (int i=0; i<usrlist.size(); ++i)
+    {
+        userData[CP_IDUSER_USRCONNECT]                     = iduser;
+        userData[CP_NOMPOSTE_USRCONNECT]                   = usrlist.at(i).at(0).toString();
+        userData[CP_MACADRESS_USRCONNECT]                  = macadress;
+        userData[CP_DISTANT_USRCONNECT]                    = usrlist.at(i).at(1).toInt() == 1;
+        userData[CP_IDUSERSUPERVISEUR_USRCONNECT]          = usrlist.at(i).at(2).toInt();
+        userData[CP_IDUSERCOMPTABLE_USRCONNECT]            = usrlist.at(i).at(3).toInt();
+        userData[CP_IDUSERPARENT_USRCONNECT]               = usrlist.at(i).at(4).toInt();
+        userData[CP_IDLIEU_USRCONNECT]                     = usrlist.at(i).at(5).toInt();
+        userData[CP_HEUREDERNIERECONNECTION_USRCONNECT]    = QDateTime(usrlist.at(i).at(6).toDate(), usrlist.at(i).at(6).toTime()).toMSecsSinceEpoch();
+        userData[CP_IDPATENCOURS_USRCONNECT]               = usrlist.at(i).at(7).toInt();
+        userData[CP_IDNEWMODIFSALDAT_USRCONNECT]           = usrlist.at(i).at(8).toInt();
+        userData[CP_IDLASTMODIFSALDAT_USRCONNECT]          = usrlist.at(i).at(9).toInt();
+        userData["stringid"]                               = macadress.split(" ").at(0);
+    }
+    return userData;
+}
+
+QList<UserConnecte*> DataBase::loadUsersConnectes()
+{
+    QList<UserConnecte*> users;
+    QString req = "select idUser, NomPosteConnecte, MACAdressePosteConnecte, AccesDistant, UserSuperviseur,"
+                  " UserComptable, UserParent, idLieu, HeureDerniereConnexion, idPat,"
+                  " NewIdModifSalDat, LastIdModifSaldat"
+                  " from " TBL_USERSCONNECTES ;
+    QList<QVariantList> usrlist = StandardSelectSQL(req, ok);
+    if( !ok || usrlist.size()==0 )
+        return users;
+    for (int i=0; i<usrlist.size(); ++i)
+    {
+        QJsonObject jData{};
+        jData[CP_IDUSER_USRCONNECT]                     = usrlist.at(i).at(0).toInt();
+        jData[CP_NOMPOSTE_USRCONNECT]                   = usrlist.at(i).at(1).toString();
+        jData[CP_MACADRESS_USRCONNECT]                  = usrlist.at(i).at(2).toString();
+        jData[CP_DISTANT_USRCONNECT]                    = usrlist.at(i).at(3).toInt() == 1;
+        jData[CP_IDUSERSUPERVISEUR_USRCONNECT]          = usrlist.at(i).at(4).toInt();
+        jData[CP_IDUSERCOMPTABLE_USRCONNECT]            = usrlist.at(i).at(5).toInt();
+        jData[CP_IDUSERPARENT_USRCONNECT]               = usrlist.at(i).at(6).toInt();
+        jData[CP_IDLIEU_USRCONNECT]                     = usrlist.at(i).at(7).toInt();
+        jData[CP_HEUREDERNIERECONNECTION_USRCONNECT]    = QDateTime(usrlist.at(i).at(8).toDate(), usrlist.at(i).at(8).toTime()).toMSecsSinceEpoch();
+        jData[CP_IDPATENCOURS_USRCONNECT]               = usrlist.at(i).at(9).toInt();
+        jData[CP_IDNEWMODIFSALDAT_USRCONNECT]           = usrlist.at(i).at(10).toInt();
+        jData[CP_IDLASTMODIFSALDAT_USRCONNECT]          = usrlist.at(i).at(11).toInt();
+        jData["stringid"]                               = usrlist.at(i).at(2).toString().split(" ").at(0);
+        UserConnecte *usr = new UserConnecte(jData);
         users << usr;
     }
     return users;

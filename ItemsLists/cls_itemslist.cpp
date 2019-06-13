@@ -11,11 +11,12 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
         return false;
     QString table;
     QString value;
-    QString nomfieldid;
+    QString clause;
     DocExterne * doc = Q_NULLPTR;
     Acte* act = Q_NULLPTR;
     PatientEnCours* patcrs = Q_NULLPTR;
     Patient* pat = Q_NULLPTR;
+    UserConnecte* usr = Q_NULLPTR;
 
     bool ok = false;
     bool loop = false;
@@ -83,13 +84,20 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
             loop = false;
             break;;
         }
+        usr = dynamic_cast<UserConnecte*>(item);
+        if (usr != Q_NULLPTR)
+        {
+            table = TBL_USERSCONNECTES;
+            loop = true;
+            break;
+        }
         return false;
     }
 
     if (table == TBL_IMPRESSIONS)
     {
         ok = true;
-        nomfieldid = CP_IDIMPRESSION_IMPRESSIONS;
+        clause = CP_IDIMPRESSION_IMPRESSIONS " = " + QString::number(item->id());
         if (field == CP_SOUSTYPEDOC_IMPRESSIONS )
         {
             doc->setsoustype(newvalue.toString());
@@ -111,7 +119,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
     else if (table == TBL_ACTES)
     {
         ok = true;
-        nomfieldid = CP_IDACTE_ACTES;
+        clause = CP_IDACTE_ACTES " = " + QString::number(item->id());
         if (field == CP_MOTIF_ACTES)
         {
             act->setmotif(newvalue.toString());
@@ -160,7 +168,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
     else if (table == TBL_SALLEDATTENTE)
     {
         ok = true;
-        nomfieldid = CP_IDPAT_SALDAT;
+        clause = CP_IDPAT_SALDAT " = " + QString::number(item->id());
         if (field == CP_IDPAT_SALDAT)
         {
             patcrs->setid(newvalue.toInt());
@@ -227,7 +235,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
     else if (table == TBL_PATIENTS)
     {
         ok = true;
-        nomfieldid = CP_IDPAT_PATIENTS;
+        clause = CP_IDPAT_PATIENTS " = " + QString::number(item->id());
         if (field == CP_NOM_PATIENTS)
         {
             pat->setnom(newvalue.toString());
@@ -264,7 +272,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
     else if (table == TBL_DONNEESSOCIALESPATIENTS)
     {
         ok = true;
-        nomfieldid = CP_IDPAT_DSP;
+        clause = CP_IDPAT_DSP " = " + QString::number(item->id());
         if (field == CP_ADRESSE1_DSP )
         {
             pat->setadresse1(newvalue.toString());
@@ -331,7 +339,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
     else if (table == TBL_RENSEIGNEMENTSMEDICAUXPATIENTS)
     {
         ok = true;
-        nomfieldid = CP_IDPAT_RMP;
+        clause = CP_IDPAT_RMP " = " + QString::number(item->id());
         if (field == CP_ATCDTSOPH_RMP )
         {
             pat->setatcdtsoph(newvalue.toString());
@@ -395,10 +403,74 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
         else
             ok = false;
     }
-
+    else if (table == TBL_USERSCONNECTES)
+    {
+        ok = true;
+        clause = CP_IDUSER_USRCONNECT " = " + QString::number(item->id()) + " and " CP_MACADRESS_USRCONNECT " like '" + usr->stringid() + "%'";
+        if (field == CP_IDUSER_USRCONNECT )
+        {
+            usr->setid(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+        else if (field == CP_NOMPOSTE_USRCONNECT)
+        {
+            usr->setnomposte(newvalue.toString());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : "'" + Utils::correctquoteSQL(newvalue.toString()) + "'");
+        }
+        else if (field == CP_MACADRESS_USRCONNECT)
+        {
+            usr->setmacadresslogin(newvalue.toString());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : "'" + Utils::correctquoteSQL(newvalue.toString()) + "'");
+        }
+        if (field == CP_DISTANT_USRCONNECT )
+        {
+            usr->setisdistant(newvalue.toBool());
+            value = (newvalue.toBool()? "1" : "null");
+        }
+        else if (field == CP_IDUSERSUPERVISEUR_USRCONNECT )
+        {
+            usr->setidsuperviseur(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+        else if (field == CP_IDUSERCOMPTABLE_USRCONNECT )
+        {
+            usr->setidcomptable(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+        else if (field == CP_IDUSERPARENT_USRCONNECT )
+        {
+            usr->setidparent(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+        else if (field == CP_IDLIEU_USRCONNECT )
+        {
+            usr->setidlieu(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+        else if (field == CP_HEUREDERNIERECONNECTION_USRCONNECT )
+        {
+            usr->setheurederniereconnexion(newvalue.toDateTime());
+            value = ((newvalue == QVariant() || !newvalue.toDateTime().isValid())? "null" : "'" + newvalue.toDateTime().toString("yyyy-MM-dd HH:mm:ss") + "'");
+        }
+        else if (field == CP_IDPATENCOURS_USRCONNECT )
+        {
+            usr->setidpatencours(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+        else if (field == CP_IDNEWMODIFSALDAT_USRCONNECT )
+        {
+            usr->setidnewmodifsaldat(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+        else if (field == CP_IDLASTMODIFSALDAT_USRCONNECT )
+        {
+            usr->setidlastmodifsaldat(newvalue.toInt());
+            value = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : newvalue.toString());
+        }
+    }
     if (ok)
     {
-        QString req = "update " + table + " set " + field + " = " + value + " where " + nomfieldid + " = " + QString::number(item->id());
+        QString req = "update " + table + " set " + field + " = " + value + " where " + clause;
         //qDebug() << req;
         DataBase::I()->StandardSQL(req);
     }

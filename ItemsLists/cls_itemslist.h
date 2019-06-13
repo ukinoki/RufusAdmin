@@ -5,6 +5,7 @@
 #include "cls_acte.h"
 #include "cls_docexterne.h"
 #include "cls_patientencours.h"
+#include "cls_userconnecte.h"
 #include "macros.h"
 #include "database.h"
 #include "upmessagebox.h"

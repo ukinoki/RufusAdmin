@@ -38,16 +38,14 @@ private:
     bool m_aveccompta;                  //!> utilise ou non la compta
     QString m_adresseserveurlocal;      //!> l'adresse du serveur dans le réseau local
     QString m_adresseserveurdistant;    //!> l'adresse IP ou DNS du lieu où se trouve le serveur
-    bool m_utilisetcp;                  //!> utilise le TCP dans le réseau local
     QString m_adresseserveurtcp;        //!> l'adresse du serveur TCP dans le réseau local
-    int m_porttcp;                      //!> le port du TCP dans le réseau local
     QString m_dirimagerie;              //!> adresse du dossier d'imagerie depuis le serveur
     bool m_lundibkup;                   //!> sauvegarde le lundi
     bool m_mardibkup;                   //!> sauvegarde le mardi
-    bool m_credibkup;                   //!> sauvegarde le mercredi
+    bool m_credibkup;                   //!> sauvegarde le credi
     bool m_jeudibkup;                   //!> sauvegarde le jeudi
     bool m_dredibkup;                   //!> sauvegarde le dredi
-    bool m_medibkup;                    //!> sauvegarde le samedi
+    bool m_medibkup;                    //!> sauvegarde le medi
     bool m_dimanchebkup;                //!> sauvegarde le dimanche
     QTime m_heurebkup;                  //!> heure de la sauvegarde
     QString m_dirbkup;                  //!> adresse du dossier de sauvegarde depuis le serveur
@@ -64,9 +62,7 @@ public:
     bool aveccompta() const;
     QString adresseserveurlocal() const;
     QString adresseserveurdistant() const;
-    bool utilisetcp() const;
     QString adresseserveurtcp() const;
-    int porttcp() const;
     QString dirimagerie() const;
     bool lundibkup() const;
     bool mardibkup() const;
@@ -86,9 +82,7 @@ public:
     void setaveccompta(bool one);
     void setadresseserveurlocal(QString  adress);
     void setadresseserveurdistant(QString adress);
-    void setutilisetcp(bool one);
     void setadresseserveurtcp(QString adress);
-    void setporttcp(int port);
     void setdirimagerie(QString adress);
     void setlundibkup(bool one);
     void setmardibkup(bool one);

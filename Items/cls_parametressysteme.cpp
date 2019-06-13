@@ -34,9 +34,7 @@ void ParametresSysteme::setData(QJsonObject data)
     setDataBool(data, "aveccompta", m_aveccompta);
     setDataString(data, "adresseserveurlocal", m_adresseserveurlocal);
     setDataString(data, "adresseserveurdistant", m_adresseserveurdistant);
-    setDataBool(data, "utilisetcp", m_utilisetcp);
     setDataString(data, "adresseserveurtcp", m_adresseserveurtcp);
-    setDataInt(data, "portserveurtcp", m_porttcp);
     setDataString(data, "dirimagerie", m_dirimagerie);
     setDataBool(data, "lundibkup", m_lundibkup);
     setDataBool(data, "mardibkup", m_mardibkup);
@@ -57,9 +55,7 @@ int ParametresSysteme::versionbase() const                  { return m_versionba
 bool ParametresSysteme::aveccompta() const                  { return m_aveccompta; }
 QString ParametresSysteme::adresseserveurlocal() const      { return m_adresseserveurlocal; }
 QString ParametresSysteme::adresseserveurdistant() const    { return m_adresseserveurdistant; }
-bool ParametresSysteme::utilisetcp() const                  { return m_utilisetcp; }
 QString ParametresSysteme::adresseserveurtcp() const        { return m_adresseserveurtcp; }
-int ParametresSysteme::porttcp() const                      { return m_porttcp; }
 QString ParametresSysteme::dirimagerie() const              { return m_dirimagerie; }
 bool ParametresSysteme::lundibkup() const                   { return m_lundibkup; }
 bool ParametresSysteme::mardibkup() const                   { return m_mardibkup; }
@@ -79,9 +75,7 @@ void ParametresSysteme::setversionbase(int version)             { m_versionbase 
 void ParametresSysteme::setaveccompta(bool one)                 { m_aveccompta = one; }
 void ParametresSysteme::setadresseserveurlocal(QString  adress) { m_adresseserveurlocal = adress; }
 void ParametresSysteme::setadresseserveurdistant(QString adress){ m_adresseserveurdistant = adress; }
-void ParametresSysteme::setutilisetcp(bool one)                 { m_utilisetcp = one; }
 void ParametresSysteme::setadresseserveurtcp(QString adress)    { m_adresseserveurtcp = adress; }
-void ParametresSysteme::setporttcp(int port)                    { m_porttcp = port; }
 void ParametresSysteme::setdirimagerie(QString adress)          { m_dirimagerie = adress; }
 void ParametresSysteme::setlundibkup(bool one)                  { m_lundibkup = one; }
 void ParametresSysteme::setmardibkup(bool one)                  { m_mardibkup = one; }

@@ -55,6 +55,11 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
             * C LES POSTES DISTANTS
                 * avec ou sans RufusAdmin, les postes distants fonctionnent sans TCP
             * RufusAdmin continue à surveiller et à mettre à jour les flags correspondants pour informer/surveiller les postes distants qui fonctionnent sans TCP
+            *
+            *
+            * RufusAdmin crée sa propre connexion avec le serveur TCP en raison d'un bug de Qt.
+            * Le TCPserver "s'endort" quand il n'est pas sollicité depuis plusieus heures et on est obligé d'arrêter RufusAdmin et le redémarrer pour le réveiller
+            * La connexion utilisée par RufusADmin ne sert qu'à une chose, envoyer un message de test à intervalles définis par un timer pour empêcher l'arrêt du serveur.
             */
 
 /*
@@ -63,45 +68,46 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
  * pas de slot appelé dans un thread depuis l'extérieur autrement que par un signal
  */
 
-class TcpSocket : public QTcpSocket
+class TcpSocket : public QObject
 {
     Q_OBJECT
 public:
-    static TcpSocket*   I();
-    TcpSocket(qintptr ID, QTcpSocket *parent = Q_NULLPTR);
+    static TcpSocket*               I();                                                    /*! instanciation du constructeur utilisé par RufusAdmin pour se connecter au TCPServer */
+    TcpSocket(qintptr ID, QObject *parent = Q_NULLPTR);                                     /*! constructeur utilisé par le TCPServer pour gérer les connexions entrantes */
+private:
+    TcpSocket();                                                                            /*! constructeur utilisé par RufusAdmin pour se connecter au TCPServer */
+public:
     ~TcpSocket();
-    QThread         thread;
-    qintptr         sktdescriptor;
-    void            envoyerMessage(QString msg);
-    QAbstractSocket::SocketState state();
-    void            setIdUser(int id);
-    int             idUser();
-    void            setData(QString datas);
-    QString         getData();
-    bool            TcpConnectToServer(QString ipadrserver = "");   /* Crée la connexion avec le TcpServer sur le réseau */
-
-signals:
-    void            error(QTcpSocket::SocketError socketerror);
-    void            emitmsg(qintptr sktdescriptor, QString msg);
-    void            deconnexion(qintptr sktdescriptor);
-
-public slots:
-    void            TraiteDonneesRecues();
-    void            Deconnexion();
+    QThread                         thread;
+    qintptr                         sktdescriptor;
+    void                            envoyerMessage(QString msg);
+    QAbstractSocket::SocketState    state();
+    void                            setIdUser(int id);
+    int                             idUser();
+    void                            setData(QString datas);
+    QString                         getData();
+    bool                            TcpConnectToServer(QString ipadrserver = "");           /*! Crée la connexion avec le TcpServer sur le réseau */
 
 private:
-    int a;
-    TcpSocket();
-    static TcpSocket    *instance;
-    QTcpSocket      *socket;
-    quint16             PortTCPServer;
-    QByteArray      buffer;                                                 // le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
-    qint32          sizedata;                                               // le stockage de la taille permet de savoir si le bloc a été reçu
-    int             iduser;                                                 // stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
-    QString         datasclient;                                            // stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
+    int                             a;
+    static TcpSocket                *instance;
+    QTcpSocket                      *socket;
+    quint16                         PortTCPServer;
+    QByteArray                      buffer;                                                 //!> le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
+    qint32                          sizedata;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
+    int                             iduser;                                                 //!> stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
+    QString                         datasclient;                                            //!> stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
 
+signals:
+    void                            error(QTcpSocket::SocketError socketerror);
+    void                            emitmsg(qintptr sktdescriptor, QString msg);
+    void                            deconnexion(qintptr sktdescriptor);
+
+public slots:
+    void                            TraiteDonneesRecues();
+    void                            Deconnexion();
 private slots:
-    void            erreurSocket(QAbstractSocket::SocketError);
+    void                            erreurSocket(QAbstractSocket::SocketError);
 };
 
 #endif // TCPSOCKET_H
