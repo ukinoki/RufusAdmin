@@ -51,16 +51,7 @@ private:
      * le couple user-macadress actualise l'heure de dernière connexion toutes les 10 secondes
      * un poste désigné par la fonction Procedures::setPosteImportDocs(bool a) surveille les users connectes toutes les mintutes
      * si un couple user-macadress n'a pas remis à jour sa connection depuis plus d'une minute, il est supprimé de la liste des users connectés */
-
     QDateTime   m_heurederniereconnexion;   //!> la date et l'heure de la connexion
-
-    /*! Quand le tcp n'est pas utilisé, les changements de la salle d'attente sont surveillées par un système de timer
-     * Quand un poste modifie la salle d'attente, il incrémente \param m_idnewmodifsaldat sur tous les enregistrements de la table
-     * chaque poste surveille la valeur du  \param m_idnewmodifsaldat et la compare à la valeur de \param m_idlastmodifsaldat toutes les 10 secondes
-     * si elles sont differentes, il recharge la salle d'attente */
-
-    int m_idnewmodifsaldat;             //!> le dernier id de modif de la salle d'attente enregistré par UN user
-    int m_idlastmodifsaldat;            //!> le dernier id de modif de la salle d'attente enregistré par LE user
 
 public:
 
@@ -73,8 +64,6 @@ public:
     int idlieu() const                          { return m_idlieu; }
     int idpatencours() const                    { return m_idpatencours; }
     QDateTime heurederniereconnexion() const    { return m_heurederniereconnexion; }
-    int idnewmodifsaldat() const                { return m_idnewmodifsaldat; }
-    int idlastmodifsaldat() const               { return m_idlastmodifsaldat; }
 
     void setnomposte(QString txt)                       { m_nomposte = txt; }
     void setmacadresslogin(QString txt)                 { m_macadress_login = txt; }
@@ -85,8 +74,6 @@ public:
     void setidlieu(int id)                              { m_idlieu = id; }
     void setidpatencours(int id)                        { m_idpatencours = id; }
     void setheurederniereconnexion(QDateTime datetime)  { m_heurederniereconnexion = datetime; }
-    void setidnewmodifsaldat(int id)                    { m_idnewmodifsaldat = id; }
-    void setidlastmodifsaldat(int id)                   { m_idlastmodifsaldat = id; }
 };
 
 #endif // CLS_USERCONNECTE_H
