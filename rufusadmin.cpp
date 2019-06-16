@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("14-06-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("15-06-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -989,7 +989,7 @@ void RufusAdmin::setPosteImportDocs(bool a)
 
 /*!
  * \brief Procedures::SetUserAllData(User *usr)
- * Charge le sodnnées d'un utilisateur, y compris ses données bancaires
+ * Charge les données d'un utilisateur, y compris ses données bancaires
  * cette fonction fait appel aux deux classes cls_user et cls_compte
  * et ne peut pas figurer dans la classe cls_user
  * en raison de référence croisées
@@ -1807,12 +1807,13 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
                                                                  " where MACAdressePosteConnecte = '" + macadress + "'"
                                                                  " and idlieu = " + QString::number(idlieuExercice);
     else
-        MAJConnexionRequete = "insert into " TBL_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, MACAdressePosteConnecte, idlieu)"
+        MAJConnexionRequete = "insert into " TBL_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, MACAdressePosteConnecte, idlieu, IPAdress)"
                                                                       " VALUES(NOW()," +
                                                                       QString::number(idAdminDocs) + ", -1, -1, -1, '" +
                                                                       QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', '" +
                                                                       macadress +  "', " +
-                                                                      QString::number(idlieuExercice) + ")";
+                                                                      QString::number(idlieuExercice) + ", '" +
+                                                                      Utils::getIpAdress() + "')";
     //qDebug() << MAJConnexionRequete;
     db->StandardSQL(MAJConnexionRequete);
 
@@ -2324,6 +2325,7 @@ void RufusAdmin::Slot_VerifPosteImport()
 {
     if (gMode == Distant)
         return;
+
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
     QString req = "SELECT name FROM mysql.proc p WHERE db = '" DB_CONSULTS "' AND name = '" NOM_POSTEIMPORTDOCS "'";
@@ -2358,8 +2360,8 @@ void RufusAdmin::Slot_VerifPosteImport()
             ui->PosteImportDocsPrioritairelabel->setText(B);
         }
     }
-    QString IpAdr = QHostInfo::localHostName() + " - " NOM_ADMINISTRATEURDOCS;
-    if (PostImport != "NULL" && PostImport != IpAdr)
+    QString macAdr = Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS;
+    if (PostImport != "NULL" && PostImport != macAdr)
         setPosteImportDocs();
 }
 
@@ -2456,6 +2458,7 @@ bool RufusAdmin::VerifBase()
             if (DumpFile.exists())
             {
                 QString NomDumpFile = QDir::homePath() + "/Documents/Rufus/Ressources/majbase" + QString::number(Version) + ".sql";
+                QFile::remove(NomDumpFile);
                 DumpFile.copy(NomDumpFile);
                 QFile base(NomDumpFile);
                 QStringList listinstruct = Utils::DecomposeScriptSQL(NomDumpFile);
@@ -3126,6 +3129,7 @@ void RufusAdmin::ResumeTCPSocketStatut()
         }
     }
     gSocketStatut = statut;
+    Datas::I()->postesconnectes->initListe();
     emit ModifEdit(gSocketStatut); // déclenche la modification de la fenêtre resumestatut
 }
 
@@ -3133,8 +3137,10 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
 {
     UpDialog        *gAsk           = new UpDialog(this);
     UpTextEdit      *TxtEdit        = new UpTextEdit(gAsk);
-    int x = qApp->desktop()->availableGeometry().width();
-    int y = qApp->desktop()->availableGeometry().height();
+    int x = QGuiApplication::screens().first()->geometry().width();
+//    int y = qApp->desktop()->availableGeometry().height();
+//    int x = qApp->desktop()->availableGeometry().width();
+    int y = QGuiApplication::screens().first()->geometry().height();
 
     gAsk->setModal(true);
     gAsk->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint);

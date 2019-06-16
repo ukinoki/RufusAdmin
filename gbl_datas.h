@@ -23,6 +23,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_comptes.h"
 #include "cls_motifs.h"
 #include <cls_users.h>
+#include "cls_postesconnectes.h"
 
 class Datas : public QObject
 {
@@ -39,6 +40,7 @@ public:
     Comptes *comptes;                   //!< tous les comptes bancaires
     Banques *banques;                   //!< toutes les banques
     Motifs *motifs;                     //!< tous les motifs d'actes
+    PostesConnectes *postesconnectes;   //!> tous les postes connectes
 
 signals:
 

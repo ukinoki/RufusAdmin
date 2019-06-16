@@ -33,6 +33,7 @@ Datas::Datas()
     comptes         = new Comptes();
     motifs          = new Motifs();
     users           = new Users();
+    postesconnectes = new PostesConnectes();
 }
 
 
