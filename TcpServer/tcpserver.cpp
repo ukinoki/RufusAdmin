@@ -55,7 +55,7 @@ bool TcpServer::start()
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
 //    Logs::MSGSOCKET("void TcpServer::incomingConnection(qintptr socketDescriptor)");
-// ++++ l'utilisation de l'instruction Logs::MSGSOCKET dans cette fonction perturvbe le fonctionnement du programme
+// ++++ l'utilisation de l'instruction Logs::MSGSOCKET dans cette fonction perturbe le fonctionnement du programme
     TcpSocket *socket = new TcpSocket(socketDescriptor);
 
     connect(socket,     SIGNAL(emitmsg(qintptr, QString)),              this,   SLOT(TraiteMessageRecu(qintptr, QString)));
@@ -188,14 +188,18 @@ void TcpServer::envoieListeSockets(qintptr sktdescriptor)
 QString TcpServer::ListeSockets()
 {
     Logs::MSGSOCKET("void TcpServer::ListeSockets()");
-    // le 1er item de gListeSockets est le serveur
-    gListeSockets = Utils::getIpAdress();
-    gListeSockets += TCPMSG_Separator + Utils::getMACAdress();
-    gListeSockets += TCPMSG_Separator + QHostInfo::localHostName();
-    gListeSockets += TCPMSG_Separator + QString::number(idAdmin) + "{}";
-    // les suivants sont les clients
     for(QMap<qintptr, TcpSocket*>::iterator itthr = socketdescriptors.begin(); itthr != socketdescriptors.end(); ++itthr )
-        gListeSockets += itthr.value()->getData() + TCPMSG_Separator + QString::number(itthr.value()->idUser()) + "{}";
+        if (itthr.value()->idUser() == -1)
+        {
+            // le 1er item inscrit dans gListeSockets est le serveur
+            gListeSockets = Utils::getIpAdress();
+            gListeSockets += TCPMSG_Separator + Utils::getMACAdress();
+            gListeSockets += TCPMSG_Separator + QHostInfo::localHostName();
+            gListeSockets += TCPMSG_Separator + QString::number(idAdmin) + "{}";
+        }
+        // les suivants sont les clients
+        else
+            gListeSockets += itthr.value()->getData() + TCPMSG_Separator + QString::number(itthr.value()->idUser()) + "{}";
 
     gListeSockets += TCPMSG_ListeSockets;
     return gListeSockets;

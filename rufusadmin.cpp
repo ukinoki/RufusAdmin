@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("15-06-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("16-06-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -3125,7 +3125,7 @@ void RufusAdmin::ResumeTCPSocketStatut()
                         + Datas::I()->users->getLoginById(statcp.split(sep).at(3).toInt()) + "\n";
             }
             else
-                statut += "\t" + tr("inconnu");
+                statut += "\t" + tr("inconnu") + "\n";
         }
     }
     gSocketStatut = statut;

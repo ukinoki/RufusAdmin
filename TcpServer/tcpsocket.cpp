@@ -171,6 +171,8 @@ bool TcpSocket::TcpConnectToServer(QString ipadrserver)
     socket->connectToHost(ipadrserver,PortTCPServer);     // On se connecte au serveur
     if (socket->waitForConnected(30000))
     {
+        setIdUser(-1);
+        setData(QString());
         connect(socket,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &TcpSocket::erreurSocket);
         return true;
     }
