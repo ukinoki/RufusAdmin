@@ -145,7 +145,13 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
 QDateTime DataBase::ServerDateTime()
 {
     bool ok;
-    return getFirstRecordFromStandardSelectSQL("select now()",ok).at(0).toDateTime();
+    QVariantList now = getFirstRecordFromStandardSelectSQL("select now()",ok);
+    if (!ok || now.size() == 0)
+        return QDateTime::currentDateTime();
+    else if (!now.at(0).toDateTime().isValid())
+        return QDateTime::currentDateTime();
+    else
+        return now.at(0).toDateTime();
 }
 
 bool DataBase::createtransaction(QStringList ListTables, QString ModeBlocage)
@@ -1561,14 +1567,14 @@ QList<Motif*> DataBase::loadMotifs()
     for (int i=0; i<mtflist.size(); ++i)
     {
         QJsonObject jmotif{};
-        jmotif["id"] = mtflist.at(i).at(0).toInt();
-        jmotif["motif"] = mtflist.at(i).at(1).toString();
+        jmotif["id"]        = mtflist.at(i).at(0).toInt();
+        jmotif["motif"]     = mtflist.at(i).at(1).toString();
         jmotif["raccourci"] = mtflist.at(i).at(2).toString();
-        jmotif["couleur"] = mtflist.at(i).at(3).toString();
-        jmotif["duree"] = mtflist.at(i).at(4).toInt();
+        jmotif["couleur"]   = mtflist.at(i).at(3).toString();
+        jmotif["duree"]     = mtflist.at(i).at(4).toInt();
         jmotif["pardefaut"] = (mtflist.at(i).at(5).toInt()==1);
-        jmotif["utiliser"] = (mtflist.at(i).at(6).toInt()==1);
-        jmotif["noordre"] = mtflist.at(i).at(7).toInt();
+        jmotif["utiliser"]  = (mtflist.at(i).at(6).toInt()==1);
+        jmotif["noordre"]   = mtflist.at(i).at(7).toInt();
         Motif *motif = new Motif(jmotif);
         if (motif != Q_NULLPTR)
             motifs << motif;
@@ -1727,7 +1733,7 @@ QJsonObject DataBase::loadPatientEnCoursData(QVariantList patdata)
     jData[CP_HEURERDV_SALDAT]           = patdata.at(4).toTime().toString("HH:mm:ss");
     jData[CP_HEUREARRIVEE_SALDAT]       = patdata.at(5).toTime().toString("HH:mm:ss");
     jData[CP_MOTIF_SALDAT]              = patdata.at(6).toString();
-    jData[CP_MESSAGE_SALDAT]            = patdata.at(7).toInt();
+    jData[CP_MESSAGE_SALDAT]            = patdata.at(7).toString();
     jData[CP_IDACTEAPAYER_SALDAT]       = patdata.at(8).toInt();
     jData[CP_POSTEEXAMEN_SALDAT]        = patdata.at(9).toString();
     jData[CP_IDUSERENCOURSEXAM_SALDAT]  = patdata.at(10).toInt();
@@ -1748,6 +1754,7 @@ QList<PatientEnCours *> DataBase::loadPatientsenCoursAll()
     {
         QJsonObject jData = loadPatientEnCoursData(patlist.at(i));
         PatientEnCours *patient = new PatientEnCours(jData);
+
         if (patient != Q_NULLPTR)
             listpat << patient;
     }
