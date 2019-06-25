@@ -25,16 +25,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "upmessagebox.h"
 #include "dlg_message.h"
 
-
-/**
+/*!
 * \file Log.h
-* \brief Cette classe permet d'écrire des logs visuels eet dans des fichiers physiques
-* \author Alexanre.D
+* \brief Cette classe permet d'écrire des logs visuels et dans des fichiers physiques
+* \author Alexandre.D
 * \version 0.1
 * \date 12 juin 2018
-*
 * Cette classe est utilisée de manière uniquement static.
-*
 */
 
 class Logs
@@ -68,7 +65,8 @@ public:
     }
     static void MSGSOCKET(QString msg, QString infoMsg = "")
     {
-        tracesocket("MSG", msg, infoMsg);
+        QByteArray ba, bainfo;
+        tracesocket("MSG", ba.append(msg), bainfo.append(infoMsg));
     }
     static void tracesocket(QString type, QString msg, QString infoMsg = "")
     {
@@ -83,7 +81,7 @@ public:
         {
             QTextStream out(&testfile);
             QString timelog = QTime::currentTime().toString();
-            out << timelog << " - " << type << "\n     -> " << msg.replace(TCPMSG_Separator, ":::") << (infoMsg==""? "" : " : " + infoMsg.replace(TCPMSG_Separator, ":::")) << "\n";
+            out << timelog << " - " << type << "\t-> " << msg.replace(TCPMSG_Separator, ":::") << (infoMsg == ""? "" : " : " + infoMsg.replace(TCPMSG_Separator, ":::")) << "\n";
             testfile.close();
         }
     }
@@ -104,6 +102,5 @@ public:
         return true;
     }
 };
-
 
 #endif // LOG_H

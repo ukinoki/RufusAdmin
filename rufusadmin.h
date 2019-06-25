@@ -230,7 +230,6 @@ private:
     QString             gSocketStatut;
     QDateTime           gDateDernierMessage;
     void                FermeTCP();
-    void                KillSocket(QStringList Data);
     void                ResumeTCPSocketStatut();
 
     void                VerifModifsFlags();

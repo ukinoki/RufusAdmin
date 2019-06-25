@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("24-06-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("26-06-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -150,6 +150,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         db->StandardSQL("update " TBL_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'");
         TCPConnect = TcpSocket::I();
         TCPConnect->TcpConnectToServer();
+        TCPConnect->setIdUser(idAdminDocs);
+
         QTimer *timer = new QTimer(this);
         connect(timer, &QTimer::timeout, this, [=] {TCPConnect->envoyerMessage(TCPMSG_TestConnexion);});
         timer->start(60000);
@@ -3197,15 +3199,6 @@ void RufusAdmin::VerifVerrouDossier()
     if (mettreajourlasalledattente)
         flags->MAJFlagSalleDAttente();
 }
-
-void RufusAdmin::KillSocket(QStringList datas)  //TODO marche mal quand le client se reconnecte, ça ne marche plus
-                                                // - accessoirement, ça marche parfaitement quand on ne s'en sert pas
-{
-    int idUserAEliminer = datas.at(0).toInt();
-    QString MACAdressUserAEliminer = datas.at(1);
-    TCPServer->Deconnexion(idUserAEliminer, MACAdressUserAEliminer);
-}
-
 
 void RufusAdmin::VerifModifsFlags()
 /* Utilisé pour vérifier

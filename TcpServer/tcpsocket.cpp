@@ -61,6 +61,7 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
 
 TcpSocket::~TcpSocket()
 {
+    delete socket;
     thread.wait();
 }
 
@@ -72,6 +73,11 @@ QString         TcpSocket::getData()                                {return data
 QAbstractSocket::SocketState TcpSocket::state()
 {
     return socket->state();
+}
+
+QTcpSocket* TcpSocket::tcpsocket()
+{
+    return socket;
 }
 
 void TcpSocket::TraiteDonneesRecues()
@@ -109,7 +115,6 @@ void TcpSocket::envoyerMessage(QString msg)
         Logs::MSGSOCKET("unknown socket");
         return;
     }
-    Logs::MSGSOCKET("void TcpSocket::envoyerMessage(QString msg) - msg " + msg);
     QByteArray paquet = msg.toUtf8();
     QString login = Datas::I()->users->getLoginById(idUser());
     QString msg2("");
@@ -121,7 +126,7 @@ void TcpSocket::envoyerMessage(QString msg)
         msg2 = TCPMSG_MAJCorrespondants;
     else if (msg.contains(TCPMSG_MAJDocsExternes))
         msg2 = TCPMSG_MAJDocsExternes;
-    Logs::MSGSOCKET(msg2 + " - destinataire = " + login);
+    Logs::MSGSOCKET("void TcpSocket::envoyerMessage(QString msg) - msg " + msg + " - " + msg2 + " - destinataire = " + login);
     //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
     if(socket->state() == QAbstractSocket::ConnectedState)
     {
@@ -169,19 +174,19 @@ bool TcpSocket::TcpConnectToServer(QString ipadrserver)
                                                             Logs::MSGSOCKET("Serveur trouvé");
                                                           });
     socket->connectToHost(ipadrserver,PortTCPServer);     // On se connecte au serveur
-    if (socket->waitForConnected(30000))
+    bool a = socket->waitForConnected();
+    if (a)
     {
         setIdUser(-1);
         setData(QString());
         connect(socket,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &TcpSocket::erreurSocket);
-        return true;
     }
     else
     {
         socket->disconnect();
-        socket->disconnectFromHost();
+        socket->close();
         instance = Q_NULLPTR;
-        return false;
     }
+    return a;
 }
 

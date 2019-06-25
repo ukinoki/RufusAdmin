@@ -37,32 +37,31 @@ public:
     QString     ListeSockets();
     void        setId(int id);
     void        envoyerA(int iduser, QString msg);                                          /* envoi d'un message sur un QTcpSocket en particulier */
-    void        Deconnexion(int iduser, QString MACAdress);                                 /* deconnexion d'un socket */
 
 private:
     static TcpServer*        instance;
     TcpServer();
 
-    QMap<qintptr, TcpSocket*>       socketdescriptors;                                      // le mapping des sockets à partir des scoketdescriptor
+    QMap<qintptr, TcpSocket*>       socketdescriptors;                                      // le map des sockets à partir des socketdescriptor
 
     void                            AfficheListeSockets(QString fonction = "");             /* utilisé pour le debugging seulement */
-    void                            envoieListeSockets(qintptr sktdescriptor = -1);          /* envoie la liste des sockets à tous les socketdescriptors */
+    void                            envoieListeSockets(qintptr descriptor = -1);            /* envoie la liste des sockets sur tous les sockets */
     QString                         gListeSockets;
     int                             idAdmin;
-    TcpSocket*                      SocketFromDescriptor(qintptr socketdescriptor);
+    TcpSocket*                      SocketFromDescriptor(qintptr descriptor);
 
 signals:
     void                            ModifListeSockets();
 
 private slots:
-    void                            TraiteMessageRecu(qintptr sktdescriptor, QString msg);  /* traitement des messages reçus*/
-    void                            Deconnexion(qintptr sktdescriptor);                     /* deconnexion d'un socket */
+    void                            TraiteMessageRecu(qintptr descriptor, QString msg);     /* traitement des messages reçus*/
+    void                            Deconnexion(qintptr descriptor);                        /* deconnexion d'un socket */
 
 public slots:
-    void                            envoyerATous(QString msg, qintptr emetteurorigin = 0);                      /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
+    void                            envoyerATous(QString msg, qintptr emetteurorigin = 0);  /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
 
 protected:
-    void                            incomingConnection(qintptr socketDescriptor);
+    void                            incomingConnection(qintptr descriptor);
 };
 
 #endif // TCPSERVER_H
