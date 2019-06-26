@@ -30,12 +30,10 @@ TcpSocket::TcpSocket()
 {
     buffer.clear();
     sizedata = 0;
-    socket = new QTcpSocket();
 }
 
-TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
+TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QTcpSocket (parent)
 {
-    moveToThread(&thread);
     sktdescriptor = ID;
     iduser = -1;
     datasclient = "";
@@ -43,26 +41,21 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QObject (parent)
     sizedata = 0;
     a = 0;
 
-    socket = new QTcpSocket();
-    if(!socket->setSocketDescriptor(ID))
+    if(!setSocketDescriptor(ID))
     {
-        emit error(socket->error());
+        emit errorskt(error());
         return;
     }
 
-    connect(&thread,    &QThread::finished,                                                     socket, &TcpSocket::deleteLater);
     // note - Qt::DirectConnection is used because it's multithreaded
     //        This makes the slot to be invoked immediately, when the signal is emitted.
-    connect(socket,     &QTcpSocket::readyRead,                                                 this,   &TcpSocket::TraiteDonneesRecues, Qt::DirectConnection);
-    connect(socket,     &QTcpSocket::disconnected,                                              this,   &TcpSocket::Deconnexion);
-    connect(socket,     QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),   this,   &TcpSocket::erreurSocket);
-    thread.start();
+    connect(this,     &QTcpSocket::readyRead,                                                 this,   &TcpSocket::TraiteDonneesRecues, Qt::DirectConnection);
+    connect(this,     &QTcpSocket::disconnected,                                              this,   &TcpSocket::Deconnexion);
+    connect(this,     QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),   this,   &TcpSocket::erreurSocket);
 }
 
 TcpSocket::~TcpSocket()
 {
-    delete socket;
-    thread.wait();
 }
 
 void            TcpSocket::setIdUser(int id)                        {iduser = id;}
@@ -70,21 +63,11 @@ int             TcpSocket::idUser()                                 {return idus
 void            TcpSocket::setData(QString datas)                   {datasclient = datas;}
 QString         TcpSocket::getData()                                {return datasclient;}
 
-QAbstractSocket::SocketState TcpSocket::state()
-{
-    return socket->state();
-}
-
-QTcpSocket* TcpSocket::tcpsocket()
-{
-    return socket;
-}
-
 void TcpSocket::TraiteDonneesRecues()
 {
-    while (socket->bytesAvailable() > 0)
+    while (bytesAvailable() > 0)
     {
-        buffer.append(socket->readAll());
+        buffer.append(readAll());
         while ((sizedata == 0 && buffer.size() >= 4) || (sizedata > 0 && buffer.size() >= sizedata)) // on n'a toujours pas la taille du message ou on n'a pas le message complet
         {
             if (sizedata == 0 && buffer.size() >= 4)                // on a les 4 premiers caractères => on a la taille du message
@@ -110,11 +93,6 @@ void TcpSocket::TraiteDonneesRecues()
 
 void TcpSocket::envoyerMessage(QString msg)
 {
-    if (socket== Q_NULLPTR)
-    {
-        Logs::MSGSOCKET("unknown socket");
-        return;
-    }
     QByteArray paquet = msg.toUtf8();
     QString login = Datas::I()->users->getLoginById(idUser());
     QString msg2("");
@@ -128,23 +106,23 @@ void TcpSocket::envoyerMessage(QString msg)
         msg2 = TCPMSG_MAJDocsExternes;
     Logs::MSGSOCKET("void TcpSocket::envoyerMessage(QString msg) - msg " + msg + " - " + msg2 + " - destinataire = " + login);
     //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
-    if(socket->state() == QAbstractSocket::ConnectedState)
+    if(state() == QAbstractSocket::ConnectedState)
     {
-        socket->write(Utils::IntToArray(paquet.size()));
-        socket->write(paquet);
-        socket->waitForBytesWritten();
+        write(Utils::IntToArray(paquet.size()));
+        write(paquet);
+        waitForBytesWritten();
     }
 }
 
 void TcpSocket::Deconnexion()
 {
+    qDebug() << "deconnexion socket entrant";
     emit deconnexion(sktdescriptor);
-    thread.quit();
 }
 
 void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
 {
-    qDebug() << "le cient ne répond plus - " << erreur << " - " << socket->errorString();
+    qDebug() << "le cient ne répond plus - " << erreur << " - " << errorString();
 
     /*
         le cient ne répond plus
@@ -166,25 +144,25 @@ bool TcpSocket::TcpConnectToServer(QString ipadrserver)
      * The problem is, after a socket was closed, you cannot use it to create a new connection.
      * Thus, if you want to reuse the socket, use disconnectFromHost() otherwise close()
     */
-    socket->disconnect();
+    disconnect();
     if (state() == QAbstractSocket::ConnectedState || state() == QAbstractSocket::ConnectingState)
-        socket->disconnectFromHost();
-    connect(socket,     &QTcpSocket::hostFound, this,   [=] {
+        disconnectFromHost();
+    connect(this,     &QTcpSocket::hostFound, this,   [=] {
                                                             qDebug() << "Serveur trouvé";
                                                             Logs::MSGSOCKET("Serveur trouvé");
                                                           });
-    socket->connectToHost(ipadrserver,PortTCPServer);     // On se connecte au serveur
-    bool a = socket->waitForConnected();
+    connectToHost(ipadrserver,PortTCPServer);     // On se connecte au serveur
+    bool a = waitForConnected();
     if (a)
     {
         setIdUser(-1);
         setData(QString());
-        connect(socket,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &TcpSocket::erreurSocket);
+        connect(this,                 QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,   &TcpSocket::erreurSocket);
     }
     else
     {
-        socket->disconnect();
-        socket->close();
+        disconnect();
+        close();
         instance = Q_NULLPTR;
     }
     return a;

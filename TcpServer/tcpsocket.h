@@ -18,7 +18,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TCPSOCKET_H
 #define TCPSOCKET_H
 
-#include <QThread>
 #include <QTcpSocket>
 #include <QDebug>
 #include "utils.h"
@@ -90,7 +89,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
  * pas de slot appelé dans un thread depuis l'extérieur autrement que par un signal
  */
 
-class TcpSocket : public QObject
+class TcpSocket : public QTcpSocket
 {
     Q_OBJECT
 public:
@@ -100,21 +99,17 @@ private:
     TcpSocket();                                                                            /*! constructeur utilisé par RufusAdmin pour se connecter au TCPServer */
 public:
     ~TcpSocket();
-    QThread                         thread;
     qintptr                         sktdescriptor;
     void                            envoyerMessage(QString msg);
-    QAbstractSocket::SocketState    state();
     void                            setIdUser(int id);
     int                             idUser();
     void                            setData(QString datas);
     QString                         getData();
     bool                            TcpConnectToServer(QString ipadrserver = "");           /*! Crée la connexion avec le TcpServer sur le réseau */
-    QTcpSocket*                     tcpsocket();
 
 private:
     int                             a;
     static TcpSocket                *instance;
-    QTcpSocket                      *socket;
     quint16                         PortTCPServer;
     QByteArray                      buffer;                                                 //!> le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
     qint32                          sizedata;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
@@ -122,7 +117,7 @@ private:
     QString                         datasclient;                                            //!> stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
 
 signals:
-    void                            error(QTcpSocket::SocketError socketerror);
+    void                            errorskt(QAbstractSocket::SocketError socketerror);
     void                            emitmsg(qintptr sktdescriptor, QString msg);
     void                            deconnexion(qintptr sktdescriptor);
 

@@ -1012,8 +1012,9 @@ bool RufusAdmin::SetUserAllData(User *usr)
     QList<Compte *> *listcomptes = new QList<Compte*>();
     if (Datas::I()->comptes->comptes()->size() == 0)
         Datas::I()->comptes->initListe();
-    for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
-    {
+    QMapIterator<int, Compte*> itcpt(*Datas::I()->comptes->comptes());
+    while (itcpt.hasNext()) {
+        itcpt.next();
         if (itcpt.value()->idUser() == usr->id())
             listcomptes->append(itcpt.value());
     }

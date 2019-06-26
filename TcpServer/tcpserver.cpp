@@ -70,16 +70,15 @@ void TcpServer::Deconnexion(qintptr descriptor)
     TcpSocket *skt = SocketFromDescriptor(descriptor);
     if ( skt == Q_NULLPTR)
         return;
-    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion skt->getData() " + skt->getData());
     QString adress ("");
     if (skt->getData().split(TCPMSG_Separator).size()>2)
         adress = skt->getData().split(TCPMSG_Separator).at(2);
     QString login = Datas::I()->users->getLoginById(skt->idUser());
     dlg_message(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
     socketdescriptors   .remove(descriptor);
-    skt->deleteLater();
     envoieListeSockets();
     AfficheListeSockets("Deconnexion(qintptr sktdesciptor)");
+    skt->deleteLater();
 
     Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion adress " + adress + " - " + login);
 }
@@ -111,8 +110,7 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
         while (itskt.hasNext())
         {
-            itskt.next();
-            if (listid.contains(QString::number(itskt.value()->idUser())))
+            if (listid.contains(QString::number(itskt.next().value()->idUser())))
                 envoyerA(itskt.value()->idUser(), nbmsg + TCPMSG_MsgBAL);
         }
         Flags::I()->MAJflagMessages();
@@ -240,16 +238,13 @@ void TcpServer::envoyerA(int iduser, QString msg)
 
 void TcpServer::AfficheListeSockets(QString fonction)
 {
-    Logs::MSGSOCKET("void TcpServer::AfficheListeSockets(QString fonction)");
-    //qDebug() << "liste des connexions " + fonction + " " + QTime::currentTime().toString("hh-mm-ss");
-    for(QMap<qintptr, TcpSocket*>::iterator itthr = socketdescriptors.begin(); itthr != socketdescriptors.end(); ++itthr )
+    qDebug() << "TcpServer::AfficheListeSockets(QString fonction) - " + fonction;
+    QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
+    while (itskt.hasNext())
     {
-        QStringList listdata = itthr.value()->getData().split(TCPMSG_Separator);
-        QString msg;
-        QStringList::const_iterator itsocket;
-        for( itsocket = listdata.constBegin(); itsocket != listdata.constEnd(); ++itsocket )
-            if (*itsocket != "")
-                msg += *itsocket + " - ";
-        //qDebug() << msg;
+        QStringList listdata = itskt.next().value()->getData().split(TCPMSG_Separator);
+        QStringListIterator itlist(listdata);
+        while (itlist.hasNext())
+            qDebug() << itlist.next();
     }
 }
