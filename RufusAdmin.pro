@@ -42,44 +42,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         rufusadmin.cpp \
-    dlg_paramconnexion.cpp \
-    widgetbuttonframe.cpp \
     importdocsexternesthread.cpp \
-    dlg_message.cpp \
-    dlg_gestioncomptes.cpp \
-    dlg_gestionlieux.cpp \
-    dlg_gestionusers.cpp \
-    dlg_motifs.cpp \
     utils.cpp \
     gbl_datas.cpp \
-    dlg_gestionbanques.cpp \
     flags.cpp
 
 HEADERS += \
         rufusadmin.h \
     macros.h \
-    dlg_paramconnexion.h \
-    widgetbuttonframe.h \
     importdocsexternesthread.h \
-    dlg_message.h \
-    dlg_gestioncomptes.h \
-    dlg_gestionlieux.h \
-    dlg_gestionusers.h \
-    dlg_motifs.h \
     utils.h \
     gbl_datas.h \
     log.h \
     icons.h \
-    dlg_gestionbanques.h \
     flags.h
 
 FORMS += \
         rufusadmin.ui \
-    dlg_paramconnexion.ui \
-    dlg_gestioncomptes.ui \
-    dlg_gestionusers.ui \
-    dlg_motifs.ui \
-    dlg_gestionbanques.ui
 
 RESOURCES += \
     assets/Images/images.qrc \
@@ -94,6 +73,8 @@ include(Database/database.pri)
 include(ItemsLists/itemslists.pri)
 include(Components/components.pri)
 include(TcpServer/tcpserver.pri)
+include(Dialogs/dialogs.pri)
+include(Widgets/widgets.pri)
 
 ICON = Sunglasses.icns
 
