@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("26-06-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-07-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -148,13 +148,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         TCPServer                   ->start();
         db->StandardSQL("update " TBL_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'");
-        TCPConnect = TcpSocket::I();
-        TCPConnect->TcpConnectToServer();
-        TCPConnect->setIdUser(idAdminDocs);
-
-        QTimer *timer = new QTimer(this);
-        connect(timer, &QTimer::timeout, this, [=] {TCPConnect->envoyerMessage(TCPMSG_TestConnexion);});
-        timer->start(60000);
     }
     else
         db->StandardSQL("update " TBL_PARAMSYSTEME " set AdresseTCPServeur = NULL");

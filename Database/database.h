@@ -123,7 +123,6 @@ public:
 
     bool                    locktables(QStringList ListTables, QString ModeBlocage = "WRITE");          //!> comme son nom l'indique
     void                    unlocktables();                                                             //!> comme son nom l'indique
-    bool                    testconnexionbase();                                                        //!> comme son nom l'indique
 
     //     REQUETES ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     bool                    erreurRequete(QSqlError type, QString requete, QString ErrorMessage = "");
@@ -136,7 +135,7 @@ public:
                                                                 /*! renvoie sous forme de QList<QVariantList> les select SQL des champs listselectchamp de la table nomtable
                                                                 *  avec la clause where et les modulations order by et distinct
                                                                 * affiche le message errormsg en cas de pb */
-    bool                    UpdateTable(QString nomtable, QHash<QString, QString> hash, QString where, QString errormsg="");
+    bool                    UpdateTable(QString nomtable, QHash<QString, QString> sets, QString where, QString errormsg="");
                                                                 /*! Update la table nomtable
                                                                 * le hash énumère les couples nomchamp, valeur à écrire
                                                                 *  avec la clause where
@@ -175,7 +174,6 @@ public:
     void setaveccompta(bool one);
     void setadresseserveurlocal(QString  adress = "");
     void setadresseserveurdistant(QString adress = "");
-    void setadresseserveurtcp(QString adress = "");
     void setporttcp(int port);
     void setdirimagerie(QString adress = "");
     void setlundibkup(bool one);

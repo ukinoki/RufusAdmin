@@ -29,8 +29,9 @@ public:
     template <typename T>
     void clearAll(QMap<int, T*> *m_map)
     {
-        for(typename QMap<int, T*>::const_iterator it = m_map->constBegin(); it != m_map->constEnd(); ++it)
-            delete it.value();
+        QMapIterator<int, T*> it(*m_map);
+        while (it.hasNext())
+            delete it.next().value();
         m_map->clear();
     }
 
@@ -38,8 +39,9 @@ public:
     template <typename T>
     void clearAll(QMap<QString, T*> *m_map)
     {
-        for(typename QMap<QString, T*>::const_iterator it = m_map->constBegin(); it != m_map->constEnd(); ++it)
-            delete it.value();
+        QMapIterator<QString, T*> it(*m_map);
+        while (it.hasNext())
+            delete it.next().value();
         m_map->clear();
     }
 

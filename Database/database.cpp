@@ -196,12 +196,6 @@ void DataBase::unlocktables()
     StandardSQL("UNLOCK TABLES;");
 }
 
-bool DataBase::testconnexionbase() // une requete simple pour vérifier que la connexion à la base fontionne toujours
-{
-    QString req = "select AdresseTCPServeur from " TBL_PARAMSYSTEME;
-    return StandardSQL(req);
-}
-
 int DataBase::selectMaxFromTable(QString nomchamp, QString nomtable, bool &ok, QString errormsg)
 {
     QString req = "select max(" + nomchamp + ") from " + nomtable;
@@ -240,13 +234,17 @@ QList<QVariantList> DataBase::SelectRecordsFromTable(QStringList listselectChamp
 }
 
 bool DataBase::UpdateTable(QString nomtable,
-                           QHash<QString, QString> hash,
+                           QHash<QString, QString> sets,
                            QString where,
                            QString errormsg)
 {
     QString req = "update " + nomtable + " set";
-    for (QHash<QString, QString>::const_iterator itset = hash.constBegin(); itset != hash.constEnd(); ++itset)
+    QHashIterator<QString, QString> itset(sets);
+    while (itset.hasNext())
+    {
+        itset.next();
         req += " " + itset.key() + " = " + (itset.value().toLower()=="null"? "null," : "'" + Utils::correctquoteSQL(itset.value()) + "',");
+    }
     req = req.left(req.size()-1); //retire la virgule de la fin
     req += " " + where;
     return StandardSQL(req, errormsg);
@@ -259,8 +257,10 @@ bool DataBase::InsertIntoTable(QString nomtable,
     QString req = "insert into " + nomtable + " (";
     QString champs;
     QString valeurs;
-    for (QHash<QString, QString>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
+    QHashIterator<QString, QString> itset(sets);
+    while (itset.hasNext())
     {
+        itset.next();
         champs  += itset.key() + ",";
         valeurs += (itset.value().toLower()=="null"? "null," : "'" + Utils::correctquoteSQL(itset.value()) + "',");
     }
@@ -277,8 +277,10 @@ bool DataBase::InsertSQLByBinds(QString nomtable,
     QSqlQuery query = QSqlQuery(m_db);
     QString champs, champs2;
     QString valeurs;
-    for (QHash<QString, QVariant>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
+    QHashIterator<QString, QVariant> itset(sets);
+    while (itset.hasNext())
     {
+        itset.next();
         champs  += itset.key() + ",";
         champs2  += ":" + itset.key() + ",";
     }
@@ -286,8 +288,10 @@ bool DataBase::InsertSQLByBinds(QString nomtable,
     champs2 = champs2.left(champs2.size()-1);
     QString prepare = "insert into " + nomtable + " (" + champs + ") values (" + champs2 + ")";
     query.prepare(prepare);
-    for (QHash<QString, QVariant>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
+    itset.toFront();
+    while (itset.hasNext())
     {
+        itset.next();
         query.bindValue(":" + itset.key(), itset.value());
         //qDebug() << "query.bindValue("":" + itset.key() + "," + itset.value().toString() + ")";
     }
@@ -372,7 +376,7 @@ void DataBase::initParametres()
     QJsonObject paramData{};
 
     QString req = "select MDPAdmin, NumCentre, idLieuParDefaut, DocsComprimes, VersionBase,"
-                  " SansCompta, AdresseServeurLocal, AdresseServeurDistant, AdresseTCPServeur, DirImagerie,"
+                  " SansCompta, AdresseServeurLocal, AdresseServeurDistant, DirImagerie,"
                   " LundiBkup, MardiBkup, MercrediBkup, JeudiBkup, VendrediBkup,"
                   " SamediBkup, DimancheBkup, HeureBkup, DirBkup"
                   " from " TBL_PARAMSYSTEME;
@@ -391,17 +395,16 @@ void DataBase::initParametres()
     paramData["aveccompta"]             = (paramdata.at(5).toInt() == 1);
     paramData["adresseserveurlocal"]    = paramdata.at(6).toString();
     paramData["adresseserveurdistant"]  = paramdata.at(7).toString();
-    paramData["adresseserveurtcp"]      = paramdata.at(8).toString();
-    paramData["dirimagerie"]            = paramdata.at(9).toString();
-    paramData["lundibkup"]              = (paramdata.at(10).toInt() == 1);
-    paramData["mardibkup"]              = (paramdata.at(11).toInt() == 1);
-    paramData["mercredibkup"]           = (paramdata.at(12).toInt() == 1);
-    paramData["jeudibkup"]              = (paramdata.at(13).toInt() == 1);
-    paramData["vendredibkup"]           = (paramdata.at(14).toInt() == 1);
-    paramData["samedibkup"]             = (paramdata.at(15).toInt() == 1);
-    paramData["dimanchebkup"]           = (paramdata.at(16).toInt() == 1);
-    paramData["heurebkup"]              = paramdata.at(17).toTime().toString("HH:mm:ss");
-    paramData["dirbkup"]                = paramdata.at(18).toString();
+    paramData["dirimagerie"]            = paramdata.at(8).toString();
+    paramData["lundibkup"]              = (paramdata.at(9).toInt() == 1);
+    paramData["mardibkup"]              = (paramdata.at(10).toInt() == 1);
+    paramData["mercredibkup"]           = (paramdata.at(11).toInt() == 1);
+    paramData["jeudibkup"]              = (paramdata.at(12).toInt() == 1);
+    paramData["vendredibkup"]           = (paramdata.at(13).toInt() == 1);
+    paramData["samedibkup"]             = (paramdata.at(14).toInt() == 1);
+    paramData["dimanchebkup"]           = (paramdata.at(15).toInt() == 1);
+    paramData["heurebkup"]              = paramdata.at(16).toTime().toString("HH:mm:ss");
+    paramData["dirbkup"]                = paramdata.at(17).toString();
     m_parametres->setData(paramData);
     return;
 }
@@ -456,12 +459,6 @@ void DataBase::setadresseserveurdistant(QString adress)
     QString value = (adress != ""? "'" + Utils::correctquoteSQL(adress) + "'" : "null");
     StandardSQL("update " TBL_PARAMSYSTEME " set AdresseServeurDistant = " + value);
     m_parametres->setadresseserveurdistant(adress);
-}
-void DataBase::setadresseserveurtcp(QString adress)
-{
-    QString value = (adress != ""? "'" + Utils::correctquoteSQL(adress) + "'" : "null");
-    StandardSQL("update " TBL_PARAMSYSTEME " set AdresseTCPServeur = " + value);
-    m_parametres->setadresseserveurtcp(adress);
 }
 void DataBase::setdirimagerie(QString adress)
 {
@@ -1278,7 +1275,7 @@ QList<Tiers*> DataBase::loadTiersPayants()
     {
         QJsonObject jData{};
         jData["id"] = tierslist.at(i).at(0).toInt();
-        jData["nomtiers"] = tierslist.at(i).at(1).toInt();
+        jData["nomtiers"] = tierslist.at(i).at(1).toString();
         jData["adressetiers"] = tierslist.at(i).at(2).toString();
         jData["codepostaltiers"] = tierslist.at(i).at(3).toString();
         jData["villetiers"] = tierslist.at(i).at(4).toString();

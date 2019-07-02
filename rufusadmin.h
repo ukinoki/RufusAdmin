@@ -223,7 +223,6 @@ private:
     // TCPServer, TCPSocket
     bool                UtiliseTCP;
     TcpServer           *TCPServer;
-    TcpSocket           *TCPConnect;
     quint16             PortTCPServer;
     QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;
     QString             gIPadr, gMacAdress;
