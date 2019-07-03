@@ -172,21 +172,15 @@ void TcpServer::envoieListeSockets(qintptr descriptor)
 QString TcpServer::ListeSockets()
 {
     Logs::MSGSOCKET("void TcpServer::ListeSockets()");
+    gListeSockets = Utils::getIpAdress();
+    gListeSockets += TCPMSG_Separator + Utils::getMACAdress();
+    gListeSockets += TCPMSG_Separator + QHostInfo::localHostName();
+    gListeSockets += TCPMSG_Separator + QString::number(idAdmin) + "{}";
     QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
     while (itskt.hasNext())
     {
         itskt.next();
-        if (itskt.value()->idUser() == -1)
-        {
-            // le 1er item inscrit dans gListeSockets est le serveur
-            gListeSockets = Utils::getIpAdress();
-            gListeSockets += TCPMSG_Separator + Utils::getMACAdress();
-            gListeSockets += TCPMSG_Separator + QHostInfo::localHostName();
-            gListeSockets += TCPMSG_Separator + QString::number(idAdmin) + "{}";
-        }
-        // les suivants sont les clients
-        else
-            gListeSockets += itskt.value()->getData() + TCPMSG_Separator + QString::number(itskt.value()->idUser()) + "{}";
+        gListeSockets += itskt.value()->getData() + TCPMSG_Separator + QString::number(itskt.value()->idUser()) + "{}";
     }
     gListeSockets += TCPMSG_ListeSockets;
     return gListeSockets;

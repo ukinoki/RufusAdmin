@@ -228,7 +228,6 @@ private:
     QString             gIPadr, gMacAdress;
     QString             gSocketStatut;
     QDateTime           gDateDernierMessage;
-    void                FermeTCP();
     void                ResumeTCPSocketStatut();
 
     void                VerifModifsFlags();

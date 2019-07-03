@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("02-07-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("03-07-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -147,10 +147,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         TCPServer                   ->setId(idAdminDocs);
         connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         TCPServer                   ->start();
-        db->StandardSQL("update " TBL_PARAMSYSTEME " set AdresseTCPServeur = '" + gIPadr + "'");
     }
-    else
-        db->StandardSQL("update " TBL_PARAMSYSTEME " set AdresseTCPServeur = NULL");
 
     m_flagcorrespondants        = flags->flagCorrespondants();
     m_flagmessages              = flags->flagMessages();
@@ -2310,7 +2307,11 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
                       " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
                       " and idlieu = " + QString::number(idlieuExercice);
         db->StandardSQL(req);
-        FermeTCP();
+        if (UtiliseTCP)
+        {
+            TCPServer->close();
+            delete TCPServer;
+        }
         setPosteImportDocs(false);
         exit(0);
     }
@@ -3070,17 +3071,6 @@ bool RufusAdmin::ImmediateBackup()
     return true;
 }
 
-/*--------------------------------------------------------------------------------------------------------------------------------------
-    -- Gestion du flag de mise à jour de l'arrivée de nouveaux messages -----------------------------------------------------------------------------
-    ------------------------------------------------------------------------------------------------------------------------------------*/
-void RufusAdmin::FermeTCP()
-{
-    if (!UtiliseTCP)
-        return;
-    TCPServer->close();
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set AdresseTCPServeur = null");
-    delete TCPServer;
-}
 
 void RufusAdmin::ResumeTCPSocketStatut()
 {
