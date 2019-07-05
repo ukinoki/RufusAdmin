@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("04-07-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("05-07-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -999,16 +999,7 @@ bool RufusAdmin::SetUserAllData(User *usr)
         }
         usr->setData( data ); //on charge le reste des données
     }
-    QList<Compte *> *listcomptes = new QList<Compte*>();
-    if (Datas::I()->comptes->comptes()->size() == 0)
-        Datas::I()->comptes->initListe();
-    QMapIterator<int, Compte*> itcpt(*Datas::I()->comptes->comptes());
-    while (itcpt.hasNext()) {
-        itcpt.next();
-        if (itcpt.value()->idUser() == usr->id())
-            listcomptes->append(itcpt.value());
-    }
-    usr->setComptes(listcomptes);
+    usr->setComptes(Datas::I()->comptes->initListeComptesByIdUser(usr->id()));
     usr->setCompteParDefaut(Datas::I()->comptes->getById(usr->getIdCompteParDefaut()));
     usr->setCompteEncaissement(Datas::I()->comptes->getById(usr->getIdCompteEncaissHonoraires()));
     return true;
@@ -1748,10 +1739,14 @@ void RufusAdmin::Slot_GestUser()
     Dlg_GestUsr->setWindowTitle(tr("Gestion des utilisateurs"));
     Dlg_GestUsr->setConfig(dlg_gestionusers::ADMIN);
     if(Dlg_GestUsr->exec()>0)
+    {
+        Datas::I()->users->initListe();
+        TCPServer->envoyerATous(TCPMSG_MAJListeUsers);
         UpMessageBox::Watch(this, tr("Donnes utilisateurs modifiées?"),
                                   tr("Si vous avez modifié des données d'utilisateurs actuellement connectés,\n"
                                      "chacun de ces utilisateurs doit relancer le programme\n"
                                      "pour pouvoir prendre en compte les modifications apportées!"));
+    }
     ConnectTimerInactive();
 }
 
@@ -3115,7 +3110,6 @@ void RufusAdmin::ResumeTCPSocketStatut()
         }
     }
     gSocketStatut = statut;
-    Datas::I()->postesconnectes->initListe();
     emit ModifEdit(gSocketStatut); // déclenche la modification de la fenêtre resumestatut
 }
 
@@ -3177,15 +3171,15 @@ void RufusAdmin::VerifVerrouDossier()
         {
             req = "update " TBL_SALLEDATTENTE " set Statut = '" ARRIVE "', posteexamen = null, iduserencoursexam = null where idpat = " + listuser.at(i).at(2).toString();
             db->StandardSQL(req);
+            mettreajourlasalledattente = true;
         }
-        mettreajourlasalledattente = true;
     }
     if (mettreajourlasalledattente)
         flags->MAJFlagSalleDAttente();
 }
 
 void RufusAdmin::VerifModifsFlags()
-/* Utilisé pour vérifier
+/*! Utilisé pour vérifier
  *      des modifs de la salle d'attente
  *      des modifs de la liste des correspondants
  *      ou l'arrivée de nouveaux  messages

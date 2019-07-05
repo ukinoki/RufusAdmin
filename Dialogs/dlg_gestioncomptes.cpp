@@ -30,7 +30,7 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDial
 
     gidCompteParDefaut      = gDataUser->getIdCompteParDefaut();
 
-    m_comptesusr              = gDataUser->getComptes();
+    m_comptesusr            = gDataUser->getComptes();
     CompteEnCours           = gDataUser->getCompteParDefaut();
 
     gVisible                = true;
@@ -354,13 +354,8 @@ void dlg_gestioncomptes::SupprCompte()
     if (msgbox.clickedButton() != &OKBouton)
         return;
     Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
-    m_comptesusr->clear();
-    for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
-    {
-        if (itcpt.value()->idUser() == gDataUser->id())
-            m_comptesusr->append(itcpt.value());
-    }
-    gDataUser     ->setComptes(m_comptesusr);
+    gDataUser->setComptes(Datas::I()->comptes->initListeComptesByIdUser(gDataUser->id()));
+    m_comptesusr = gDataUser->getComptes();
     RemplirTableView();
 }
 
@@ -416,12 +411,8 @@ void dlg_gestioncomptes::ValidCompte()
                                             ui->CompteSocietecheckBox->isChecked(),            //! Partage
                                             ui->DesactiveComptecheckBox->isChecked());         //! Desactive
     m_comptesusr->clear();
-    for (QMap<int, Compte*>::const_iterator itcpt = Datas::I()->comptes->comptes()->constBegin(); itcpt != Datas::I()->comptes->comptes()->constEnd(); ++itcpt)
-    {
-        if (itcpt.value()->idUser() == gDataUser->id())
-            m_comptesusr->append(itcpt.value());
-    }
-    gDataUser     ->setComptes(m_comptesusr);
+    gDataUser     ->setComptes(Datas::I()->comptes->initListeComptesByIdUser(gDataUser->id()));
+    m_comptesusr = gDataUser->getComptes();
     CompteEnCours = Datas::I()->comptes->getById(idcompte);
 
     RemplirTableView();
