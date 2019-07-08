@@ -105,7 +105,6 @@ public:
     int                             idUser();
     void                            setData(QString datas);
     QString                         getData();
-    bool                            TcpConnectToServer(QString ipadrserver = "");           /*! Crée la connexion avec le TcpServer sur le réseau */
 
 private:
     int                             a;

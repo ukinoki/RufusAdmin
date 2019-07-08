@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("05-07-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("08-07-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1834,6 +1834,7 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
             db->StandardSQL("delete from " TBL_USERSCONNECTES " where NomPosteConnecte = '" + listoldusers.at(i).at(1).toString() + "'");
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
         }
+        TCPServer->envoyerATous(TCPMSG_EnvoieListSocket);
     }
 }
 
