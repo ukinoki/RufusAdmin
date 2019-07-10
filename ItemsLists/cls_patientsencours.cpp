@@ -45,7 +45,7 @@ PatientEnCours* PatientsEnCours::getById(int id)
     {
         pat = DataBase::I()->loadPatientEnCoursById(id);
         if (pat != Q_NULLPTR)
-            add(m_patientsencours, pat->id(), pat);
+            add(m_patientsencours, pat);
     }
     else
         pat = itpat.value();
@@ -58,7 +58,7 @@ void PatientsEnCours::addList(QList<PatientEnCours*> listPatientsEnCours)
     for( it = listPatientsEnCours.constBegin(); it != listPatientsEnCours.constEnd(); ++it )
     {
         PatientEnCours* item = const_cast<PatientEnCours*>(*it);
-        add( m_patientsencours, item->id(), item );
+        add( m_patientsencours, item );
     }
 }
 
@@ -70,11 +70,7 @@ void PatientsEnCours::initListeAll()
 
 void PatientsEnCours::SupprimePatientEnCours(PatientEnCours *pat)
 {
-    if (pat == Q_NULLPTR)
-        return;
-    //!. Suppression du patient
-    DataBase::I()->SupprRecordFromTable(pat->id(), "idPat", TBL_SALLEDATTENTE);
-    remove(m_patientsencours, pat);
+    Supprime(m_patientsencours, pat);
 }
 
 void PatientsEnCours::updatePatientEnCours(PatientEnCours *pat)
@@ -163,6 +159,6 @@ PatientEnCours* PatientsEnCours::CreationPatient(int idPat, int idUser , QString
         pat->setiduserencoursexam(idUserEnCours);
     if (idSalDat != 0)
         pat->setidsaldat(idSalDat);
-    add(m_patientsencours, pat->id(), pat);
+    add(m_patientsencours, pat);
     return pat;
 }

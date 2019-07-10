@@ -21,6 +21,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_docexterne.h"
 #include "database.h"
 #include "cls_itemslist.h"
+#include "cls_refractions.h"
 
 class DocsExternes : public ItemsList
 {
@@ -42,7 +43,7 @@ public:
 
     //!> actions sur les enregistrements
     void                        SupprimeDocument(DocExterne *doc);
-    static DocExterne*          CreationDocument(QHash<QString, QVariant> sets);
+    static DocExterne*          CreationDocument(QJsonObject sets);
 
 };
 #endif // CLS_DOCSEXTERNES_H

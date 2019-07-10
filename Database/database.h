@@ -147,7 +147,7 @@ public:
                                                                 * le hash énumère les couples nomchamp, valeur à écrire
                                                                 *  avec la clause where
                                                                 * affiche le message errormsg en cas de pb */
-    bool                    InsertSQLByBinds(QString nomtable,  QHash<QString, QVariant>, QString errormsg="");
+    bool                    InsertSQLByBinds(QString nomtable,  QJsonObject data, QString errormsg="");
                                                                 /*! Insertion dans la table nomtable en utilisant la fonction bindvalue de Qt
                                                                 * - obligatoire pour insérer un QByteArray - ça ne fonctionne pas sinon
                                                                 * le hash énumère les couples nomchamp, valeur à écrire
@@ -334,8 +334,8 @@ public:
 private:
     QJsonObject             loadRefractionData(QVariantList refdata);           //! attribue le liste des datas à une refraction
 public:
-    QList<Refraction*>      loadRefractionByPat(Patient *pat);                  //! charge toutes les refractions d'un patient
-    QJsonObject             loadRefractionAllData(int idref);                   //! charge toutes les données d'une refraction définie par son id - utilisé pour renouveler les données en cas de modification
+    QList<Refraction*>      loadRefractionByPatId(int id);                      //! charge toutes les refractions d'un patient
+    Refraction*             loadRefractionById(int idref);                      //! charge une refraction définie par son id - utilisé pour renouveler les données en cas de modification
 };
 
 #endif // DataBase_H

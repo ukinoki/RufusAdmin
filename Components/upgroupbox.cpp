@@ -34,7 +34,7 @@ bool UpGroupBox::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::FocusIn )
     {
         QWidget *widg = dynamic_cast<QWidget *>(obj);
-        if (widg!=NULL)   {
+        if (widg!=Q_NULLPTR)   {
             setStyleSheet(UPGROUBOXACTIVE);
         }
     }

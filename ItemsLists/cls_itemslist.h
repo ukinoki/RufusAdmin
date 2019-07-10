@@ -45,13 +45,13 @@ public:
         m_map->clear();
     }
 
+
 protected:
 
     /*!
      * \brief ItemsList::add
-     * Cette fonction va ajouter un item et sa key spassé en paramètre dans un QMap
-     * \param m_map le QMap dnas lequel on veut ajouter l'item
-     * \param id l'id de l'item que l'on veut ajouter en key du QMap
+     * Cette fonction va ajouter un item dans un QMap
+     * \param m_map le QMap dans lequel on veut ajouter l'item
      * \param item l'item que l'on veut ajouter
      * \param Item::UPDATE - si ForceUpdate, force l'update de l'item s'il est déjà présent dans le QMap
      * \return true si l'item est ajouté
@@ -59,43 +59,37 @@ protected:
      * \return false si l'item est déjà présent dans le QMap et delete l'item passé en paramètre dans ce cas
      */
     template <typename T>
-    bool add(QMap<int, T*> *m_map, int id, T* item, Item::UPDATE upd = Item::NoUpdate)
+    bool add(QMap<int, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
     {
         if (item == Q_NULLPTR)
             return false;
-        if( m_map->contains(id) )
+        QMapIterator<int, T*> itmap(*m_map);
+        if (itmap.findNext(item))
         {
             if (upd == Item::ForceUpdate)
-            {
-                typename QMap<int, T*>::const_iterator it = m_map->find(id);
-                if (it != m_map->constEnd())
-                    it.value()->setData(item->datas());
-            }
+                itmap.value()->setData(item->datas());
             delete item;
             return false;
         }
-        m_map->insert(id, item);
+        m_map->insert(item->id(), item);
         return true;
     }
 
     /*! le même avec des QString en key */
     template <typename T>
-    bool add(QMap<QString, T*> *m_map, QString stringid, T* item, Item::UPDATE upd = Item::NoUpdate)
+    bool add(QMap<QString, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
     {
         if (item == Q_NULLPTR)
             return false;
-        if( m_map->contains(stringid) )
+        QMapIterator<QString, T*> itmap(*m_map);
+        if (itmap.findNext(item))
         {
             if (upd == Item::ForceUpdate)
-            {
-                typename QMap<QString, T*>::const_iterator it = m_map->find(stringid);
-                if (it != m_map->constEnd())
-                    it.value()->setData(item->datas());
-            }
+                itmap.value()->setData(item->datas());
             delete item;
             return false;
         }
-        m_map->insert(stringid, item);
+        m_map->insert(item->stringid(), item);
         return true;
     }
 
@@ -114,9 +108,9 @@ protected:
         m_map->remove(item->id());
         delete item;
     }
-    template <typename T>
 
     /*! le même avec des QString en key */
+    template <typename T>
     void remove(QMap<QString, T*> *m_map, T* item)
     {
         if (item == Q_NULLPTR)
@@ -124,6 +118,84 @@ protected:
         m_map->remove(item->stringid());
         delete item;
     }
+
+    /*!
+     * \brief ItemsList::Supprime
+     * Cette fonction va supprimer un item passé en paramètre dans un QMap
+     * \param m_map le QMap dans lequel on veut supprimer l'item
+     * \param item l'item que l'on veut supprimer
+     * \return true si l'item est supprimé
+     * \return false si l'item est un Q_NULLPTR
+     */
+    template <typename T>
+    static bool Supprime(QMap<int, T*> *m_map, T* item)
+    {
+        if (item == Q_NULLPTR)
+            return false;
+        QString table (""), idname ("");
+        bool loop = false;
+        while (!loop)
+        {
+            if (dynamic_cast<Acte*>(item) != Q_NULLPTR)
+            {
+                table = TBL_ACTES;
+                idname = CP_IDACTE_ACTES;
+                loop = true;
+                break;
+            }
+            if (dynamic_cast<Banque*>(item)!= Q_NULLPTR)
+            {
+                table = TBL_BANQUES;
+                idname = CP_IDBANQUE_BANQUES;
+                loop = true;
+                break;
+            }
+            if (dynamic_cast<Compte*>(item)!= Q_NULLPTR)
+            {
+                table = TBL_COMPTES;
+                idname = CP_IDCOMPTE_COMPTES;
+                loop = true;
+                break;
+            }
+            if (dynamic_cast<Depense*>(item)!= Q_NULLPTR)
+            {
+                table = TBL_DEPENSES;
+                idname = CP_IDDEPENSE_DEPENSES;
+                loop = true;
+                break;
+            }
+            if (dynamic_cast<DocExterne*>(item) != Q_NULLPTR)
+            {
+                table = TBL_IMPRESSIONS;
+                idname = CP_IDIMPRESSION_IMPRESSIONS;
+                loop = true;
+                break;
+            }
+            if (dynamic_cast<PatientEnCours*>(item) != Q_NULLPTR)
+            {
+                table = TBL_SALLEDATTENTE;
+                idname = CP_IDPAT_SALDAT;
+                loop = true;
+                break;
+            }
+            if (dynamic_cast<Refraction*>(item) != Q_NULLPTR)
+            {
+                table = TBL_REFRACTIONS;
+                idname = CP_ID_REFRACTIONS;
+                loop = true;
+                break;
+            }
+            loop = true;
+        }
+        if (table != "" && idname != "")
+        {
+            DataBase::I()->SupprRecordFromTable(item->id(), idname, table);
+            m_map->remove(item->id());
+            return true;
+        }
+        return false;
+    }
+
 };
 
 #endif // ITEMSLIST_H

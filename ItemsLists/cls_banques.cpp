@@ -44,7 +44,7 @@ void Banques::addList(QList<Banque*> listbanques)
     for( it = listbanques.constBegin(); it != listbanques.constEnd(); ++it )
     {
         Banque* item = const_cast<Banque*>(*it);
-        add( m_banques, item->id(), item );
+        add( m_banques, item );
     }
 }
 
@@ -58,10 +58,7 @@ Banque* Banques::getById(int id)
 
 void Banques::SupprimeBanque(Banque *bq)
 {
-    if (bq == Q_NULLPTR)
-        return;
-    DataBase::I()->SupprRecordFromTable(bq->id(), CP_IDBANQUE_BANQUES, TBL_BANQUES);
-    remove(m_banques, bq);
+    Supprime(m_banques, bq);
 }
 
  Banque*    Banques::CreationBanque(QString idBanqueAbrege, QString NomBanque, int CodeBanque)
@@ -91,6 +88,6 @@ void Banques::SupprimeBanque(Banque *bq)
     bq->setnomabrege(idBanqueAbrege);
     bq->setnom(NomBanque);
     bq->setcode(CodeBanque);
-    add(m_banques, bq->id(), bq);
+    add(m_banques, bq);
     return bq;
 }

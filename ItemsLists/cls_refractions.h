@@ -15,31 +15,29 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_DEPENSES_H
-#define CLS_DEPENSES_H
+#ifndef CLS_REFRACTIONS_H
+#define CLS_REFRACTIONS_H
 
-#include "cls_depense.h"
 #include "database.h"
+#include "cls_refraction.h"
 #include "cls_itemslist.h"
 
-class Depenses : public ItemsList
+class Refractions : public ItemsList
 {
 private:
-    QMap<int, Depense*> *m_depenses = Q_NULLPTR;    //!< Collection de toutes les depenses pour un user et une année donnée
-    void        addList(QList<Depense*> listdep);
+    QMap<int, Refraction*> *m_refractions = Q_NULLPTR;      //!< la liste des refractions
+    void addList(QList<Refraction*> listRefractionss);
 
 public:
-    //GETTER
-    QMap<int, Depense *> *depenses()     const;
+    explicit Refractions(QObject *parent = Q_NULLPTR);
 
-    Depenses(QObject *parent = Q_NULLPTR);
+    QMap<int, Refraction *> *refractions() const;
 
-    Depense*    getById(int id);
-    void        initListeByUser(int iduser);
+    Refraction* getById(int id);
+    void initListebyPatId(int id);
 
     //!> actions sur les enregistrements
-    void        SupprimeDepense(Depense *dep);
-    Depense*    CreationDepense(int idUser, QDate DateDep, QString RefFiscale, QString Objet, double Montant, QString FamFiscale, QString Monnaie, int idRec, QString ModePaiement, int Compte, int Nocheque, int  idFacture);
+    void    SupprimeRefraction(Refraction *ref);
 };
 
-#endif // CLS_DEPENSES_H
+#endif // CLS_REFRACTIONS_H

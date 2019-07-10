@@ -25,7 +25,7 @@ void Refraction::setData(QJsonObject data)
 {
     if( data.isEmpty() )
         return;
-    setDataInt(data, "id", m_id);
+    setDataInt(data, CP_ID_REFRACTIONS, m_id);
 
     setDataInt(data, CP_IDPAT_REFRACTIONS, m_idpat);                            //!> l'id du patient
     setDataInt(data, CP_IDACTE_REFRACTIONS, m_idacte);                          //!> l'id de l'acte aucours duquel la mesure a été faite
@@ -95,5 +95,5 @@ void Refraction::setData(QJsonObject data)
     setDataInt(data, CP_MONTURE_REFRACTIONS, m_monture);                        //!> le nombre de montures
     setDataBool(data, CP_VERRETEINTE_REFRACTIONS, m_isverreteinte);             //!> les verres sont teintés
     setDataInt(data, CP_PD_REFRACTIONS, m_ecartIP);                             //!> ecart interpuppilaire
-
+    m_data = data;
 }
