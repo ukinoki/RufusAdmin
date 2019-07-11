@@ -545,7 +545,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                 else if (Acces == Distant)
                 {
                     // on doit passer par les bindvalue pour incorporer le bytearray dans la requête
-                    QJsonObject listbinds;
+                    QHash<QString, QVariant> listbinds;
                     listbinds["idimpression"] =    idimpr;
                     listbinds["iduser"] =          idAdminDocs;
                     listbinds["idpat"] =           idPatient;
@@ -554,7 +554,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                     listbinds["titre"] =           Titredoc;
                     listbinds["dateimpression"] =  datestring + " " + QTime::currentTime().toString("HH:mm:ss");
                     listbinds["useremetteur"] =    idAdminDocs;
-                    listbinds[formatdoc] =         QJsonValue::fromVariant(ba);
+                    listbinds[formatdoc] =         ba;
                     listbinds["emisrecu"] =        "0";
                     listbinds["formatdoc"] =       IMAGERIE;
                     listbinds["idlieu"] =          idLieuExercice;
