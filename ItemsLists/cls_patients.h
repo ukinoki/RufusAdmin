@@ -22,6 +22,16 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "database.h"
 #include "cls_itemslist.h"
 
+ /*! La classe patients initialise
+  * une QMap de patients \variable m_patients
+  * et 2 autres QMap de patients
+    * \variable m_patientstable qui corresond à la liste des patients affichés dans la table ui->PatientsListeTableView de rufus.ui
+    * \variable m_patientssaldat qui correspond à tous les patients en cours, ceux qui sont inscrits dans la table rufus.salledattente
+    * chaque patient d'une de ces QMap est aussi inscrit dans m_patients
+  * le patient en cours d'examen sur le poste, \variable m_currentpatient
+  * le dossier du patient à ouvrir \variable m_dossierpatientaouvrir pour les recherches sur des patients qui ne sont pas le patient courant, par le biais des menus contextuels
+  */
+
 class Patients : public ItemsList
 {
 
@@ -29,7 +39,13 @@ public:
     explicit Patients(QObject *parent = Q_NULLPTR);
 
     //GETTER
-    QMap<int, Patient*> *patients() const;
+    QMap<int, Patient*> *patients()           { return m_patients; }
+    QMap<int, Patient*> *patientstable()      { return m_patientstable; }
+    QMap<int, Patient*> *patientssaldat()     { return m_patientssaldat; }
+    Patient* currentpatient()                 { return m_currentpatient; }
+    Patient* dossierpatientaouvrir()          { return m_dossierpatientaouvrir; }
+    void setcurrentpatient(int id);
+    void setdossierpatientaouvrir(int id);
 
 
     Patient* getById(int id, Item::LOADDETAILS loadDetails = Item::NoLoadDetails);          /*! charge les données du patient corresondant à l'id
@@ -45,16 +61,30 @@ public:
                                                                                              */
     void reloadMedicalData(Patient* pat);                                                   //!> recharge les données médicales d'un patient
     void reloadSocialData(Patient* pat);                                                    //!> recharge les données sociales d'un patient
-    void initListeAll(QString nom = "", QString prenom = "", bool filtre = false);          /*! crée une liste de patients
+
+    void initListeTable(QString nom = "", QString prenom = "", bool filtre = false);        /*! crée la liste de patients de la table
                                                                                             * \param patnom filtrer sur le nom de patient
                                                                                             * \param patprenom filtrer sur le prénom de patient
                                                                                             * \param le filtre se fait sur des valeurs aprrochantes */
 
+    void initListeSalDat(QList<int> listidpatients);                                                /*! crée la liste de patients en cours (pateintsen cours d'examen, en salle d'attente ou à l'accueil
+                                                                                            * \param list id = la liste des idpatient en cours */
+
     void initListeByDDN(QDate DDN = QDate());                                               /*! crée une liste de tous les patients pour une date de naissance
                                                                                             * \param DDN la date de naissance */
 private:
-    QMap<int, Patient*> *m_patients;                                                        //!< une liste de patients
-    void addList(QList<Patient*> listpatientss);
+    /*! > il y a 3 listes de patients:
+     * la liste des patients de la table de rechercher
+     * la liste des patients en cours de la table salle d'attente
+     * les 2 patients actifs sur le poste: patient en cours d'examen et patient à ouvir (menu contextuel de la table)
+    */
+    QMap<int, Patient*> *m_patients;                                                        //!< tous les patients actuellement en mémoire
+    QMap<int, Patient*> *m_patientstable;                                                   //!< la liste des patients de la table listepatients
+    QMap<int, Patient*> *m_patientssaldat;                                                  //!< la liste des patients en salle d'attente
+    Patient *m_currentpatient           = Q_NULLPTR;                                        //!> le patient dont le dossier est ouvert
+    Patient *m_dossierpatientaouvrir    = Q_NULLPTR;                                        //!> le dossier de patient à ouvrir
+    void completemaptable (QList<Patient*> listpatients);                                   //!> complète la QMap \variable m_patientstable à partir des fonctions initListeTable et initListeByDDN
+
     bool m_full;                                                                            //! la liste contient tous les patients de la base
 
 

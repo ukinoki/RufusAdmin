@@ -19,7 +19,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CLS_PATIENT_H
 
 #include "cls_item.h"
-#include "cls_acte.h"
 
 /*!
  * \brief The Patient class
@@ -67,10 +66,8 @@ private: //Données du patient
     QString m_toxiques;             //!< autres toxiques
     QString m_important;            //!< points importants du dossier
     QString m_resume;               //!< resumé du dossier
-    bool    m_ismedicalloaded;      //!< les renseignements médicaux sont chargés
-    bool    m_issocialloaded;       //!< les renseignements sociaux sont chargés
-
-    QMap<int, Acte*> *m_actes;      //!< ensemble des actes du patient
+    bool m_ismedicalloaded = false; //!< les renseignements médicaux sont chargés
+    bool m_issocialloaded  = false; //!< les renseignements sociaux sont chargés
 
 public:
     //GETTER | SETTER
@@ -105,18 +102,16 @@ public:
     int idspe2() const;
     int idspe3()const;
     int idcornonmg() const;
-    QString atcdtspersos();
-    QString atcdtsfamiliaux();
-    QString atcdtsophtalmos();
-    QString traitementgen();
-    QString traitementoph();
-    QString tabac();
-    QString toxiques();
-    QString important();
-    QString resume();
+    QString atcdtspersos() const;
+    QString atcdtsfamiliaux() const;
+    QString atcdtsophtalmos() const;
+    QString traitementgen() const;
+    QString traitementoph() const;
+    QString tabac() const;
+    QString toxiques() const;
+    QString important() const;
+    QString resume() const;
 
-    void setActes(QMap<int, Acte *> *actes);
-    QMap<int, Acte *> *actes() const;
     void setSexe(QString sex);
 
     explicit Patient(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
@@ -124,7 +119,6 @@ public:
     void setData(QJsonObject data);
     void setSocialData(QJsonObject data);
     void setMedicalData(QJsonObject data);
-    void addActe(Acte *acte);
 
     // basic data
     void    setnom(QString str)             { m_nom = str; }
@@ -161,6 +155,8 @@ public:
     void    setresume(QString rsm)          { m_resume = rsm; }
     void    settabac(QString tbc)           { m_tabac = tbc; }
     void    setautrestoxiques(QString tox)  { m_toxiques = tox; }
+
+    void resetdatas();
 };
 
 #endif // CLS_PATIENT_H

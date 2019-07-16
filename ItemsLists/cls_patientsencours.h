@@ -37,11 +37,10 @@ public:
                                                                                              * \return PatientEnCours* le patient correspondant à l'id
                                                                                              */
 
-    void initListeAll();          /*! crée une liste de patients */
+    void initListeAll();                                                                    /*! crée la liste des patientsencours */
 
 private:
-    QMap<int, PatientEnCours*> *m_patientsencours;                                                        //!< une liste de patients
-    void addList(QList<PatientEnCours*> listpatientss);
+    QMap<int, PatientEnCours*> *m_patientsencours;                                          //!< la liste des patientsencours
 
 public:
 

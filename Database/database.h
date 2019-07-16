@@ -31,6 +31,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSettings>
 #include <QSqlDatabase>
 #include <QSqlRecord>
+#include <QJsonDocument>
 
 #include "cls_acte.h"
 #include "cls_archivebanque.h"
@@ -296,7 +297,8 @@ public:
     QJsonObject             loadPatientAllData(int idPat);                                                  //! charge toutes les données d'un patient défini par son id - utilisé pour renouveler les données en cas de modification
     void                    loadSocialDataPatient(QJsonObject &jData, bool &ok);                            //! charge les donnéess sociales d'un patient à partir de la table donneessocialespatients
     void                    loadMedicalDataPatient(QJsonObject &jData, bool &ok);                           //! charge les donnéess médicales d'un patient à partir de la table renseignementsmedicauxpatients
-    Patient*                loadPatientById(int idPat, Patient *pat = Q_NULLPTR, bool all = false);         //! charge un patient par son id à partir de la table patients
+    Patient*                loadPatientById(int idPat, Patient *pat = Q_NULLPTR,
+                                            Item::LOADDETAILS details = Item::NoLoadDetails);               //! charge un patient par son id à partir de la table patients
 
     qint64                  countPatientsAll(QString nom = "", QString prenom = "");                        /*! compte le nombre de patients
                                                                                                             * \param patnom filtrer sur le nom de patient
@@ -306,6 +308,9 @@ public:
                                                                                                             * \param patnom filtrer sur le nom de patient
                                                                                                             * \param patprenom filtrer sur le prénom de patient
                                                                                                             * \param le filtre se fait sur des valeurs aprrochantes */
+
+    QList<Patient*>         loadPatientsByListId(QList<int> listid);                                        /*! charge la liste des patients à partir d'e la table patients'une liste d'id
+                                                                                                            * \param QList<int> la liste des id */
 
     QList<Patient *>        loadPatientsByDDN(QDate DDN);                                                   /*! charge la liste de tous les patients pour une date de naissance
                                                                                                              * \param DDN la date de naissance */
