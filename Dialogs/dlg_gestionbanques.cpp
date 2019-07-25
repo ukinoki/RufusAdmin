@@ -239,9 +239,8 @@ void dlg_gestionbanques::ValideModifBanque()
 
     if (gMode == Nouv)
     {
-        for (QMap<int, Banque*>::const_iterator itbanq = Datas::I()->banques->banques()->constBegin(); itbanq != Datas::I()->banques->banques()->constEnd(); ++itbanq)
+        foreach (Banque* bq, Datas::I()->banques->banques()->values())
         {
-            Banque *bq = const_cast<Banque*>(itbanq.value());
             if (bq->nom().toUpper() == ui->NomBanqueupLineEdit->text().toUpper())
             {
                 UpMessageBox::Watch(this,tr("Cette banque est déjà enregistrée!"));

@@ -56,7 +56,7 @@ Correspondant* Correspondants::getById(int id, Item::LOADDETAILS loaddetails, AD
         addToList = ItemsList::NoAddToList;
     }
 
-    if( !result->isAllLoaded())
+    if( !result->isallloaded())
     {
         QJsonObject jsonCorrespondant = DataBase::I()->loadCorrespondantData(id);
         if( jsonCorrespondant.isEmpty() )
@@ -70,6 +70,20 @@ Correspondant* Correspondants::getById(int id, Item::LOADDETAILS loaddetails, AD
     if( addToList == ItemsList::AddToList)
         add(m_correspondants, result );
     return result;
+}
+
+void Correspondants::loadAll(Correspondant *cor, Item::UPDATE upd)
+{
+    if (cor == Q_NULLPTR)
+        return;
+    if (!cor->isallloaded() || upd == Item::ForceUpdate)
+    {
+        QJsonObject jsoncor = DataBase::I()->loadCorrespondantData(cor->id());
+        if( !jsoncor.isEmpty() )
+            cor->setData(jsoncor);
+    }
+    if (m_correspondants->find(cor->id()) == m_correspondants->cend())
+        add (m_correspondants, cor);
 }
 
 
@@ -88,3 +102,27 @@ void Correspondants::initListe(bool all)
         listcorrespondants = DataBase::I()->loadCorrespondants();
     addList(m_correspondants, listcorrespondants);
 }
+
+QStringList Correspondants::autresprofessions()
+{
+    QStringList listprof = QStringList();
+    foreach  (const Correspondant *cor, m_correspondants->values())
+    {
+        if (!cor->ismedecin())
+            listprof << cor->metier();
+    }
+    return listprof;
+}
+
+void Correspondants::SupprimeCorrespondant(Correspondant *cor)
+{
+    if (cor == Q_NULLPTR)
+        return;
+    QString id = QString::number(cor->id());
+    Supprime(m_correspondants, cor);
+    DataBase::I()->StandardSQL("update " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " set idcormedmg  = null where idcormedmg  = " + id);
+    DataBase::I()->StandardSQL("update " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " set idcormedspe1 = null where idcormedspe1 = " + id);
+    DataBase::I()->StandardSQL("update " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " set idcormedspe2 = null where idcormedspe2 = " + id);
+    DataBase::I()->StandardSQL("update " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " set idcormedspe3 = null where idcormedspe3 = " + id);
+}
+

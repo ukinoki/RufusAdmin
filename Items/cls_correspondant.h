@@ -45,12 +45,13 @@ private: //Données du correspondant
     bool    m_medecin;              //!< medecin?
     bool    m_generaliste;          //!< generaliste?
     bool    m_isAllLoaded = false;  //!< tous les renseignements concernant ce correspondant sont chargés
-    int     m_idspecialite;           //!< id de la specialite correspondant en base
+    int     m_idspecialite;         //!< id de la specialite correspondant en base
 
 private:
 
 public:
     //GETTER | SETTER
+    enum typecorrespondant {MG, Spe1, Spe2}; Q_ENUM(typecorrespondant)                    //! les 3 types de correspondants MG = médecin traitant, Spe1 ou Spe2 = tout autre type de correpondant
     bool isMG() const;
     bool ismedecin() const;
     QString nom() const;
@@ -69,7 +70,7 @@ public:
     QString fax() const;
     QString mail() const;
     int idspecialite() const;
-    bool isAllLoaded() const;
+    bool isallloaded() const;
 
     explicit Correspondant(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
 

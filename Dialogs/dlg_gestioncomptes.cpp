@@ -28,9 +28,9 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDial
 
     gidUser                 = gDataUser->id();
 
-    gidCompteParDefaut      = gDataUser->getIdCompteParDefaut();
+    gidCompteParDefaut      = gDataUser->idcompteParDefaut();
 
-    m_comptesusr            = gDataUser->getComptes();
+    m_comptesusr            = gDataUser->comptesbancaires();
     CompteEnCours           = gDataUser->getCompteParDefaut();
 
     gVisible                = true;
@@ -62,7 +62,7 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDial
     QDoubleValidator *val = new QDoubleValidator(this);
     val->setDecimals(2);
 
-    gUserLogin          = gDataUser->getLogin();
+    gUserLogin          = gDataUser->login();
     setWindowTitle(tr("Comptes bancaires de ") + gUserLogin);
 
     MetAJourListeBanques();
@@ -252,9 +252,9 @@ void dlg_gestioncomptes::CompteFactice()
         MetAJourListeBanques();
         ui->BanqueupcomboBox->setCurrentIndex(ui->BanqueupcomboBox->findData(idbanq));
         QString intit;
-        if (gDataUser->getTitre().size())
-            intit += gDataUser->getTitre() + " ";
-        intit += gDataUser->getPrenom() + " " + gDataUser->getNom();
+        if (gDataUser->titre().size())
+            intit += gDataUser->titre() + " ";
+        intit += gDataUser->prenom() + " " + gDataUser->nom();
         if (Utils::trim(intit) == "")
             intit = "DR EDWARD SNOWDEN";
         ui->IntituleCompteuplineEdit    ->setText(intit);
@@ -355,7 +355,7 @@ void dlg_gestioncomptes::SupprCompte()
         return;
     Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     gDataUser->setComptes(Datas::I()->comptes->initListeComptesByIdUser(gDataUser->id()));
-    m_comptesusr = gDataUser->getComptes();
+    m_comptesusr = gDataUser->comptesbancaires();
     RemplirTableView();
 }
 
@@ -412,7 +412,7 @@ void dlg_gestioncomptes::ValidCompte()
                                             ui->DesactiveComptecheckBox->isChecked());         //! Desactive
     m_comptesusr->clear();
     gDataUser     ->setComptes(Datas::I()->comptes->initListeComptesByIdUser(gDataUser->id()));
-    m_comptesusr = gDataUser->getComptes();
+    m_comptesusr = gDataUser->comptesbancaires();
     CompteEnCours = Datas::I()->comptes->getById(idcompte);
 
     RemplirTableView();
@@ -453,15 +453,14 @@ void dlg_gestioncomptes::RemplirTableView(int idcompte)
     ui->ComptesuptableWidget->setGridStyle(Qt::DotLine);
 
     m_comptesusr->clear();
-    m_comptesusr = gDataUser->getComptes(true);
+    m_comptesusr = gDataUser->comptesbancaires(true);
     if (m_comptesusr->size()>0)
     {
         ui->Compteframe->setVisible(true);
         ui->ComptesuptableWidget->setRowCount(m_comptesusr->size());
         int i=0;
-        for (QList<Compte*>::const_iterator itcpt = m_comptesusr->constBegin(); itcpt!=m_comptesusr->constEnd(); ++itcpt)
+        foreach (Compte* cpt, *m_comptesusr)
         {
-            Compte *cpt = const_cast<Compte*>(*itcpt);
             pitem0 = new QTableWidgetItem;
             pitem1 = new QTableWidgetItem;
             pitem0->setText(QString::number(cpt->id()));

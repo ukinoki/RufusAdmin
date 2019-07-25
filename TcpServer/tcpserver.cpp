@@ -151,6 +151,10 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         envoyerATous(msg, descriptor);
         Flags::I()->MAJflagCorrespondants();
     }
+    else if (msg.contains(TCPMSG_MAJPatient))
+    {
+        envoyerATous(msg, descriptor);
+    }
     else
         envoyerATous(msg, descriptor);
 }

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("16-07-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("25-07-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -994,14 +994,14 @@ bool RufusAdmin::SetUserAllData(User *usr)
         if(data.isEmpty())
         {
             UpMessageBox::Watch(Q_NULLPTR,tr("Les paramètres de ")
-                                + usr->getLogin() + tr("ne sont pas retrouvés"));
+                                + usr->login() + tr("ne sont pas retrouvés"));
             return false;
         }
         usr->setData( data ); //on charge le reste des données
     }
     usr->setComptes(Datas::I()->comptes->initListeComptesByIdUser(usr->id()));
-    usr->setCompteParDefaut(Datas::I()->comptes->getById(usr->getIdCompteParDefaut()));
-    usr->setCompteEncaissement(Datas::I()->comptes->getById(usr->getIdCompteEncaissHonoraires()));
+    usr->setCompteParDefaut(Datas::I()->comptes->getById(usr->idcompteParDefaut()));
+    usr->setCompteEncaissement(Datas::I()->comptes->getById(usr->idCompteEncaissHonoraires()));
     return true;
 }
 
@@ -1434,8 +1434,8 @@ void RufusAdmin::ExporteDocs()
                               | QFileDevice::ReadUser   | QFileDevice::WriteUser);
             CC.close();
             db->StandardSQL ("update " TBL_IMPRESSIONS " set pdf = null, compression = null,"
-                                                             " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
-                                                                                                                                                                         " where idimpression = " + listexportpdf.at(i).at(0).toString());
+                             " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
+                             " where idimpression = " + listexportpdf.at(i).at(0).toString());
             faits ++;
             int nsec = debut.secsTo(QTime::currentTime());
             int min = nsec/60;

@@ -47,16 +47,6 @@ void Actes::initListeByPatient(Patient *pat, Item::UPDATE upd, bool quelesid)
     addList(m_actes, listActes, upd);
 }
 
-//void Actes::addList(QList<Acte*> listActes, Item::UPDATE upd)
-//{
-//    QList<Acte*>::const_iterator it;
-//    for( it = listActes.constBegin(); it != listActes.constEnd(); ++it )
-//    {
-//        Acte* item = const_cast<Acte*>(*it);
-//        add( m_actes, item, upd );
-//    }
-//}
-
 void Actes::sortActesByDate()  /*! cette fonction et les 2 qui suivent ne sont pour l'instant pas utilisées.
                                  * elles sont prévues pour réorganiser le tri des actes en fonction de leur date et pas en fonction de leur id
                                  * parce qu'il arrive (rarement) qu'on saisisse un acte a posteriori dont la date sera antérieure à celle du dernier acte
@@ -67,10 +57,9 @@ void Actes::sortActesByDate()  /*! cette fonction et les 2 qui suivent ne sont p
         m_actesmodel = new QStandardItemModel();
     else
         m_actesmodel->clear();
-    for (QMap<int, Acte*>::const_iterator itact = m_actes->constBegin(); itact != m_actes->constEnd(); ++itact)
+    foreach (Acte* act, m_actes->values())
     {
         QList<QStandardItem *> items;
-        Acte* act = const_cast<Acte*>(itact.value());
         UpStandardItem *itemact = new UpStandardItem(QString::number(act->id()));
         itemact->setItem(act);
         items << new UpStandardItem(act->date().toString("yyyymmss"))
@@ -99,15 +88,10 @@ Acte* Actes::getActeFromIndex(QModelIndex idx)
     QModelIndex pindx       = m_heuresortmodel->mapToSource(heureindx);               //  -> m_actesmodel
 
     UpStandardItem *item = dynamic_cast<UpStandardItem *>(m_actesmodel->itemFromIndex(pindx));
-    if (item == Q_NULLPTR)
+    if (item != Q_NULLPTR)
+        return dynamic_cast<Acte *>(item->item());
+    else
         return Q_NULLPTR;
-    if (item->item() == Q_NULLPTR)
-    {
-        qDebug() << "erreur sur l'item - row = " << item->row() << " - col = " << item->column() << item->text();
-        return Q_NULLPTR;
-    }
-    Acte *act = dynamic_cast<Acte *>(item->item());
-    return act;
 }
 
 Acte* Actes::getById(int id, ADDTOLIST add)
@@ -174,21 +158,21 @@ Acte* Actes::CreationActe(Patient *pat, int idcentre)
     Acte *act = Q_NULLPTR;
     bool ok;
     User* usr = DataBase::I()->getUserConnected();
-    QString rempla = (usr->getEnregHonoraires()==3? "1" : "null");
+    QString rempla = (usr->modeenregistrementhonoraires() == User::Retrocession? "1" : "null");
     QString creerrequete =
             "INSERT INTO " TBL_ACTES
             " (idPat, idUser, ActeDate, ActeHeure, CreePar, UserComptable, UserParent, SuperViseurRemplacant, NumCentre, idLieu)"
             " VALUES (" +
             QString::number(pat->id()) + ", " +
-            QString::number(usr->getIdUserActeSuperviseur()) + ", "
+            QString::number(usr->idSuperviseurActes()) + ", "
             "NOW(), "
             "NOW(), " +
             QString::number(usr->id()) + ", " +
-            QString::number(usr->getIdUserComptable()) + ", " +
-            QString::number(usr->getIdUserParent()) + ", " +
+            QString::number(usr->idcomptable()) + ", " +
+            QString::number(usr->idparent()) + ", " +
             rempla + ", " +
             QString::number(idcentre) + ", " +
-            QString::number(usr->getSite()->id()) +")";
+            QString::number(usr->sitedetravail()->id()) +")";
     //qDebug() << creerrequete;
     DataBase::I()->locktables(QStringList() << TBL_ACTES);
     if (!DataBase::I()->StandardSQL(creerrequete,tr("Impossible de créer cette consultation dans ") + TBL_ACTES))
@@ -206,15 +190,15 @@ Acte* Actes::CreationActe(Patient *pat, int idcentre)
     act = new Acte();
     act->setid(idacte);
     act->setidpatient(pat->id());
-    act->setiduser(usr->getIdUserActeSuperviseur());
+    act->setiduser(usr->idSuperviseurActes());
     act->setdate(QDate::currentDate());
     act->setheure(QTime::currentTime());
     act->setidusercreateur(usr->id());
-    act->setidusercomptable(usr->getIdUserComptable());
-    act->setiduserparent(usr->getIdUserParent());
+    act->setidusercomptable(usr->idcomptable());
+    act->setiduserparent(usr->idparent());
     act->seteffectueparremplacant(rempla == "1");
     act->setnumcentre(idcentre);
-    act->setidlieu(usr->getSite()->id());
+    act->setidlieu(usr->sitedetravail()->id());
     add(m_actes, act);
     return act;
 }
