@@ -40,7 +40,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_cotation.h"
 #include "cls_depense.h"
 #include "cls_docexterne.h"
-#include "cls_document.h"
+#include "cls_impression.h"
 #include "cls_lignepaiement.h"
 #include "cls_motif.h"
 #include "cls_paiementtiers.h"
@@ -125,6 +125,7 @@ public:
     void                    rollback();                                                                 //!> rollback de la transaction
 
     bool                    locktables(QStringList ListTables, QString ModeBlocage = "WRITE");          //!> comme son nom l'indique
+    bool                    locktable(QString NomTable, QString ModeBlocage = "WRITE");                 //!> comme son nom l'indique
     void                    unlocktables();                                                             //!> comme son nom l'indique
 
     //     REQUETES ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -202,8 +203,8 @@ public:
     /*
      * Postes connectés
     */
-    QList<PosteConnecte*>   loadPostesConnectes();                                          //! charge tous les postes connectés à la base
-    QJsonObject             loadPosteConnecteData(int idUser, QString macadress);            //! complète tous les renseignements concernant le poste défini par l'id
+    QList<PosteConnecte*>   loadPostesConnectes();                                              //! charge tous les postes connectés à la base
+    QJsonObject             loadPosteConnecteData(int idUser, QString macadress);               //! complète tous les renseignements concernant le poste défini par l'id
 
     /*
      * Correspondants
@@ -219,14 +220,14 @@ public:
     QJsonObject             loadDocExterneData(int idDoc);              //! complète tous les renseignements concernant le document externe défini par l'id
 
     /*
-     * Documents émis
+     * Impressions
     */
-    QList<Document*>        loadDocuments();                            //! charge tous les documents imprimables de la  table courriers
+    QList<Impression*>        loadImpressions();                        //! charge tous les documents imprimables de la  table courriers
 
     /*
-     * MetaDocuments
+     * Dossiers d'impressions
     */
-    QList<MetaDocument*>    loadMetaDocuments();                        //! charge tous les dossiers de documents imprimables de la  table courriers
+    QList<DossierImpression*>    loadDossiersImpressions();             //! charge tous les dossiers de documents imprimables de la  table courriers
 
     /*
      * Compta

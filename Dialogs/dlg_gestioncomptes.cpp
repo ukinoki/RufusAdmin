@@ -20,18 +20,17 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "icons.h"
 
 
-dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDialog(parent), ui(new Ui::dlg_gestioncomptes)
+dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(parent), ui(new Ui::dlg_gestioncomptes)
 {
     ui->setupUi(this);
     db                      = DataBase::I();
-    gDataUser               = DataUser;
+    m_userencours           = user;
 
-    gidUser                 = gDataUser->id();
+    gidUser                 = m_userencours->id();
+    gidCompteParDefaut      = m_userencours->idcomptepardefaut();
 
-    gidCompteParDefaut      = gDataUser->idcompteParDefaut();
-
-    m_comptesusr            = gDataUser->comptesbancaires();
-    CompteEnCours           = gDataUser->getCompteParDefaut();
+    m_listescomptesusr      = m_userencours->listecomptesbancaires();
+    m_compteencours         = Datas::I()->comptes->getById(m_userencours->idcomptepardefaut());
 
     gVisible                = true;
     gTimer                  = new QTimer(this);
@@ -62,7 +61,7 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *DataUser, QWidget *parent) : UpDial
     QDoubleValidator *val = new QDoubleValidator(this);
     val->setDecimals(2);
 
-    gUserLogin          = gDataUser->login();
+    gUserLogin          = m_userencours->login();
     setWindowTitle(tr("Comptes bancaires de ") + gUserLogin);
 
     MetAJourListeBanques();
@@ -119,15 +118,15 @@ void dlg_gestioncomptes::closeEvent(QCloseEvent *event)
 
 void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem *)
 {
-    int idCompte = ui->ComptesuptableWidget->item(pitem->row(),0)->text().toInt();
-    CompteEnCours = Datas::I()->comptes ->getById(idCompte);
-        ui->BanqueupcomboBox            ->setCurrentText(Datas::I()->banques->getById(CompteEnCours->id())->nomabrege());
-        ui->IBANuplineEdit              ->setText(CompteEnCours->iban());
-        ui->IntituleCompteuplineEdit    ->setText(CompteEnCours->intitulecompte());
-        ui->NomCompteAbregeuplineEdit   ->setText(CompteEnCours->nomabrege());
-        ui->idCompteupLineEdit          ->setText(QString::number(CompteEnCours->id()));
-        ui->DesactiveComptecheckBox     ->setChecked(CompteEnCours->isDesactive());
-        ui->CompteSocietecheckBox       ->setChecked(CompteEnCours->isPartage());
+    int idCompte    = ui->ComptesuptableWidget->item(pitem->row(),0)->text().toInt();
+    m_compteencours = Datas::I()->comptes ->getById(idCompte);
+        ui->BanqueupcomboBox            ->setCurrentText(Datas::I()->banques->getById(m_compteencours->id())->nomabrege());
+        ui->IBANuplineEdit              ->setText(m_compteencours->iban());
+        ui->IntituleCompteuplineEdit    ->setText(m_compteencours->intitulecompte());
+        ui->NomCompteAbregeuplineEdit   ->setText(m_compteencours->nomabrege());
+        ui->idCompteupLineEdit          ->setText(QString::number(m_compteencours->id()));
+        ui->DesactiveComptecheckBox     ->setChecked(m_compteencours->isDesactive());
+        ui->CompteSocietecheckBox       ->setChecked(m_compteencours->isPartage());
     widgButtons->modifBouton    ->setEnabled(false);
 
     /*On ne peut pas supprimer un compte s'il est utilisé ou s'il y a déjà eu des ecritures bancaires*/
@@ -252,9 +251,9 @@ void dlg_gestioncomptes::CompteFactice()
         MetAJourListeBanques();
         ui->BanqueupcomboBox->setCurrentIndex(ui->BanqueupcomboBox->findData(idbanq));
         QString intit;
-        if (gDataUser->titre().size())
-            intit += gDataUser->titre() + " ";
-        intit += gDataUser->prenom() + " " + gDataUser->nom();
+        if (m_userencours->titre().size())
+            intit += m_userencours->titre() + " ";
+        intit += m_userencours->prenom() + " " + m_userencours->nom();
         if (Utils::trim(intit) == "")
             intit = "DR EDWARD SNOWDEN";
         ui->IntituleCompteuplineEdit    ->setText(intit);
@@ -324,7 +323,7 @@ void dlg_gestioncomptes::NouvCompte()
     ui->IntituleCompteuplineEdit    ->setEnabled(true);
     ui->NomCompteAbregeuplineEdit   ->setEnabled(true);
     ui->CompteSocietecheckBox       ->setEnabled(true);
-    ui->CompteSocietecheckBox       ->setChecked(gDataUser->isSocComptable());
+    ui->CompteSocietecheckBox       ->setChecked(m_userencours->isSocComptable());
 
     ui->BanqueupcomboBox            ->clearEditText();
     ui->IBANuplineEdit              ->clear();
@@ -349,13 +348,13 @@ void dlg_gestioncomptes::SupprCompte()
     msgbox.setIcon(UpMessageBox::Warning);
     msgbox.addButton(&NoBouton, UpSmallButton::CANCELBUTTON);
     msgbox.addButton(&OKBouton, UpSmallButton::SUPPRBUTTON);
-    msgbox.setInformativeText(tr("Supprimer le compte ") + Datas::I()->banques->getById(CompteEnCours->id())->nomabrege() + " - " + CompteEnCours->intitulecompte() + "?");
+    msgbox.setInformativeText(tr("Supprimer le compte ") + Datas::I()->banques->getById(m_compteencours->id())->nomabrege() + " - " + m_compteencours->intitulecompte() + "?");
     msgbox.exec();
     if (msgbox.clickedButton() != &OKBouton)
         return;
     Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
-    gDataUser->setComptes(Datas::I()->comptes->initListeComptesByIdUser(gDataUser->id()));
-    m_comptesusr = gDataUser->comptesbancaires();
+    m_userencours->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()));
+    m_listescomptesusr = m_userencours->listecomptesbancaires();
     RemplirTableView();
 }
 
@@ -410,10 +409,10 @@ void dlg_gestioncomptes::ValidCompte()
                                             0,                                                 //! SoldeSurDernierReleve
                                             ui->CompteSocietecheckBox->isChecked(),            //! Partage
                                             ui->DesactiveComptecheckBox->isChecked());         //! Desactive
-    m_comptesusr->clear();
-    gDataUser     ->setComptes(Datas::I()->comptes->initListeComptesByIdUser(gDataUser->id()));
-    m_comptesusr = gDataUser->comptesbancaires();
-    CompteEnCours = Datas::I()->comptes->getById(idcompte);
+    m_listescomptesusr->clear();
+    m_userencours     ->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()));
+    m_listescomptesusr = m_userencours->listecomptesbancaires();
+    m_compteencours = Datas::I()->comptes->getById(idcompte);
 
     RemplirTableView();
     ui->OKModifupSmallButton->setVisible(false);
@@ -452,23 +451,27 @@ void dlg_gestioncomptes::RemplirTableView(int idcompte)
     ui->ComptesuptableWidget->horizontalHeader()->setIconSize(QSize(25,25));
     ui->ComptesuptableWidget->setGridStyle(Qt::DotLine);
 
-    m_comptesusr->clear();
-    m_comptesusr = gDataUser->comptesbancaires(true);
-    if (m_comptesusr->size()>0)
+    m_listescomptesusr->clear();
+    m_listescomptesusr = m_userencours->listecomptesbancaires(true);
+    if (m_listescomptesusr->size()>0)
     {
         ui->Compteframe->setVisible(true);
-        ui->ComptesuptableWidget->setRowCount(m_comptesusr->size());
+        ui->ComptesuptableWidget->setRowCount(m_listescomptesusr->size());
         int i=0;
-        foreach (Compte* cpt, *m_comptesusr)
+        foreach (int idcpt, *m_listescomptesusr)
         {
-            pitem0 = new QTableWidgetItem;
-            pitem1 = new QTableWidgetItem;
-            pitem0->setText(QString::number(cpt->id()));
-            pitem1->setText(cpt->nomabrege());
-            ui->ComptesuptableWidget->setItem(i,0,pitem0);
-            ui->ComptesuptableWidget->setItem(i,1,pitem1);
-            ui->ComptesuptableWidget->setRowHeight(i,int(QFontMetrics(qApp->font()).height()*1.3));
-            i++;
+            Compte *cpt = Datas::I()->comptes->getById(idcpt);
+            if (cpt != Q_NULLPTR)
+            {
+                pitem0 = new QTableWidgetItem;
+                pitem1 = new QTableWidgetItem;
+                pitem0->setText(QString::number(cpt->id()));
+                pitem1->setText(cpt->nomabrege());
+                ui->ComptesuptableWidget->setItem(i,0,pitem0);
+                ui->ComptesuptableWidget->setItem(i,1,pitem1);
+                ui->ComptesuptableWidget->setRowHeight(i,int(QFontMetrics(qApp->font()).height()*1.3));
+                i++;
+            }
         }
         connect(ui->ComptesuptableWidget, &QTableWidget::currentItemChanged, [=] {AfficheCompte(ui->ComptesuptableWidget->currentItem(),Q_NULLPTR);});
         if (idcompte<1)

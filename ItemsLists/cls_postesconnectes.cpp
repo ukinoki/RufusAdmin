@@ -43,8 +43,9 @@ PosteConnecte* PostesConnectes::getById(QString stringid)
 
 void PostesConnectes::initListe()
 {
-    clearAll(m_postesconnectes);
-    addList(m_postesconnectes, DataBase::I()->loadPostesConnectes());
+    QList<PosteConnecte*> listpostes = DataBase::I()->loadPostesConnectes();
+    epurelist(m_postesconnectes, &listpostes);
+    addList(m_postesconnectes, &listpostes);
 }
 
 void PostesConnectes::SupprimeAllPostesConnectes()
@@ -65,16 +66,12 @@ PosteConnecte* PostesConnectes::admin(Item::UPDATE upd)
         QJsonObject jadmin = DataBase::I()->loadAdminData();
         if (jadmin.size() > 0)
             idAdministrateur = jadmin.value("id").toInt();
-         QMapIterator<QString, PosteConnecte*> itpost(*m_postesconnectes);
-        while (itpost.hasNext()) {
-            itpost.next();
-            PosteConnecte *post = itpost.value();
+        foreach (PosteConnecte *post, *m_postesconnectes)
             if(post->id() == idAdministrateur && idAdministrateur > -1)
             {
                 m_admin = post;
-                itpost.toBack();
+                break;
             }
-        }
     }
     adminset = true;
     return m_admin;
@@ -92,17 +89,12 @@ void PostesConnectes::SupprimePosteConnecte(PosteConnecte *post)
     bool canremoveverrouactes = true;
     QString req = "delete from " TBL_USERSCONNECTES " where " CP_IDUSER_USRCONNECT " = " + QString::number(post->id()) + " and " CP_MACADRESS_USRCONNECT " = '" + post->macadress() + "'";
     DataBase::I()->StandardSQL(req);
-    QMapIterator<QString, PosteConnecte*> itpost(*m_postesconnectes);
-    while (itpost.hasNext())
-    {
-        PosteConnecte *postit = const_cast<PosteConnecte*>(itpost.next().value());
-        if (postit != Q_NULLPTR)
-            if (postit->id() == post->id() && postit->nomposte() != post->nomposte())
-            {
-                canremoveverrouactes = false;
-                itpost.toBack();
-            }
-    }
+    foreach (PosteConnecte *postit, *m_postesconnectes)
+        if (postit->id() == post->id() && postit->nomposte() != post->nomposte())
+        {
+            canremoveverrouactes = false;
+            break;;
+        }
     if (canremoveverrouactes)
         DataBase::I()->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where PosePar = " + QString::number(post->id()));
     remove(m_postesconnectes, post);
@@ -122,7 +114,7 @@ PosteConnecte* PostesConnectes::CreationPosteConnecte()
                                                                         CP_IPADRESS_USRCONNECT ")"
                                " VALUES(NOW()," +
                                QString::number(DataBase::I()->getUserConnected()->id()) + "," +
-                               QString::number(DataBase::I()->getUserConnected()->idSuperviseurActes()) + "," +
+                               QString::number(DataBase::I()->getUserConnected()->idsuperviseur()) + "," +
                                QString::number(DataBase::I()->getUserConnected()->idcomptable()) + "," +
                                QString::number(DataBase::I()->getUserConnected()->idparent()) +",'" +
                                QHostInfo::localHostName().left(60) + "', '" +
@@ -133,7 +125,7 @@ PosteConnecte* PostesConnectes::CreationPosteConnecte()
     PosteConnecte *post = new PosteConnecte();
     post->setstringid(macadressid);
     post->setid(DataBase::I()->getUserConnected()->id());
-    post->setidsuperviseur(DataBase::I()->getUserConnected()->idSuperviseurActes());
+    post->setidsuperviseur(DataBase::I()->getUserConnected()->idsuperviseur());
     post->setidcomptable(DataBase::I()->getUserConnected()->idcomptable());
     post->setidparent(DataBase::I()->getUserConnected()->idparent());
     post->setheurederniereconnexion(DataBase::I()->ServerDateTime());

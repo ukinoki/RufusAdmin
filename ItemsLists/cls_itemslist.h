@@ -67,14 +67,14 @@ protected:
      * \param m_map le QMap que l'on veut vider
      */
     template <typename T>
-    void addList(QMap<int, T*> *m_map, QList<T*> listitems, Item::UPDATE upd = Item::NoUpdate)
+    void addList(QMap<int, T*> *m_map, QList<T*> *listitems, Item::UPDATE upd = Item::NoUpdate)
     {
-        for(auto it = listitems.begin(); it != listitems.end(); )
+        for(auto it = listitems->begin(); it != listitems->end(); )
         {
             T* item = const_cast<T*>(*it);
             if (!add( m_map, item, upd))
             {
-                it = listitems.erase(it);
+                it = listitems->erase(it);
                 if (item != Q_NULLPTR)
                     delete item;
             }
@@ -84,14 +84,14 @@ protected:
     }
 
     template <typename T>
-    void addList(QMap<QString, T*> *m_map, QList<T*> listitems, Item::UPDATE upd = Item::NoUpdate)
+    void addList(QMap<QString, T*> *m_map, QList<T*> *listitems, Item::UPDATE upd = Item::NoUpdate)
     {
-        for(auto it = listitems.begin(); it != listitems.end(); )
+        for(auto it = listitems->begin(); it != listitems->end(); )
         {
             T* item = const_cast<T*>(*it);
             if (!add( m_map, item, upd))
             {
-                it = listitems.erase(it);
+                it = listitems->erase(it);
                 if (item != Q_NULLPTR)
                     delete item;
             }
@@ -99,6 +99,51 @@ protected:
                  ++it;
         }
     }
+
+/*!
+ * \brief ItemsList::epurelist
+ * Cette fonction va retirer dans le QMap m_oldMap tous les éléments qui ne sont pas dans la list d'items m_newlist
+ * Utile quand on veut réinitialiser une QMAP d'items àpartir d'une nouvelle liste
+ * tous les éléments du QMap qui ne sont pas dans la nouvelle liste sont supprimés et délétés
+ */
+template <typename T>
+void epurelist(QMap<int, T*> *m_oldmap, QList<T*> *m_newlist)
+{
+    if (m_oldmap->size() == 0)
+        return;
+    QMap<int, T*> m_newmap;
+    foreach (T *item, *m_newlist)
+        m_newmap.insert(item->id(), item);
+    for (auto it = m_oldmap->begin(); it != m_oldmap->end();)
+        if (m_newmap.find(it.key()) == m_newmap.constEnd())
+        {
+            delete  it.value();
+            it = m_oldmap->erase(it);
+        }
+        else
+            ++it;
+}
+
+/*! le même avec des QString en key */
+template <typename T>
+void epurelist(QMap<QString, T*> *m_oldmap, QList<T*> *m_newlist)
+{
+    if (m_oldmap->size() == 0)
+        return;
+    QMap<QString, T*> m_newmap;
+    foreach (T* item, *m_newlist)
+        m_newmap.insert(item->stringid(), item);
+    for (auto it = m_oldmap->begin(); it != m_oldmap->end();)
+        if (m_newmap.find(it.key()) == m_newmap.constEnd())
+        {
+            delete it.value();
+            it = m_oldmap->erase(it);
+        }
+        else
+            ++it;
+}
+
+
 
 /*!
      * \brief ItemsList::add
@@ -124,7 +169,7 @@ bool add(QMap<int, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
         if (upd == Item::ForceUpdate)
         {
             auto it = m_map->find(item->id());
-            if (it.value() == Q_NULLPTR)
+            if (it == m_map->constEnd())
             {
                 m_map->insert(it.key(), item);
                 return true;
@@ -149,7 +194,7 @@ bool add(QMap<QString, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
         if (upd == Item::ForceUpdate)
         {
             auto it = m_map->find(item->stringid());
-            if (it.value() == Q_NULLPTR)
+            if (it == m_map->constEnd())
             {
                 m_map->insert(it.key(), item);
                 return true;
@@ -170,7 +215,7 @@ bool add(QMap<QString, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
  * \param m_map le QMap dans lequel on veut retirer l'item
  * \param item l'item que l'on veut retirer
 */
-    template <typename T>
+template <typename T>
 void remove(QMap<int, T*> *m_map, T* item)
 {
     if (item == Q_NULLPTR)
@@ -236,7 +281,7 @@ static bool Supprime(QMap<int, T*> *m_map, T* item)
         }
         if (dynamic_cast<DocExterne*>(item) != Q_NULLPTR)
         {
-            table = TBL_IMPRESSIONS;
+            table = TBL_DOCSEXTERNES;
             idname = CP_IDIMPRESSION_IMPRESSIONS;
             loop = true;
             break;

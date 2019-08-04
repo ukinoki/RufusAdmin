@@ -15,32 +15,40 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_COMPTES_H
-#define CLS_COMPTES_H
+#ifndef CLS_IMPRESSIONS_H
+#define CLS_IMPRESSIONS_H
 
-#include "cls_compte.h"
 #include "database.h"
+#include "cls_impression.h"
 #include "cls_itemslist.h"
 
-class Comptes : public ItemsList
+class Impressions : public ItemsList
 {
 private:
-    QMap<int, Compte*> *m_comptes = Q_NULLPTR;  //!< la liste de tous les comptes
+    QMap<int, Impression*> *m_impressions = Q_NULLPTR;      //!< la liste des impressions
 
 public:
-    explicit Comptes(QObject *parent = Q_NULLPTR);
-    ~Comptes();
+    explicit Impressions(QObject *parent = Q_NULLPTR);
 
-    QMap<int, Compte*>* comptes() const;
+    QMap<int, Impression *> *impressions() const;
 
-    Compte* getById(int id);
-    void reloadCompte(Compte*compte);
+    Impression* getById(int id);
     void initListe();
-    QMap<int, bool> initListeComptesByIdUser(int id);    //! reconstruit la liste des comptes d'un utilisateur
-
-    //!> actions sur les enregistrements
-    void       SupprimeCompte(Compte *cpt);
-    Compte*    CreationCompte(int idBanque, int idUser, QString IBAN, QString IntituleCompte, QString NomCompteAbrege, double SoldeSurDernierReleve, bool Partage, bool Desactive);
 };
 
-#endif // CLS_COMPTES_H
+class DossiersImpressions : public ItemsList
+{
+private:
+    QMap<int, DossierImpression*> *m_dossiersimpressions = Q_NULLPTR;      //!< la liste des dossiers d'impressions
+
+public:
+    explicit DossiersImpressions();
+
+    QMap<int, DossierImpression *> *dossiersimpressions() const;
+
+    DossierImpression* getById(int id);
+    void initListe();
+};
+
+
+#endif // CLS_IMPRESSIONS_H

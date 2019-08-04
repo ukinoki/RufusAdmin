@@ -59,27 +59,23 @@ void Comptes::reloadCompte(Compte *compte)
 
 void Comptes::initListe()
 {
-    QList<Compte*> listcomptes;
-    addList(m_comptes, DataBase::I()->loadComptesAll());
+    QList<Compte*> listcomptes = DataBase::I()->loadComptesAll();
+    epurelist(m_comptes, &listcomptes);
+    addList(m_comptes, &listcomptes);
 }
 
 void Comptes::SupprimeCompte(Compte *cpt)
 {
     Supprime(m_comptes, cpt);
-
 }
 
-QList<Compte*> Comptes::initListeComptesByIdUser (int id)
+QMap<int, bool> Comptes::initListeComptesByIdUser(int id)
 {
-    QList<Compte*> listcomptes;
-    QMapIterator<int, Compte*> itcpt(*m_comptes);
-    while (itcpt.hasNext())
-    {
-        itcpt.next();
-        if (itcpt.value()->idUser() == id)
-            listcomptes << itcpt.value();
-    }
-    return listcomptes;
+    QMap<int, bool> mapcomptes;
+    foreach (Compte *cpt, *m_comptes)
+        if (cpt->idUser() == id)
+            mapcomptes.insert(cpt->id(), cpt->isDesactive());
+    return mapcomptes;
 }
 
 

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("25-07-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("04-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -999,9 +999,7 @@ bool RufusAdmin::SetUserAllData(User *usr)
         }
         usr->setData( data ); //on charge le reste des données
     }
-    usr->setComptes(Datas::I()->comptes->initListeComptesByIdUser(usr->id()));
-    usr->setCompteParDefaut(Datas::I()->comptes->getById(usr->idcompteParDefaut()));
-    usr->setCompteEncaissement(Datas::I()->comptes->getById(usr->idCompteEncaissHonoraires()));
+    usr->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(usr->id()));
     return true;
 }
 
@@ -1733,11 +1731,8 @@ void RufusAdmin::Slot_GestionMotifs()
 void RufusAdmin::Slot_GestUser()
 {
     DisconnectTimerInactive();
-    QString req = "select IdUser from " TBL_UTILISATEURS " where userlogin <> '" NOM_ADMINISTRATEURDOCS "'";
-    int iduser = db->getFirstRecordFromStandardSelectSQL(req, ok).at(0).toInt();
-    Dlg_GestUsr = new dlg_gestionusers(iduser, ui->EmplacementServeurupComboBox->currentData().toInt(), true, this);
+    Dlg_GestUsr = new dlg_gestionusers(ui->EmplacementServeurupComboBox->currentData().toInt(), dlg_gestionusers::ADMIN, true, this);
     Dlg_GestUsr->setWindowTitle(tr("Gestion des utilisateurs"));
-    Dlg_GestUsr->setConfig(dlg_gestionusers::ADMIN);
     if(Dlg_GestUsr->exec()>0)
     {
         Datas::I()->users->initListe();

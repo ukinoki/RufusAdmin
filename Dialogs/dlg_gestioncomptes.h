@@ -44,9 +44,9 @@ public:
 private:
     Ui::dlg_gestioncomptes  *ui;
     DataBase                *db;
-    User                    *gDataUser;
-    QList<Compte*>          *m_comptesusr;
-    Compte                  *CompteEnCours;
+    User                    *m_userencours;
+    QList<int>              *m_listescomptesusr;
+    Compte                  *m_compteencours;
     dlg_gestionbanques      *Dlg_Banq;
     bool                    gVisible;
     int                     gidUser, gMode;

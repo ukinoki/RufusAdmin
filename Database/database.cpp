@@ -191,6 +191,11 @@ bool DataBase::locktables(QStringList ListTables, QString ModeBlocage)
     return StandardSQL(req);
 }
 
+bool DataBase::locktable(QString Table, QString ModeBlocage)
+{
+    return locktables(QStringList() << Table, ModeBlocage);
+}
+
 void DataBase::unlocktables()
 {
     StandardSQL("UNLOCK TABLES;");
@@ -741,7 +746,7 @@ QList<PosteConnecte*> DataBase::loadPostesConnectes()
 /*
  * Correspondants
 */
-QList<Correspondant*> DataBase::loadCorrespondants()                             //! tous les correspondants sans exception
+QList<Correspondant*> DataBase::loadCorrespondants()                             //! tous les correspondants
 {
     QList<Correspondant*> correspondants;
     QString req =   "SELECT idCor, CorNom, CorPrenom, CorSexe, cormedecin, corspecialite, nomspecialite as metier FROM " TBL_CORRESPONDANTS ", " TBL_SPECIALITES
@@ -771,7 +776,7 @@ QList<Correspondant*> DataBase::loadCorrespondants()                            
     return correspondants;
 }
 
-QList<Correspondant*> DataBase::loadCorrespondantsALL()                             //! tous les correspondants sans exception avec plus de renseignements
+QList<Correspondant*> DataBase::loadCorrespondantsALL()                             //! tous les correspondants avec plus de renseignements
 {
     QList<Correspondant*> correspondants;
     QString req = "SELECT idCor, CorNom, CorPrenom, nomspecialite as metier, CorAdresse1,"
@@ -869,7 +874,7 @@ QList<DocExterne*> DataBase::loadDoscExternesByPatient(Patient *pat)
     if (pat == Q_NULLPTR)
         return QList<DocExterne*>();
     QString req = "Select idImpression, TypeDoc, SousTypeDoc, Titre, Dateimpression,"
-                  " compression, lienversfichier, formatdoc, Importance from " TBL_IMPRESSIONS
+                  " compression, lienversfichier, formatdoc, Importance from " TBL_DOCSEXTERNES
                   " where idpat = " + QString::number(pat->id());
 #ifdef Q_OS_LINUX
     req += " and formatdoc <> '" VIDEO "'";
@@ -906,7 +911,7 @@ QJsonObject DataBase::loadDocExterneData(int idDoc)
     QString req = "Select idImpression, idUser, idPat, TypeDoc, SousTypeDoc,"
                   " Titre, TextEntete, TextCorps, TextOrigine, TextPied,"
                   " Dateimpression, compression, lienversfichier, ALD, UserEmetteur,"
-                  " formatdoc, Importance, idRefraction from " TBL_IMPRESSIONS
+                  " formatdoc, Importance, idRefraction from " TBL_DOCSEXTERNES
                   " where idimpression = " + QString::number(idDoc);
     QVariantList docdata = getFirstRecordFromStandardSelectSQL(req, ok);
     if (!ok || docdata.size()==0)
@@ -939,18 +944,18 @@ QJsonObject DataBase::loadDocExterneData(int idDoc)
 }
 
 /*
- * Documents
+ * Impressions
 */
-QList<Document*> DataBase::loadDocuments()
+QList<Impression*> DataBase::loadImpressions()
 {
-    QList<Document*> documents;
+    QList<Impression*> impressions;
     QString req = "Select idDocument, TextDocument, ResumeDocument, ConclusionDocument, idUser,"
-                  " DocPublic, Prescription, Editable, Medical from " TBL_COURRIERS
+                  " DocPublic, Prescription, Editable, Medical from " TBL_IMPRESSIONS
                   " WHERE (idUser = " + QString::number(getUserConnected()->id()) + " Or (DocPublic = 1 and iduser <> " + QString::number(getUserConnected()->id()) + "))"
                   " ORDER BY ResumeDocument";
     QList<QVariantList> doclist = StandardSelectSQL(req,ok);
     if(!ok || doclist.size()==0)
-        return documents;
+        return impressions;
     for (int i=0; i<doclist.size(); ++i)
     {
         QJsonObject jData{};
@@ -963,35 +968,35 @@ QList<Document*> DataBase::loadDocuments()
         jData["prescription"] = (doclist.at(i).at(6).toInt()==1);
         jData["editable"] = (doclist.at(i).at(7).toInt()==1);
         jData["medical"] = (doclist.at(i).at(8).toInt()==1);
-        Document *doc = new Document(jData);
+        Impression *doc = new Impression(jData);
         if (doc != Q_NULLPTR)
-            documents << doc;
+            impressions << doc;
     }
-    return documents;
+    return impressions;
 }
 
 /*
- * MetaDocuments
+ * Dossiers impression
 */
-QList<MetaDocument*> DataBase::loadMetaDocuments()
+QList<DossierImpression*> DataBase::loadDossiersImpressions()
 {
-    QList<MetaDocument*> metadocuments;
+    QList<DossierImpression*> dossiers;
     QString     req =  "SELECT ResumeMetaDocument, idMetaDocument, idUser, Public, TextMetaDocument"
-                       " FROM "  TBL_METADOCUMENTS
+                       " FROM "  TBL_DOSSIERSIMPRESSIONS
                        " WHERE idUser = " + QString::number(getUserConnected()->id());
                 req += " UNION \n";
-                req += "select ResumeMetaDocument, idMetaDocument, idUser, Public, TextMetaDocument from " TBL_METADOCUMENTS
+                req += "select ResumeMetaDocument, idMetaDocument, idUser, Public, TextMetaDocument from " TBL_DOSSIERSIMPRESSIONS
                        " where idMetaDocument not in\n"
-                       " (select met.idMetaDocument from " TBL_METADOCUMENTS " as met, "
+                       " (select met.idMetaDocument from " TBL_DOSSIERSIMPRESSIONS " as met, "
                        TBL_JOINTURESDOCS " as joi, "
-                       TBL_COURRIERS " as doc\n"
+                       TBL_IMPRESSIONS " as doc\n"
                        " where joi.idmetadocument = met.idMetaDocument\n"
                        " and joi.idDocument = doc.iddocument\n"
                        " and doc.docpublic is null)\n";
                 req += " ORDER BY ResumeMetaDocument;";
     QList<QVariantList> doclist = StandardSelectSQL(req,ok);
     if(!ok || doclist.size()==0)
-        return metadocuments;
+        return dossiers;
     for (int i=0; i<doclist.size(); ++i)
     {
         QJsonObject jData{};
@@ -1000,11 +1005,11 @@ QList<MetaDocument*> DataBase::loadMetaDocuments()
         jData["resume"] = doclist.at(i).at(0).toString();
         jData["iduser"] = doclist.at(i).at(2).toInt();
         jData["public"] = (doclist.at(i).at(3).toInt()==1);
-        MetaDocument *metadoc = new MetaDocument(jData);
+        DossierImpression *metadoc = new DossierImpression(jData);
         if (metadoc != Q_NULLPTR)
-            metadocuments << metadoc;
+            dossiers << metadoc;
     }
-    return metadocuments;
+    return dossiers;
 }
 
 
@@ -1090,29 +1095,30 @@ QList<Depense*> DataBase::loadDepensesByUser(int idUser)
                         " left join " TBL_FACTURES " fac on dep.idFacture = fac.idFacture"
                         " left join " TBL_RUBRIQUES2035 " rub on dep.RefFiscale = rub.RefFiscale"
                         " WHERE dep.idUser = " + QString::number(idUser);
+    //qDebug() << req;
     QList<QVariantList> deplist = StandardSelectSQL(req,ok);
     if(!ok || deplist.size()==0)
         return depenses;
     for (int i=0; i<deplist.size(); ++i)
     {
         QJsonObject jData{};
-        jData["iddepense"]      = deplist.at(i).at(0).toInt();
-        jData["iduser"]         = idUser;
-        jData["date"]           = deplist.at(i).at(1).toDate().toString("yyyy-MM-dd");
-        jData["reffiscale"]     = deplist.at(i).at(2).toString();
-        jData["objet"]          = deplist.at(i).at(3).toString();
-        jData["montant"]        = deplist.at(i).at(4).toDouble();
-        jData["famfiscale"]     = deplist.at(i).at(5).toString();
-        jData["monnaie"]        = deplist.at(i).at(6).toString();
-        jData["idrecette"]      = deplist.at(i).at(7).toInt();
-        jData["modepaiement"]   = deplist.at(i).at(8).toString();
-        jData["compte"]         = deplist.at(i).at(9).toInt();
-        jData["nocheque"]       = deplist.at(i).at(10).toInt();
-        jData["idfacture"]      = deplist.at(i).at(11).toInt();
-        jData["lienfacture"]    = deplist.at(i).at(12).toString();
-        jData["echeancier"]     = (deplist.at(i).at(13).toInt()==1);
-        jData["objetecheancier"]= deplist.at(i).at(14).toString();
-        jData["idrubrique"]     = deplist.at(i).at(15).toInt();
+        jData[CP_IDDEPENSE_DEPENSES]      = deplist.at(i).at(0).toInt();
+        jData[CP_IDUSER_DEPENSES]         = idUser;
+        jData[CP_DATE_DEPENSES]           = deplist.at(i).at(1).toDate().toString("yyyy-MM-dd");
+        jData[CP_REFFISCALE_DEPENSES]     = deplist.at(i).at(2).toString();
+        jData[CP_OBJET_DEPENSES]          = deplist.at(i).at(3).toString();
+        jData[CP_MONTANT_DEPENSES]        = deplist.at(i).at(4).toDouble();
+        jData[CP_FAMILLEFISCALE_DEPENSES] = deplist.at(i).at(5).toString();
+        jData[CP_MONNAIE_DEPENSES]        = deplist.at(i).at(6).toString();
+        jData[CP_IDRECETTE_DEPENSES]      = deplist.at(i).at(7).toInt();
+        jData[CP_MODEPAIEMENT_DEPENSES]   = deplist.at(i).at(8).toString();
+        jData[CP_COMPTE_DEPENSES]         = deplist.at(i).at(9).toInt();
+        jData[CP_NUMCHEQUE_DEPENSES]      = deplist.at(i).at(10).toInt();
+        jData[CP_IDFACTURE_DEPENSES]      = deplist.at(i).at(11).toInt();
+        jData["lienfacture"]              = deplist.at(i).at(12).toString();
+        jData["echeancier"]               = (deplist.at(i).at(13).toInt()==1);
+        jData["objetecheancier"]          = deplist.at(i).at(14).toString();
+        jData["idrubrique"]               = deplist.at(i).at(15).toInt();
         Depense *dep = new Depense(jData);
         if (dep != Q_NULLPTR)
             depenses << dep;
@@ -1141,7 +1147,7 @@ void DataBase::loadDepenseArchivee(Depense *dep)
 
 QStringList DataBase::ListeRubriquesFiscales()
 {
-    QStringList ListeRubriques;
+    QStringList ListeRubriques = QStringList();
     QString req = "SELECT reffiscale from " TBL_RUBRIQUES2035 " where FamFiscale is not null and famfiscale <> 'Prélèvement personnel' order by reffiscale";
     QList<QVariantList> rublist = StandardSelectSQL(req,ok);
     if(!ok || rublist.size()==0)
@@ -1766,7 +1772,6 @@ QList<PatientEnCours *> DataBase::loadPatientsenCoursAll()
     {
         QJsonObject jData = loadPatientEnCoursData(patlist.at(i));
         PatientEnCours *patient = new PatientEnCours(jData);
-
         if (patient != Q_NULLPTR)
             listpat << patient;
     }

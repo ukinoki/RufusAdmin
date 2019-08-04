@@ -93,8 +93,9 @@ void DocsExternes::addList(QList<DocExterne*> listdocs)
 void DocsExternes::initListeByPatient(Patient *pat)
 {
     m_patient = pat;
-    clearAll(m_docsexternes);
-    addList(DataBase::I()->loadDoscExternesByPatient(pat));
+    QList<DocExterne*> listdocs = DataBase::I()->loadDoscExternesByPatient(pat);
+    epurelist(m_docsexternes, &listdocs);
+    addList(listdocs);
 }
 
 void DocsExternes::actualise()
@@ -114,8 +115,8 @@ void DocsExternes::SupprimeDocumentExterne(DocExterne *doc)
 DocExterne* DocsExternes::CreationDocumentExterne(QHash<QString, QVariant> sets)
 {
     DocExterne *doc = Q_NULLPTR;
-    DataBase::I()->locktables(QStringList() << TBL_IMPRESSIONS);
-    bool result = DataBase::I()->InsertSQLByBinds(TBL_IMPRESSIONS, sets);
+    DataBase::I()->locktables(QStringList() << TBL_DOCSEXTERNES);
+    bool result = DataBase::I()->InsertSQLByBinds(TBL_DOCSEXTERNES, sets);
     if (!result)
     {
         UpMessageBox::Watch(Q_NULLPTR,tr("Impossible d'enregistrer ce document dans la base!"));
@@ -130,7 +131,7 @@ DocExterne* DocsExternes::CreationDocumentExterne(QHash<QString, QVariant> sets)
     else
     {
         bool ok;
-        iddoc = DataBase::I()->selectMaxFromTable(CP_IDIMPRESSION_IMPRESSIONS, TBL_IMPRESSIONS, ok, tr("Impossible de sélectionner les enregistrements"));
+        iddoc = DataBase::I()->selectMaxFromTable(CP_IDIMPRESSION_IMPRESSIONS, TBL_DOCSEXTERNES, ok, tr("Impossible de sélectionner les enregistrements"));
         if (!ok)
         {
             DataBase::I()->unlocktables();
