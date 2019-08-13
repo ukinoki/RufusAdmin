@@ -40,9 +40,11 @@ public:
                 ButtonCancel            = 0x8,
                 ButtonClose             = 0x10,
                 ButtonEdit              = 0x20,
-                ButtonRecord            = 0x40
+                ButtonRecord            = 0x40,
+                ButtonOups              = 0x80
                 };
     Q_DECLARE_FLAGS(Buttons, Button)
+    Q_ENUM(Button)
 
 private:
     bool            EnregPosition;
@@ -57,6 +59,7 @@ private:
     void            closeEvent(QCloseEvent *);
     void            UpdateTabOrder();
     double          stageheight = 35;
+    QObject*        mData;
 
 public:
     UpSmallButton   *OKButton, *CancelButton, *PrintButton, *SupprButton, *CloseButton, *EditButton, *RecordButton;
@@ -70,8 +73,9 @@ public:
     QHBoxLayout*    buttonslayout();
     QWidget*        widgetbuttons();
     void            setStageCount(double stage =  0);
+    QObject*        data() { return mData; }
+    void            setdata(QObject* data) { mData = data; }
 
-    QObject     *mData;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(UpDialog::Buttons)

@@ -1,28 +1,29 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "uppushbutton.h"
 #include <QApplication>
+#include "icons.h"
 
 UpPushButton::UpPushButton(QWidget *parent) : QPushButton(parent)
 {
     setAutoDefault(false);
     setFocusPolicy(Qt::StrongFocus);
-    gToolTipMsg = "";
+    m_tooltipmsg = "";
     installEventFilter(this);
     setFlat(false);
     setStyleSheet("UpPushButton {border: 1px solid gray; border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px;"
@@ -32,10 +33,12 @@ UpPushButton::UpPushButton(QWidget *parent) : QPushButton(parent)
                   " UpPushButton:focus {color : #000000; border: 2px solid rgb(164, 205, 255); border-radius: 5px;}"
                   " UpPushButton:pressed {color : gray; background-color: rgb(175, 175, 175);}"
                   " UpPushButton:!enabled {color : gray;}");
-    giconAnnul  .addFile(QStringLiteral("://Supprime.png"), QSize(30,30), QIcon::Normal, QIcon::Off);
-    giconOK     .addFile(QStringLiteral("://start.png"), QSize(), QIcon::Normal, QIcon::Off);
-    giconImprime.addFile(QStringLiteral("://Imprimer.png"), QSize(25,25), QIcon::Normal, QIcon::Off);
     setContextMenuPolicy(Qt::NoContextMenu);
+}
+
+UpPushButton::UpPushButton(QString text, QWidget *parent) : UpPushButton(parent)
+{
+    setText(text);
 }
 
 UpPushButton::~UpPushButton()
@@ -46,9 +49,9 @@ bool UpPushButton::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::Enter)
     {
-        if (gToolTipMsg != "")
+        if (m_tooltipmsg != "")
             if (isEnabled())
-                QToolTip::showText(cursor().pos(),gToolTipMsg);
+                QToolTip::showText(cursor().pos(),m_tooltipmsg);
     }
     if (event->type() == QEvent::KeyPress)
     {
@@ -64,7 +67,7 @@ bool UpPushButton::eventFilter(QObject *obj, QEvent *event)
 
 void UpPushButton::setImmediateToolTip(QString Msg)
 {
-    gToolTipMsg = Msg;
+    m_tooltipmsg = Msg;
 }
 
 void UpPushButton::setUpButtonStyle(enum StyleBouton Style, enum TailleBouton Taille)
@@ -86,18 +89,18 @@ void UpPushButton::setUpButtonStyle(enum StyleBouton Style, enum TailleBouton Ta
     switch (Style) {
     case OKBUTTON:
         setShortcut(QKeySequence("Meta+Return"));
-        setIcon(giconOK);
+        setIcon(Icons::icOK());
         setText("OK");
         move(parentWidget()->size().width()-width-8,parentWidget()->size().height()-60);
         break;
     case ANNULBUTTON:
         setShortcut(QKeySequence("F12"));
-        setIcon(giconAnnul);
+        setIcon(Icons::icAnnuler());
         setText(tr("Annuler"));
         move(parentWidget()->size().width()-width-width-8,parentWidget()->size().height()-60);
         break;
     case IMPRIMEBUTTON:
-        setIcon(giconImprime);
+        setIcon(Icons::icImprimer());
         setText(tr("Imprimer"));
         move(parentWidget()->size().width()-width-width-width-8,parentWidget()->size().height()-60);
         break;
@@ -107,12 +110,12 @@ void UpPushButton::setUpButtonStyle(enum StyleBouton Style, enum TailleBouton Ta
     }
 }
 
-void UpPushButton::setId(int idadef)
+void UpPushButton::setiD(int idadef)
 {
-    id = idadef;
+    m_id = idadef;
 }
 
-int UpPushButton::getId() const
+int UpPushButton::iD() const
 {
-    return id;
+    return m_id;
 }

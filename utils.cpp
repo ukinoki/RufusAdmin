@@ -34,6 +34,7 @@ QRegExp const Utils::rgx_IPV4_mask = QRegExp("(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[
 
 QRegExp const Utils::rgx_mail = QRegExp("^[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+@[A-Za1-z0-9_-]+.[A-Za-z0-9_-]{2,6}");
 QRegExp const Utils::rgx_mailexactmatch = QRegExp("^[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+@[A-Za1-z0-9_-]+.[A-Za-z0-9_-]{2,6}$");
+QRegExp const Utils::rgx_NNI = QRegExp("[12][0-9]{14}");
 
 QRegExp const Utils::rgx_adresse = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùÙçÇ'a-zA-ZŒœ0-9°, -]*");
 QRegExp const Utils::rgx_intitulecompta = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùÙçÇ'a-zA-ZŒœ0-9°, -/%]*");
@@ -42,7 +43,7 @@ QRegExp const Utils::rgx_ville = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôö�
 QRegExp const Utils::rgx_telephone = QRegExp("[0-9 ]*");
 
 QRegExp const Utils::rgx_tabac = QRegExp("[0-9]{2}");
-QRegExp const Utils::rgx_cotation = QRegExp("[xsA-Z0-9.+/]*");  // le x pour BZQKOO1x1.5 et le s pour Cs
+QRegExp const Utils::rgx_cotation = QRegExp("[a-zA-Z0-9.+/ ]*");
 
 QRegExp const Utils::rgx_recherche = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùÙçÇ'a-zA-Z %-]*");
 
@@ -74,12 +75,16 @@ void Utils::Pause(int msec)
  * Cette fonction va supprimer :
  * - les " ", "-" et "'" en début et fin du texte
  * - les " ", "-" et "'" en doublon dans le texte
+ * - les retour à la ligne en fin du texte
  * \param text le texte à nettoyer
- * \param end mettre false si on ne souhaite pas nettoyer la fin du texte
+ * \param end (true par défaut) mettre false si on ne souhaite pas nettoyer la fin du texte
+ * \param removereturnend (false par défaut) mettre true si on souhaite retirer les retours à la ligne à la fin du texte
  * \return le texte nettoyé
  */
 QString Utils::trim(QString text, bool end, bool removereturnend)
 {
+    if (text == "" || text == QString())
+        return "";
     QString textC = text;
     QChar c;
     while( textC.size() )                   // enlève les espaces, les tirets et les apostrophes du début
@@ -478,27 +483,55 @@ QString Utils::getIpAdress()
         if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
             IPadress = address.toString();
     return IPadress;
+
+    //autre méthode
+    /*
+    // use the first non-localhost IPv4 address
+    for (int i = 0; i < ipAddressesList.size(); ++i) {
+        if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
+            ipAddressesList.at(i).toIPv4Address()) {
+            ipAddress = ipAddressesList.at(i).toString();
+            break;
+        }
+    }
+    // if we did not find one, use IPv4 localhost
+    if (ipAddress.isEmpty())
+        ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
+    */
 }
 
 QString Utils::getMACAdress()
 {
-    QString localhostname =  QHostInfo::localHostName();
     QString IPadress = "";
     foreach (const QHostAddress &address, QNetworkInterface::allAddresses())
         if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
             IPadress = address.toString();
     QString MACAddress = "";
        QString localNetmask;
-       foreach (const QNetworkInterface& networkInterface, QNetworkInterface::allInterfaces()) {
-           foreach (const QNetworkAddressEntry& entry, networkInterface.addressEntries()) {
+       foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
+           foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
                if (entry.ip().toString() == IPadress) {
                    MACAddress = networkInterface.hardwareAddress();
                    break;
                }
            }
        }
-    //qDebug() << "MacAdress = " + MACAddress;
     return MACAddress;
+}
+
+QString Utils::getMacForIP(QString ipAddress)
+{
+    QString MAC;
+    QProcess process;
+    process.start(QString("arp -a %1").arg(ipAddress));
+    if(process.waitForFinished())
+    {
+        QString result = process.readAll();
+        QStringList list = result.split(QRegularExpression("\\s+"));
+        if(list.contains(ipAddress))
+            MAC = list.at(list.indexOf(ipAddress) + 1);
+    }
+    return MAC;
 }
 
 /*------------------------------------------------------------------------------------------------------------------------------------
@@ -715,6 +748,146 @@ QString Utils::ConvertitModePaiement(QString mode)
     else if (mode == "V")  mode = QObject::tr("Virement");
     else if (mode == "P")  mode = QObject::tr("Prélèvement");
     else if (mode == "C")  mode = QObject::tr("Chèque");
+    else if (mode == "G")  mode = QObject::tr("Acte gratuit");
+    else if (mode == "I")  mode = QObject::tr("Impayé");
     return mode;
 }
 
+void Utils::CalcStringValueSQL(QVariant &newvalue)
+{
+    newvalue = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : "'" + correctquoteSQL(newvalue.toString()) + "'");
+}
+
+void Utils::CalcintValueSQL(QVariant &newvalue)
+{
+    newvalue = ((newvalue == QVariant() || newvalue.toInt() == 0)? "null" : newvalue.toString());
+}
+
+void Utils::CalcdoubleValueSQL(QVariant &newvalue)
+{
+    newvalue = (newvalue == QVariant()? "null" : QString::number(newvalue.toDouble()));
+}
+
+void Utils::CalcDateValueSQL(QVariant &newvalue)
+{
+    newvalue = ((newvalue == QVariant() || !newvalue.toDate().isValid())? "null" : "'" + newvalue.toDate().toString("yyyy-MM-dd") + "'");
+}
+
+void Utils::CalcTimeValueSQL(QVariant &newvalue)
+{
+    newvalue = ((newvalue == QVariant() || !newvalue.toTime().isValid())? "null" : "'" + newvalue.toTime().toString("HH:mm:ss") + "'");
+}
+void Utils::CalcDateTimeValueSQL(QVariant &newvalue)
+{
+    newvalue = ((newvalue == QVariant() || !newvalue.toDateTime().isValid())? "null" : "'" + newvalue.toDateTime().toString("yyyy-MM-dd HH:mm:ss") + "'");
+}
+
+/*!
+ *  \brief Calcul de l'âge
+ *
+ *  Methode qui permet ????
+ *
+ *  \param datedenaissance : la date de naissance
+ *  \param Sexe : le sexe de la personne [""]
+ *  \param datedujour : la date du jour [Date du jour]
+ *
+ *  \return un object contenant :
+ * toString : une chaine de caractères ( ex: 2 ans 3 mois )
+ * annee : l'age brut de la personne
+ * mois :
+ * icone : l'icone à utiliser [man women, girl, boy, kid, baby]
+ * formule : une valeur parmi [l'enfant, la jeune, le jeune, madame, monsieur]
+ *
+ */
+QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance)
+{
+    return Utils::CalculAge(datedenaissance, "", QDate::currentDate());
+}
+QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance, QDate datedujour)
+{
+    return Utils::CalculAge(datedenaissance, "", datedujour);
+}
+QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance, QString Sexe, QDate datedujour)
+{
+    QMap<QString,QVariant>  Age;
+    int         AnneeNaiss, MoisNaiss, JourNaiss;
+    int         AnneeCurrent, MoisCurrent, JourCurrent;
+    int         AgeAnnee, AgeMois;
+    int         FormuleMoisJourNaissance, FormuleMoisJourAujourdhui;
+
+    AnneeNaiss                  = datedenaissance.toString("yyyy").toInt();
+    MoisNaiss                   = datedenaissance.toString("MM").toInt();
+    JourNaiss                   = datedenaissance.toString("dd").toInt();
+    AnneeCurrent                = datedujour.toString("yyyy").toInt();
+    MoisCurrent                 = datedujour.toString("MM").toInt();
+    JourCurrent                 = datedujour.toString("dd").toInt();
+    FormuleMoisJourNaissance    = (MoisNaiss*100) + JourNaiss;
+    FormuleMoisJourAujourdhui   = (MoisCurrent*100) + JourCurrent;
+    AgeAnnee                    = AnneeCurrent - AnneeNaiss;
+    AgeMois                     = MoisCurrent - MoisNaiss;
+    if (FormuleMoisJourAujourdhui < FormuleMoisJourNaissance)   AgeAnnee --;
+    if (JourNaiss > JourCurrent)                                AgeMois --;
+    if (AgeMois < 0)                                            AgeMois = AgeMois + 12;
+
+    Age["annee"] = AgeAnnee;
+    Age["mois"]  = AgeMois;
+
+    // On formate l'âge pour l'affichage
+    switch (AgeAnnee) {
+    case 0:
+        if (datedenaissance.daysTo(datedujour) > 31)
+            Age["toString"]               = QString::number(AgeMois) + " mois";
+        else
+            Age["toString"]               = QString::number(datedenaissance.daysTo(datedujour)) + " jours";
+        break;
+    case 1: case 2: case 3: case 4:
+        Age["toString"]                    = QString::number(AgeAnnee) + " an";
+        if (AgeAnnee > 1) Age["toString"]  = Age["toString"].toString() + "s";
+        if (AgeMois > 0)  Age["toString"]  = Age["toString"].toString() + " " + QString::number(AgeMois) + " mois";
+        break;
+    default:
+        Age["toString"]                    = QString::number(AgeAnnee) + " ans";
+        break;
+    }
+
+    // On cherche l'icone correspondant au mieux à la personne
+    QString img = "silhouette";
+    if (AgeAnnee < 2)                       img = "baby";
+    else if (AgeAnnee < 8)                  img = "kid";
+    else if (AgeAnnee < 16 && Sexe == "M")  img = "boy";
+    else if (AgeAnnee < 16 && Sexe == "F")  img = "girl";
+    else if (Sexe =="M")                    img = "man";
+    else if (Sexe =="F")                    img = "women";
+    Age["icone"] = img;
+
+    // On cherche la formule de polistesse correspondant au mieux à la personne
+    QString formule = "";
+    if (AgeAnnee < 11)                  formule = "l'enfant";
+    else if (AgeAnnee < 18) {
+        if (Sexe == "F")                formule = "la jeune";
+        if (Sexe == "M")                formule = "le jeune";
+    }
+    else {
+        if (Sexe == "F")                formule = "madame";
+        if (Sexe == "M")                formule = "monsieur";
+    }
+    Age["formule"] = formule;
+
+    return Age;
+}
+
+//! renvoie la valeur littérale d'un enum (à condition d'avoir placé la macro Q_ENUM(nomdelenum) dans la définition de l'enum
+//! utilisé comme ça
+//!    qDebug() << Utils::EnumDescription(QMetaEnum::fromType<nomdelenum>(), valeurdelenum);
+/*! ex
+ *     enum METIER {Ophtalmo, Orthoptiste, AutreSoignant, NonSoignant, SocieteComptable, NoMetier};    Q_ENUM(METIER) *
+ *     qDebug() << User::METIER;
+ * ->  0
+ *     qDebug() << Utils::EnumDescription(QMetaEnum::fromType<User::METIER>(), 0);
+ * ou  qDebug() << Utils::EnumDescription(QMetaEnum::fromType<User::METIER>(), User::Ophtalmo);
+ * ->  "User::Ophtalmo"
+ */
+QString Utils::EnumDescription(QMetaEnum metaEnum, int val)
+{
+    return metaEnum.valueToKey(val);
+}

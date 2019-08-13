@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("04-08-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("13-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -399,7 +399,7 @@ void RufusAdmin::AskAppareil()
     UpComboBox *upCombo = new UpComboBox();
     upCombo->insertItems(0,glistAppareils);
     upCombo->setFixedSize(260,32);
-    upCombo->setChampCorrespondant("NomAppareil");
+    upCombo->setchamp("NomAppareil");
     lay->addWidget(upCombo);
     gAskAppareil->dlglayout()->insertLayout(0,lay);
     gAskAppareil->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
@@ -911,7 +911,7 @@ void RufusAdmin::Remplir_Table()
 
         col++; //4                                                                    // chemin
         line4->setText(getDossierDocuments(listapps.at(i).at(2).toString()));
-        line4->setRowTable(i);
+        line4->setRow(i);
         line4->setFocusPolicy(Qt::NoFocus);
         line4->setStyleSheet("UpLineEdit {background-color:white; border: 0px solid rgb(150,150,150);border-radius: 0px;}"
                               "UpLineEdit:focus {border: 0px solid rgb(164, 205, 255);border-radius: 0px;}");
@@ -923,7 +923,7 @@ void RufusAdmin::Remplir_Table()
         QIcon ic;
         ic.addPixmap(pix);
         dossbouton->setIcon(ic);
-        dossbouton->setId(listapps.at(i).at(0).toInt());
+        dossbouton->setiD(listapps.at(i).at(0).toInt());
         dossbouton->setFixedSize(15,15);
         dossbouton->setFlat(true);
         dossbouton->setFocusPolicy(Qt::NoFocus);
@@ -1020,7 +1020,7 @@ void RufusAdmin::Slot_ChoixButtonFrame(int i)
 void RufusAdmin::Slot_ChoixDossierStockageApp()
 {
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
-    QString req = "select TitreExamen, NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->getId());
+    QString req = "select TitreExamen, NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->iD());
     QString exam = "";
     QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
     if (!ok)
@@ -1039,7 +1039,7 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
         QDir dockdir = dialog.directory();
         int row;
         UpLineEdit *line = Q_NULLPTR;
-        row = ui->AppareilsConnectesupTableWidget->findItems(QString::number(bout->getId()), Qt::MatchExactly).at(0)->row();
+        row = ui->AppareilsConnectesupTableWidget->findItems(QString::number(bout->iD()), Qt::MatchExactly).at(0)->row();
         line    = dynamic_cast<UpLineEdit*>(ui->AppareilsConnectesupTableWidget->cellWidget(row,4));
         if (line!=Q_NULLPTR)
             line->setText(dockdir.path());
@@ -1090,13 +1090,13 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
     if (line==Q_NULLPTR) return;
     if (!QDir(dir).exists() && dir != "")
     {
-        QString textline = line->getValeurAvant();
+        QString textline = line->valeuravant();
         UpMessageBox::Watch(this,tr("Repertoire invalide!"));
         line->setText(textline);
         return;
     }
     QString id;
-    id = ui->AppareilsConnectesupTableWidget->item(line->getRowTable(),0)->text();
+    id = ui->AppareilsConnectesupTableWidget->item(line->Row(),0)->text();
     QString req = "select NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + id;
     QString exam = "";
     QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver le nom de l'appareil"));
@@ -1210,7 +1210,7 @@ void RufusAdmin::Slot_CalcExporteDocs()
 {
     if (gMode == Distant)
         return;
-    QString totreq = "SELECT idimpression FROM " TBL_IMPRESSIONS " where jpg is not null or pdf is not null limit 1";
+    QString totreq = "SELECT idimpression FROM " TBL_DOCSEXTERNES " where jpg is not null or pdf is not null limit 1";
     //qDebug() << totreq;
     ui->ExportImagespushButton->setEnabled(db->StandardSelectSQL(totreq, ok).size()>0);
 }
@@ -1233,7 +1233,7 @@ void RufusAdmin::ExporteDocs()
         Message(msg, 3000, false);
         return;
     }
-    int total = db->StandardSelectSQL("SELECT idimpression FROM " TBL_IMPRESSIONS " where jpg is not null or pdf is not null",ok).size();
+    int total = db->StandardSelectSQL("SELECT idimpression FROM " TBL_DOCSEXTERNES " where jpg is not null or pdf is not null",ok).size();
     total +=    db->StandardSelectSQL("SELECT idFacture FROM " TBL_FACTURES " where jpg is not null or pdf is not null", ok).size();
     if (total>100)
     {
@@ -1277,7 +1277,7 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES JPG
     //-----------------------------------------------------------------------------------------------------------------------------------------
-    QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " TBL_IMPRESSIONS " where jpg is not null";
+    QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " TBL_DOCSEXTERNES " where jpg is not null";
     //qDebug() << req;
     QList<QVariantList> listexportjpg = db->StandardSelectSQL(req, ok );
     if (ok)
@@ -1289,7 +1289,7 @@ void RufusAdmin::ExporteDocs()
                 QString CheminFichier = NomDirStockageImagerie + DIR_IMAGES + listexportjpg.at(i).at(5).toString();
                 if (QFile(CheminFichier).exists())
                 {
-                    db->StandardSQL ("update " TBL_IMPRESSIONS " set jpg = null where idimpression = " + listexportjpg.at(i).at(0).toString() );
+                    db->StandardSQL ("update " TBL_DOCSEXTERNES " set jpg = null where idimpression = " + listexportjpg.at(i).at(0).toString() );
                     continue;
                 }
             }
@@ -1340,7 +1340,7 @@ void RufusAdmin::ExporteDocs()
             }
             else
                 return;
-            db->StandardSQL("update " TBL_IMPRESSIONS " set jpg = null,"
+            db->StandardSQL("update " TBL_DOCSEXTERNES " set jpg = null,"
                                                             " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
                             "' where idimpression = " + listexportjpg.at(i).at(0).toString());
             faits ++;
@@ -1361,7 +1361,7 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES PDF
     //-----------------------------------------------------------------------------------------------------------------------------------------
-    QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " TBL_IMPRESSIONS " where pdf is not null";
+    QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " TBL_DOCSEXTERNES " where pdf is not null";
     QList<QVariantList> listexportpdf = db->StandardSelectSQL(reqpdf, ok );
     if (ok)
         for (int i=0; i<listexportpdf.size(); i++)
@@ -1371,7 +1371,7 @@ void RufusAdmin::ExporteDocs()
                 QString CheminFichier = NomDirStockageImagerie + DIR_IMAGES + listexportpdf.at(i).at(5).toString();
                 if (QFile(CheminFichier).exists())
                 {
-                    db->StandardSQL ("update " TBL_IMPRESSIONS " set pdf = null where idimpression = " + listexportpdf.at(i).at(0).toString());
+                    db->StandardSQL ("update " TBL_DOCSEXTERNES " set pdf = null where idimpression = " + listexportpdf.at(i).at(0).toString());
                     continue;
                 }
             }
@@ -1414,7 +1414,7 @@ void RufusAdmin::ExporteDocs()
                         out << listexportpdf.at(i).at(4).toByteArray() ;
                     }
                 }
-                QString delreq = "delete from  " TBL_IMPRESSIONS " where idimpression = " + listexportpdf.at(i).at(0).toString();
+                QString delreq = "delete from  " TBL_DOCSEXTERNES " where idimpression = " + listexportpdf.at(i).at(0).toString();
                 //qDebug() << delreq;
                 db->StandardSQL (delreq);
                 delete document;
@@ -1431,7 +1431,7 @@ void RufusAdmin::ExporteDocs()
                               | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                               | QFileDevice::ReadUser   | QFileDevice::WriteUser);
             CC.close();
-            db->StandardSQL ("update " TBL_IMPRESSIONS " set pdf = null, compression = null,"
+            db->StandardSQL ("update " TBL_DOCSEXTERNES " set pdf = null, compression = null,"
                              " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
                              " where idimpression = " + listexportpdf.at(i).at(0).toString());
             faits ++;

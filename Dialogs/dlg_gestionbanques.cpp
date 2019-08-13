@@ -119,7 +119,7 @@ dlg_gestionbanques::~dlg_gestionbanques()
 void dlg_gestionbanques::AfficheBanque()
 {
     UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
-    int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
+    int idBanque = uptablebanq->item(lbl->Row(),0)->text().toInt();
     bool ok = true;
     QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << "NomBanque" << "idBanqueAbrege" << "idbanque",
                                                                     TBL_BANQUES, ok,
@@ -196,7 +196,7 @@ void dlg_gestionbanques::ModifBanque()
 void dlg_gestionbanques::SupprBanque()
 {
     UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
-    int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
+    int idBanque = uptablebanq->item(lbl->Row(),0)->text().toInt();
     UpMessageBox msgbox;
     UpSmallButton OKBouton(tr("Supprimer"));
     UpSmallButton NoBouton(tr("Annuler"));
@@ -282,7 +282,7 @@ void dlg_gestionbanques::ValideModifBanque()
     else if (gMode == Modif)
     {
         UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
-        int idBanque = uptablebanq->item(lbl->getRow(),0)->text().toInt();
+        int idBanque = uptablebanq->item(lbl->Row(),0)->text().toInt();
         bool ok = true;
         QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << "nombanque",
                                                                                              TBL_BANQUES, ok,

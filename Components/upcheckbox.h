@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef UPCHECKBOX_H
@@ -27,10 +27,11 @@ class UpCheckBox : public QCheckBox
     Q_OBJECT
 public:
     explicit UpCheckBox(QWidget *parent = Q_NULLPTR);
+    explicit UpCheckBox(QString text, QWidget *parent = Q_NULLPTR);
     ~UpCheckBox();
 
     void    setRowTable(int val);
-    int     getRowTable() const;
+    int     rowTable() const;
     void    setiD(int val);
     int     iD() const;
     void    setToggleable(bool val);
@@ -44,9 +45,9 @@ signals:
             // ce signal ne sera émis que si la propriété Toggleabble est true et permet de se départir des comportements implicites du signal toggled()
 
 private:
-    int     RowTable, gid;
-    bool    Toggable;
-    QString gToolTipMsg;
+    int     m_rowtable, m_id;
+    bool    m_toggleable;
+    QString m_tooltipmsg;
     bool    eventFilter(QObject *obj, QEvent *event)  ;
     void    AfficheToolTip();
 

@@ -31,24 +31,26 @@ public:
     explicit    UpSmallButton(QString text, QWidget *parent = Q_NULLPTR);
     explicit    UpSmallButton(QWidget *parent = Q_NULLPTR);
     ~UpSmallButton();
-    int         StyleBouton;
     enum        StyleBouton {BACKBUTTON, CALENDARBUTTON, CANCELBUTTON, CLOSEBUTTON, COPYBUTTON,
                              DONOTRECORDBUTTON, EDITBUTTON, HOMEBUTTON, LOUPEBUTTON, NOBUTTON, OUPSBUTTON, QWANTBUTTON, PRINTBUTTON ,RECEPTIONBUTTON, RECORDBUTTON, STARTBUTTON, SUPPRBUTTON};
+                Q_ENUM(StyleBouton)
     void        setUpButtonStyle(enum StyleBouton);
-    int         ButtonStyle();
-    void        setId(int);
-    int         getId();
+    StyleBouton m_style;
+    StyleBouton ButtonStyle();
+    void        setiD(int);
+    int         iD();
     void        setText(QString);
-    void        setLuggage(QVariant var);
-    QVariant    Luggage();
-    void        setImmediateToolTip(QString Msg);
+    void        setdata(QVariant var);
+    QVariant    data();
+    void        setImmediateToolTip(QString Msg, bool  affichettipmemesidisabled = false);
 
 private:
     bool        eventFilter(QObject *obj, QEvent *event)  ;
-    int         id;
-    QVariant    gLuggage;
+    int         m_id;
+    QVariant    m_luggage;
     void        AfficheToolTip();
-    QString     gToolTipMsg;
+    bool        AfficheToolTipMemeSiDisabled = false;
+    QString     m_tooltipmsg;
 
 signals:
     void        clicked(int a);

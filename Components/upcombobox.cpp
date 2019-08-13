@@ -1,38 +1,44 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upcombobox.h"
 
 UpComboBox::UpComboBox(QWidget *parent) : QComboBox (parent)
 {
-    ValeurAvant     = "";
-    ValeurApres     = "";
-    Champ           = "";
-    Table           = "";
-    id              = -1;
-    IndexParDefaut  = -1;
-    gToolTipMsg     = "";
+    m_valeuravant     = "";
+    m_valeurapres     = "";
+    m_champ           = "";
+    m_table           = "";
+    m_id              = -1;
+    m_indexpardefaut  = -1;
+    m_tooltipmsg     = "";
     setContextMenuPolicy(Qt::NoContextMenu);
     installEventFilter(this);
+    connect(this, QOverload<int>::of(&QComboBox::currentIndexChanged),  this, &UpComboBox::clearImmediateToolTip);
 }
 
 UpComboBox::~UpComboBox()
 {
 
+}
+
+void UpComboBox::clearImmediateToolTip()
+{
+    if (currentIndex()==-1) setImmediateToolTip("");
 }
 
 // ------------------------------------------------------------------------------------------
@@ -41,17 +47,17 @@ UpComboBox::~UpComboBox()
 bool UpComboBox::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::FocusIn)
-        setValeurAvant(currentText());
+        setvaleuravant(currentText());
     if (event->type() == QEvent::FocusOut)
     {
-        if (lineEdit()!=NULL)
+        if (lineEdit()!=Q_NULLPTR)
         {
             if (lineEdit()->text() != "")
             {
                 if (!lineEdit()->hasAcceptableInput())
                 {
                     QString ab = lineEdit()->text();
-                    setCurrentText(getValeurAvant());
+                    setCurrentText(valeuravant());
                     //QRegExpValidator const * reg = static_cast<QRegExpValidator const*>(lineEdit()->validator());
                     //UpMessageBox::Watch(this,reg->regExp().pattern() + "\n'" + ab + "'");
                 }
@@ -65,11 +71,11 @@ bool UpComboBox::eventFilter(QObject *obj, QEvent *event)
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         if (keyEvent->key() == Qt::Key_Delete)            // on tape SUPPR on remet à zero si on est à la fin du lineEdit
             if (lineEdit()->cursorPosition() == lineEdit()->text().length())
-                lineEdit()->setText(itemText(IndexParDefaut));
+                lineEdit()->setText(itemText(m_indexpardefaut));
         if (keyEvent->key() == Qt::Key_Escape)
-            if (currentText() != getValeurAvant())
+            if (currentText() != valeuravant())
             {
-                setCurrentText(getValeurAvant());
+                setCurrentText(valeuravant());
                 setCurrentIndex(findText(currentText()));
                 return true;
             }
@@ -82,8 +88,8 @@ bool UpComboBox::eventFilter(QObject *obj, QEvent *event)
     }
     if (event->type() == QEvent::Enter)
     {
-        if (gToolTipMsg != "" && isEnabled())
-            QToolTip::showText(cursor().pos(),gToolTipMsg);
+        if (m_tooltipmsg != "" && isEnabled())
+            QToolTip::showText(cursor().pos(),m_tooltipmsg);
     }
     return QWidget::eventFilter(obj, event);
 }
@@ -94,73 +100,73 @@ void UpComboBox::mouseDoubleClickEvent(QMouseEvent *)
 }
 
 
-void UpComboBox::setid(int valprec)
+void UpComboBox::setiD(int valprec)
 {
-    id = valprec;
+    m_id = valprec;
 }
 
-int UpComboBox::getid() const
+int UpComboBox::iD() const
 {
-    return id;
+    return m_id;
 }
 
 void UpComboBox::setIndexParDefaut(int defaut)
 {
     if (defaut < count())
-        IndexParDefaut = defaut;
+        m_indexpardefaut = defaut;
     else
-        IndexParDefaut = 0;
+        m_indexpardefaut = 0;
 }
 
-int UpComboBox::getIndexParDefaut() const
+int UpComboBox::IndexParDefaut() const
 {
-    if (IndexParDefaut < count())
-        return IndexParDefaut;
+    if (m_indexpardefaut < count())
+        return m_indexpardefaut;
     else return 0;
 }
 
-void UpComboBox::setValeurAvant(QString valprec)
+void UpComboBox::setvaleuravant(QString valprec)
 {
-    ValeurAvant = valprec;
+    m_valeuravant = valprec;
 }
 
-QString UpComboBox::getValeurAvant() const
+QString UpComboBox::valeuravant() const
 {
-    return ValeurAvant;
+    return m_valeuravant;
 }
 
-void UpComboBox::setValeurApres(QString valpost)
+void UpComboBox::setvaleurapres(QString valpost)
 {
-    ValeurAvant = valpost;
+    m_valeuravant = valpost;
 }
 
-QString UpComboBox::getValeurApres() const
+QString UpComboBox::valeurapres() const
 {
-    return ValeurApres;
+    return m_valeurapres;
 }
 
-void UpComboBox::setChampCorrespondant(QString champcorrespondant)
+void UpComboBox::setchamp(QString champcorrespondant)
 {
-    Champ = champcorrespondant;
+    m_champ = champcorrespondant;
 }
 
-QString UpComboBox::getChampCorrespondant() const
+QString UpComboBox::champ() const
 {
-    return Champ;
+    return m_champ;
 }
 
-void UpComboBox::setTableCorrespondant(QString tablecorrespondant)
+void UpComboBox::setTable(QString tablecorrespondant)
 {
-    Table = tablecorrespondant;
+    m_table = tablecorrespondant;
 }
 
-QString UpComboBox::getTableCorrespondant() const
+QString UpComboBox::table() const
 {
-    return Table;
+    return m_table;
 }
 
 void UpComboBox::setImmediateToolTip(QString Msg)
 {
-    gToolTipMsg = Msg;
+    m_tooltipmsg = Msg;
 }
 

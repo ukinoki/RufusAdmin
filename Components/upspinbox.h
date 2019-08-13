@@ -15,30 +15,31 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UPTOOLBAR_H
-#define UPTOOLBAR_H
+#ifndef UPSPINBOX_H
+#define UPSPINBOX_H
 
-#include <QToolBar>
-#include <QEvent>
+#include <QSpinBox>
+#include <QKeyEvent>
+#include <cmath>            // sert à introduire la fonction floor()
 
-class UpToolBar : public QToolBar
+class UpSpinBox : public QSpinBox
 {
     Q_OBJECT
+
 public:
-    explicit    UpToolBar(bool AvecFinDebut = true, bool AvecReload = false, QWidget *parent = Q_NULLPTR);
-    ~UpToolBar();
-    QAction*            First();
-    QAction*            Last();
-    QAction*            Next();
-    QAction*            Prec();
-    QAction*            Reload();
-    QString             choix();
+    explicit        UpSpinBox(QWidget *parent = Q_NULLPTR);
+    ~UpSpinBox();
+    void            setvaleuravant(int ValPrec);
+    int             valeuravant() const;
+    enum UpDown     {Up,Down};      Q_ENUM(UpDown)
+    void            setAutorCorrigeAxe(bool);
+    void            CorrigeAxe(int UpDown);
+
 private:
-    QString             action;
-    QAction             *debut, *prec, *suiv, *fin, *reload;
-    void                TBChoix(QAction *choix);
-signals:
-    void                TBSignal();
+    int             m_valeuravant;
+    bool            eventFilter(QObject *, QEvent *);
+    bool            gCorrigeAxe;
+
 };
 
-#endif // UPTOOLBAR_H
+#endif // UPSPINBOX_H

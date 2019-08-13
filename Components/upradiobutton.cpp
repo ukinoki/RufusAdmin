@@ -1,18 +1,18 @@
 /* (C) 2018 LAINE SERGE
-This file is part of RufusAdmin.
+This file is part of RufusAdmin or Rufus.
 
-RufusAdmin is free software: you can redistribute it and/or modify
+RufusAdmin and Rufus are free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License,
 or any later version.
 
-RufusAdmin is distributed in the hope that it will be useful,
+RufusAdmin and Rufus are distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
+along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upradiobutton.h"
@@ -21,13 +21,23 @@ UpRadioButton::UpRadioButton(QWidget *parent) : QRadioButton(parent)
 {
     installEventFilter(this);
     setContextMenuPolicy(Qt::NoContextMenu);
-    gid          = -1;
-    Toggable  = true;
+    m_id         = -1;
+    m_toggleable    = true;
+    m_item    = Q_NULLPTR;
 }
+
+UpRadioButton::UpRadioButton(const QString Title, QWidget *parent) : QRadioButton(Title, parent)
+{
+    installEventFilter(this);
+    setContextMenuPolicy(Qt::NoContextMenu);
+    m_id          = -1;
+    m_toggleable  = true;
+}
+
 void UpRadioButton::AfficheToolTip()
 {
-    if (gToolTipMsg != "" && isEnabled())
-        QToolTip::showText(cursor().pos(),gToolTipMsg);
+    if (m_tooltipmsg != "" && isEnabled())
+        QToolTip::showText(cursor().pos(),m_tooltipmsg);
 }
 
 bool UpRadioButton::eventFilter(QObject *obj, QEvent *event)
@@ -47,21 +57,30 @@ bool UpRadioButton::eventFilter(QObject *obj, QEvent *event)
 
 void UpRadioButton::setImmediateToolTip(QString Msg)
 {
-    gToolTipMsg = Msg;
+    m_tooltipmsg = Msg;
 }
 void UpRadioButton::setToggleable(bool val)
 {
-    Toggable = val;
+    m_toggleable = val;
 }
 bool UpRadioButton::Toggleable() const
 {
-    return Toggable;
+    return m_toggleable;
 }
 void UpRadioButton::setiD(int val)
 {
-    gid          = val;
+    m_id          = val;
 }
 int UpRadioButton::iD() const
 {
-    return gid;
+    return m_id;
+}
+
+void UpRadioButton::setitem(Item* item)
+{
+    m_item = item;
+}
+Item* UpRadioButton::item()
+{
+    return m_item;
 }

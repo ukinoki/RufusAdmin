@@ -28,42 +28,35 @@ class UpLineEdit : public QLineEdit
 {
     Q_OBJECT
 public:
-    explicit UpLineEdit(QWidget *parent = Q_NULLPTR);
+    explicit    UpLineEdit(QWidget *parent = Q_NULLPTR);
     ~UpLineEdit();
-    void        setCanDepart(bool OK);
-    bool        getCanDepart() const;
-    void        setRowTable(int val);
-    int         getRowTable() const;
-    void        setId(int id);
-    int         getId();
-    int         getColumnTable() const;
-    void        setColumnTable(int val);
-    void        setData(QVariant data);
-    QVariant    getData();
-    void        setPeutEtreVide(bool);
-    bool        getPeutEtreVide();
-    void        setValeurAvant(QString valprec);
-    QString     getValeurAvant() const;
-    void        setValeurApres(QString valpost);
-    QString     getValeurApres() const;
-    void        setChampCorrespondant(QString champcorrespondant);
-    QString     getChampCorrespondant() const;
-    void        setTableCorrespondant(QString tablecorrespondant);
-    QString     getTableCorrespondant() const;
+    void        setRow(int val);
+    int         Row() const;
+    void        setiD(int m_id);
+    int         iD();
+    int         Column() const;
+    void        setColumn(int val);
+    void        setdatas(QVariant data);
+    QVariant    datas();
+    void        setvaleuravant(QString valprec);
+    QString     valeuravant() const;
+    void        setvaleurapres(QString valpost);
+    QString     valeurapres() const;
+    void        setchamp(QString champcorrespondant);
+    QString     champ() const;
+    void        settable(QString tablecorrespondant);
+    QString     table() const;
     void        setImmediateToolTip(QString Msg);
 
 private:
-    QString     gToolTipMsg;
+    QString     m_tooltipmsg;
     bool        eventFilter(QObject *obj, QEvent *event)  ;
-    bool        CanDepart, PeutEtreVide;
-    int         RowTable, ColumnTable, id;
-    QString     ValeurAvant, ValeurApres, Champ, Table;
-    QVariant    linedata;
-    void        ReemitTextEdited();
+    int         m_row, m_col, m_id;
+    QString     m_valeuravant, m_valeurapres, m_champ, m_table;
+    QVariant    m_datas;
     void        AfficheToolTip();
 
 signals:
-    void        upTextEdited(QString texte, int row, int col);
     void        TextModified(QString);
     void        mouseEnter(int row);
     void        mouseRelease(int row);

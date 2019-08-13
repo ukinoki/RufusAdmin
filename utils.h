@@ -23,6 +23,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QHostAddress>
 #include <QNetworkInterface>
 #include <QHostInfo>
+#include <QMetaEnum>
+#include <QProcess>
 #include <cmath>
 
 #include "uplineedit.h"
@@ -51,6 +53,7 @@ public:
 
     static QRegExp const rgx_mail;
     static QRegExp const rgx_mailexactmatch;
+    static QRegExp const rgx_NNI;
 
     static QRegExp const rgx_adresse;
     static QRegExp const rgx_intitulecompta;
@@ -84,9 +87,10 @@ public:
     static QByteArray               IntToArray(int source);
     static QString                  getIpAdress();
     static QString                  getMACAdress();
+    static QString                  getMacForIP(QString ipAddress);
     static bool                     VerifMDP(QString MDP, QString Msg, bool mdpverified=false);
 
-    //!Fichiers
+    //! Fichiers
     static bool                     CompressFileJPG(QString nomfile, QString Dirprov, QDate datetransfert = QDate::currentDate());
     static QMap<QString, qint64>    dir_size(const QString DirPath);
     static QString                  getExpressionSize(qint64 size);                 //! concertit en Go, To la taille en Mo du qint64 passé en paramètre
@@ -94,17 +98,29 @@ public:
     static void                     cleanfolder(QString path);
     static double                   mmToInches(double mm);
 
-    //!refraction
+    //! refraction
     static QString                  CalculeFormule(QMap<QString,QVariant>  Donnees,
                                                   QString Cote);                   //! calcule la forumle de réfraction à partir des data sphere, cylindre, axe, addVP
     static QString                  PrefixePlus(QString);                          //! convertit en QString signé + ou - les valeurs QDouble de dioptries
 
-    //!SQL
+    //! SQL
     static QString                  correctquoteSQL(QString text);
     static QStringList              DecomposeScriptSQL(QString nomficscript);
-
     static QString                  ConvertitModePaiement(QString mode);            // convertit en clair les abréviations utilisées dans la compta pour les modes de paiement (B= carte de crédit, E = Espèces...etc...)
+    static void                     CalcStringValueSQL(QVariant &newvalue);         // convertit un Qvariant en valeur string SQL équivalente
+    static void                     CalcintValueSQL(QVariant &newvalue);            // convertit un Qvariant en valeur int SQL équivalente
+    static void                     CalcdoubleValueSQL(QVariant &newvalue);         // convertit un Qvariant en valeur decimal SQL équivalente
+    static void                     CalcDateValueSQL(QVariant &newvalue);           // convertit un Qvariant en valeur date SQL équivalente
+    static void                     CalcTimeValueSQL(QVariant &newvalue);           // convertit un Qvariant en valeur time SQL équivalente
+    static void                     CalcDateTimeValueSQL(QVariant &newvalue);       // convertit un Qvariant en valeur datetime SQL équivalente
 
+    //! Calcule âge
+    static QMap<QString,QVariant> CalculAge(QDate datedenaissance);
+    static QMap<QString,QVariant> CalculAge(QDate datedenaissance, QDate datedujour);
+    static QMap<QString,QVariant> CalculAge(QDate datedenaissance, QString Sexe, QDate datedujour = QDate::currentDate());
+
+    //! renvoie la valeur littérale d'un enum (à condition d'avoir placé la macro Q_ENUM(nomdelenum) dans la définition de l'enum
+    static QString EnumDescription(QMetaEnum metaEnum, int val);
 };
 
 #endif // UTILS_H

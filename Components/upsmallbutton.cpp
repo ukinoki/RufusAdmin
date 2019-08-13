@@ -28,9 +28,9 @@ UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
     setFlat(true);
     setFocusPolicy(Qt::NoFocus);
 
-    StyleBouton         = NOBUTTON;
-    gLuggage            = -1;
-    gToolTipMsg         = "";
+    m_style             = NOBUTTON;
+    m_luggage            = -1;
+    m_tooltipmsg         = "";
     setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
         "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
         "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
@@ -46,13 +46,14 @@ UpSmallButton::~UpSmallButton()
 
 void UpSmallButton::AfficheToolTip()
 {
-    if (gToolTipMsg != "" && isEnabled())
-        QToolTip::showText(cursor().pos(),gToolTipMsg);
+    if (m_tooltipmsg != "" && (isEnabled() || AfficheToolTipMemeSiDisabled))
+        QToolTip::showText(cursor().pos(),m_tooltipmsg);
 }
 
-void UpSmallButton::setImmediateToolTip(QString Msg)
+void UpSmallButton::setImmediateToolTip(QString Msg, bool affichettipmemesidisabled)
 {
-    gToolTipMsg = Msg;
+    m_tooltipmsg = Msg;
+    AfficheToolTipMemeSiDisabled = affichettipmemesidisabled;
 }
 
 void UpSmallButton::setUpButtonStyle(enum StyleBouton Style)
@@ -76,7 +77,7 @@ void UpSmallButton::setUpButtonStyle(enum StyleBouton Style)
     case SUPPRBUTTON:           setIcon( Icons::icPoubelle() );     break;
     default:                                                        break;
     }
-    StyleBouton = Style;
+    m_style = Style;
     setCursor(Qt::PointingHandCursor);
     if (Style==CANCELBUTTON)
         setIconSize(QSize(25,25));
@@ -100,29 +101,29 @@ void UpSmallButton::setText(QString txt)
         "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
 }
 
-void UpSmallButton::setLuggage(QVariant var)
+void UpSmallButton::setdata(QVariant var)
 {
-    gLuggage = var;
+    m_luggage = var;
 }
 
-QVariant UpSmallButton::Luggage()
+QVariant UpSmallButton::data()
 {
-    return gLuggage;
+    return m_luggage;
 }
 
-void UpSmallButton::setId(int idbut)
+void UpSmallButton::setiD(int idbut)
 {
-    id  = idbut;
+    m_id  = idbut;
 }
 
-int UpSmallButton::getId()
+int UpSmallButton::iD()
 {
-    return id;
+    return m_id;
 }
 
-int UpSmallButton::ButtonStyle()
+UpSmallButton::StyleBouton UpSmallButton::ButtonStyle()
 {
-    return StyleBouton;
+    return m_style;
 }
 
 bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
@@ -205,9 +206,9 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
         if (isEnabled())
         {
             if (ButtonStyle() == PRINTBUTTON)
-                emit clicked(Luggage());
+                emit clicked(data());
             else
-                emit clicked(getId());
+                emit clicked(iD());
         }
     }
     if (event->type() == QEvent::KeyRelease)

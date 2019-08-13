@@ -19,19 +19,15 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 UpLineEdit::UpLineEdit(QWidget *parent) : QLineEdit(parent)
 {
-    CanDepart       = true;
-    PeutEtreVide    = true;
-    RowTable        = -1;
-    ColumnTable     = -1;
-    id              = -1;
-    ValeurAvant     = "";
-    ValeurApres     = "";
-    Champ           = "";
-    Table           = "";
-    linedata        = QVariant();
+    m_row        = -1;
+    m_col     = -1;
+    m_id              = -1;
+    m_valeuravant     = "";
+    m_valeurapres     = "";
+    m_champ           = "";
+    m_table           = "";
+    m_datas        = QVariant();
     installEventFilter(this);
-    connect(this, &QLineEdit::textEdited,       this, &UpLineEdit::ReemitTextEdited);
-    // connect(this, &QLineEdit::inputRejected,    this, [=] {QSound::play(NOM_ALARME);}); le signal inpuRejected n'est pas reconnu par osx...
     setContextMenuPolicy(Qt::NoContextMenu);
 }
 
@@ -49,144 +45,120 @@ bool UpLineEdit::eventFilter(QObject *obj, QEvent *event)
         return true;
     }
     if (event->type() == QEvent::FocusIn)
-        setValeurAvant(text());
+        setvaleuravant(text());
     if (event->type() == QEvent::FocusOut)
     {
-        if (text() != ValeurAvant)
+        if (text() != m_valeuravant)
             emit TextModified(text());
         const QDoubleValidator *val= dynamic_cast<const QDoubleValidator*>(this->validator());
         if (val)
-            if (text() != ValeurAvant)
+            if (text() != m_valeuravant)
                 setText(QLocale().toString(QLocale().toDouble(text()),'f',2));
     }
     return QWidget::eventFilter(obj, event);
 }
 void UpLineEdit::enterEvent(QEvent *)
 {
-    if (RowTable > -1)
-        emit mouseEnter(RowTable);
+    if (m_row > -1)
+        emit mouseEnter(m_row);
 }
 
 void UpLineEdit::mouseReleaseEvent(QMouseEvent *)
 {
-    if (RowTable > -1)
-        emit mouseRelease(RowTable);
+    if (m_row > -1)
+        emit mouseRelease(m_row);
 }
 
 void UpLineEdit::mouseDoubleClickEvent(QMouseEvent *)
 {
-    if (RowTable > -1)
-        emit mouseDoubleClick(RowTable);
+    if (m_row > -1)
+        emit mouseDoubleClick(m_row);
 }
 
 void UpLineEdit::AfficheToolTip()
 {
-    if (gToolTipMsg != "" && isEnabled())
-        QToolTip::showText(cursor().pos(),gToolTipMsg);
+    if (m_tooltipmsg != "" && isEnabled())
+        QToolTip::showText(cursor().pos(),m_tooltipmsg);
 }
 
 void UpLineEdit::setImmediateToolTip(QString Msg)
 {
-    gToolTipMsg = Msg;
+    m_tooltipmsg = Msg;
 }
 
-void UpLineEdit::setCanDepart(bool OK)
+void UpLineEdit::setdatas(QVariant data)
 {
-    CanDepart = OK;
+    m_datas = data;
 }
 
-bool UpLineEdit::getCanDepart() const
+QVariant UpLineEdit::datas()
 {
-    return CanDepart;
+    return m_datas;
 }
 
-void UpLineEdit::setData(QVariant data)
+void UpLineEdit::setiD(int Id)
 {
-    linedata = data;
+    m_id = Id;
+}
+int UpLineEdit::iD()
+{
+    return m_id;
 }
 
-QVariant UpLineEdit::getData()
+void UpLineEdit::setRow(int val)
 {
-    return linedata;
+    m_row = val;
+}
+int UpLineEdit::Row() const
+{
+    return m_row;
 }
 
-void UpLineEdit::setPeutEtreVide(bool OK)
+void UpLineEdit::setColumn(int val)
 {
-    PeutEtreVide = OK;
+    m_col = val;
+}
+int UpLineEdit::Column() const
+{
+    return m_col;
+}
+void UpLineEdit::setvaleuravant(QString valprec)
+{
+    m_valeuravant = valprec;
 }
 
-bool UpLineEdit::getPeutEtreVide()
+QString UpLineEdit::valeuravant() const
 {
-    return PeutEtreVide;
+    return m_valeuravant;
 }
 
-void UpLineEdit::setId(int Id)
+void UpLineEdit::setvaleurapres(QString valpost)
 {
-    id = Id;
-}
-int UpLineEdit::getId()
-{
-    return id;
+    m_valeurapres = valpost;
 }
 
-void UpLineEdit::setRowTable(int val)
+QString UpLineEdit::valeurapres() const
 {
-    RowTable = val;
-}
-int UpLineEdit::getRowTable() const
-{
-    return RowTable;
+    return m_valeurapres;
 }
 
-void UpLineEdit::setColumnTable(int val)
+void UpLineEdit::setchamp(QString champcorrespondant)
 {
-    ColumnTable = val;
-}
-int UpLineEdit::getColumnTable() const
-{
-    return ColumnTable;
-}
-void UpLineEdit::setValeurAvant(QString valprec)
-{
-    ValeurAvant = valprec;
+    m_champ = champcorrespondant;
 }
 
-QString UpLineEdit::getValeurAvant() const
+QString UpLineEdit::champ() const
 {
-    return ValeurAvant;
+    return m_champ;
 }
 
-void UpLineEdit::setValeurApres(QString valpost)
+void UpLineEdit::settable(QString tablecorrespondant)
 {
-    ValeurApres = valpost;
+    m_table = tablecorrespondant;
 }
 
-QString UpLineEdit::getValeurApres() const
+QString UpLineEdit::table() const
 {
-    return ValeurApres;
+    return m_table;
 }
 
-void UpLineEdit::setChampCorrespondant(QString champcorrespondant)
-{
-    Champ = champcorrespondant;
-}
-
-QString UpLineEdit::getChampCorrespondant() const
-{
-    return Champ;
-}
-
-void UpLineEdit::setTableCorrespondant(QString tablecorrespondant)
-{
-    Table = tablecorrespondant;
-}
-
-QString UpLineEdit::getTableCorrespondant() const
-{
-    return Table;
-}
-
-void UpLineEdit::ReemitTextEdited()
-{
-    emit upTextEdited(text(), RowTable, ColumnTable);
-}
