@@ -67,8 +67,9 @@ public:
     bool                    isMDPverified();
 
 private:
-    bool                    MDPverified;
-    UserMode                UsrMode;
+    DataBase                *db;
+    bool                    m_MDPverified;
+    UserMode                m_usermode;
     bool                    ophtalmo;
     bool                    orthoptist;
     bool                    autresoignant;
@@ -85,19 +86,17 @@ private:
     bool                    respliberal;
     bool                    soigntnonrplct;
 
-    bool                    ok;
+    bool                    m_ok;
 
     dlg_gestioncomptes      *Dlg_GestComptes;
-    UpDialog                *gAsk;
-    DataBase                *db;
-    QBrush                  gcolor;
-    int                     gMode;
-    int                     gidUserDepart;
-    int                     gidLieu;
+    UpDialog                *dlg_ask;
+    QBrush                  m_color;
+    Mode                    m_mode;
+    int                     m_iduserdepart;
+    int                     m_idlieu;
     User                    *m_userencours;
-    QString                 gLoginupLineEdit, gMDPupLineEdit, gConfirmMDPupLineEdit;
-    QString                 gLibActiv, gNoLibActiv;
-    QString                 gNouvMDP, gAncMDP, gConfirmMDP;
+    QString                 m_loginledit, m_MDPledit, m_confirmMDPledit;
+    QString                 m_nouvMDP, m_ancMDP, m_confirmMDP;
     QStringList             gListBanques;
     UpDialog                *gAskMDP;
     void                    ActualiseRsgnmtBanque(bool soccomptable);
@@ -107,7 +106,7 @@ private:
     void                    CalcListitemsEmployeurcomboBox(int iduser);
     void                    DefinitLesVariables();
     bool                    ExisteEmployeur(int iduser);
-    void                    RemplirTableWidget(int iduser);
+    void                    RemplirTableWidget();
     void                    ReconstruitListeLieuxExercice();
     bool                    VerifFiche();
 

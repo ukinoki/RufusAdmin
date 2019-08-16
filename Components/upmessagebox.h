@@ -41,8 +41,8 @@ public:
     void            addButton(UpSmallButton *button, enum UpSmallButton::StyleBouton);
     void            addButton(UpPushButton *button);
     void            removeButton(UpSmallButton *);
-    UpSmallButton*  clickedButton();
-    UpPushButton*   clickedpushbutton();
+    UpSmallButton*  clickedButton() const;
+    UpPushButton*   clickedpushbutton() const;
     void            setIcon(enum Icon icn);
     void            setIconPixmap(QPixmap);
     void            setText(QString);
@@ -50,11 +50,11 @@ public:
     void            setDefaultButton(QPushButton*);
 
 private:
-    UpLabel         *lblIcon, *Textedt, *InfoLabel;
-    QHBoxLayout     *infolayout;
-    QVBoxLayout     *textlayout;
-    UpSmallButton   *ReponsSmallButton;
-    UpPushButton    *ReponsPushButton;
+    UpLabel         *wdg_iconlbl, *wdg_texteditlbl, *wdg_infolbl;
+    QHBoxLayout     *wdg_infolayout;
+    QVBoxLayout     *wdg_textlayout;
+    UpSmallButton   *wdg_ReponsSmallButton;
+    UpPushButton    *wdg_ReponsPushButton;
     void            Repons(QPushButton *butt);
 };
 

@@ -38,7 +38,7 @@ public:
 private:
     int             m_valeuravant;
     bool            eventFilter(QObject *, QEvent *);
-    bool            gCorrigeAxe;
+    bool            m_corrigeaxe;
 
 };
 

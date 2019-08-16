@@ -51,12 +51,12 @@ private:
     void                DeplaceVersRow(int id, int anc, int nouv);
     void                RecalculeLesRows();
     void                RemplirTableWidget();
-    UpCheckBox*         UpchkFromTableW(QTableWidget*, int row, int col);
+    UpCheckBox*         UpchkFromTableW(QTableWidget*, int row, int col) const;
     void                SupprimMotif();
     void                CreeMotif();
-    WidgetButtonFrame   *widgButtons;
-    QMap<int,Motif*>    *m_motifs;
-    Motif*              getMotifFromRow(int row);
+    WidgetButtonFrame   *wdg_buttonframe;
+    QMap<int,Motif*>    *map_motifs;
+    Motif*              getMotifFromRow(int row) const;
     void                SetMotifToRow(Motif *mtf, int row);
 
 private slots:

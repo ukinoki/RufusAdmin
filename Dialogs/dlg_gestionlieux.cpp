@@ -26,26 +26,26 @@ dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
     AjouteLayButtons(UpDialog::ButtonClose);
     connect(CloseButton, SIGNAL(clicked(bool)), this, SLOT(Slot_EnregLieux()));
 
-     tabLM = new QTableView(this);
-    Adressuplbl = new UpLabel();
-    Adressuplbl->setFixedWidth(240);
+     wdg_bigtable = new QTableView(this);
+    wdg_adresselbl = new UpLabel();
+    wdg_adresselbl->setFixedWidth(240);
 
     ReconstruitModel();
-    widg = new WidgetButtonFrame(tabLM);
-    widg->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
-    connect(tabLM->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
-    tabLM->selectRow(0);
+    wdg_buttonframe = new WidgetButtonFrame(wdg_bigtable);
+    wdg_buttonframe->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
+    connect(wdg_bigtable->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
+    wdg_bigtable->selectRow(0);
 
     QVBoxLayout *vlay   = new QVBoxLayout();
     QHBoxLayout *hlay   = new QHBoxLayout();
-    vlay    ->addWidget(Adressuplbl);
+    vlay    ->addWidget(wdg_adresselbl);
     vlay    ->addSpacerItem(new QSpacerItem(5,5,QSizePolicy::Expanding,QSizePolicy::Expanding));
-    hlay    ->addWidget(widg->widgButtonParent());
+    hlay    ->addWidget(wdg_buttonframe->widgButtonParent());
     hlay    ->addLayout(vlay);
     dlglayout()     ->insertLayout(0,hlay);
     dlglayout()     ->setSizeConstraint(QLayout::SetFixedSize);
 
-    connect(widg,                       SIGNAL(choix(int)),                                 this,   SLOT(Slot_ChoixButtonFrame(int)));
+    connect(wdg_buttonframe,                       SIGNAL(choix(int)),                                 this,   SLOT(Slot_ChoixButtonFrame(int)));
 }
 
 dlg_GestionLieux::~dlg_GestionLieux()
@@ -58,7 +58,7 @@ void dlg_GestionLieux::Slot_AfficheDetails(QModelIndex idx, QModelIndex)
     QString data ("");
     for (int i=2; i<9; i++)
     {
-        QString datasuiv = tabModel->itemData(tabModel->index(row,i)).value(0).toString();
+        QString datasuiv = m_model->itemData(m_model->index(row,i)).value(0).toString();
         switch (i) {
         case 2:
         case 3:
@@ -73,7 +73,7 @@ void dlg_GestionLieux::Slot_AfficheDetails(QModelIndex idx, QModelIndex)
             if (data != "")
                 if (datasuiv != "")
                 {
-                    if (tabModel->itemData(tabModel->index(row,5)).value(0).toString() != "")
+                    if (m_model->itemData(m_model->index(row,5)).value(0).toString() != "")
                         data += " ";
                     else
                         data += "\n";
@@ -98,9 +98,9 @@ void dlg_GestionLieux::Slot_AfficheDetails(QModelIndex idx, QModelIndex)
             break;
         }
     }
-    Adressuplbl->setText(data);
-    widg->moinsBouton->setEnabled(db->StandardSelectSQL("select iduser from " TBL_JOINTURESLIEUX " where idlieu = " + tabModel->itemData(tabModel->index(row,0)).value(0).toString(), ok).size() == 0
-                                  && tabModel->itemData(tabModel->index(row,0)).value(0).toInt() != idlieuserveur);
+    wdg_adresselbl->setText(data);
+    wdg_buttonframe->wdg_moinsBouton->setEnabled(db->StandardSelectSQL("select iduser from " TBL_JOINTURESLIEUX " where idlieu = " + m_model->itemData(m_model->index(row,0)).value(0).toString(), m_ok).size() == 0
+                                  && m_model->itemData(m_model->index(row,0)).value(0).toInt() != m_idlieuserveur);
 }
 
 void dlg_GestionLieux::Slot_ChoixButtonFrame(int i)
@@ -129,14 +129,14 @@ void dlg_GestionLieux::Slot_EnregLieux()
 void dlg_GestionLieux::CreerLieu()
 {
     ModifLieuxDialog();
-    connect(gLieuDialog->OKButton, SIGNAL(clicked(bool)), this, SLOT(Slot_EnregNouvLieu()));
-    gLieuDialog->exec();
-    delete  gLieuDialog;
+    connect(dlg_lieu->OKButton, SIGNAL(clicked(bool)), this, SLOT(Slot_EnregNouvLieu()));
+    dlg_lieu->exec();
+    delete  dlg_lieu;
 }
 
 void dlg_GestionLieux::Slot_EnableOKButton()
 {
-    gLieuDialog->OKButton->setEnabled(true);
+    dlg_lieu->OKButton->setEnabled(true);
 }
 
 void dlg_GestionLieux::Slot_EnregNouvLieu()
@@ -144,42 +144,42 @@ void dlg_GestionLieux::Slot_EnregNouvLieu()
     if (ValidationFiche())
     {
         QString req = "insert into " TBL_LIEUXEXERCICE "(NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax)  values("
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(leditnom->text())) + "', "
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(leditadr1->text())) + "', "
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(leditadr2->text())) + "', "
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(leditadr3->text())) + "', "
-                        ""  + Utils::correctquoteSQL(Utils::capitilize(leditcp->text())) + ", "
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(leditville->text())) + "', "
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(ledittel->text())) + "', "
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(leditfax->text())) + "')";
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_nomledit->text())) + "', "
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_adress1ledit->text())) + "', "
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_adress2ledit->text())) + "', "
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_adress3ledit->text())) + "', "
+                        ""  + Utils::correctquoteSQL(Utils::capitilize(wdg_cpledit->text())) + ", "
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_villeledit->text())) + "', "
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_telledit->text())) + "', "
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_faxledit->text())) + "')";
         //qDebug() << req;
         db->StandardSQL(req);
-        delete tabModel;
+        delete m_model;
         ReconstruitModel();
-        gLieuDialog->accept();
-        connect(tabLM->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
-        tabLM->selectRow(0);
+        dlg_lieu->accept();
+        connect(wdg_bigtable->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
+        wdg_bigtable->selectRow(0);
     }
 }
 
 void dlg_GestionLieux::ModifLieuxDialog()
 {
-    gLieuDialog = new UpDialog(this);
-    gLieuDialog->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
-    gLieuDialog->setWindowTitle(tr("Enregistrer un nouveau lieu"));
+    dlg_lieu = new UpDialog(this);
+    dlg_lieu->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
+    dlg_lieu->setWindowTitle(tr("Enregistrer un nouveau lieu"));
     QVBoxLayout *laylbl = new QVBoxLayout();
     QVBoxLayout *layledit = new QVBoxLayout();
     QHBoxLayout *laycom = new QHBoxLayout();
-    QVBoxLayout *lay = dynamic_cast<QVBoxLayout*>(gLieuDialog->layout());
+    QVBoxLayout *lay = dynamic_cast<QVBoxLayout*>(dlg_lieu->layout());
 
-    UpLabel *lblnom = new UpLabel(gLieuDialog, tr("Nom de la structure"));
-    UpLabel *lbladr1 = new UpLabel(gLieuDialog, tr("Adresse1"));
-    UpLabel *lbladr2 = new UpLabel(gLieuDialog, tr("Adresse2"));
-    UpLabel *lbladr3 = new UpLabel(gLieuDialog, tr("Adresse3"));
-    UpLabel *lblcp = new UpLabel(gLieuDialog, tr("Code postal"));
-    UpLabel *lblville = new UpLabel(gLieuDialog, tr("Ville"));
-    UpLabel *lbltel = new UpLabel(gLieuDialog, tr("Telephone"));
-    UpLabel *lblfax = new UpLabel(gLieuDialog, tr("Fax"));
+    UpLabel *lblnom = new UpLabel(dlg_lieu, tr("Nom de la structure"));
+    UpLabel *lbladr1 = new UpLabel(dlg_lieu, tr("Adresse1"));
+    UpLabel *lbladr2 = new UpLabel(dlg_lieu, tr("Adresse2"));
+    UpLabel *lbladr3 = new UpLabel(dlg_lieu, tr("Adresse3"));
+    UpLabel *lblcp = new UpLabel(dlg_lieu, tr("Code postal"));
+    UpLabel *lblville = new UpLabel(dlg_lieu, tr("Ville"));
+    UpLabel *lbltel = new UpLabel(dlg_lieu, tr("Telephone"));
+    UpLabel *lblfax = new UpLabel(dlg_lieu, tr("Fax"));
 
     int h = 22;
     lblnom  ->setFixedHeight(h);
@@ -201,55 +201,55 @@ void dlg_GestionLieux::ModifLieuxDialog()
     laylbl->addWidget(lblfax);
     laylbl->addSpacerItem(new QSpacerItem(5,5,QSizePolicy::Expanding,QSizePolicy::Expanding));
 
-    leditnom   = new UpLineEdit(gLieuDialog);
-    leditadr1  = new UpLineEdit(gLieuDialog);
-    leditadr2  = new UpLineEdit(gLieuDialog);
-    leditadr3  = new UpLineEdit(gLieuDialog);
-    leditcp    = new UpLineEdit(gLieuDialog);
-    leditville = new UpLineEdit(gLieuDialog);
-    ledittel   = new UpLineEdit(gLieuDialog);
-    leditfax   = new UpLineEdit(gLieuDialog);
+    wdg_nomledit   = new UpLineEdit(dlg_lieu);
+    wdg_adress1ledit  = new UpLineEdit(dlg_lieu);
+    wdg_adress2ledit  = new UpLineEdit(dlg_lieu);
+    wdg_adress3ledit  = new UpLineEdit(dlg_lieu);
+    wdg_cpledit    = new UpLineEdit(dlg_lieu);
+    wdg_villeledit = new UpLineEdit(dlg_lieu);
+    wdg_telledit   = new UpLineEdit(dlg_lieu);
+    wdg_faxledit   = new UpLineEdit(dlg_lieu);
 
-    leditnom    ->setFixedWidth(240);       // NomLieu
-    leditadr1   ->setFixedWidth(240);       // Adresse1
-    leditadr2   ->setFixedWidth(240);       // Adresse2
-    leditadr3   ->setFixedWidth(240);       // Adresse3
-    leditcp     ->setFixedWidth(90);        // CP
-    leditville  ->setFixedWidth(240);       // Ville
-    ledittel    ->setFixedWidth(120);       // Telephone
-    leditfax    ->setFixedWidth(120);       // Fax
+    wdg_nomledit    ->setFixedWidth(240);       // NomLieu
+    wdg_adress1ledit   ->setFixedWidth(240);       // Adresse1
+    wdg_adress2ledit   ->setFixedWidth(240);       // Adresse2
+    wdg_adress3ledit   ->setFixedWidth(240);       // Adresse3
+    wdg_cpledit     ->setFixedWidth(90);        // CP
+    wdg_villeledit  ->setFixedWidth(240);       // Ville
+    wdg_telledit    ->setFixedWidth(120);       // Telephone
+    wdg_faxledit    ->setFixedWidth(120);       // Fax
 
-    leditnom    ->setMaxLength(80);
-    leditadr1   ->setMaxLength(45);
-    leditadr2   ->setMaxLength(45);
-    leditadr3   ->setMaxLength(45);
-    leditcp     ->setMaxLength(9);
-    leditville  ->setMaxLength(45);
-    ledittel    ->setMaxLength(17);
-    leditfax    ->setMaxLength(17);
+    wdg_nomledit    ->setMaxLength(80);
+    wdg_adress1ledit   ->setMaxLength(45);
+    wdg_adress2ledit   ->setMaxLength(45);
+    wdg_adress3ledit   ->setMaxLength(45);
+    wdg_cpledit     ->setMaxLength(9);
+    wdg_villeledit  ->setMaxLength(45);
+    wdg_telledit    ->setMaxLength(17);
+    wdg_faxledit    ->setMaxLength(17);
 
-    leditnom    ->setValidator(new QRegExpValidator(Utils::rgx_ville));
-    leditadr1   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
-    leditadr2   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
-    leditadr3   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
-    leditcp     ->setValidator(new QRegExpValidator(Utils::rgx_CP));
-    leditville  ->setValidator(new QRegExpValidator(Utils::rgx_ville));
-    ledittel    ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
-    leditfax    ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
+    wdg_nomledit    ->setValidator(new QRegExpValidator(Utils::rgx_ville));
+    wdg_adress1ledit   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
+    wdg_adress2ledit   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
+    wdg_adress3ledit   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
+    wdg_cpledit     ->setValidator(new QRegExpValidator(Utils::rgx_CP));
+    wdg_villeledit  ->setValidator(new QRegExpValidator(Utils::rgx_ville));
+    wdg_telledit    ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
+    wdg_faxledit    ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
 
-    layledit->addWidget(leditnom);
-    layledit->addWidget(leditadr1);
-    layledit->addWidget(leditadr2);
-    layledit->addWidget(leditadr3);
-    layledit->addWidget(leditcp);
-    layledit->addWidget(leditville);
-    layledit->addWidget(ledittel);
-    layledit->addWidget(leditfax);
+    layledit->addWidget(wdg_nomledit);
+    layledit->addWidget(wdg_adress1ledit);
+    layledit->addWidget(wdg_adress2ledit);
+    layledit->addWidget(wdg_adress3ledit);
+    layledit->addWidget(wdg_cpledit);
+    layledit->addWidget(wdg_villeledit);
+    layledit->addWidget(wdg_telledit);
+    layledit->addWidget(wdg_faxledit);
     layledit->addSpacerItem(new QSpacerItem(5,5,QSizePolicy::Expanding,QSizePolicy::Expanding));
 
-    for (int i=0; i< gLieuDialog->findChildren<UpLineEdit*>().size(); i++)
-        connect(gLieuDialog->findChildren<UpLineEdit*>().at(i), SIGNAL(textEdited(QString)), this, SLOT(Slot_EnableOKButton()));
-    gLieuDialog->OKButton->setEnabled(false);
+    for (int i=0; i< dlg_lieu->findChildren<UpLineEdit*>().size(); i++)
+        connect(dlg_lieu->findChildren<UpLineEdit*>().at(i), SIGNAL(textEdited(QString)), this, SLOT(Slot_EnableOKButton()));
+    dlg_lieu->OKButton->setEnabled(false);
 
     laycom->addLayout(laylbl);
     laylbl->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Fixed,QSizePolicy::Fixed));
@@ -262,27 +262,27 @@ void dlg_GestionLieux::ModifLieuxDialog()
 void dlg_GestionLieux::ModifLieu()
 {
     ModifLieuxDialog();
-    idLieuAModifier = tabModel->itemData(tabModel->index(tabLM->currentIndex().row(),0)).value(0).toInt();
+    m_idlieuamodifier = m_model->itemData(m_model->index(wdg_bigtable->currentIndex().row(),0)).value(0).toInt();
     QString req = "select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " TBL_LIEUXEXERCICE
-                  " where idLieu = " + QString::number(idLieuAModifier);
+                  " where idLieu = " + QString::number(m_idlieuamodifier);
     //qDebug() << req;
-    QVariantList lieurcd= db->getFirstRecordFromStandardSelectSQL(req,ok);
-    if (lieurcd.size()==0 || !ok)
+    QVariantList lieurcd= db->getFirstRecordFromStandardSelectSQL(req,m_ok);
+    if (lieurcd.size()==0 || !m_ok)
         return;
     if (lieurcd.at(1).toString() != "")
-        leditnom    ->setText(lieurcd.at(1).toString());
+        wdg_nomledit    ->setText(lieurcd.at(1).toString());
     else
-        leditnom    ->setText(tr("non défini"));
-    leditadr1   ->setText(lieurcd.at(2).toString());
-    leditadr2   ->setText(lieurcd.at(3).toString());
-    leditadr3   ->setText(lieurcd.at(4).toString());
-    leditcp     ->setText(lieurcd.at(5).toString());
-    leditville  ->setText(lieurcd.at(6).toString());
-    ledittel    ->setText(lieurcd.at(7).toString());
-    leditfax    ->setText(lieurcd.at(8).toString());
-    connect(gLieuDialog->OKButton, SIGNAL(clicked(bool)), this, SLOT(Slot_ModifLieu()));
-    gLieuDialog->exec();
-    delete  gLieuDialog;
+        wdg_nomledit    ->setText(tr("non défini"));
+    wdg_adress1ledit   ->setText(lieurcd.at(2).toString());
+    wdg_adress2ledit   ->setText(lieurcd.at(3).toString());
+    wdg_adress3ledit   ->setText(lieurcd.at(4).toString());
+    wdg_cpledit     ->setText(lieurcd.at(5).toString());
+    wdg_villeledit  ->setText(lieurcd.at(6).toString());
+    wdg_telledit    ->setText(lieurcd.at(7).toString());
+    wdg_faxledit    ->setText(lieurcd.at(8).toString());
+    connect(dlg_lieu->OKButton, SIGNAL(clicked(bool)), this, SLOT(Slot_ModifLieu()));
+    dlg_lieu->exec();
+    delete  dlg_lieu;
 }
 
 void dlg_GestionLieux::Slot_ModifLieu()
@@ -291,61 +291,61 @@ void dlg_GestionLieux::Slot_ModifLieu()
     if (ValidationFiche())
     {
         QString req = "update " TBL_LIEUXEXERCICE " set "
-                        "NomLieu = '"       + Utils::correctquoteSQL(Utils::capitilize(leditnom->text())) + "', "
-                        "LieuAdresse1 = '"  + Utils::correctquoteSQL(Utils::capitilize(leditadr1->text())) + "', "
-                        "LieuAdresse2 = '"  + Utils::correctquoteSQL(Utils::capitilize(leditadr2->text())) + "', "
-                        "LieuAdresse3 = '"  + Utils::correctquoteSQL(Utils::capitilize(leditadr3->text())) + "', "
-                        "LieuCodePostal = " + Utils::correctquoteSQL(Utils::capitilize(leditcp->text())) + ", "
-                        "LieuVille = '"     + Utils::correctquoteSQL(Utils::capitilize(leditville->text())) + "', "
-                        "LieuTelephone = '" + Utils::correctquoteSQL(Utils::capitilize(ledittel->text())) + "', "
-                        "LieuFax = '"       + Utils::correctquoteSQL(Utils::capitilize(leditfax->text())) + "' " +
-                        "where idLieu = "   + QString::number(idLieuAModifier);
+                        "NomLieu = '"       + Utils::correctquoteSQL(Utils::capitilize(wdg_nomledit->text())) + "', "
+                        "LieuAdresse1 = '"  + Utils::correctquoteSQL(Utils::capitilize(wdg_adress1ledit->text())) + "', "
+                        "LieuAdresse2 = '"  + Utils::correctquoteSQL(Utils::capitilize(wdg_adress2ledit->text())) + "', "
+                        "LieuAdresse3 = '"  + Utils::correctquoteSQL(Utils::capitilize(wdg_adress3ledit->text())) + "', "
+                        "LieuCodePostal = " + Utils::correctquoteSQL(Utils::capitilize(wdg_cpledit->text())) + ", "
+                        "LieuVille = '"     + Utils::correctquoteSQL(Utils::capitilize(wdg_villeledit->text())) + "', "
+                        "LieuTelephone = '" + Utils::correctquoteSQL(Utils::capitilize(wdg_telledit->text())) + "', "
+                        "LieuFax = '"       + Utils::correctquoteSQL(Utils::capitilize(wdg_faxledit->text())) + "' " +
+                        "where idLieu = "   + QString::number(m_idlieuamodifier);
         //qDebug() << req;
         db->StandardSQL(req);
-        delete tabModel;
+        delete m_model;
         ReconstruitModel();
-        gLieuDialog->accept();
-        connect(tabLM->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
-        tabLM->selectRow(0);
+        dlg_lieu->accept();
+        connect(wdg_bigtable->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
+        wdg_bigtable->selectRow(0);
     }
 }
 
 void dlg_GestionLieux::SupprLieu()
 {
-    int idLieuASupprimer = tabModel->itemData(tabModel->index(tabLM->currentIndex().row(),0)).value(0).toInt();
-    QString lieu = tabModel->itemData(tabModel->index(tabLM->currentIndex().row(),1)).value(0).toString();
+    int idLieuASupprimer = m_model->itemData(m_model->index(wdg_bigtable->currentIndex().row(),0)).value(0).toInt();
+    QString lieu = m_model->itemData(m_model->index(wdg_bigtable->currentIndex().row(),1)).value(0).toString();
     if (UpMessageBox::Question(this,tr("Suppression d'un lieu de soins"),tr("voulez vous vraiment supprimer") + "\n" + lieu + " ?") == UpSmallButton::STARTBUTTON)
     {
         db->SupprRecordFromTable(idLieuASupprimer,"idlieu", TBL_LIEUXEXERCICE);
         ReconstruitModel();
         dlg_message(QStringList() << lieu + " supprimé", 3000);
         ReconstruitModel();
-        connect(tabLM->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
-        tabLM->selectRow(0);
+        connect(wdg_bigtable->selectionModel(),    SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), this,   SLOT(Slot_AfficheDetails(QModelIndex,QModelIndex)));
+        wdg_bigtable->selectRow(0);
     }
 }
 
 bool dlg_GestionLieux::ValidationFiche()
 {
     QString Msg = tr("Vous n'avez pas spécifié ");
-    if (leditnom->text() == QString() || leditnom->text() == tr("non défini"))
+    if (wdg_nomledit->text() == QString() || wdg_nomledit->text() == tr("non défini"))
     {
         Msg += tr("le nom de la structure de soins");
-        leditnom->setFocus();
+        wdg_nomledit->setFocus();
         UpMessageBox::Watch(this,Msg);
         return false;
     }
-    if (leditcp->text().toInt() ==  0)
+    if (wdg_cpledit->text().toInt() ==  0)
     {
         Msg += tr("le code postal");
-        leditcp->setFocus();
+        wdg_cpledit->setFocus();
         UpMessageBox::Watch(this,Msg);
         return false;
     }
-    if (leditville->text() == QString())
+    if (wdg_villeledit->text() == QString())
     {
         Msg += tr("la ville");
-        leditville->setFocus();
+        wdg_villeledit->setFocus();
         UpMessageBox::Watch(this,Msg);
         return false;
     }
@@ -354,7 +354,7 @@ bool dlg_GestionLieux::ValidationFiche()
 
 void dlg_GestionLieux::ReconstruitModel()
 {
-    tabModel = new QStandardItemModel();
+    m_model = new QStandardItemModel();
 
     QStandardItem *pitem0;
     QStandardItem *pitem1;
@@ -366,7 +366,7 @@ void dlg_GestionLieux::ReconstruitModel()
     QStandardItem *pitem7;
     QStandardItem *pitem8;
 
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " TBL_LIEUXEXERCICE, ok);
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax from " TBL_LIEUXEXERCICE, m_ok);
     for (int i=0; i<listlieux.size(); i++)
     {
         pitem0 = new QStandardItem(listlieux.at(i).at(0).toString());
@@ -378,58 +378,58 @@ void dlg_GestionLieux::ReconstruitModel()
         pitem6 = new QStandardItem(listlieux.at(i).at(6).toString());
         pitem7 = new QStandardItem(listlieux.at(i).at(7).toString());
         pitem8 = new QStandardItem(listlieux.at(i).at(8).toString());
-        tabModel->appendRow(QList<QStandardItem*>() << pitem0 << pitem1 << pitem2 << pitem3 << pitem4 << pitem5 << pitem6 << pitem7 << pitem8);
+        m_model->appendRow(QList<QStandardItem*>() << pitem0 << pitem1 << pitem2 << pitem3 << pitem4 << pitem5 << pitem6 << pitem7 << pitem8);
     }
 
-    tabLM->setModel(tabModel);
+    wdg_bigtable->setModel(m_model);
 
-    tabModel->setHeaderData(0, Qt::Horizontal, tr("idLieu"));
-    tabModel->setHeaderData(1, Qt::Horizontal, tr("Structure de soins"));
-    tabModel->setHeaderData(2, Qt::Horizontal, tr("Adresse1"));
-    tabModel->setHeaderData(3, Qt::Horizontal, tr("Adresse2"));
-    tabModel->setHeaderData(4, Qt::Horizontal, tr("Adresse3"));
-    tabModel->setHeaderData(5, Qt::Horizontal, tr("Code postal"));
-    tabModel->setHeaderData(6, Qt::Horizontal, tr("Ville"));
-    tabModel->setHeaderData(7, Qt::Horizontal, tr("Telephone"));
-    tabModel->setHeaderData(8, Qt::Horizontal, tr("Fax"));
+    m_model->setHeaderData(0, Qt::Horizontal, tr("idLieu"));
+    m_model->setHeaderData(1, Qt::Horizontal, tr("Structure de soins"));
+    m_model->setHeaderData(2, Qt::Horizontal, tr("Adresse1"));
+    m_model->setHeaderData(3, Qt::Horizontal, tr("Adresse2"));
+    m_model->setHeaderData(4, Qt::Horizontal, tr("Adresse3"));
+    m_model->setHeaderData(5, Qt::Horizontal, tr("Code postal"));
+    m_model->setHeaderData(6, Qt::Horizontal, tr("Ville"));
+    m_model->setHeaderData(7, Qt::Horizontal, tr("Telephone"));
+    m_model->setHeaderData(8, Qt::Horizontal, tr("Fax"));
 
-    tabLM->setColumnWidth(0,1);         // idLieu
-    tabLM->setColumnWidth(1,240);       // NomLieu
-    tabLM->setColumnWidth(2,240);       // Adresse1
-    tabLM->setColumnWidth(3,240);       // Adresse2
-    tabLM->setColumnWidth(4,240);       // Adresse3
-    tabLM->setColumnWidth(5,90);        // CP
-    tabLM->setColumnWidth(6,240);       // Ville
-    tabLM->setColumnWidth(7,120);       // Telephone
-    tabLM->setColumnWidth(8,120);       // Fax
-    tabLM->hideColumn(0);
+    wdg_bigtable->setColumnWidth(0,1);         // idLieu
+    wdg_bigtable->setColumnWidth(1,240);       // NomLieu
+    wdg_bigtable->setColumnWidth(2,240);       // Adresse1
+    wdg_bigtable->setColumnWidth(3,240);       // Adresse2
+    wdg_bigtable->setColumnWidth(4,240);       // Adresse3
+    wdg_bigtable->setColumnWidth(5,90);        // CP
+    wdg_bigtable->setColumnWidth(6,240);       // Ville
+    wdg_bigtable->setColumnWidth(7,120);       // Telephone
+    wdg_bigtable->setColumnWidth(8,120);       // Fax
+    wdg_bigtable->hideColumn(0);
     for (int i=2; i<9; i++)
-        tabLM->setColumnHidden(i, true);
-    tabLM->verticalHeader()->setVisible(false);
-    tabLM->setFocusPolicy(Qt::StrongFocus);
-    tabLM->setGridStyle(Qt::NoPen);
-    tabLM->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tabLM->setSelectionMode(QAbstractItemView::SingleSelection);
-    tabLM->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tabLM->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        wdg_bigtable->setColumnHidden(i, true);
+    wdg_bigtable->verticalHeader()->setVisible(false);
+    wdg_bigtable->setFocusPolicy(Qt::StrongFocus);
+    wdg_bigtable->setGridStyle(Qt::NoPen);
+    wdg_bigtable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    wdg_bigtable->setSelectionMode(QAbstractItemView::SingleSelection);
+    wdg_bigtable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    wdg_bigtable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    tabLM->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    wdg_bigtable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    tabLM->setStyleSheet("QTableView {selection-color: rgb(0,0,0); selection-background-color: rgb(164, 205, 255);}");
+    wdg_bigtable->setStyleSheet("QTableView {selection-color: rgb(0,0,0); selection-background-color: rgb(164, 205, 255);}");
 
     int larg = 0;
-    for (int i=0; i < tabModel->columnCount(); i++)
-        if (!tabLM->isColumnHidden(i))
-            larg += tabLM->columnWidth(i);
-    tabLM   ->setFixedWidth(larg+2);
+    for (int i=0; i < m_model->columnCount(); i++)
+        if (!wdg_bigtable->isColumnHidden(i))
+            larg += wdg_bigtable->columnWidth(i);
+    wdg_bigtable   ->setFixedWidth(larg+2);
     int h = int(QFontMetrics(qApp->font()).height()*1.1);
-    for (int i=0; i < tabModel->rowCount(); i++)
-        tabLM->setRowHeight(i, h);
-    tabLM   ->setFixedWidth(larg+2);
+    for (int i=0; i < m_model->rowCount(); i++)
+        wdg_bigtable->setRowHeight(i, h);
+    wdg_bigtable   ->setFixedWidth(larg+2);
     bool ok;
-    idlieuserveur = -1;
+    m_idlieuserveur = -1;
     QVariantList serveurLieudata = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " TBL_PARAMSYSTEME, ok);
     if (ok && serveurLieudata.size()>0)
-        idlieuserveur = serveurLieudata.at(0).toInt();
+        m_idlieuserveur = serveurLieudata.at(0).toInt();
 }
 

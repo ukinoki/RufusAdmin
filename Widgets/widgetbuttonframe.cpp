@@ -20,26 +20,26 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 WidgetButtonFrame::WidgetButtonFrame(QWidget *proprio)
 {
-    gProprio = proprio;
-    widgParent = new QWidget(dynamic_cast<QWidget*>(gProprio->parent()));
+    wdg_proprio = proprio;
+    wdg_parent = new QWidget(dynamic_cast<QWidget*>(wdg_proprio->parent()));
     setStyleSheet("");
     setStyleSheet("border-style: none;");
 }
 
 void WidgetButtonFrame::AddButtons(Buttons Butt)
 {
-    plusBouton  = new UpSmallButton("", this);
-    moinsBouton = new UpSmallButton("", this);
-    modifBouton = new UpSmallButton("", this);
-    plusBouton  ->setIcon(Icons::icAjouter());
-    plusBouton  ->setIconSize(QSize(24,24));
-    modifBouton ->setIcon(Icons::icEditer());
-    modifBouton  ->setIconSize(QSize(24,24));
-    moinsBouton ->setIcon(Icons::icRetirer());
-    moinsBouton  ->setIconSize(QSize(24,24));
-    plusBouton  ->setiD(1);
-    modifBouton ->setiD(0);
-    moinsBouton ->setiD(-1);
+    wdg_plusBouton  = new UpSmallButton("", this);
+    wdg_moinsBouton = new UpSmallButton("", this);
+    wdg_modifBouton = new UpSmallButton("", this);
+    wdg_plusBouton  ->setIcon(Icons::icAjouter());
+    wdg_plusBouton  ->setIconSize(QSize(24,24));
+    wdg_modifBouton ->setIcon(Icons::icEditer());
+    wdg_modifBouton  ->setIconSize(QSize(24,24));
+    wdg_moinsBouton ->setIcon(Icons::icRetirer());
+    wdg_moinsBouton  ->setIconSize(QSize(24,24));
+    wdg_plusBouton  ->setiD(1);
+    wdg_modifBouton ->setiD(0);
+    wdg_moinsBouton ->setiD(-1);
     int szicon  = 20;
     int geo     = szicon + 4;
     int larg    = geo + 7;
@@ -56,39 +56,39 @@ void WidgetButtonFrame::AddButtons(Buttons Butt)
     ilay->setContentsMargins(0,0,0,0);
     ilay->setSpacing(0);
     setLayout(ilay);
-    glayButtonWidg  = new QHBoxLayout();
-    glayButtonWidg  ->setContentsMargins(0,0,0,0);
-    glayButtonWidg  ->setSpacing(0);
-    glayButtonWidg  ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding));
-    glayButtonWidg  ->addWidget(this);
+    wdg_buttonslayout  = new QHBoxLayout();
+    wdg_buttonslayout  ->setContentsMargins(0,0,0,0);
+    wdg_buttonslayout  ->setSpacing(0);
+    wdg_buttonslayout  ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding));
+    wdg_buttonslayout  ->addWidget(this);
     QVBoxLayout *vlay = new QVBoxLayout();
     vlay        ->setContentsMargins(0,0,0,0);
     vlay        ->setSpacing(0);
-    vlay        ->addLayout(glayButtonWidg);
-    widgParent  ->resize(gProprio->width(),gProprio->height()+height());
-    widgParent  ->setFixedWidth(gProprio->width());
-    gProprio    ->setParent(widgParent);
-    setParent(widgParent);
-    vlay        ->insertWidget(0, gProprio);
-    widgParent  ->setLayout(vlay);
+    vlay        ->addLayout(wdg_buttonslayout);
+    wdg_parent  ->resize(wdg_proprio->width(),wdg_proprio->height()+height());
+    wdg_parent  ->setFixedWidth(wdg_proprio->width());
+    wdg_proprio    ->setParent(wdg_parent);
+    setParent(wdg_parent);
+    vlay        ->insertWidget(0, wdg_proprio);
+    wdg_parent  ->setLayout(vlay);
 
     int a = 0;
     if (Butt.testFlag(WidgetButtonFrame::PlusButton))
     {
-        plusBouton->setVisible(true);
-        ilay->addWidget(plusBouton);
+        wdg_plusBouton->setVisible(true);
+        ilay->addWidget(wdg_plusBouton);
         a++;
     }
     if (Butt.testFlag(WidgetButtonFrame::ModifButton))
     {
-        modifBouton->setVisible(true);
-        ilay->addWidget(modifBouton);
+        wdg_modifBouton->setVisible(true);
+        ilay->addWidget(wdg_modifBouton);
         a++;
     }
     if (Butt.testFlag(WidgetButtonFrame::MoinsButton))
     {
-        moinsBouton->setVisible(true);
-        ilay->addWidget(moinsBouton);
+        wdg_moinsBouton->setVisible(true);
+        ilay->addWidget(wdg_moinsBouton);
         a++;
     }
     setFixedSize(larg*a, larg);
@@ -96,26 +96,26 @@ void WidgetButtonFrame::AddButtons(Buttons Butt)
 
 void WidgetButtonFrame::replace()
 {
-    move(gProprio->x()+gProprio->width()-width(), gProprio->y()+gProprio->height()-1);
+    move(wdg_proprio->x()+wdg_proprio->width()-width(), wdg_proprio->y()+wdg_proprio->height()-1);
 }
 
 void WidgetButtonFrame::Reponse(int id)
 {
-    gReponse = id;
-    emit choix(gReponse);
+    m_reponse = id;
+    emit choix(m_reponse);
 }
 
-int WidgetButtonFrame::Reponse()
+int WidgetButtonFrame::Reponse() const
 {
-    return gReponse;
+    return m_reponse;
 }
 
-QWidget* WidgetButtonFrame::widgButtonParent()
+QWidget* WidgetButtonFrame::widgButtonParent() const
 {
-    return widgParent;
+    return wdg_parent;
 }
 
-QHBoxLayout* WidgetButtonFrame::layButtons()
+QHBoxLayout* WidgetButtonFrame::layButtons() const
 {
-    return glayButtonWidg;
+    return wdg_buttonslayout;
 }

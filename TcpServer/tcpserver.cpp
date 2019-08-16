@@ -34,8 +34,8 @@ TcpServer::TcpServer()
 void TcpServer::setId(int id)
 {
     Logs::MSGSOCKET("void TcpServer::setId(int id)");
-    idAdmin = id;
-    gListeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(idAdmin) + "{}" TCPMSG_ListeSockets;
+    m_idadmin = id;
+    m_listeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(m_idadmin) + "{}" TCPMSG_ListeSockets;
 }
 
 bool TcpServer::start()
@@ -60,7 +60,7 @@ void TcpServer::incomingConnection(qintptr descriptor)
     connect(socket,     SIGNAL(emitmsg(qintptr, QString)),              this,   SLOT(TraiteMessageRecu(qintptr, QString)));
     connect(socket,     SIGNAL(deconnexion(qintptr)),                   this,   SLOT(Deconnexion(qintptr)));
 
-    socketdescriptors  .insert(descriptor, socket);
+    map_socketdescriptors  .insert(descriptor, socket);
 }
 
 void TcpServer::Deconnexion(qintptr descriptor)
@@ -71,11 +71,11 @@ void TcpServer::Deconnexion(qintptr descriptor)
     if ( skt == Q_NULLPTR)
         return;
     QString adress ("");
-    if (skt->getData().split(TCPMSG_Separator).size()>2)
-        adress = skt->getData().split(TCPMSG_Separator).at(2);
+    if (skt->datas().split(TCPMSG_Separator).size()>2)
+        adress = skt->datas().split(TCPMSG_Separator).at(2);
     QString login = Datas::I()->users->getLoginById(skt->idUser());
     dlg_message(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
-    socketdescriptors   .remove(descriptor);
+    map_socketdescriptors   .remove(descriptor);
     envoieListeSockets();
     AfficheListeSockets("Deconnexion(qintptr sktdesciptor)");
     skt->deleteLater();
@@ -107,7 +107,7 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         QString listdest = msg.split(TCPMSG_Separator).at(0);
         QString nbmsg = msg.split(TCPMSG_Separator).at(1);
         QStringList listid = listdest.split(",");
-        QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
+        QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
         while (itskt.hasNext())
         {
             if (listid.contains(QString::number(itskt.next().value()->idUser())))
@@ -164,11 +164,11 @@ void TcpServer::envoieListeSockets(qintptr descriptor)
     Logs::MSGSOCKET("void TcpServer::envoieListeSockets(qintptr sktdescriptor)");
     ListeSockets();
     if (descriptor == -1)
-        envoyerATous(gListeSockets);
+        envoyerATous(m_listeSockets);
     else
     {
         if (SocketFromDescriptor(descriptor) != Q_NULLPTR)
-            SocketFromDescriptor(descriptor)->envoyerMessage(gListeSockets);
+            SocketFromDescriptor(descriptor)->envoyerMessage(m_listeSockets);
     }
     emit ModifListeSockets();
 }
@@ -176,24 +176,24 @@ void TcpServer::envoieListeSockets(qintptr descriptor)
 QString TcpServer::ListeSockets()
 {
     Logs::MSGSOCKET("void TcpServer::ListeSockets()");
-    gListeSockets = Utils::getIpAdress();
-    gListeSockets += TCPMSG_Separator + Utils::getMACAdress();
-    gListeSockets += TCPMSG_Separator + QHostInfo::localHostName();
-    gListeSockets += TCPMSG_Separator + QString::number(idAdmin) + "{}";
-    QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
+    m_listeSockets = Utils::getIpAdress();
+    m_listeSockets += TCPMSG_Separator + Utils::getMACAdress();
+    m_listeSockets += TCPMSG_Separator + QHostInfo::localHostName();
+    m_listeSockets += TCPMSG_Separator + QString::number(m_idadmin) + "{}";
+    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
     while (itskt.hasNext())
     {
         itskt.next();
-        gListeSockets += itskt.value()->getData() + TCPMSG_Separator + QString::number(itskt.value()->idUser()) + "{}";
+        m_listeSockets += itskt.value()->datas() + TCPMSG_Separator + QString::number(itskt.value()->idUser()) + "{}";
     }
-    gListeSockets += TCPMSG_ListeSockets;
-    return gListeSockets;
+    m_listeSockets += TCPMSG_ListeSockets;
+    return m_listeSockets;
 }
 
 TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
 {
     QString msg = "void TcpServer::SocketFromDescriptor(qintptr sktdescriptor) - sktdescriptor " + QString::number(descriptor);
-    QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
+    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
     while (itskt.hasNext())
     {
         itskt.next();
@@ -210,7 +210,7 @@ TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
 void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)
 {
     Logs::MSGSOCKET("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - skt descriptor " + QString::number(emetteurorigin) + " msg " + msg);
-    QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
+    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
     while (itskt.hasNext())
     {
         itskt.next();
@@ -225,7 +225,7 @@ void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)
 void TcpServer::envoyerA(int iduser, QString msg)
 {
     Logs::MSGSOCKET("void TcpServer::envoyerA(int iduser, QString msg)");
-    QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
+    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
     while (itskt.hasNext())
     {
         itskt.next();
@@ -237,10 +237,10 @@ void TcpServer::envoyerA(int iduser, QString msg)
 void TcpServer::AfficheListeSockets(QString fonction)
 {
     qDebug() << "TcpServer::AfficheListeSockets(QString fonction) - " + fonction;
-    QMapIterator<qintptr, TcpSocket*> itskt(socketdescriptors);
+    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
     while (itskt.hasNext())
     {
-        QStringList listdata = itskt.next().value()->getData().split(TCPMSG_Separator);
+        QStringList listdata = itskt.next().value()->datas().split(TCPMSG_Separator);
         QStringListIterator itlist(listdata);
         while (itlist.hasNext())
             qDebug() << itlist.next();

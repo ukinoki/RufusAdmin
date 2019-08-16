@@ -94,32 +94,30 @@ private:
     dlg_motifs                  *Dlg_motifs;
     dlg_paramconnexion          *DlgParam;
     Flags                       *flags;
-    bool                        ok;
-    int                         idAdminDocs;
-    int                         idlieuExercice;
-    int                         gMode;
+    bool                        m_ok;
+    int                         m_idadmindocs;
+    int                         m_idlieuexeercice;
     int                         m_flagcorrespondants, m_flagsalledattente, m_flagmessages;
-    int                         dureeVeille;
-    enum gMode                  {Poste, ReseauLocal, Distant};
-    QIcon                       gIconRufusAdmin;
+    int                         m_dureeVeille;
+    QIcon                       ic_RufusAdmin;
     QMenu                       *trayIconMenu;
-    QMap<QString,QIcon>         gmapIcons;
-    QString                     gnomFichIni;
-    QString                     gNomFichRufusIni;
-    QString                     gNouvMDP, gAncMDP, gConfirmMDP;
-    QString                     Domaine;
-    QString                     gNomLieuExercice;
-    QStringList                 glistAppareils;
-    QIcon                       giconBackup, giconCopy, giconErase, giconSunglasses, giconSortirDossier, giconOK, giconAnnul,
-                                giconEuro, giconEuroCount, giconFermeAppuye, giconFermeRelache, giconHelp, giconNull;
-    QSettings                   *gsettingsIni;
+    QMap<QString,QIcon>         map_icons;
+    QString                     m_nomfichierini;
+    QString                     m_nomfichieriniRufus;
+    QString                     m_nouvMDP, m_ancMDP, m_confirmMDP;
+    QString                     m_domaine;
+    QString                     m_nomLieuExercice;
+    QStringList                 m_listeAppareils;
+    QIcon                       ic_Backup, ic_Copy, ic_Erase, ic_Sunglasses, ic_SortirDossier, ic_OK, ic_Annul,
+                                 ic_Euro,  ic_EuroCount,  ic_FermeAppuye,  ic_FermeRelache,  ic_Help,  ic_Null;
+    QSettings                   *m_settings;
     DataBase                    *db;
-    QSystemTrayIcon             *gRufusAdminTrayIcon;
-    QTimer                      *gTimerUserConnecte, *gTimerVerifDivers, *gTimerSupprDocs, *gTimerDocsAExporter, *gTimerProgressBar;
-    QTimer                      tim;
+    QSystemTrayIcon             *ictray_RufusAdminTrayIcon;
+    QTimer                      *t_timerUserConnecte, *t_timerVerifDivers, *t_timerSupprDocs, *t_timerDocsAExporter, *t_timerProgressBar;
+    QTimer                      t_timer;
     ImportDocsExternesThread    *ImportDocsExtThread;
-    UpDialog                    *gAskAppareil, *gAskMDP;
-    WidgetButtonFrame           *widgAppareils;
+    UpDialog                    *dlg_askAppareil, *dlg_askMDP;
+    WidgetButtonFrame           *wdg_buttonframe;
     User                        *UserAdmin;
 
     qint64                      CalcBaseSize();
@@ -212,22 +210,22 @@ private slots:
     void                    Slot_ModifDateBackup();
     void                    Slot_EffacePrgSauvegarde();
 private:
-    qint64                  BaseSize, ImagesSize, VideosSize, FreeSpace;
-    UpDialog                *gAskBupRestore;
-    UpLabel                 *labelResume, *labelVolumeLibre;
+    qint64                  m_basesize, m_imagessize, m_videossize, m_freespace;
+    UpDialog                *dlg_askBupRestore;
+    UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
     void                    AskBupRestore(bool restore, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true);
     void                    DefinitScriptBackup(QString path, bool AvecImages= true, bool AvecVideos = true);
     QString                 getExpressionSize(double size);
     void                    ModifParamBackup();
 
     // TCPServer, TCPSocket
-    bool                UtiliseTCP;
+    bool                m_utiliseTCP;
     TcpServer           *TCPServer;
-    quint16             PortTCPServer;
-    QTimer              *gTimerSalDatCorrespMsg, *gTimerVerifVerrou;
-    QString             gIPadr, gMacAdress;
-    QString             gSocketStatut;
-    QDateTime           gDateDernierMessage;
+    quint16             m_portTCPserver;
+    QTimer              *t_timerSalDatCorrespMsg, *t_timerVerifVerrou;
+    QString             m_IPadress, m_macAdress;
+    QString             m_socketStatut;
+    QDateTime           m_dateDernierMessage;
     void                ResumeTCPSocketStatut();
 
     void                VerifModifsFlags();

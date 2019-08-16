@@ -104,18 +104,18 @@ public:
     qintptr                         sktdescriptor;
     void                            envoyerMessage(QString msg);
     void                            setIdUser(int id);
-    int                             idUser();
+    int                             idUser() const;
     void                            setData(QString datas);
-    QString                         getData();
+    QString                         datas();
 
 private:
     int                             a;
     static TcpSocket                *instance;
-    quint16                         PortTCPServer;
-    QByteArray                      buffer;                                                 //!> le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
-    qint32                          sizedata;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
-    int                             iduser;                                                 //!> stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
-    QString                         datasclient;                                            //!> stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
+    quint16                         m_portTCPserver;
+    QByteArray                      m_bufferarray;                                            //!> le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
+    qint32                          m_datasize;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
+    int                             m_iduser;                                                 //!> stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
+    QString                         m_datasclient;                                            //!> stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
 
 signals:
     void                            errorskt(QAbstractSocket::SocketError socketerror);

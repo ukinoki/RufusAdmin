@@ -53,22 +53,22 @@ private slots:
 
 private:
     DataBase                *db;
-    QTableView              *tabLM;
-    UpDialog                *gLieuDialog;
-    UpLabel                 *Adressuplbl;
-    UpLineEdit              *leditnom;
-    UpLineEdit              *leditadr1;
-    UpLineEdit              *leditadr2;
-    UpLineEdit              *leditadr3;
-    UpLineEdit              *leditcp;
-    UpLineEdit              *leditville;
-    UpLineEdit              *ledittel;
-    UpLineEdit              *leditfax;
-    QStandardItemModel      *tabModel;
-    WidgetButtonFrame       *widg;
-    int                     idLieuAModifier;
-    int                     idlieuserveur;
-    bool                    ok;
+    QTableView              *wdg_bigtable;
+    UpDialog                *dlg_lieu;
+    UpLabel                 *wdg_adresselbl;
+    UpLineEdit              *wdg_nomledit;
+    UpLineEdit              *wdg_adress1ledit;
+    UpLineEdit              *wdg_adress2ledit;
+    UpLineEdit              *wdg_adress3ledit;
+    UpLineEdit              *wdg_cpledit;
+    UpLineEdit              *wdg_villeledit;
+    UpLineEdit              *wdg_telledit;
+    UpLineEdit              *wdg_faxledit;
+    QStandardItemModel      *m_model;
+    WidgetButtonFrame       *wdg_buttonframe;
+    int                     m_idlieuamodifier;
+    int                     m_idlieuserveur;
+    bool                    m_ok;
     void                    CreerLieu();
     void                    ModifLieu();
     void                    SupprLieu();

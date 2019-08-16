@@ -91,7 +91,7 @@ void UpLineEdit::setdatas(QVariant data)
     m_datas = data;
 }
 
-QVariant UpLineEdit::datas()
+QVariant UpLineEdit::datas() const
 {
     return m_datas;
 }
@@ -100,7 +100,7 @@ void UpLineEdit::setiD(int Id)
 {
     m_id = Id;
 }
-int UpLineEdit::iD()
+int UpLineEdit::iD() const
 {
     return m_id;
 }

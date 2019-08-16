@@ -28,17 +28,17 @@ TcpSocket* TcpSocket::I()
 
 TcpSocket::TcpSocket()
 {
-    buffer.clear();
-    sizedata = 0;
+    m_bufferarray.clear();
+    m_datasize = 0;
 }
 
 TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QTcpSocket (parent)
 {
     sktdescriptor = ID;
-    iduser = -1;
-    datasclient = "";
-    buffer.clear();
-    sizedata = 0;
+    m_iduser = -1;
+    m_datasclient = "";
+    m_bufferarray.clear();
+    m_datasize = 0;
     a = 0;
 
     if(!setSocketDescriptor(ID))
@@ -58,30 +58,30 @@ TcpSocket::~TcpSocket()
 {
 }
 
-void            TcpSocket::setIdUser(int id)                        {iduser = id;}
-int             TcpSocket::idUser()                                 {return iduser;}
-void            TcpSocket::setData(QString datas)                   {datasclient = datas;}
-QString         TcpSocket::getData()                                {return datasclient;}
+void            TcpSocket::setIdUser(int id)                        {m_iduser = id;}
+int             TcpSocket::idUser() const                           {return m_iduser;}
+void            TcpSocket::setData(QString datas)                   {m_datasclient = datas;}
+QString         TcpSocket::datas()                                  {return m_datasclient;}
 
 void TcpSocket::TraiteDonneesRecues()
 {
     while (bytesAvailable() > 0)
     {
-        buffer.append(readAll());
-        while ((sizedata == 0 && buffer.size() >= 4) || (sizedata > 0 && buffer.size() >= sizedata)) // on n'a toujours pas la taille du message ou on n'a pas le message complet
+        m_bufferarray.append(readAll());
+        while ((m_datasize == 0 && m_bufferarray.size() >= 4) || (m_datasize > 0 && m_bufferarray.size() >= m_datasize)) // on n'a toujours pas la taille du message ou on n'a pas le message complet
         {
-            if (sizedata == 0 && buffer.size() >= 4)                // on a les 4 premiers caractères => on a la taille du message
+            if (m_datasize == 0 && m_bufferarray.size() >= 4)                // on a les 4 premiers caractères => on a la taille du message
             {
-                sizedata = Utils::ArrayToInt(buffer.mid(0, 4));
-                buffer.remove(0, 4);
+                m_datasize = Utils::ArrayToInt(m_bufferarray.mid(0, 4));
+                m_bufferarray.remove(0, 4);
             }
-            if (sizedata > 0 && buffer.size() >= sizedata)          // le message est complet
+            if (m_datasize > 0 && m_bufferarray.size() >= m_datasize)          // le message est complet
             {
-                QByteArray data = buffer.mid(0, sizedata);
+                QByteArray data = m_bufferarray.mid(0, m_datasize);
                 QString msg = QString::fromUtf8(data);              // traitement du message
                 //qDebug() << " Data in: " << buffer << " message = " << msg;
-                buffer.clear();                                     // on remet à 0 buffer et sizedata
-                sizedata = 0;
+                m_bufferarray.clear();                                     // on remet à 0 buffer et sizedata
+                m_datasize = 0;
                 if (msg.contains(TCPMSG_Disconnect))
                     Deconnexion();
                 else

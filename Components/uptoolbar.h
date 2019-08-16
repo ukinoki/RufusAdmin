@@ -27,14 +27,14 @@ class UpToolBar : public QToolBar
 public:
     explicit    UpToolBar(bool AvecFinDebut = true, bool AvecReload = false, QWidget *parent = Q_NULLPTR);
     ~UpToolBar();
-    QAction*            First();
-    QAction*            Last();
-    QAction*            Next();
-    QAction*            Prec();
-    QAction*            Reload();
-    QString             choix();
+    QAction*            First() const;
+    QAction*            Last() const;
+    QAction*            Next() const;
+    QAction*            Prec() const;
+    QAction*            Reload() const;
+    QString             choix() const;
 private:
-    QString             action;
+    QString             m_action;
     QAction             *debut, *prec, *suiv, *fin, *reload;
     void                TBChoix(QAction *choix);
 signals:

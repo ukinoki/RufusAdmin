@@ -55,37 +55,37 @@ UpToolBar::UpToolBar(bool AvecFinDebut, bool AvecReload, QWidget *parent) : QToo
 UpToolBar::~UpToolBar()
 {
 }
-QString UpToolBar::choix()
+QString UpToolBar::choix() const
 {
-    return action;
+    return m_action;
 }
 void UpToolBar::TBChoix(QAction *choix)
 {
-    action = choix->text();
+    m_action = choix->text();
     emit TBSignal();
 }
 
-QAction* UpToolBar::First()
+QAction* UpToolBar::First() const
 {
     return debut;
 }
 
-QAction* UpToolBar::Last()
+QAction* UpToolBar::Last() const
 {
     return fin;
 }
 
-QAction* UpToolBar::Next()
+QAction* UpToolBar::Next() const
 {
     return suiv;
 }
 
-QAction* UpToolBar::Prec()
+QAction* UpToolBar::Prec() const
 {
     return prec;
 }
 
-QAction* UpToolBar::Reload()
+QAction* UpToolBar::Reload() const
 {
     return reload;
 }

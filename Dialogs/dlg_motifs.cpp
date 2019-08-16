@@ -24,10 +24,10 @@ dlg_motifs::dlg_motifs(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    m_motifs = Datas::I()->motifs->motifs();
+    map_motifs = Datas::I()->motifs->motifs();
 
-    widgButtons             = new WidgetButtonFrame(ui->MotifsupTableWidget);
-    widgButtons             ->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::MoinsButton);
+    wdg_buttonframe             = new WidgetButtonFrame(ui->MotifsupTableWidget);
+    wdg_buttonframe             ->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::MoinsButton);
 
     AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     OKButton                ->setText(tr("Enregistrer\nles modifications"));
@@ -81,7 +81,7 @@ dlg_motifs::dlg_motifs(QWidget *parent) :
     QHBoxLayout *hlay       = new QHBoxLayout;
     hlay                    ->setContentsMargins(0,0,0,0);
     hlay                    ->setSpacing(5);
-    hlay                    ->insertWidget(0,widgButtons->widgButtonParent());
+    hlay                    ->insertWidget(0,wdg_buttonframe->widgButtonParent());
     hlay                    ->addLayout(vlay);
 
     dlglayout()             ->insertLayout(0,hlay);
@@ -104,7 +104,7 @@ dlg_motifs::dlg_motifs(QWidget *parent) :
     connect(ui->UtiliserupCheckBox,                     SIGNAL(clicked(bool)),          this,           SLOT(Slot_ModifUtil()));
     connect(ui->MotifupLineEdit,                        SIGNAL(textEdited(QString)),    this,           SLOT(Slot_ModifMotif(QString)));
     connect(ui->RaccourciupLineEdit,                    SIGNAL(textEdited(QString)),    this,           SLOT(Slot_ModifRaccouci(QString)));
-    connect(widgButtons,                                SIGNAL(choix(int)),             this,           SLOT(Slot_ChoixButtonFrame(int)));
+    connect(wdg_buttonframe,                                SIGNAL(choix(int)),             this,           SLOT(Slot_ChoixButtonFrame(int)));
     connect(ui->MotifsupTableWidget,                    SIGNAL(dropsignal(QByteArray)), this,           SLOT(Slot_DropMotif(QByteArray)));
 }
 
@@ -560,8 +560,8 @@ void dlg_motifs::RemplirTableWidget()
     QList<Motif*> listMotifs;
 
     int i=0;
-    ui->MotifsupTableWidget->setRowCount(m_motifs->size());
-    QMapIterator<int, Motif*> itmtf(*m_motifs);
+    ui->MotifsupTableWidget->setRowCount(map_motifs->size());
+    QMapIterator<int, Motif*> itmtf(*map_motifs);
     while (itmtf.hasNext()) {
         Motif *mtf = const_cast<Motif*>(itmtf.next().value());
         SetMotifToRow(mtf, i);
@@ -569,7 +569,7 @@ void dlg_motifs::RemplirTableWidget()
     }
 }
 
-UpCheckBox* dlg_motifs::UpchkFromTableW(QTableWidget *Table, int row, int col)
+UpCheckBox* dlg_motifs::UpchkFromTableW(QTableWidget *Table, int row, int col) const
 {
     QWidget *w = dynamic_cast<QWidget*>(Table->cellWidget(row,col));
     if (w)
@@ -581,7 +581,7 @@ UpCheckBox* dlg_motifs::UpchkFromTableW(QTableWidget *Table, int row, int col)
     return Q_NULLPTR;
 }
 
-Motif* dlg_motifs::getMotifFromRow(int row)
+Motif* dlg_motifs::getMotifFromRow(int row) const
 {
     Motif *mtf = Datas::I()->motifs->getById(ui->MotifsupTableWidget->item(row,3)->text().toInt());
     return mtf;

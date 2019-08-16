@@ -23,12 +23,11 @@ UpTableWidget::UpTableWidget(QWidget *parent) : QTableWidget(parent)
     horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
     setContextMenuPolicy(Qt::NoContextMenu);
-    Attrib  = "";
 }
 
 void UpTableWidget::dropEvent(QDropEvent *drop)
 {
-    encodedData = drop->mimeData()->data("application/x-qabstractitemmodeldatalist");
+    m_encodedData = drop->mimeData()->data("application/x-qabstractitemmodeldatalist");
 //    for (int j=0; j<drop->mimeData()->formats().size(); j++)
 //        qDebug() << drop->mimeData()->formats().at(j) + "\n";
 
@@ -44,7 +43,7 @@ void UpTableWidget::dropEvent(QDropEvent *drop)
 //        qDebug() << ab;
 //    }
     drop->acceptProposedAction();
-    emit dropsignal(encodedData);
+    emit dropsignal(m_encodedData);
 }
 
 /*!
@@ -136,7 +135,7 @@ QList<QImage> UpTableWidget::AfficheDoc(QMap<QString,QVariant> doc, bool aveczoo
 
 QByteArray UpTableWidget::dropData()
 {
-    return encodedData;
+    return m_encodedData;
 }
 
 void UpTableWidget::clearSelection()
@@ -163,7 +162,7 @@ int UpTableWidget::FixLargeurTotale()
     return larg+2;
 }
 
-int UpTableWidget::rowNoHiddenCount()
+int UpTableWidget::rowNoHiddenCount() const
 {
     int nrow = 0;
     for (int i=0; i<rowCount(); i++)
@@ -172,7 +171,7 @@ int UpTableWidget::rowNoHiddenCount()
     return nrow;
 }
 
-int UpTableWidget::FirstRowNoHidden()
+int UpTableWidget::FirstRowNoHidden() const
 {
     int row = -1;
     for (int i=0; i<rowCount(); i++)
@@ -184,7 +183,7 @@ int UpTableWidget::FirstRowNoHidden()
     return row;
 }
 
-int UpTableWidget::LastRowNoHidden()
+int UpTableWidget::LastRowNoHidden() const
 {
     int row = -1;
     for (int i=rowCount()-1; i>-1; i--)
@@ -210,14 +209,3 @@ void UpTableWidget::selectRow(int row)
         setRangeSelected(QTableWidgetSelectionRange(row,0,row,columnCount()-1),true);
     }
 }
-
-void UpTableWidget::setAttribut(QString attrib)
-{
-    Attrib = attrib;
-}
-
-QString UpTableWidget::Attribut()
-{
-    return Attrib;
-}
-

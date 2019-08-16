@@ -106,7 +106,7 @@ signals:
 
 private:
     static Flags            *instance;
-    bool                    ok;
+    bool                    m_ok;
 };
 
 

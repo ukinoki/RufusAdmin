@@ -46,14 +46,14 @@ UpSmallButton::~UpSmallButton()
 
 void UpSmallButton::AfficheToolTip()
 {
-    if (m_tooltipmsg != "" && (isEnabled() || AfficheToolTipMemeSiDisabled))
+    if (m_tooltipmsg != "" && (isEnabled() || m_AfficheToolTipMemeSiDisabled))
         QToolTip::showText(cursor().pos(),m_tooltipmsg);
 }
 
 void UpSmallButton::setImmediateToolTip(QString Msg, bool affichettipmemesidisabled)
 {
     m_tooltipmsg = Msg;
-    AfficheToolTipMemeSiDisabled = affichettipmemesidisabled;
+    m_AfficheToolTipMemeSiDisabled = affichettipmemesidisabled;
 }
 
 void UpSmallButton::setUpButtonStyle(enum StyleBouton Style)
@@ -106,7 +106,7 @@ void UpSmallButton::setdata(QVariant var)
     m_luggage = var;
 }
 
-QVariant UpSmallButton::data()
+QVariant UpSmallButton::data() const
 {
     return m_luggage;
 }
@@ -116,12 +116,12 @@ void UpSmallButton::setiD(int idbut)
     m_id  = idbut;
 }
 
-int UpSmallButton::iD()
+int UpSmallButton::iD() const
 {
     return m_id;
 }
 
-UpSmallButton::StyleBouton UpSmallButton::ButtonStyle()
+UpSmallButton::StyleBouton UpSmallButton::ButtonStyle() const
 {
     return m_style;
 }

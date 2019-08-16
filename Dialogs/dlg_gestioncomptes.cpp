@@ -26,47 +26,47 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(p
     db                      = DataBase::I();
     m_userencours           = user;
 
-    gidUser                 = m_userencours->id();
-    gidCompteParDefaut      = m_userencours->idcomptepardefaut();
+    m_iduser                 = m_userencours->id();
+    m_idcompteprardefaut      = m_userencours->idcomptepardefaut();
 
     m_listescomptesusr      = m_userencours->listecomptesbancaires();
     m_compteencours         = Datas::I()->comptes->getById(m_userencours->idcomptepardefaut());
 
-    gVisible                = true;
-    gTimer                  = new QTimer(this);
-    gTimer                  ->start(500);
-    connect(gTimer, &QTimer::timeout, this, &dlg_gestioncomptes::Clign);
+    m_visible                = true;
+    t_timer                  = new QTimer(this);
+    t_timer                  ->start(500);
+    connect(t_timer, &QTimer::timeout, this, &dlg_gestioncomptes::Clign);
     ui->CompteFacticePushButton->setVisible(false);
 
     setAttribute(Qt::WA_DeleteOnClose);
 
-    widgButtons             = new WidgetButtonFrame(ui->ComptesuptableWidget);
-    widgButtons             ->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
-    NouvBanqupPushButton    = new UpSmallButton();
-    NouvBanqupPushButton    ->setText(tr("Gestion des organismes bancaires"));
-    NouvBanqupPushButton    ->setIcon(Icons::icEuroCount());
-    NouvBanqupPushButton    ->setIconSize(QSize(25,25));
-    AjouteWidgetLayButtons(NouvBanqupPushButton);
+    wdg_buttonframe             = new WidgetButtonFrame(ui->ComptesuptableWidget);
+    wdg_buttonframe             ->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
+    wdg_NouvBanqupPushButton    = new UpSmallButton();
+    wdg_NouvBanqupPushButton    ->setText(tr("Gestion des organismes bancaires"));
+    wdg_NouvBanqupPushButton    ->setIcon(Icons::icEuroCount());
+    wdg_NouvBanqupPushButton    ->setIconSize(QSize(25,25));
+    AjouteWidgetLayButtons(wdg_NouvBanqupPushButton);
     AjouteLayButtons(UpDialog::ButtonClose);
     CloseButton             ->setText(tr("Fermer"));
 
     connect(CloseButton,                    &QPushButton::clicked,      this, &dlg_gestioncomptes::Fermer);
     connect(ui->OKModifupSmallButton,       &QPushButton::clicked,      this, &dlg_gestioncomptes::ValidCompte);
     connect(ui->AnnulModifupSmallButton,    &QPushButton::clicked,      this, &dlg_gestioncomptes::AnnulModif);
-    connect(NouvBanqupPushButton,           &QPushButton::clicked,      this, &dlg_gestioncomptes::Banques);
-    connect(widgButtons,                    &WidgetButtonFrame::choix,  this, [=]{ChoixButtonFrame(widgButtons->Reponse());});
+    connect(wdg_NouvBanqupPushButton,           &QPushButton::clicked,      this, &dlg_gestioncomptes::Banques);
+    connect(wdg_buttonframe,                    &WidgetButtonFrame::choix,  this, [=]{ChoixButtonFrame(wdg_buttonframe->Reponse());});
     connect(ui->CompteFacticePushButton,    &QPushButton::clicked,      this, &dlg_gestioncomptes::CompteFactice);
     connect(ui->DesactiveComptecheckBox,    &QPushButton::clicked,      this, &dlg_gestioncomptes::DesactiveCompte);
 
     QDoubleValidator *val = new QDoubleValidator(this);
     val->setDecimals(2);
 
-    gUserLogin          = m_userencours->login();
-    setWindowTitle(tr("Comptes bancaires de ") + gUserLogin);
+    m_userlogin          = m_userencours->login();
+    setWindowTitle(tr("Comptes bancaires de ") + m_userlogin);
 
     MetAJourListeBanques();
 
-    RemplirTableView(gidCompteParDefaut);
+    RemplirTableView(m_idcompteprardefaut);
     ui->Compteframe             ->setEnabled(false);
     ui->OKModifupSmallButton    ->setVisible(false);
     ui->AnnulModifupSmallButton ->setVisible(false);
@@ -83,13 +83,13 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(p
     QHBoxLayout *hlay = new QHBoxLayout();
     hlay        ->setContentsMargins(marge,marge,marge,marge);
     hlay        ->setSpacing(space);
-    hlay        ->addWidget(widgButtons->widgButtonParent());
+    hlay        ->addWidget(wdg_buttonframe->widgButtonParent());
     hlay        ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Expanding));
     hlay        ->addLayout(vlay);
     dlglayout() ->insertLayout(0,hlay);
     dlglayout() ->setSizeConstraint(QLayout::SetFixedSize);
 
-    gMode = Norm;
+    m_mode = Norm;
     ui->DesactiveComptecheckBox->setVisible(true);
 }
 
@@ -127,7 +127,7 @@ void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem
         ui->idCompteupLineEdit          ->setText(QString::number(m_compteencours->id()));
         ui->DesactiveComptecheckBox     ->setChecked(m_compteencours->isDesactive());
         ui->CompteSocietecheckBox       ->setChecked(m_compteencours->isPartage());
-    widgButtons->modifBouton    ->setEnabled(false);
+    wdg_buttonframe->wdg_modifBouton    ->setEnabled(false);
 
     /*On ne peut pas supprimer un compte s'il est utilisé ou s'il y a déjà eu des ecritures bancaires*/
     bool autorsupprimer = false;
@@ -145,13 +145,13 @@ void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem
               " limit 1";
         autorsupprimer = (db->StandardSelectSQL(req, ok).size()==0);    // on ne peut pas supprimer un compte s'il y a des écritures
     }
-    widgButtons->moinsBouton->setEnabled(autorsupprimer);
+    wdg_buttonframe->wdg_moinsBouton->setEnabled(autorsupprimer);
 }
 
 void dlg_gestioncomptes::AnnulModif()
 {
     ui->Compteframe->setEnabled(false);
-    gMode = Norm;
+    m_mode = Norm;
     ui->DesactiveComptecheckBox->setVisible(true);
     if (ui->ComptesuptableWidget->rowCount() > 0)
         AfficheCompte(ui->ComptesuptableWidget->item(ui->ComptesuptableWidget->currentRow(),0),ui->ComptesuptableWidget->item(ui->ComptesuptableWidget->currentRow(),0));
@@ -160,7 +160,7 @@ void dlg_gestioncomptes::AnnulModif()
     ui->OKModifupSmallButton->setVisible(false);
     ui->AnnulModifupSmallButton->setVisible(false);
     ui->ComptesuptableWidget->setEnabled(true);
-    widgButtons->setEnabled(true);
+    wdg_buttonframe->setEnabled(true);
     ui->CompteFacticePushButton->setVisible(false);
     ui->ComptesuptableWidget->setFocus();
 }
@@ -186,7 +186,7 @@ void dlg_gestioncomptes::DesactiveCompte()
         bool ok = true;
         QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idcompte",
                                                                         TBL_LIGNESCOMPTES, ok,
-                                                                        "where iduser = " + QString::number(gidUser) + " and desactive is null");
+                                                                        "where iduser = " + QString::number(m_iduser) + " and desactive is null");
         ui->DesactiveComptecheckBox ->setEnabled(listcomptes.size()>1);
     }
 }
@@ -210,8 +210,8 @@ void dlg_gestioncomptes::ChoixButtonFrame(int i)
 
 void dlg_gestioncomptes::Clign()
 {
-    gVisible = !gVisible;
-    if (gVisible)
+    m_visible = !m_visible;
+    if (m_visible)
         ui->CompteFacticePushButton->setIcon(Icons::icNull());
     else
         ui->CompteFacticePushButton->setIcon(Icons::icHelp());
@@ -283,21 +283,21 @@ void dlg_gestioncomptes::CompteFactice()
 
 void dlg_gestioncomptes::ModifCompte()
 {
-    gMode = Modif;
+    m_mode = Modif;
     ui->DesactiveComptecheckBox     ->setVisible(true);
     ui->Compteframe                 ->setEnabled(true);
     ui->OKModifupSmallButton        ->setVisible(true);
     ui->AnnulModifupSmallButton     ->setVisible(true);
     ui->ComptesuptableWidget        ->setEnabled(false);
     ui->BanqueupcomboBox            ->setFocus();
-    widgButtons                     ->setEnabled(false);
+    wdg_buttonframe                     ->setEnabled(false);
 
     /*On ne peut pas desactiver un compte s'il est le seul compte active pour cet utilisateur
     */
     bool ok = true;
     QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idcompte",
                                                                     TBL_COMPTES, ok,
-                                                                    "where iduser = " + QString::number(gidUser) + " and desactive is null");
+                                                                    "where iduser = " + QString::number(m_iduser) + " and desactive is null");
     if (!ui->DesactiveComptecheckBox->isChecked())
         ui->DesactiveComptecheckBox ->setEnabled(listcomptes.size()>1);
     else
@@ -311,12 +311,12 @@ void dlg_gestioncomptes::ModifCompte()
 
 void dlg_gestioncomptes::NouvCompte()
 {
-    gMode = Nouv;
+    m_mode = Nouv;
     ui->Compteframe                 ->setVisible(true);
     ui->Compteframe                 ->setEnabled(true);
     ui->OKModifupSmallButton        ->setVisible(true);
     ui->AnnulModifupSmallButton     ->setVisible(true);
-    widgButtons                     ->setEnabled(false);
+    wdg_buttonframe                     ->setEnabled(false);
 
     ui->BanqueupcomboBox            ->setEnabled(true);
     ui->IBANuplineEdit              ->setEnabled(true);
@@ -385,7 +385,7 @@ void dlg_gestioncomptes::ValidCompte()
                                                                   TBL_BANQUES, ok,
                                                                   "where nomBanque = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
     int idbanque = listbanq.at(0).at(0).toInt();
-    if (gMode == Modif)
+    if (m_mode == Modif)
     {
         idcompte = ui->idCompteupLineEdit->text().toInt();
         QHash<QString, QString> listsets;
@@ -400,9 +400,9 @@ void dlg_gestioncomptes::ValidCompte()
                         "where idCompte = "          + ui->idCompteupLineEdit->text());
         Datas::I()->comptes->reloadCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     }
-    else if (gMode == Nouv)
+    else if (m_mode == Nouv)
         Datas::I()->comptes->CreationCompte(idbanque,                                          //! idBanque
-                                            gidUser,                                           //! idUser
+                                            m_iduser,                                           //! idUser
                                             ui->IBANuplineEdit->text(),                        //! IBAN
                                             ui->IntituleCompteuplineEdit->text(),              //! IntituleCompte
                                             ui->NomCompteAbregeuplineEdit->text(),             //! NomCompteAbrege
@@ -417,11 +417,11 @@ void dlg_gestioncomptes::ValidCompte()
     RemplirTableView();
     ui->OKModifupSmallButton->setVisible(false);
     ui->AnnulModifupSmallButton->setVisible(false);
-    widgButtons->setEnabled(true);
+    wdg_buttonframe->setEnabled(true);
     ui->ComptesuptableWidget->setEnabled(true);
     ui->ComptesuptableWidget->setFocus();
     ui->ComptesuptableWidget->setCurrentCell(ui->ComptesuptableWidget->findItems(QString::number(idcompte),Qt::MatchExactly).at(0)->row(),1);
-    gMode = Norm;
+    m_mode = Norm;
     ui->DesactiveComptecheckBox->setVisible(true);
 }
 
@@ -508,11 +508,11 @@ bool dlg_gestioncomptes::VerifCompte()
                                                                   "where nomBanque = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
     idbanque = listbanq.at(0).at(0).toInt();
 
-    if (gMode == Nouv)
+    if (m_mode == Nouv)
     {
         QList<QVariantList> listcpt = db->SelectRecordsFromTable(QStringList() << "idbanque",
                                                                       TBL_COMPTES, ok,
-                                                                      "where idUser = " + QString::number(gidUser) + " and idbanque = " + QString::number(idbanque));
+                                                                      "where idUser = " + QString::number(m_iduser) + " and idbanque = " + QString::number(idbanque));
         if (listcpt.size()>0)
         {
             UpMessageBox::Watch(this,tr("Vous avez déjà un compte enregistré dans cet organisme bancaire!"));
@@ -520,7 +520,7 @@ bool dlg_gestioncomptes::VerifCompte()
         }
         QList<QVariantList> listnomcpt = db->SelectRecordsFromTable(QStringList() << "nomcompteabrege",
                                                                       TBL_COMPTES, ok,
-                                                                      "where idUser = " + QString::number(gidUser) + " and nomcompteabrege = '" + Utils::correctquoteSQL(ui->NomCompteAbregeuplineEdit->text()) + "'");
+                                                                      "where idUser = " + QString::number(m_iduser) + " and nomcompteabrege = '" + Utils::correctquoteSQL(ui->NomCompteAbregeuplineEdit->text()) + "'");
         if (listnomcpt.size()>0)
         {
             UpMessageBox::Watch(this,tr(" Vous avez déjà un compte enregistré avec ce nom abrégé!"));
@@ -539,11 +539,11 @@ bool dlg_gestioncomptes::VerifCompte()
             }
         }
     }
-    else if (gMode == Modif)
+    else if (m_mode == Modif)
     {
         QList<QVariantList> listcpt = db->SelectRecordsFromTable(QStringList() << "idbanque",
                                                                     TBL_COMPTES, ok,
-                                                                    "where idUser = " + QString::number(gidUser) +
+                                                                    "where idUser = " + QString::number(m_iduser) +
                                                                     " and idbanque = " + QString::number(idbanque) +
                                                                     " and idcompte <> " + ui->idCompteupLineEdit->text());
         if (listcpt.size()>0)
@@ -553,7 +553,7 @@ bool dlg_gestioncomptes::VerifCompte()
         }
         QList<QVariantList> listnomabrg = db->SelectRecordsFromTable(QStringList() << "nomcompteabrege",
                                                                     TBL_COMPTES, ok,
-                                                                    "where idUser = " + QString::number(gidUser) +
+                                                                    "where idUser = " + QString::number(m_iduser) +
                                                                     " and nomcompteabrege = '" + ui->NomCompteAbregeuplineEdit->text() + "'" +
                                                                     " and idcompte <> " + ui->idCompteupLineEdit->text());
         if (listnomabrg.size()>0)

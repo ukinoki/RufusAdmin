@@ -33,11 +33,11 @@ public:
     void        setRow(int val);
     int         Row() const;
     void        setiD(int m_id);
-    int         iD();
+    int         iD() const;
     int         Column() const;
     void        setColumn(int val);
     void        setdatas(QVariant data);
-    QVariant    datas();
+    QVariant    datas() const;
     void        setvaleuravant(QString valprec);
     QString     valeuravant() const;
     void        setvaleurapres(QString valpost);

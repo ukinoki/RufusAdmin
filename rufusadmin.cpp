@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("13-08-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("16-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -55,34 +55,34 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         "QToolBar {border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px;}"
         "QWidget#centralWidget{" + border + "}");
 
-    giconBackup         .addFile(QStringLiteral("://Backup.png"),               QSize(),        QIcon::Normal, QIcon::Off);
-    giconCopy           .addFile(QStringLiteral("://copy.png"),                 QSize(),        QIcon::Normal, QIcon::Off);
-    giconSunglasses     .addFile(QStringLiteral("://Sunglasses.png"),           QSize(),        QIcon::Normal, QIcon::Off);
-    giconSortirDossier  .addFile(QStringLiteral("://metadoc.png"),              QSize(25,25),   QIcon::Normal, QIcon::Off);
-    giconAnnul          .addFile(QStringLiteral("://Supprime.png"),             QSize(30,30),   QIcon::Normal, QIcon::Off);
-    giconEuro           .addFile(QStringLiteral("://euro.ico"),                 QSize(40,40),   QIcon::Normal, QIcon::Off);
-    giconEuroCount      .addFile(QStringLiteral("://EuroCount.png"),            QSize(40,40),   QIcon::Normal, QIcon::Off);
-    giconFermeAppuye    .addFile(QStringLiteral("://shutdowndown.png"),         QSize(30,30),   QIcon::Normal, QIcon::Off);
-    giconFermeRelache   .addFile(QStringLiteral("://shutdown.png"),             QSize(30,30),   QIcon::Normal, QIcon::Off);
-    giconNull           .addFile(QStringLiteral(""),                            QSize(30,30),   QIcon::Normal, QIcon::Off);
-    giconOK             .addFile(QStringLiteral("://start.png"),                QSize(),        QIcon::Normal, QIcon::Off);
-    gIconRufusAdmin     .addFile(QStringLiteral("://wrench-screwdriver.png"),   QSize(),        QIcon::Normal, QIcon::Off);
-    giconErase          .addFile(QStringLiteral("://eraser.png"),               QSize(),        QIcon::Normal, QIcon::Off);
+    ic_Backup         .addFile(QStringLiteral("://Backup.png"),               QSize(),        QIcon::Normal, QIcon::Off);
+    ic_Copy           .addFile(QStringLiteral("://copy.png"),                 QSize(),        QIcon::Normal, QIcon::Off);
+    ic_Sunglasses     .addFile(QStringLiteral("://Sunglasses.png"),           QSize(),        QIcon::Normal, QIcon::Off);
+    ic_SortirDossier  .addFile(QStringLiteral("://metadoc.png"),              QSize(25,25),   QIcon::Normal, QIcon::Off);
+    ic_Annul          .addFile(QStringLiteral("://Supprime.png"),             QSize(30,30),   QIcon::Normal, QIcon::Off);
+    ic_Euro           .addFile(QStringLiteral("://euro.ico"),                 QSize(40,40),   QIcon::Normal, QIcon::Off);
+    ic_EuroCount      .addFile(QStringLiteral("://EuroCount.png"),            QSize(40,40),   QIcon::Normal, QIcon::Off);
+    ic_FermeAppuye    .addFile(QStringLiteral("://shutdowndown.png"),         QSize(30,30),   QIcon::Normal, QIcon::Off);
+    ic_FermeRelache   .addFile(QStringLiteral("://shutdown.png"),             QSize(30,30),   QIcon::Normal, QIcon::Off);
+    ic_Null           .addFile(QStringLiteral(""),                            QSize(30,30),   QIcon::Normal, QIcon::Off);
+    ic_OK             .addFile(QStringLiteral("://start.png"),                QSize(),        QIcon::Normal, QIcon::Off);
+    ic_RufusAdmin     .addFile(QStringLiteral("://wrench-screwdriver.png"),   QSize(),        QIcon::Normal, QIcon::Off);
+    ic_Erase          .addFile(QStringLiteral("://eraser.png"),               QSize(),        QIcon::Normal, QIcon::Off);
 
-    ui->EffacePrgSauvupPushButton   ->setIcon(giconErase);
+    ui->EffacePrgSauvupPushButton   ->setIcon(ic_Erase);
     ui->EffacePrgSauvupPushButton   ->setIconSize(QSize(35,35));
-    ui->RestaurBaseupPushButton     ->setIcon(giconCopy);
-    ui->ImmediatBackupupPushButton  ->setIcon(giconBackup);
+    ui->RestaurBaseupPushButton     ->setIcon(ic_Copy);
+    ui->ImmediatBackupupPushButton  ->setIcon(ic_Backup);
 
-    setWindowIcon(giconSunglasses);
+    setWindowIcon(ic_Sunglasses);
 
     ui->FermepushButton->setUpButtonStyle(UpSmallButton::CLOSEBUTTON);
-    gnomFichIni         = QDir::homePath() + FILE_INI;
-    gsettingsIni        = new QSettings(gnomFichIni, QSettings::IniFormat);
-    gNomFichRufusIni    = QDir::homePath() + FILE_INIRUFUS;
-    gNouvMDP            = "nouv";
-    gAncMDP             = "anc";
-    gConfirmMDP         = "confirm";
+    m_nomfichierini         = QDir::homePath() + FILE_INI;
+    m_settings        = new QSettings(m_nomfichierini, QSettings::IniFormat);
+    m_nomfichieriniRufus    = QDir::homePath() + FILE_INIRUFUS;
+    m_nouvMDP            = "nouv";
+    m_ancMDP             = "anc";
+    m_confirmMDP         = "confirm";
     Utils::mkpath(QDir::homePath() + DIR_RUFUS);
 
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
@@ -92,20 +92,20 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (!VerifBase())
         exit(0);
 
-    idlieuExercice = DetermineLieuExercice();
-    gNomLieuExercice = "";
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select nomlieu from " TBL_LIEUXEXERCICE " where idlieu = " + QString::number(idlieuExercice), ok);
-    gNomLieuExercice = listlieux.at(0).at(0).toString();
-    ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + gNomLieuExercice + "</b></font> ");
+    m_idlieuexeercice = DetermineLieuExercice();
+    m_nomLieuExercice = "";
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select nomlieu from " TBL_LIEUXEXERCICE " where idlieu = " + QString::number(m_idlieuexeercice), m_ok);
+    m_nomLieuExercice = listlieux.at(0).at(0).toString();
+    ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + m_nomLieuExercice + "</b></font> ");
 
     //recherche de l'idUser du compte AdminDocs
-    idAdminDocs = 0;
+    m_idadmindocs = 0;
     QString req = "select iduser from " TBL_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
-    QList<QVariantList> listusr = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok);
     if (listusr.size()==0)
     {
         req = "select iduser from " TBL_UTILISATEURS " where UserNom = '" NOM_ADMINISTRATEURDOCS "'";
-        QList<QVariantList> listusers = db->StandardSelectSQL(req, ok);
+        QList<QVariantList> listusers = db->StandardSelectSQL(req, m_ok);
         if (listusers.size()>0)
         {
             db->StandardSQL("update " TBL_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'");
@@ -113,38 +113,38 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         else
             db->StandardSQL("insert into " TBL_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')");
         req = "select iduser from " TBL_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
-        listusr = db->StandardSelectSQL(req, ok);
-        QList<QVariantList> listmdp = db->StandardSelectSQL("select mdpadmin from " TBL_PARAMSYSTEME,ok);
+        listusr = db->StandardSelectSQL(req, m_ok);
+        QList<QVariantList> listmdp = db->StandardSelectSQL("select mdpadmin from " TBL_PARAMSYSTEME,m_ok);
         if (listmdp.at(0).at(0).toString() == "")
             db->StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + db->getDataBase().password() + "'");
     }
     UserAdmin = new User(DataBase::I()->loadAdminData());
-    idAdminDocs = UserAdmin->id();
+    m_idadmindocs = UserAdmin->id();
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
-                   " where idUser = " + QString::number(idAdminDocs) +
+                   " where idUser = " + QString::number(m_idadmindocs) +
                    " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                   " and idlieu = " + QString::number(idlieuExercice) +
+                   " and idlieu = " + QString::number(m_idlieuexeercice) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
-    QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, ok);
+    QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, m_ok);
     if (listusr2.size()>0)
     {
         UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + listusr2.at(0).at(0).toString().remove(" - " NOM_ADMINISTRATEURDOCS), tr("Sortie du programme"));
         exit(0);
     }
     else
-        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(idAdminDocs) + " and idlieu = " + QString::number(idlieuExercice));
+        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(m_idadmindocs) + " and idlieu = " + QString::number(m_idlieuexeercice));
 
     // 5 mettre en place le TcpSocket
-    gIPadr                      = Utils::getIpAdress();
-    gMacAdress                  = Utils::getMACAdress();
-    UtiliseTCP = (gIPadr!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
+    m_IPadress                      = Utils::getIpAdress();
+    m_macAdress                  = Utils::getMACAdress();
+    m_utiliseTCP = (m_IPadress!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
     flags                       = Flags::I();
-    if (UtiliseTCP)
+    if (m_utiliseTCP)
     {
         TCPServer                   = TcpServer::I();
-        TCPServer                   ->setId(idAdminDocs);
+        TCPServer                   ->setId(m_idadmindocs);
         connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         TCPServer                   ->start();
     }
@@ -153,44 +153,44 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     m_flagmessages              = flags->flagMessages();
     m_flagsalledattente         = flags->flagSalleDAttente();
 
-    gTimerSalDatCorrespMsg      = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants et de l'arrivée de nouveaux messages utilisé par
+    t_timerSalDatCorrespMsg      = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants et de l'arrivée de nouveaux messages utilisé par
                                                            pour verifier les modifications faites par les postes distants
                                                         */
-    gTimerVerifVerrou           = new QTimer(this);     // utilisé par le TcpServer pour vérifier l'absence d'utilisateurs déconnectés dans la base
+    t_timerVerifVerrou           = new QTimer(this);     // utilisé par le TcpServer pour vérifier l'absence d'utilisateurs déconnectés dans la base
 
-    gTimerUserConnecte          = new QTimer(this);     // mise à jour de la connexion à la base de données
-    gTimerSupprDocs             = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
-    gTimerVerifDivers           = new QTimer(this);     // vérification du poste importateur des documents et e la version de la base
-    gTimerSupprDocs             = new QTimer(this);     // verification des documents à supprimer
-    gTimerProgressBar           = new QTimer(this);     // progression de la progressbar - quand la progressbar est au maximum, la fiche est cachée
+    t_timerUserConnecte          = new QTimer(this);     // mise à jour de la connexion à la base de données
+    t_timerSupprDocs             = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
+    t_timerVerifDivers           = new QTimer(this);     // vérification du poste importateur des documents et e la version de la base
+    t_timerSupprDocs             = new QTimer(this);     // verification des documents à supprimer
+    t_timerProgressBar           = new QTimer(this);     // progression de la progressbar - quand la progressbar est au maximum, la fiche est cachée
 
     setPosteImportDocs(); // on prend la place d'importateur des documents dans les utilisateurs connectés
     Slot_VerifPosteImport();
     Slot_VerifVersionBase();
     Slot_CalcExporteDocs();
-    QList<QVariantList> listdate = db->StandardSelectSQL("select max(creele) from " TBL_MESSAGES, ok);
+    QList<QVariantList> listdate = db->StandardSelectSQL("select max(creele) from " TBL_MESSAGES, m_ok);
     if (listdate.size()==0)
-        gDateDernierMessage = QDateTime::currentDateTime();
+        m_dateDernierMessage = QDateTime::currentDateTime();
     else
-        gDateDernierMessage = listdate.at(0).at(0).toDateTime();
+        m_dateDernierMessage = listdate.at(0).at(0).toDateTime();
 
-    // Lancement du timer de vérification des verrous - +++ à lancer après le timer gTimerVerifGestDocs puisqu'il l'utilise
-    gTimerVerifVerrou->start(60000);// "toutes les 60 secondes"
+    // Lancement du timer de vérification des verrous - +++ à lancer après le timer t_timerVerifGestDocs puisqu'il l'utilise
+    t_timerVerifVerrou->start(60000);// "toutes les 60 secondes"
 
-    gTimerSalDatCorrespMsg  ->start(1000);
-    gTimerUserConnecte      ->start(10000);
-    gTimerVerifDivers       ->start(30000);
+    t_timerSalDatCorrespMsg  ->start(1000);
+    t_timerUserConnecte      ->start(10000);
+    t_timerVerifDivers       ->start(30000);
 
     QString veille = MISE_EN_VEILLE;
-    dureeVeille = veille.toInt();
+    m_dureeVeille = veille.toInt();
     ui->MiseEnVeilleprogressBar->setMinimum(0);
-    ui->MiseEnVeilleprogressBar->setMaximum(dureeVeille);
+    ui->MiseEnVeilleprogressBar->setMaximum(m_dureeVeille);
     ui->MiseEnVeilleprogressBar->setInvertedAppearance(true);
-    connect(gTimerProgressBar, &QTimer::timeout, this, [=] {ui->MiseEnVeilleprogressBar->setValue(ui->MiseEnVeilleprogressBar->value()-1);});
-    gTimerProgressBar->start(1);
-    gTimerSupprDocs->start(60000);// "toutes les 60 secondes"
-    gTimerDocsAExporter = new QTimer(this);
-    gTimerDocsAExporter->start(60000);// "toutes les 60 secondes"
+    connect(t_timerProgressBar, &QTimer::timeout, this, [=] {ui->MiseEnVeilleprogressBar->setValue(ui->MiseEnVeilleprogressBar->value()-1);});
+    t_timerProgressBar->start(1);
+    t_timerSupprDocs->start(60000);// "toutes les 60 secondes"
+    t_timerDocsAExporter = new QTimer(this);
+    t_timerDocsAExporter->start(60000);// "toutes les 60 secondes"
 
     ConnectTimers();
 
@@ -203,7 +203,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(ui->InitMDPAdminpushButton,         SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifMDP()));;
     connect(ui->RestaurBaseupPushButton,        SIGNAL(clicked(bool)),              this,   SLOT(Slot_RestaureBase()));
     connect(ui->StockageupPushButton,           SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifDirImagerie()));
-    connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(gSocketStatut, 20000);});
+    connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(m_socketStatut, 20000);});
     // MAJ Salle d'attente ----------------------------------------------------------------------------------
     connect(flags,                              &Flags::UpdSalleDAttente,           this,   [=](int a)  { m_flagsalledattente = a; } );
     // MAJ Correspondants ----------------------------------------------------------------------------------
@@ -213,9 +213,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
 
 
-    widgAppareils = new WidgetButtonFrame(ui->AppareilsConnectesupTableWidget);
-    widgAppareils->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::MoinsButton);
-    connect(widgAppareils, SIGNAL(choix(int)), this, SLOT(Slot_ChoixButtonFrame(int)));
+    wdg_buttonframe = new WidgetButtonFrame(ui->AppareilsConnectesupTableWidget);
+    wdg_buttonframe->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::MoinsButton);
+    connect(wdg_buttonframe, SIGNAL(choix(int)), this, SLOT(Slot_ChoixButtonFrame(int)));
 
     // Mise en forme de la table AppareilsConnectes
     ui->AppareilsConnectesupTableWidget->setPalette(QPalette(Qt::white));
@@ -241,7 +241,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     for (int i=0; i<ui->AppareilsConnectesupTableWidget->columnCount(); i++)
         ui->AppareilsConnectesupTableWidget->horizontalHeaderItem(i)->setTextAlignment(Qt::AlignLeft);
     ui->AppareilsConnectesupTableWidget->FixLargeurTotale();
-    widgAppareils->widgButtonParent()->setFixedWidth(ui->AppareilsConnectesupTableWidget->width());
+    wdg_buttonframe->widgButtonParent()->setFixedWidth(ui->AppareilsConnectesupTableWidget->width());
     QVBoxLayout *applay = new QVBoxLayout();
     applay      ->addWidget(ui->MiseEnVeilleprogressBar);
     QHBoxLayout *Stocklay = new QHBoxLayout();
@@ -254,58 +254,58 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     appcentrelay->addWidget(ui->AppareilsconnectesupLabel);
     appcentrelay->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding, QSizePolicy::Expanding));
     applay      ->addLayout(appcentrelay);
-    applay      ->addWidget(widgAppareils->widgButtonParent());
+    applay      ->addWidget(wdg_buttonframe->widgButtonParent());
     applay      ->addLayout(Stocklay);
 
     int marge   = 5;
     applay      ->setContentsMargins(marge,marge,marge,marge);
     applay      ->setSpacing(marge);
-    ui->Appareilsconnectesframe ->setFixedWidth(widgAppareils->widgButtonParent()->width() + marge + marge + marge);
+    ui->Appareilsconnectesframe ->setFixedWidth(wdg_buttonframe->widgButtonParent()->width() + marge + marge + marge);
     ui->Appareilsconnectesframe ->setLayout(applay);
-    ui->Sauvegardeframe         ->setFixedWidth(widgAppareils->widgButtonParent()->width() + marge + marge + marge);
+    ui->Sauvegardeframe         ->setFixedWidth(wdg_buttonframe->widgButtonParent()->width() + marge + marge + marge);
     setFixedWidth(ui->Appareilsconnectesframe->width() + 20);
     Remplir_Table();
-    if (gMode == Poste)
+    if (db->getMode() == DataBase::Poste)
     {
-        QList<QVariantList> listdir = db->StandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, ok);
+        QList<QVariantList> listdir = db->StandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, m_ok);
         QString NomDirStockageImagerie = listdir.at(0).at(0).toString();
-        gsettingsIni->setValue("DossierImagerie",NomDirStockageImagerie);
-        setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + gNomLieuExercice);
+        m_settings->setValue("DossierImagerie",NomDirStockageImagerie);
+        setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + m_nomLieuExercice);
     }
-    else if (gMode == ReseauLocal)
+    else if (db->getMode() == DataBase::ReseauLocal)
     {
-        setWindowTitle("RufusAdmin - " + tr("Réseau local") + " - " + gNomLieuExercice);
+        setWindowTitle("RufusAdmin - " + tr("Réseau local") + " - " + m_nomLieuExercice);
     }
-    else if (gMode == Distant)
+    else if (db->getMode() == DataBase::Distant)
     {
-        setWindowTitle("RufusAdmin - " + tr("Accès distant crypté SSL") + " - " + gNomLieuExercice);
+        setWindowTitle("RufusAdmin - " + tr("Accès distant crypté SSL") + " - " + m_nomLieuExercice);
         ui->Exportframe         ->setVisible(false);
         ui->Diversframe         ->setVisible(false);
     }
 
-    ui->Exportframe         ->setVisible(gMode != Distant);
-    QString Base = (gMode== Distant? "BDD_DISTANT/" : "");
-    ui->StockageupLineEdit->setText(gsettingsIni->value(Base + "DossierImagerie").toString());
+    ui->Exportframe         ->setVisible(db->getMode() != DataBase::Distant);
+    QString Base = (db->getMode() == DataBase::Distant? "BDD_DISTANT/" : "");
+    ui->StockageupLineEdit->setText(m_settings->value(Base + "DossierImagerie").toString());
 
     ReconstruitListeLieuxExercice();
     Datas::I()->comptes->initListe();
 
     QString VerifBasereq = "select VersionBase from " TBL_PARAMSYSTEME;
-    QList<QVariantList> listversion = db->StandardSelectSQL(VerifBasereq, ok);
-    if (!ok || listversion.size()==0)
+    QList<QVariantList> listversion = db->StandardSelectSQL(VerifBasereq, m_ok);
+    if (!m_ok || listversion.size()==0)
         ui->VersionBaselabel->setText(tr("Version de la base") + "\t<font color=\"red\"><b>" + tr("inconnue") + "</b></font>");
     else
         ui->VersionBaselabel->setText(tr("Version de la base ") + "<font color=\"green\"><b>" + listversion.at(0).at(0).toString() + "</b></font>");
     ui->VersionRufuslabel->setText(tr("Version de RufusAdmin ") + "<font color=\"green\"><b>" + qApp->applicationVersion() + "</b></font>");
 
-    ui->Sauvegardeframe         ->setEnabled(gMode == Poste);
-    ui->ParamSauvegardelabel    ->setVisible(gMode != Poste);
-    ui->ParamSauvegardelabel    ->setEnabled(gMode != Poste);
+    ui->Sauvegardeframe         ->setEnabled(db->getMode() == DataBase::Poste);
+    ui->ParamSauvegardelabel    ->setVisible(db->getMode() != DataBase::Poste);
+    ui->ParamSauvegardelabel    ->setEnabled(db->getMode() != DataBase::Poste);
 
-    if (gMode == Poste)
+    if (db->getMode() == DataBase::Poste)
     {
         QString reqBkup = "select LundiBkup, MardiBkup, MercrediBkup, JeudiBkup, VendrediBkup, SamediBkup, DimancheBkup, HeureBkup, DirBkup from " TBL_PARAMSYSTEME;
-        QList<QVariantList> listBKup = db->StandardSelectSQL(reqBkup, ok);
+        QList<QVariantList> listBKup = db->StandardSelectSQL(reqBkup, m_ok);
         QString DirBkup = listBKup.at(0).at(8).toString();
         if (QDir(DirBkup).exists())
             ui->DirBackupuplineEdit->setText(DirBkup);
@@ -329,19 +329,19 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     trayIconMenu = new QMenu();
 
-    gRufusAdminTrayIcon = new QSystemTrayIcon();
-    gRufusAdminTrayIcon->setContextMenu(trayIconMenu);
-    gRufusAdminTrayIcon->setIcon(gIconRufusAdmin);
-    gRufusAdminTrayIcon->setVisible(true);
+    ictray_RufusAdminTrayIcon = new QSystemTrayIcon();
+    ictray_RufusAdminTrayIcon->setContextMenu(trayIconMenu);
+    ictray_RufusAdminTrayIcon->setIcon(ic_RufusAdmin);
+    ictray_RufusAdminTrayIcon->setVisible(true);
     connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::Slot_TrayIconMenu);
     ui->MessageupLabel->setText("");
 
-    ImportDocsExtThread = new ImportDocsExternesThread(idAdminDocs, idlieuExercice, gMode != Distant);
+    ImportDocsExtThread = new ImportDocsExternesThread(m_idadmindocs, m_idlieuexeercice, db->getMode() != DataBase::Distant);
     connect(ImportDocsExtThread,    SIGNAL(emitmsg(QStringList, int, bool)),    this,       SLOT(AfficheMessageImport(QStringList, int, bool)));
-    if (UtiliseTCP)
+    if (m_utiliseTCP)
         connect(ImportDocsExtThread,SIGNAL(emitmsg(QString)),                   TCPServer,  SLOT(envoyerATous(QString)));
-    connect(&tim,                   &QTimer::timeout,                           this,       &RufusAdmin::ListeAppareils);
-    tim             .setInterval(5000);
+    connect(&t_timer,                   &QTimer::timeout,                           this,       &RufusAdmin::ListeAppareils);
+    t_timer             .setInterval(5000);
     Slot_ImportDocsExternes();
 
     Datas::I()->banques->initListe();
@@ -363,7 +363,7 @@ void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause, bool botto
 void RufusAdmin::ListeAppareils()
 {
     QString req = "select distinct list.TitreExamen, list.NomAPPareil from " TBL_APPAREILSCONNECTESCENTRE " appcon, " TBL_LISTEAPPAREILS " list"
-          " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(idlieuExercice);
+          " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(m_idlieuexeercice);
     //qDebug()<< req;
     bool ok;
     QList<QVariantList> listdocs = db->StandardSelectSQL(req, ok);
@@ -378,18 +378,18 @@ void RufusAdmin::closeEvent(QCloseEvent *)
     // on retire Admin de la table des utilisateurs connectés
     QString req = "delete from " TBL_USERSCONNECTES
                   " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                  " and idlieu = " + QString::number(idlieuExercice);
+                  " and idlieu = " + QString::number(m_idlieuexeercice);
     db->StandardSQL(req);
 }
 
 void RufusAdmin::AskAppareil()
 {
     DisconnectTimerInactive();
-    gAskAppareil = new UpDialog(this);
-    gAskAppareil->setModal(true);
-    gAskAppareil->move(QPoint(x()+width()/2,y()+height()/2));
-    gAskAppareil->setFixedWidth(400);
-    gAskAppareil->setWindowTitle(tr("Choisissez un appareil"));
+    dlg_askAppareil = new UpDialog(this);
+    dlg_askAppareil->setModal(true);
+    dlg_askAppareil->move(QPoint(x()+width()/2,y()+height()/2));
+    dlg_askAppareil->setFixedWidth(400);
+    dlg_askAppareil->setWindowTitle(tr("Choisissez un appareil"));
     QHBoxLayout *lay = new QHBoxLayout;
     UpLabel *label = new UpLabel();
     label->setText("Nom de l'appareil");
@@ -397,15 +397,15 @@ void RufusAdmin::AskAppareil()
     lay->addWidget(label);
     lay->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
     UpComboBox *upCombo = new UpComboBox();
-    upCombo->insertItems(0,glistAppareils);
+    upCombo->insertItems(0,m_listeAppareils);
     upCombo->setFixedSize(260,32);
     upCombo->setchamp("NomAppareil");
     lay->addWidget(upCombo);
-    gAskAppareil->dlglayout()->insertLayout(0,lay);
-    gAskAppareil->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
-    gAskAppareil->AjouteLayButtons(UpDialog::ButtonOK);
-    connect(gAskAppareil->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreAppareil()));
-    gAskAppareil->exec();
+    dlg_askAppareil->dlglayout()->insertLayout(0,lay);
+    dlg_askAppareil->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
+    dlg_askAppareil->AjouteLayButtons(UpDialog::ButtonOK);
+    connect(dlg_askAppareil->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreAppareil()));
+    dlg_askAppareil->exec();
     upCombo->showPopup();
     ConnectTimerInactive();
 }
@@ -442,7 +442,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
 {
     QMap<QString,qint64>      DataDir;
     // taille de la base de données ----------------------------------------------------------------------------------------------------------------------------------------------
-    BaseSize = 0;
+    m_basesize = 0;
     if (Restore)
     {
         QStringList filters, listnomsfilestorestore;
@@ -450,22 +450,22 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         for (int j=0; j<QDir(pathorigin).entryList(filters).size(); j++)
             listnomsfilestorestore << pathorigin + "/" + QDir(pathorigin).entryList(filters).at(j);
         for (int i=0; i<listnomsfilestorestore.size(); i++)
-            BaseSize += QFile(listnomsfilestorestore.at(i)).size()/1024/1024;
+            m_basesize += QFile(listnomsfilestorestore.at(i)).size()/1024/1024;
     }
     else
-        BaseSize = CalcBaseSize();
-    ImagesSize = 0;
-    VideosSize = 0;
+        m_basesize = CalcBaseSize();
+    m_imagessize = 0;
+    m_videossize = 0;
     // espace libre sur le disque ------------------------------------------------------------------------------------------------------------------------------------------------
-    FreeSpace = QStorageInfo(pathdestination).bytesAvailable();
-    FreeSpace = FreeSpace/1024/1024;
+    m_freespace = QStorageInfo(pathdestination).bytesAvailable();
+    m_freespace = m_freespace/1024/1024;
     //qDebug() << QStorageInfo(ui->DirBackupuplineEdit->text()).bytesAvailable();
     //qDebug() << QString::number(FreeSpace,'f',0);
 
-    gAskBupRestore = new UpDialog(this);
-    gAskBupRestore->setModal(true);
-    gAskBupRestore->move(QPoint(x()+width()/2,y()+height()/2));
-    gAskBupRestore->setWindowTitle(Restore? tr("Dossiers à restaurer") : tr("Dossiers à sauvegarder"));
+    dlg_askBupRestore = new UpDialog(this);
+    dlg_askBupRestore->setModal(true);
+    dlg_askBupRestore->move(QPoint(x()+width()/2,y()+height()/2));
+    dlg_askBupRestore->setWindowTitle(Restore? tr("Dossiers à restaurer") : tr("Dossiers à sauvegarder"));
     int labelsize = 15;
 
     if (Restore)
@@ -482,7 +482,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         Inichk->setAccessibleDescription("ini");
         layini->addWidget(Inichk);
         layini->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
-        gAskBupRestore->dlglayout()->insertLayout(0, layini);
+        dlg_askBupRestore->dlglayout()->insertLayout(0, layini);
 
         QHBoxLayout *layRssces = new QHBoxLayout;
         UpLabel *labelrssces = new UpLabel();
@@ -496,13 +496,13 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         Rssceschk->setAccessibleDescription("ressources");
         layRssces->addWidget(Rssceschk);
         layRssces->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
-        gAskBupRestore->dlglayout()->insertLayout(0, layRssces);
+        dlg_askBupRestore->dlglayout()->insertLayout(0, layRssces);
     }
     if (OKvideos)
     {
         // taille du dossier video ---------------------------------------------------------------------------------------------------------------------------------------
         DataDir = Utils::dir_size(pathorigin + DIR_VIDEOS);
-        VideosSize = DataDir["Size"]/1024/1024;
+        m_videossize = DataDir["Size"]/1024/1024;
         QHBoxLayout *layVideos = new QHBoxLayout;
         UpLabel *labeVideos = new UpLabel();
         labeVideos->setVisible(false);
@@ -516,16 +516,16 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         layVideos->addWidget(Videoschk);
         layVideos->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
         UpLabel *lblvolvid = new UpLabel();
-        lblvolvid->setText(getExpressionSize(VideosSize));
+        lblvolvid->setText(getExpressionSize(m_videossize));
         layVideos->addWidget(lblvolvid);
-        gAskBupRestore->dlglayout()->insertLayout(0, layVideos);
+        dlg_askBupRestore->dlglayout()->insertLayout(0, layVideos);
         connect(Videoschk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
     }
     if (OKimages)
     {
         // taille du dossier Images ---------------------------------------------------------------------------------------------------------------------------------------
         DataDir = Utils::dir_size(pathorigin + DIR_IMAGES);
-        ImagesSize = DataDir["Size"]/1024/1024;
+        m_imagessize = DataDir["Size"]/1024/1024;
         QHBoxLayout *layImges = new QHBoxLayout;
         UpLabel *labelmges = new UpLabel();
         labelmges->setVisible(false);
@@ -539,9 +539,9 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         layImges->addWidget(Imgeschk);
         layImges->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
         UpLabel *lblvolimg = new UpLabel();
-        lblvolimg->setText(getExpressionSize(ImagesSize));
+        lblvolimg->setText(getExpressionSize(m_imagessize));
         layImges->addWidget(lblvolimg);
-        gAskBupRestore->dlglayout()->insertLayout(0, layImges);
+        dlg_askBupRestore->dlglayout()->insertLayout(0, layImges);
         connect(Imgeschk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
     }
 
@@ -557,49 +557,49 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
     layBDD->addWidget(BDDchk);
     layBDD->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
     UpLabel *lblvolbase = new UpLabel();
-    lblvolbase->setText(getExpressionSize(BaseSize));
+    lblvolbase->setText(getExpressionSize(m_basesize));
     layBDD->addWidget(lblvolbase);
-    gAskBupRestore->dlglayout()->insertLayout(0, layBDD);
+    dlg_askBupRestore->dlglayout()->insertLayout(0, layBDD);
 
 
     QHBoxLayout *layResume = new QHBoxLayout;
-    labelResume = new UpLabel();
-    layResume->addWidget(labelResume);
-    gAskBupRestore->dlglayout()->insertLayout(gAskBupRestore->dlglayout()->count()-1, layResume);
+    wdg_resumelbl = new UpLabel();
+    layResume->addWidget(wdg_resumelbl);
+    dlg_askBupRestore->dlglayout()->insertLayout(dlg_askBupRestore->dlglayout()->count()-1, layResume);
 
     QHBoxLayout *layVolumeLibre = new QHBoxLayout;
-    labelVolumeLibre = new UpLabel();
-    layVolumeLibre->addWidget(labelVolumeLibre);
-    gAskBupRestore->dlglayout()->insertLayout(gAskBupRestore->dlglayout()->count()-1, layVolumeLibre);
+    wdg_volumelibrelbl = new UpLabel();
+    layVolumeLibre->addWidget(wdg_volumelibrelbl);
+    dlg_askBupRestore->dlglayout()->insertLayout(dlg_askBupRestore->dlglayout()->count()-1, layVolumeLibre);
 
     connect(BDDchk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
 
-    gAskBupRestore->setFixedWidth(400);
-    gAskBupRestore->AjouteLayButtons(UpDialog::ButtonOK);
-    connect(gAskBupRestore->OKButton,    SIGNAL(clicked(bool)), gAskBupRestore, SLOT(accept()));
+    dlg_askBupRestore->setFixedWidth(400);
+    dlg_askBupRestore->AjouteLayButtons(UpDialog::ButtonOK);
+    connect(dlg_askBupRestore->OKButton,    SIGNAL(clicked(bool)), dlg_askBupRestore, SLOT(accept()));
     Slot_CalcTimeBupRestore();
 }
 
 void RufusAdmin::Slot_CalcTimeBupRestore()
 {
     double time(0), volume(0);
-    QList<UpCheckBox*> listchk = gAskBupRestore->findChildren<UpCheckBox*>();
+    QList<UpCheckBox*> listchk = dlg_askBupRestore->findChildren<UpCheckBox*>();
     for (int i= 0; i<listchk.size(); i++)
     {
         if (listchk.at(i)->accessibleDescription() == "base")
         {
             if (listchk.at(i)->isChecked())
-                volume += BaseSize;
+                volume += m_basesize;
         }
         if (listchk.at(i)->accessibleDescription() == "images")
         {
             if (listchk.at(i)->isChecked())
-                volume += ImagesSize;
+                volume += m_imagessize;
         }
         if (listchk.at(i)->accessibleDescription() == "videos")
         {
             if (listchk.at(i)->isChecked())
-                volume += VideosSize;
+                volume += m_videossize;
         }
     }
     time = (volume/1024 /2)*60000; //duréée approximative de sauvegarde en ms
@@ -611,45 +611,45 @@ void RufusAdmin::Slot_CalcTimeBupRestore()
         timelitteral = QString::number(time/60000/60,'f',0) + tr(" heures");
     else
         timelitteral = tr("moins d'une minute");
-    QString color = FreeSpace>volume? "green": "red";
+    QString color = m_freespace>volume? "green": "red";
     QString msg = tr("Volume à transférer: ") + " <font color=\""+ color + "\"><b>" + Volumelitteral + "</b></font>";
-    labelResume->setText(msg + " - " + tr("Temps estimé: ") + timelitteral);
-    QString Volumelibre = getExpressionSize(FreeSpace);
+    wdg_resumelbl->setText(msg + " - " + tr("Temps estimé: ") + timelitteral);
+    QString Volumelibre = getExpressionSize(m_freespace);
     msg = tr("Volume disponible sur le disque: ") + " <font color=\""+ color + "\"><b>" + Volumelibre + "</b></font>";
 
-    labelVolumeLibre->setText(msg);
-    gAskBupRestore->OKButton->setEnabled(FreeSpace>volume);
+    wdg_volumelibrelbl->setText(msg);
+    dlg_askBupRestore->OKButton->setEnabled(m_freespace>volume);
 }
 
 void RufusAdmin::ConnectTimers()
 {
-    connect (gTimerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
-    connect (gTimerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
-    connect (gTimerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
-    connect (gTimerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
-    if (gMode != Distant)
+    connect (t_timerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
+    connect (t_timerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
+    connect (t_timerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
+    connect (t_timerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
+    if (db->getMode() != DataBase::Distant)
     {
-        connect (gTimerUserConnecte,    &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
-        connect (gTimerSupprDocs,       &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
-        connect (gTimerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
+        connect (t_timerUserConnecte,    &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
+        connect (t_timerSupprDocs,       &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
+        connect (t_timerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
     }
     ConnectTimerInactive();
-    connect (gTimerSalDatCorrespMsg,    &QTimer::timeout,       this,   &RufusAdmin::VerifModifsFlags);
-    connect (gTimerVerifVerrou,         &QTimer::timeout,       this,   &RufusAdmin::VerifVerrouDossier);
+    connect (t_timerSalDatCorrespMsg,    &QTimer::timeout,       this,   &RufusAdmin::VerifModifsFlags);
+    connect (t_timerVerifVerrou,         &QTimer::timeout,       this,   &RufusAdmin::VerifVerrouDossier);
 }
 
 void RufusAdmin::DisconnectTimers()
 {
-    disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
-    disconnect (gTimerSupprDocs,        &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
-    disconnect (gTimerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
-    disconnect (gTimerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
-    disconnect (gTimerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
-    disconnect (gTimerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
-    disconnect (gTimerUserConnecte,     &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
+    disconnect (t_timerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
+    disconnect (t_timerSupprDocs,        &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
+    disconnect (t_timerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
+    disconnect (t_timerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
+    disconnect (t_timerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
+    disconnect (t_timerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
+    disconnect (t_timerUserConnecte,     &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
     DisconnectTimerInactive();
-    gTimerSalDatCorrespMsg  ->disconnect();
-    gTimerVerifVerrou       ->disconnect();
+    t_timerSalDatCorrespMsg  ->disconnect();
+    t_timerVerifVerrou       ->disconnect();
 }
 
 void RufusAdmin::ConnectTimerInactive()
@@ -676,8 +676,8 @@ qint64 RufusAdmin::CalcBaseSize()
                       " or table_schema = 'rufus'"
                       " GROUP BY table_schema)"
                       " as bdd";
-    QVariantList basedata = db->getFirstRecordFromStandardSelectSQL(sizereq,ok);
-    if (ok && basedata.size()>0)
+    QVariantList basedata = db->getFirstRecordFromStandardSelectSQL(sizereq,m_ok);
+    if (m_ok && basedata.size()>0)
         basesize = basedata.at(0).toLongLong();
     return basesize;
 }
@@ -689,7 +689,6 @@ void RufusAdmin::ConnexionBase()
         db = DataBase::I();
     else
         exit(0);
-    gMode = db->getMode();
 }
 
 /*-----------------------------------------------------------------------------------------------------------------
@@ -698,11 +697,11 @@ void RufusAdmin::ConnexionBase()
 int RufusAdmin::DetermineLieuExercice()
 {
     int idLieu = 1;
-    if (gMode == Distant)
+    if (db->getMode() == DataBase::Distant)
     {
         QString lieuxreq = "select idLieu, NomLieu from " TBL_LIEUXEXERCICE
                            " where idLieu <> (select idLieuParDefaut from " TBL_PARAMSYSTEME ")";
-        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, ok);
+        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, m_ok);
         if (listlieux.size()==1)
             idLieu = listlieux.at(0).at(0).toInt();
         else if (listlieux.size()>1)
@@ -771,12 +770,12 @@ int RufusAdmin::DetermineLieuExercice()
     else
     {
         QString lieuxreq = "select idLieuParDefaut from " TBL_PARAMSYSTEME;
-        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, ok);
+        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, m_ok);
         if (listlieux.at(0).at(0).toInt()>=1)
             idLieu = listlieux.at(0).at(0).toInt();
         else
         {
-            QList<QVariantList> listliux = db->StandardSelectSQL("select min(idlieu) from " TBL_LIEUXEXERCICE, ok);
+            QList<QVariantList> listliux = db->StandardSelectSQL("select min(idlieu) from " TBL_LIEUXEXERCICE, m_ok);
             idLieu = listliux.at(0).at(0).toInt();
             db->StandardSQL("update " TBL_PARAMSYSTEME " set idLieuParDefaut = " + listliux.at(0).at(0).toString());
         }
@@ -789,20 +788,20 @@ bool RufusAdmin::eventFilter(QObject *obj, QEvent *event)
     if (!event->spontaneous() && event->type() != QEvent::UpdateRequest)
     {
         //qDebug() << "event = " << event;
-        ui->MiseEnVeilleprogressBar->setValue(dureeVeille);
+        ui->MiseEnVeilleprogressBar->setValue(m_dureeVeille);
     }
     return QWidget::eventFilter(obj, event);
 }
 
 QString RufusAdmin::getDossierDocuments(QString Appareil)
 {
-    return gsettingsIni->value("DossierEchangeImagerie/" + Appareil).toString();
+    return m_settings->value("DossierEchangeImagerie/" + Appareil).toString();
 }
 
 void RufusAdmin::NouvAppareil()
 {
     AskAppareil();
-    delete gAskAppareil;
+    delete dlg_askAppareil;
 }
 
 void RufusAdmin::SupprAppareil()
@@ -812,8 +811,8 @@ void RufusAdmin::SupprAppareil()
     QString req = " select list.TitreExamen, list.NomAppareil from " TBL_LISTEAPPAREILS " list, " TBL_APPAREILSCONNECTESCENTRE " appcon"
                   " where list.idAppareil = appcon.idappareil"
                   " and list.idappareil = " + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text();
-    QList<QVariantList> listapps = db->StandardSelectSQL(req, ok);
-    if (!ok)
+    QList<QVariantList> listapps = db->StandardSelectSQL(req, m_ok);
+    if (!m_ok)
         return;
     if (listapps.size()==0)
         return;
@@ -833,9 +832,9 @@ void RufusAdmin::SupprAppareil()
     {
         req = "delete from " TBL_APPAREILSCONNECTESCENTRE " where idAppareil = "
                 + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text()
-                + " and idLieu = " + QString::number(idlieuExercice);
+                + " and idLieu = " + QString::number(m_idlieuexeercice);
         db->StandardSQL(req);
-        gsettingsIni->remove("DossierEchangeImagerie/" + listapps.at(0).at(1).toString());
+        m_settings->remove("DossierEchangeImagerie/" + listapps.at(0).at(1).toString());
         Remplir_Table();
     }
 }
@@ -878,10 +877,10 @@ void RufusAdmin::Remplir_Table()
     QString  Remplirtablerequete = "SELECT list.idAppareil, list.TitreExamen, list.NomAppareil, Format"
               " FROM "  TBL_APPAREILSCONNECTESCENTRE " appcon , " TBL_LISTEAPPAREILS " list"
               " where list.idappareil = appcon.idappareil"
-              " and idLieu = " + QString::number(idlieuExercice) +
+              " and idLieu = " + QString::number(m_idlieuexeercice) +
               " ORDER BY TitreExamen";
-    QList<QVariantList> listapps = db->StandardSelectSQL(Remplirtablerequete, ok);
-    if (!ok)
+    QList<QVariantList> listapps = db->StandardSelectSQL(Remplirtablerequete, m_ok);
+    if (!m_ok)
         return;
     ui->AppareilsConnectesupTableWidget->setRowCount(listapps.size());
     for (i = 0; i < listapps.size(); i++)
@@ -919,7 +918,7 @@ void RufusAdmin::Remplir_Table()
         ui->AppareilsConnectesupTableWidget->setCellWidget(i,col,line4);
 
         col++; //5                                                                    // bouton
-        QPixmap pix = giconSortirDossier.pixmap(QSize(15,15));
+        QPixmap pix = ic_SortirDossier.pixmap(QSize(15,15));
         QIcon ic;
         ic.addPixmap(pix);
         dossbouton->setIcon(ic);
@@ -939,21 +938,21 @@ void RufusAdmin::Remplir_Table()
         ui->AppareilsConnectesupTableWidget->setRowHeight(i,int(fm.height()*1.3));
     }
 
-    glistAppareils.clear();
+    m_listeAppareils.clear();
     QString req = "select NomAppareil from " TBL_LISTEAPPAREILS
-                  " where idAppareil not in (select idAppareil from " TBL_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(idlieuExercice) + ")";
-    QList<QVariantList> listnomsapps = db->StandardSelectSQL(req, ok);
+                  " where idAppareil not in (select idAppareil from " TBL_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(m_idlieuexeercice) + ")";
+    QList<QVariantList> listnomsapps = db->StandardSelectSQL(req, m_ok);
     if (listnomsapps.size() == 0)
-        widgAppareils->plusBouton->setEnabled(false);
+        wdg_buttonframe->wdg_plusBouton->setEnabled(false);
     else
         for (int i=0; i<listnomsapps.size(); i++)
-            glistAppareils << listnomsapps.at(i).at(0).toString();
-    widgAppareils->moinsBouton->setEnabled(listapps.size()>0);
+            m_listeAppareils << listnomsapps.at(i).at(0).toString();
+    wdg_buttonframe->wdg_moinsBouton->setEnabled(listapps.size()>0);
 }
 
 void RufusAdmin::setPosteImportDocs(bool a)
 {
-    if (gMode == Distant)
+    if (db->getMode() == DataBase::Distant)
         return;
     // Il n'y pas de variables utilisateur globale dans MySQL, on est donc obligé de passer par une procédure stockée pour en simuler une
     // pour créer une procédure avec Qt, séparer le drop du create, ne pas utiliser les délimiteurs et utiliser les retours à la ligne \n\.......
@@ -1022,8 +1021,8 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
     QString req = "select TitreExamen, NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->iD());
     QString exam = "";
-    QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
-    if (!ok)
+    QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, m_ok);
+    if (!m_ok)
         return;
     if (examdata.size()>0)
         exam = examdata.at(1).toString();
@@ -1043,19 +1042,19 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
         line    = dynamic_cast<UpLineEdit*>(ui->AppareilsConnectesupTableWidget->cellWidget(row,4));
         if (line!=Q_NULLPTR)
             line->setText(dockdir.path());
-        gsettingsIni->setValue("DossierEchangeImagerie/" + exam, dockdir.path());
+        m_settings->setValue("DossierEchangeImagerie/" + exam, dockdir.path());
     }
     ConnectTimerInactive();
 }
 
 void RufusAdmin::Slot_EnregistreAppareil()
 {
-    if (!gAskAppareil) return;
+    if (!dlg_askAppareil) return;
     QString req = "insert into " TBL_APPAREILSCONNECTESCENTRE " (idAppareil, idLieu) Values("
-                  " (select idappareil from " TBL_LISTEAPPAREILS " where NomAppareil = '" + gAskAppareil->findChildren<UpComboBox*>().at(0)->currentText() + "'), "
-                  + QString::number(idlieuExercice) + ")";
+                  " (select idappareil from " TBL_LISTEAPPAREILS " where NomAppareil = '" + dlg_askAppareil->findChildren<UpComboBox*>().at(0)->currentText() + "'), "
+                  + QString::number(m_idlieuexeercice) + ")";
     db->StandardSQL(req);
-    gAskAppareil->done(0);
+    dlg_askAppareil->done(0);
     Remplir_Table();
 }
 
@@ -1070,16 +1069,16 @@ void RufusAdmin::Slot_ModifDirImagerie()
     if (dialog.exec()>0)
     {
         QDir dockdir = dialog.directory();
-        if (gMode==Poste)
+        if (db->getMode() == DataBase::Poste)
             if (!dockdir.match(QDir::homePath() + DIR_RUFUS "/*", dockdir.path()))
             {
                 UpMessageBox::Watch(this, tr("Vous devez choisir un sous-dossier du dossier Rufus"), QDir::homePath() + DIR_RUFUS);
                 return;
             }
         ui->StockageupLineEdit->setText(dockdir.path());
-        QString Base = (gMode==Distant? "BDD_DISTANT/" : "");
-        gsettingsIni->setValue(Base + "DossierImagerie", dockdir.path());
-        if (gMode==Poste)
+        QString Base = (db->getMode() == DataBase::Distant? "BDD_DISTANT/" : "");
+        m_settings->setValue(Base + "DossierImagerie", dockdir.path());
+        if (db->getMode() == DataBase::Poste)
             db->StandardSQL("update " TBL_PARAMSYSTEME " set dirImagerie = '" + dockdir.path() + "'");
     }
 }
@@ -1099,13 +1098,13 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
     id = ui->AppareilsConnectesupTableWidget->item(line->Row(),0)->text();
     QString req = "select NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + id;
     QString exam = "";
-    QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver le nom de l'appareil"));
-    if (!ok)
+    QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, m_ok, tr("Impossible de retrouver le nom de l'appareil"));
+    if (!m_ok)
         return;
     if (examdata.size()>0)
         exam = examdata.at(0).toString();
     if (exam != "")
-        gsettingsIni->setValue("DossierEchangeImagerie/" + exam, dir);
+        m_settings->setValue("DossierEchangeImagerie/" + exam, dir);
 }
 
 void RufusAdmin::Slot_EnregistreEmplacementServeur(int idx)
@@ -1115,7 +1114,7 @@ void RufusAdmin::Slot_EnregistreEmplacementServeur(int idx)
 
 void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
 {
-    if (gAskMDP != Q_NULLPTR)
+    if (dlg_askMDP != Q_NULLPTR)
     {
         // Vérifier la cohérence
         QString anc, nouv, confirm;
@@ -1125,15 +1124,15 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         UpSmallButton *OKBouton = new UpSmallButton;
         OKBouton->setText("OK");
         msgbox.addButton(OKBouton, UpSmallButton::STARTBUTTON);
-        anc         = gAskMDP->findChild<UpLineEdit*>(gAncMDP)->text();
-        nouv        = gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->text();
-        confirm     = gAskMDP->findChild<UpLineEdit*>(gConfirmMDP)->text();
+        anc         = dlg_askMDP->findChild<UpLineEdit*>(m_ancMDP)->text();
+        nouv        = dlg_askMDP->findChild<UpLineEdit*>(m_nouvMDP)->text();
+        confirm     = dlg_askMDP->findChild<UpLineEdit*>(m_confirmMDP)->text();
 
         if (anc == "")
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Ancien mot de passe requis"));
-            gAskMDP->findChild<UpLineEdit*>(gAncMDP)->setFocus();
+            dlg_askMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -1141,7 +1140,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas le bon\n"));
-            gAskMDP->findChild<UpLineEdit*>(gAncMDP)->setFocus();
+            dlg_askMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -1149,7 +1148,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le nouveau mot de passe n'est pas conforme\n(au moins 3 caractères - chiffres ou lettres non accentuées -\n"));
-            gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->setFocus();
+            dlg_askMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -1157,7 +1156,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText("Les mots de passe ne correspondent pas\n");
-            gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->setFocus();
+            dlg_askMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -1166,7 +1165,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         QString req = "update " TBL_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
         db->StandardSQL(req);
         // Enregitrer le nouveau MDP de la base
-        req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(idAdminDocs);
+        req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(m_idadmindocs);
         db->StandardSQL(req);
         // Enregitrer le nouveau MDP de connexion à MySQL
         req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'localhost' = '" + nouv + "'";
@@ -1184,41 +1183,41 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         db->StandardSQL(req);
         req = "set password for '" NOM_ADMINISTRATEURDOCS "SSL'@'%' = '" + nouv + "'";
         db->StandardSQL(req);
-        gAskMDP->done(0);
+        dlg_askMDP->done(0);
         msgbox.exec();
     }
 }
 
 void RufusAdmin::setMapDatas()
 {
-    gmapIcons["OK"]             = giconOK;
-    gmapIcons["Annul"]          = giconAnnul;
-    gmapIcons["Euro"]           = giconEuro;
-    gmapIcons["EuroCount"]      = giconEuroCount;
-    gmapIcons["FermeAppuye"]    = giconFermeAppuye;
-    gmapIcons["FermeRelache"]   = giconFermeRelache;
-    gmapIcons["Help"]           = giconHelp;
-    gmapIcons["Null"]           = giconNull;
+    map_icons["OK"]             = ic_OK;
+    map_icons["Annul"]          = ic_Annul;
+    map_icons["Euro"]           =  ic_Euro;
+    map_icons["EuroCount"]      =  ic_EuroCount;
+    map_icons["FermeAppuye"]    =  ic_FermeAppuye;
+    map_icons["FermeRelache"]   =  ic_FermeRelache;
+    map_icons["Help"]           =  ic_Help;
+    map_icons["Null"]           =  ic_Null;
 }
 
 QMap<QString, QIcon> RufusAdmin::MapIcons()
 {
-    return gmapIcons;
+    return map_icons;
 }
 
 void RufusAdmin::Slot_CalcExporteDocs()
 {
-    if (gMode == Distant)
+    if (db->getMode() == DataBase::Distant)
         return;
     QString totreq = "SELECT idimpression FROM " TBL_DOCSEXTERNES " where jpg is not null or pdf is not null limit 1";
     //qDebug() << totreq;
-    ui->ExportImagespushButton->setEnabled(db->StandardSelectSQL(totreq, ok).size()>0);
+    ui->ExportImagespushButton->setEnabled(db->StandardSelectSQL(totreq, m_ok).size()>0);
 }
 
 void RufusAdmin::ExporteDocs()
 {
     bool ok;
-    QString NomDirStockageImagerie  = gsettingsIni->value("DossierImagerie").toString();
+    QString NomDirStockageImagerie  = m_settings->value("DossierImagerie").toString();
     if (!QDir(NomDirStockageImagerie).exists() || NomDirStockageImagerie == "")
     {
         QString msg = tr("Le dossier de sauvegarde d'imagerie") + " <font color=\"red\"><b>" + NomDirStockageImagerie + "</b></font>" + tr(" n'existe pas");
@@ -1248,7 +1247,7 @@ void RufusAdmin::ExporteDocs()
                                    tr("Voulez vous le faire maintenant?"))
                                    !=UpSmallButton::STARTBUTTON)
         {
-            disconnect (gTimerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
+            disconnect (t_timerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
             return;
         }
     }
@@ -1327,7 +1326,7 @@ void RufusAdmin::ExporteDocs()
                 qDebug() << "erreur";
                 return;
             }
-            if (!Utils::CompressFileJPG(CheminOKTransfrProv, gsettingsIni->value("DossierImagerie").toString()))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_settings->value("DossierImagerie").toString()))
             {
                 db->SupprRecordFromTable(listexportjpg.at(i).at(0).toInt(), "idFacture", TBL_FACTURES);
                 continue;
@@ -1553,7 +1552,7 @@ void RufusAdmin::ExporteDocs()
                 qDebug() << "erreur";
                 return;
             }
-            if (!Utils::CompressFileJPG(CheminOKTransfrProv, gsettingsIni->value("DossierImagerie").toString()))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_settings->value("DossierImagerie").toString()))
             {
                 db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), "idFacture", TBL_FACTURES);
                 continue;
@@ -1759,12 +1758,12 @@ void RufusAdmin::Slot_ImportDocsExternes()
                 break;
             }
     }
-    if (verifdocs != tim.isActive())
+    if (verifdocs != t_timer.isActive())
     {
         if (verifdocs)
-            tim.start();
+            t_timer.start();
         else
-            tim.stop();
+            t_timer.stop();
     }
 }
 
@@ -1782,27 +1781,27 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
     QString MAJConnexionRequete;
     QList<QVariantList> listusers = db->StandardSelectSQL("select iduser from " TBL_USERSCONNECTES
                                                              " where MACAdressePosteConnecte = '" + macadress + "'"
-                                                             " and idlieu = " + QString::number(idlieuExercice),ok);
+                                                             " and idlieu = " + QString::number(m_idlieuexeercice),m_ok);
     if (listusers.size()>0)
         MAJConnexionRequete = "UPDATE " TBL_USERSCONNECTES " SET HeureDerniereConnexion = NOW(), "
-                                                                 " idUser = " + QString::number(idAdminDocs) + ","
+                                                                 " idUser = " + QString::number(m_idadmindocs) + ","
                                                                  " NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                                                                  " where MACAdressePosteConnecte = '" + macadress + "'"
-                                                                 " and idlieu = " + QString::number(idlieuExercice);
+                                                                 " and idlieu = " + QString::number(m_idlieuexeercice);
     else
         MAJConnexionRequete = "insert into " TBL_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, MACAdressePosteConnecte, idlieu, IPAdress)"
                                                                       " VALUES(NOW()," +
-                                                                      QString::number(idAdminDocs) + ", -1, -1, -1, '" +
+                                                                      QString::number(m_idadmindocs) + ", -1, -1, -1, '" +
                                                                       QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', '" +
                                                                       macadress +  "', " +
-                                                                      QString::number(idlieuExercice) + ", '" +
+                                                                      QString::number(m_idlieuexeercice) + ", '" +
                                                                       Utils::getIpAdress() + "')";
     //qDebug() << MAJConnexionRequete;
     db->StandardSQL(MAJConnexionRequete);
 
     // Deconnecter les users débranchés accidentellement
     QList<QVariantList> listoldusers = db->StandardSelectSQL("select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " TBL_USERSCONNECTES
-                                                             " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60", ok);
+                                                             " where time_to_sec(timediff(now(),heurederniereconnexion)) > 60", m_ok);
 
     if (listoldusers.size() > 0)
     {
@@ -1836,58 +1835,58 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
 void RufusAdmin::Slot_ModifMDP()
 {
     DisconnectTimerInactive();
-    gAskMDP    = new UpDialog(this);
-    gAskMDP    ->setModal(true);
-    gAskMDP    ->move(QPoint(x()+width()/2,y()+height()/2));
+    dlg_askMDP    = new UpDialog(this);
+    dlg_askMDP    ->setModal(true);
+    dlg_askMDP    ->move(QPoint(x()+width()/2,y()+height()/2));
     QRegExp  rxMdp           = QRegExp("^[a-zA-Z0-9]{3,15}$");
 
 
-    UpLineEdit *ConfirmMDP = new UpLineEdit(gAskMDP);
+    UpLineEdit *ConfirmMDP = new UpLineEdit(dlg_askMDP);
     ConfirmMDP->setEchoMode(QLineEdit::Password);
-    ConfirmMDP->setObjectName(gConfirmMDP);
+    ConfirmMDP->setObjectName(m_confirmMDP);
     ConfirmMDP->setValidator(new QRegExpValidator(rxMdp,this));
     ConfirmMDP->setAlignment(Qt::AlignCenter);
-    gAskMDP->dlglayout()->insertWidget(0,ConfirmMDP);
+    dlg_askMDP->dlglayout()->insertWidget(0,ConfirmMDP);
     UpLabel *labelConfirmMDP = new UpLabel();
     labelConfirmMDP->setText(tr("Confirmez le nouveau mot de passe"));
-    gAskMDP->dlglayout()->insertWidget(0,labelConfirmMDP);
-    UpLineEdit *NouvMDP = new UpLineEdit(gAskMDP);
+    dlg_askMDP->dlglayout()->insertWidget(0,labelConfirmMDP);
+    UpLineEdit *NouvMDP = new UpLineEdit(dlg_askMDP);
     NouvMDP->setEchoMode(QLineEdit::Password);
-    NouvMDP->setObjectName(gNouvMDP);
+    NouvMDP->setObjectName(m_nouvMDP);
     NouvMDP->setValidator(new QRegExpValidator(rxMdp,this));
     NouvMDP->setAlignment(Qt::AlignCenter);
-    gAskMDP->dlglayout()->insertWidget(0,NouvMDP);
+    dlg_askMDP->dlglayout()->insertWidget(0,NouvMDP);
     UpLabel *labelNewMDP = new UpLabel();
     labelNewMDP->setText(tr("Entrez le nouveau mot de passe"));
-    gAskMDP->dlglayout()->insertWidget(0,labelNewMDP);
-    UpLineEdit *AncMDP = new UpLineEdit(gAskMDP);
+    dlg_askMDP->dlglayout()->insertWidget(0,labelNewMDP);
+    UpLineEdit *AncMDP = new UpLineEdit(dlg_askMDP);
     AncMDP->setEchoMode(QLineEdit::Password);
     AncMDP->setAlignment(Qt::AlignCenter);
     AncMDP->setValidator(new QRegExpValidator(rxMdp,this));
-    AncMDP->setObjectName(gAncMDP);
-    gAskMDP->dlglayout()->insertWidget(0,AncMDP);
+    AncMDP->setObjectName(m_ancMDP);
+    dlg_askMDP->dlglayout()->insertWidget(0,AncMDP);
     UpLabel *labelOldMDP = new UpLabel();
     labelOldMDP->setText(tr("Ancien mot de passe"));
-    gAskMDP->dlglayout()->insertWidget(0,labelOldMDP);
+    dlg_askMDP->dlglayout()->insertWidget(0,labelOldMDP);
     AncMDP->setFocus();
 
-    gAskMDP->AjouteLayButtons(UpDialog::ButtonOK);
+    dlg_askMDP->AjouteLayButtons(UpDialog::ButtonOK);
     QList <QWidget*> ListTab;
-    ListTab << AncMDP << NouvMDP << ConfirmMDP << gAskMDP->OKButton;
+    ListTab << AncMDP << NouvMDP << ConfirmMDP << dlg_askMDP->OKButton;
     for (int i = 0; i<ListTab.size()-1 ; i++ )
-        gAskMDP->setTabOrder(ListTab.at(i), ListTab.at(i+1));
-    gAskMDP    ->setWindowTitle(tr("Mot de passe utilisateur"));
-    connect(gAskMDP->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreNouvMDPAdmin()));
-    gAskMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
+        dlg_askMDP->setTabOrder(ListTab.at(i), ListTab.at(i+1));
+    dlg_askMDP    ->setWindowTitle(tr("Mot de passe utilisateur"));
+    connect(dlg_askMDP->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreNouvMDPAdmin()));
+    dlg_askMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
 
-    gAskMDP->exec();
+    dlg_askMDP->exec();
     ConnectTimerInactive();
 }
 
 void RufusAdmin::Slot_RestaureBase()
 {
     QString req = "select NomPosteConnecte from " TBL_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QList<QVariantList> listpostes = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listpostes = db->StandardSelectSQL(req, m_ok);
     if (listpostes.size() > 0)
     {
         UpMessageBox::Information(this, tr("Autres postes connectés!"),
@@ -1956,10 +1955,10 @@ void RufusAdmin::Slot_RestaureBase()
             OKVideos = true;
 
     QString NomDirStockageImagerie("");
-    QVariantList dirstock = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, ok);
-    if (ok && dirstock.size()>0)
+    QVariantList dirstock = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, m_ok);
+    if (m_ok && dirstock.size()>0)
         NomDirStockageImagerie = dirstock.at(0).toString();
-    if (!ok || !QDir(NomDirStockageImagerie).exists())
+    if (!m_ok || !QDir(NomDirStockageImagerie).exists())
     {
         UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage valide"),
                             tr("Le dossier spécifié pour le stockage de l'imagerie n'est pas valide") + "\n"
@@ -1987,15 +1986,15 @@ void RufusAdmin::Slot_RestaureBase()
             return;
         }
         NomDirStockageImagerie = dirstock.absolutePath();
-        gsettingsIni->setValue("BDD_POSTE/DossierImagerie", NomDirStockageImagerie);
+        m_settings->setValue("BDD_POSTE/DossierImagerie", NomDirStockageImagerie);
         QString reqimg = "update " TBL_PARAMSYSTEME " set DirImagerie = '" + NomDirStockageImagerie + "'";
         db->StandardSQL(reqimg);
     }
 
     AskBupRestore(true, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKRessces, OKImages, OKVideos);
-    if (gAskBupRestore->exec()>0)
+    if (dlg_askBupRestore->exec()>0)
     {
-        QList<UpCheckBox*> listchk = gAskBupRestore->findChildren<UpCheckBox*>();
+        QList<UpCheckBox*> listchk = dlg_askBupRestore->findChildren<UpCheckBox*>();
         for (int i= 0; i<listchk.size(); i++)
         {
             if (listchk.at(i)->accessibleDescription() == "base")
@@ -2111,11 +2110,11 @@ void RufusAdmin::Slot_RestaureBase()
                 if (listchk.at(i)->isChecked())
                 {
                     QString fileini = dirtorestore.absolutePath() + "/Rufus.ini";
-                    QFile FichierIni(gNomFichRufusIni);
+                    QFile FichierIni(m_nomfichieriniRufus);
                     if (FichierIni.exists())
                         FichierIni.remove();
                     QFile rufusini(fileini);
-                    rufusini.copy(gNomFichRufusIni);
+                    rufusini.copy(m_nomfichieriniRufus);
                     msg += tr("Fichier de paramétrage Rufus.ini restauré\n");
                     Message(tr("Fichier de paramétrage Rufus.ini restauré"), 3000, false);
                 }
@@ -2200,7 +2199,7 @@ void RufusAdmin::Slot_RestaureBase()
                 }
             }
         }
-        delete gAskBupRestore;
+        delete dlg_askBupRestore;
         //qDebug() << msg;
         UpMessageBox::Watch(this,tr("restauration terminée"),msg);
     }
@@ -2214,7 +2213,7 @@ void RufusAdmin::Slot_RestaureBase()
 void RufusAdmin::SupprimerDocsEtFactures()
 {
     bool ok = true;
-    QString NomDirStockageImagerie = gsettingsIni->value("DossierImagerie").toString();
+    QString NomDirStockageImagerie = m_settings->value("DossierImagerie").toString();
 
     /* Supprimer les documents en attente de suppression*/
     QString req = "Select filepath from " TBL_DOCSASUPPRIMER;
@@ -2296,9 +2295,9 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
         // on retire Admin de la table des utilisateurs connectés
         QString req = "delete from " TBL_USERSCONNECTES
                       " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
-                      " and idlieu = " + QString::number(idlieuExercice);
+                      " and idlieu = " + QString::number(m_idlieuexeercice);
         db->StandardSQL(req);
-        if (UtiliseTCP)
+        if (m_utiliseTCP)
         {
             TCPServer->close();
             delete TCPServer;
@@ -2311,17 +2310,17 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
 
 void RufusAdmin::Slot_VerifPosteImport()
 {
-    if (gMode == Distant)
+    if (db->getMode() == DataBase::Distant)
         return;
 
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
     QString req = "SELECT name FROM mysql.proc p WHERE db = '" DB_CONSULTS "' AND name = '" NOM_POSTEIMPORTDOCS "'";
-    QVariantList imptdata = db->getFirstRecordFromStandardSelectSQL(req, ok);
-    if (ok && imptdata.size()>0)
+    QVariantList imptdata = db->getFirstRecordFromStandardSelectSQL(req, m_ok);
+    if (m_ok && imptdata.size()>0)
     {
-        QVariantList procdata = db->getFirstRecordFromStandardSelectSQL("CALL " DB_CONSULTS "." NOM_POSTEIMPORTDOCS, ok);
-        if(!ok || procdata.size()==0)
+        QVariantList procdata = db->getFirstRecordFromStandardSelectSQL("CALL " DB_CONSULTS "." NOM_POSTEIMPORTDOCS, m_ok);
+        if(!m_ok || procdata.size()==0)
         {
             ui->PosteImportDocslabel->setText(tr("Pas de poste paramétré"));
             ui->PosteImportDocsPrioritairelabel->setText("");
@@ -2356,8 +2355,8 @@ void RufusAdmin::Slot_VerifPosteImport()
 void RufusAdmin::Slot_VerifVersionBase()
 {
     int version = VERSION_BASE;
-    QVariantList versiondata = db->getFirstRecordFromStandardSelectSQL("select versionbase from " TBL_PARAMSYSTEME, ok);
-    if (!ok)
+    QVariantList versiondata = db->getFirstRecordFromStandardSelectSQL("select versionbase from " TBL_PARAMSYSTEME, m_ok);
+    if (!m_ok)
         return;
     if (versiondata.size()>0)
         version = versiondata.at(0).toInt();
@@ -2377,14 +2376,14 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
     disconnect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
     ui->EmplacementServeurupComboBox->clear();
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " TBL_LIEUXEXERCICE, ok);
-    if (ok && listlieux.size()>0)
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " TBL_LIEUXEXERCICE, m_ok);
+    if (m_ok && listlieux.size()>0)
     {
         for (int i=0; i< listlieux.size(); i++)
             ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
         int DefautLieu = 0;
-        QVariantList dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " TBL_PARAMSYSTEME, ok);
-        if(!ok)
+        QVariantList dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " TBL_PARAMSYSTEME, m_ok);
+        if(!m_ok)
             return;
         if (dftLieu.size()>0)
             DefautLieu = dftLieu.at(0).toInt();
@@ -2404,9 +2403,9 @@ bool RufusAdmin::VerifBase()
 {
     int Versionencours  = 37; //correspond aux premières versions de MAJ de la base
     int Version         = VERSION_BASE;
-    QVariantList Versionenr = db->getFirstRecordFromStandardSelectSQL("select VersionBase from " TBL_PARAMSYSTEME,  ok);
+    QVariantList Versionenr = db->getFirstRecordFromStandardSelectSQL("select VersionBase from " TBL_PARAMSYSTEME,  m_ok);
     bool b              = false;
-    if (!ok || Versionenr.size()==0)
+    if (!m_ok || Versionenr.size()==0)
         b = true;
     else
     {
@@ -2484,7 +2483,7 @@ bool RufusAdmin::VerifBase()
                  */
                 QList<QVariantList> listid =
                         db->StandardSelectSQL("SELECT idpat FROM " TBL_PATIENTS " pat"
-                                              " where  pat.idpat not in (select rmp.idpat from " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " rmp)", ok);
+                                              " where  pat.idpat not in (select rmp.idpat from " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " rmp)", m_ok);
                 if (listid.size()>0)
                 {
                     for (int i=0; i<listid.size(); i++)
@@ -2536,7 +2535,7 @@ bool RufusAdmin::VerifMDP(QString MDP, QString Msg)
 
 void RufusAdmin::Slot_ModifDirBackup()
 {
-    if (gMode != Poste)
+    if (db->getMode() != DataBase::Poste)
         return;
     QString dirsauvorigin   = ui->DirBackupuplineEdit->text();
     DisconnectTimerInactive();
@@ -2589,7 +2588,7 @@ void RufusAdmin::EffaceMessage(int pause)
 
 void RufusAdmin::ModifParamBackup()
 {
-    if (gMode != Poste)
+    if (db->getMode() != DataBase::Poste)
         return;
     bool NoDirBupDefined        = (ui->DirBackupuplineEdit->text() == "");
     bool IncorrectDirBupDefined = !QDir(ui->DirBackupuplineEdit->text()).exists() && !NoDirBupDefined;
@@ -2621,8 +2620,8 @@ void RufusAdmin::ModifParamBackup()
     db->StandardSQL("update " TBL_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
     // ENREGISTREMENT DES PARAMETRES DE SAUVEGARDE DANS /Documents/Rufus/RufusScriptBackup.sh
     QString NomDirStockageImagerie("");
-    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, ok);
-    if (ok && dirdata.size()>0)
+    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, m_ok);
+    if (m_ok && dirdata.size()>0)
         NomDirStockageImagerie = dirdata.at(0).toString();
 
     //1. Dossier de backup
@@ -2932,7 +2931,7 @@ void RufusAdmin::Slot_EffacePrgSauvegarde()
 bool RufusAdmin::ImmediateBackup()
 {
     QString req = "select NomPosteConnecte from " TBL_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QList<QVariantList> listpostes = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listpostes = db->StandardSelectSQL(req, m_ok);
     if (listpostes.size() > 0)
     {
         UpMessageBox::Information(this, tr("Autres postes connectés!"),
@@ -2945,8 +2944,8 @@ bool RufusAdmin::ImmediateBackup()
 
     QString NomDirStockageImagerie("");
     QString NomDirDestination ("");
-    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " TBL_PARAMSYSTEME, ok);
-    if (ok && dirdata.size()>0)
+    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " TBL_PARAMSYSTEME, m_ok);
+    if (m_ok && dirdata.size()>0)
     {
         NomDirStockageImagerie = dirdata.at(0).toString();
         NomDirDestination = dirdata.at(1).toString();
@@ -2977,7 +2976,7 @@ bool RufusAdmin::ImmediateBackup()
     }
     DisconnectTimerInactive();
     AskBupRestore(false, NomDirStockageImagerie, NomDirDestination);
-    if (gAskBupRestore->exec()==0)
+    if (dlg_askBupRestore->exec()==0)
     {
         ConnectTimerInactive();
         return false;
@@ -2987,7 +2986,7 @@ bool RufusAdmin::ImmediateBackup()
     Utils::cleanfolder(NomDirStockageImagerie + DIR_FACTURES);
     Utils::cleanfolder(NomDirStockageImagerie + DIR_VIDEOS);
     Message(tr("Sauvegarde en cours"),3000,false);
-    QList<UpCheckBox*> listchk = gAskBupRestore->findChildren<UpCheckBox*>();
+    QList<UpCheckBox*> listchk = dlg_askBupRestore->findChildren<UpCheckBox*>();
     bool OKbase     = false;
     bool OKImages   = false;
     bool OKVideos   = false;
@@ -3065,7 +3064,7 @@ bool RufusAdmin::ImmediateBackup()
 
 void RufusAdmin::ResumeTCPSocketStatut()
 {
-    if (!UtiliseTCP)
+    if (!m_utiliseTCP)
         return;
     QString sep = "{!!}";
     QString statut;
@@ -3105,8 +3104,8 @@ void RufusAdmin::ResumeTCPSocketStatut()
                 statut += "\t" + tr("inconnu") + "\n";
         }
     }
-    gSocketStatut = statut;
-    emit ModifEdit(gSocketStatut); // déclenche la modification de la fenêtre resumestatut
+    m_socketStatut = statut;
+    emit ModifEdit(m_socketStatut); // déclenche la modification de la fenêtre resumestatut
 }
 
 void RufusAdmin::Edit(QString txt, int delaieffacement)
@@ -3132,7 +3131,7 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
 
     gAsk->AjouteLayButtons();
     connect(gAsk->OKButton,SIGNAL(clicked(bool)),gAsk,SLOT(accept()));
-    gAsk->restoreGeometry(gsettingsIni->value("PositionsFiches/PositionEdit").toByteArray());
+    gAsk->restoreGeometry(m_settings->value("PositionsFiches/PositionEdit").toByteArray());
 
     if (delaieffacement > 0)
     {
@@ -3143,7 +3142,7 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
     }
 
     gAsk->exec();
-    gsettingsIni->setValue("PositionsFiches/PositionEdit",gAsk->saveGeometry());
+    m_settings->setValue("PositionsFiches/PositionEdit",gAsk->saveGeometry());
     delete gAsk;
 }
 
@@ -3158,11 +3157,11 @@ void RufusAdmin::VerifVerrouDossier()
     // on donne le statut "arrivé" aux patients en salle d'attente dont le iduserencourssexam n'est plus present sur ce poste examen dans la liste des users connectes
     QString req = "select iduserencoursexam, posteexamen, idpat from " TBL_SALLEDATTENTE " where statut like '" ENCOURSEXAMEN "%'";
     //qDebug() << req;
-    QList<QVariantList> listuser = db->StandardSelectSQL(req, ok);
+    QList<QVariantList> listuser = db->StandardSelectSQL(req, m_ok);
     for (int i=0; i<listuser.size(); i++)
     {
         req = "select iduser, nomposteconnecte from " TBL_USERSCONNECTES " where iduser = " + listuser.at(i).at(0).toString()  + " and nomposteconnecte = '" + listuser.at(i).at(1).toString() + "'";
-        QVariantList userconnect = db->getFirstRecordFromStandardSelectSQL(req, ok);
+        QVariantList userconnect = db->getFirstRecordFromStandardSelectSQL(req, m_ok);
         if (userconnect.size()==0)
         {
             req = "update " TBL_SALLEDATTENTE " set Statut = '" ARRIVE "', posteexamen = null, iduserencoursexam = null where idpat = " + listuser.at(i).at(2).toString();
@@ -3186,14 +3185,14 @@ void RufusAdmin::VerifModifsFlags()
     if (m_flagsalledattente < flag)
     {
         m_flagsalledattente = flag;
-        if (UtiliseTCP)
+        if (m_utiliseTCP)
             TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
     flag = flags->flagCorrespondants();
     if (m_flagcorrespondants < flag)
     {
         m_flagcorrespondants = flag;
-        if (UtiliseTCP)
+        if (m_utiliseTCP)
             TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
     }
     flag = flags->flagMessages();
@@ -3204,10 +3203,10 @@ void RufusAdmin::VerifModifsFlags()
         QString req =
                 "select mess.idMessage, iddestinataire, creele from "
                 TBL_MESSAGES " mess left outer join " TBL_MESSAGESJOINTURES " joint on mess.idmessage = joint.idmessage \n"
-                " where Creele > '" + gDateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
+                " where Creele > '" + m_dateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
                 + "' and asupprimer is null"
                 + " order by creele";
-        QList<QVariantList> listmsg = db->StandardSelectSQL(req, ok);
+        QList<QVariantList> listmsg = db->StandardSelectSQL(req, m_ok);
         int TotalNvxMessages = listmsg.size();
         QHash<int,int> mapmessages;
         if (TotalNvxMessages>0)
@@ -3220,9 +3219,9 @@ void RufusAdmin::VerifModifsFlags()
                 else
                     mapmessages[listmsg.at(i).at(1).toInt()] = 1;
             }
-            gDateDernierMessage = listmsg.at(listmsg.size()-1).at(2).toDateTime();
+            m_dateDernierMessage = listmsg.at(listmsg.size()-1).at(2).toDateTime();
         }
-        if (UtiliseTCP)
+        if (m_utiliseTCP)
             for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
                 TCPServer->envoyerA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);
     }

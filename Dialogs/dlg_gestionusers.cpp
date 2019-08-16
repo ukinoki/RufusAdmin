@@ -26,19 +26,19 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
     db                      = DataBase::I();
-    gMode                   = Modifier;
-    MDPverified             = mdpverified;
+    m_mode                   = Modifier;
+    m_MDPverified             = mdpverified;
 
-    gidLieu                 = idlieu;
+    m_idlieu                 = idlieu;
 
-    gNouvMDP        = "nouv";
-    gAncMDP         = "anc";
-    gConfirmMDP     = "confirm";
+    m_nouvMDP        = "nouv";
+    m_ancMDP         = "anc";
+    m_confirmMDP     = "confirm";
 
-    gLoginupLineEdit        = "LoginupLineEdit";
-    gMDPupLineEdit          = "MDPupLineEdit";
-    gConfirmMDPupLineEdit   = "ConfirmMDPupLineEdit";
-    gcolor                  = QBrush(QColor(Qt::magenta));
+    m_loginledit        = "LoginupLineEdit";
+    m_MDPledit          = "MDPupLineEdit";
+    m_confirmMDPledit   = "ConfirmMDPupLineEdit";
+    m_color                  = QBrush(QColor(Qt::magenta));
 
     AjouteLayButtons(UpDialog::ButtonClose);
 
@@ -54,9 +54,6 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     dlglayout() ->insertLayout(0,play);
 
     ReconstruitListeLieuxExercice();
-
-    gLibActiv               = tr("Activité libérale");
-    gNoLibActiv             = tr("Activité non libérale");
 
     ui->NomuplineEdit           ->setValidator(new QRegExpValidator(Utils::rgx_rx,this));
     ui->PrenomuplineEdit        ->setValidator(new QRegExpValidator(Utils::rgx_rx,this));
@@ -132,7 +129,7 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
         connect(listbutton.at(i),               SIGNAL(clicked(bool)),                  this,   SLOT(Slot_EnableOKpushButton()));
     }
 
-    RemplirTableWidget(Datas::I()->users->userconnected()->id());
+    RemplirTableWidget();
 
     Slot_RegleAffichage();
 
@@ -155,7 +152,7 @@ dlg_gestionusers::~dlg_gestionusers()
 
 void dlg_gestionusers::setConfig(enum UserMode mode)
 {
-    UsrMode = mode;
+    m_usermode = mode;
     switch (mode) {
     case PREMIERUSER:
         ui->SecretaireupRadioButton         ->setEnabled(false);
@@ -208,20 +205,20 @@ void dlg_gestionusers::setConfig(enum UserMode mode)
 
 void dlg_gestionusers::Slot_Annulation()
 {
-    if (gMode == Creer)
+    if (m_mode == Creer)
     {
         db->SupprRecordFromTable(m_userencours->id(), "idUser", TBL_UTILISATEURS);
         while (Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()).size() > 0)
             Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()).first()));
-        RemplirTableWidget(Datas::I()->users->userconnected()->id());
+        RemplirTableWidget();
         ui->Principalframe->setEnabled(false);
         widgButtons->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
-        gMode = Modifier;
+        m_mode = Modifier;
     }
     else
     {
-        if (UsrMode == PREMIERUSER || UsrMode == MODIFUSER)
+        if (m_usermode == PREMIERUSER || m_usermode == MODIFUSER)
             reject();
         if (ui->ListUserstableWidget->selectedItems().size()>0)
         {
@@ -258,7 +255,7 @@ void dlg_gestionusers::Slot_ChoixButtonFrame(int i)
 
 void dlg_gestionusers::CreerUser()
 {
-    gAsk                        = new UpDialog(this);
+    dlg_ask                        = new UpDialog(this);
     QVBoxLayout *lay            = new QVBoxLayout();
     UpLabel *label              = new UpLabel();
     UpLabel *label2             = new UpLabel();
@@ -267,14 +264,14 @@ void dlg_gestionusers::CreerUser()
     UpLineEdit *Line2           = new UpLineEdit();
     UpLineEdit *Line3           = new UpLineEdit();
 
-    gAsk                        ->setModal(true);
-    gAsk                        ->move(QPoint(x()+width()/2,y()+height()/2));
-    gAsk                        ->setFixedSize(300,300);
-    gAsk                        ->setWindowTitle("");
+    dlg_ask                        ->setModal(true);
+    dlg_ask                        ->move(QPoint(x()+width()/2,y()+height()/2));
+    dlg_ask                        ->setFixedSize(300,300);
+    dlg_ask                        ->setWindowTitle("");
 
-    Line                        ->setObjectName(gLoginupLineEdit);
-    Line2                       ->setObjectName(gMDPupLineEdit);
-    Line3                       ->setObjectName(gConfirmMDPupLineEdit);
+    Line                        ->setObjectName(m_loginledit);
+    Line2                       ->setObjectName(m_MDPledit);
+    Line3                       ->setObjectName(m_confirmMDPledit);
     Line                        ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_15));
     Line2                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12));
     Line3                       ->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12));
@@ -302,8 +299,8 @@ void dlg_gestionusers::CreerUser()
     label2                      ->setText(tr("Choisissez un mot de passe\n- mini 5 maxi 12 caractères -\n- pas de caractères spéciaux ou accentués -"));
     label3                      ->setText(tr("Confirmez le mot de passe"));
 
-    gAsk                        ->AjouteLayButtons(UpDialog::ButtonOK);
-    connect(gAsk->OKButton,     SIGNAL(clicked(bool)),  this,   SLOT(Slot_EnregistreNouvUser()));
+    dlg_ask                        ->AjouteLayButtons(UpDialog::ButtonOK);
+    connect(dlg_ask->OKButton,     SIGNAL(clicked(bool)),  this,   SLOT(Slot_EnregistreNouvUser()));
 
     lay                         ->addWidget(label);
     lay                         ->addWidget(Line);
@@ -315,12 +312,12 @@ void dlg_gestionusers::CreerUser()
     lay->setContentsMargins(5,5,5,5);
     lay->setSpacing(5);
 
-    gAsk->dlglayout()           ->insertLayout(0,lay);
-    gAsk->dlglayout()           ->setSizeConstraint(QLayout::SetFixedSize);
+    dlg_ask->dlglayout()           ->insertLayout(0,lay);
+    dlg_ask->dlglayout()           ->setSizeConstraint(QLayout::SetFixedSize);
 
     Line                        ->setFocus();
-    gAsk->exec();
-    delete gAsk;
+    dlg_ask->exec();
+    delete dlg_ask;
 }
 
 void dlg_gestionusers::Slot_EnableOKpushButton()
@@ -339,15 +336,15 @@ void dlg_gestionusers::Slot_EnregistreNouvMDP()
         msgbox.setIcon(UpMessageBox::Warning);
         UpSmallButton OKBouton("OK");
         msgbox.addButton(&OKBouton, UpSmallButton::STARTBUTTON);
-        anc         = gAskMDP->findChild<UpLineEdit*>(gAncMDP)->text();
-        nouv        = gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->text();
-        confirm     = gAskMDP->findChild<UpLineEdit*>(gConfirmMDP)->text();
+        anc         = gAskMDP->findChild<UpLineEdit*>(m_ancMDP)->text();
+        nouv        = gAskMDP->findChild<UpLineEdit*>(m_nouvMDP)->text();
+        confirm     = gAskMDP->findChild<UpLineEdit*>(m_confirmMDP)->text();
 
         if (anc == "")
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Ancien mot de passe requis"));
-            gAskMDP->findChild<UpLineEdit*>(gAncMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -355,7 +352,7 @@ void dlg_gestionusers::Slot_EnregistreNouvMDP()
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas bon\n"));
-            gAskMDP->findChild<UpLineEdit*>(gAncMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -363,7 +360,7 @@ void dlg_gestionusers::Slot_EnregistreNouvMDP()
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le nouveau mot de passe n'est pas conforme\n(au moins 5 caractères - chiffres ou lettres non accentuées -\n"));
-            gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -371,7 +368,7 @@ void dlg_gestionusers::Slot_EnregistreNouvMDP()
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText("Les mots de passe ne correspondent pas\n");
-            gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -683,12 +680,12 @@ void dlg_gestionusers::Slot_EnregistreUser()
     req = "update " TBL_COMPTES " set partage = ";
     db->StandardSQL(req + (ui->SocieteComptableupRadioButton->isChecked()? "1" : "null") + " where iduser = " +  ui->idUseruplineEdit->text());
 
-    if (UsrMode==PREMIERUSER || UsrMode == MODIFUSER)
+    if (m_usermode==PREMIERUSER || m_usermode == MODIFUSER)
     {
         done(ui->idUseruplineEdit->text().toInt());
         return;
     }
-    else if (gMode == Creer)
+    else if (m_mode == Creer)
     {
         //2. On crée 3 comptes avec ce login et ce MDP: local en localhost, réseau en 192.168.1.% et distant en %-SSL et login avec SSL à la fin
         QString AdressIP, MasqueReseauLocal;
@@ -708,29 +705,29 @@ void dlg_gestionusers::Slot_EnregistreUser()
         db->StandardSQL("grant all on *.* to '" + login + "'@'localhost' identified by '" + MDP + "' with grant option");
         db->StandardSQL("grant all on *.* to '" + login + "SSL'@'%' identified by '" + MDP + "' with grant option");
         db->StandardSQL("grant all on *.* to '" + login + "'@'" + MasqueReseauLocal + "' identified by '" + MDP + "' with grant option");
-        gMode = Modifier;
+        m_mode = Modifier;
         ui->Principalframe->setEnabled(false);
         widgButtons->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
-        widgButtons->moinsBouton->setEnabled(true);
+        widgButtons->wdg_moinsBouton->setEnabled(true);
     }
     else
     {
         ui->Principalframe->setEnabled(false);
         widgButtons->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
-        widgButtons->moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(ui->idUseruplineEdit->text(),Qt::MatchExactly).at(0)->foreground() != gcolor);
+        widgButtons->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(ui->idUseruplineEdit->text(),Qt::MatchExactly).at(0)->foreground() != m_color);
     }
     ui->OKupSmallButton->setEnabled(false);
 }
 
 void dlg_gestionusers::Slot_EnregistreNouvUser()
 {
-    if (!gAsk) return;
+    if (!dlg_ask) return;
     QString msg = "";
-    UpLineEdit *Loginline       = gAsk->findChild<UpLineEdit*>(gLoginupLineEdit);
-    UpLineEdit *MDPline         = gAsk->findChild<UpLineEdit*>(gMDPupLineEdit);
-    UpLineEdit *ConfirmMDPline  = gAsk->findChild<UpLineEdit*>(gConfirmMDPupLineEdit);
+    UpLineEdit *Loginline       = dlg_ask->findChild<UpLineEdit*>(m_loginledit);
+    UpLineEdit *MDPline         = dlg_ask->findChild<UpLineEdit*>(m_MDPledit);
+    UpLineEdit *ConfirmMDPline  = dlg_ask->findChild<UpLineEdit*>(m_confirmMDPledit);
     QString login               = Loginline->text();
     QString MDP                 = MDPline->text();
 
@@ -772,12 +769,12 @@ void dlg_gestionusers::Slot_EnregistreNouvUser()
         UpMessageBox::Watch(this,msg);
         return;
     }
-    gAsk->accept();
-    gMode                       = Creer;
+    dlg_ask->accept();
+    m_mode                       = Creer;
     db->StandardSQL("insert into " TBL_UTILISATEURS " (UserLogin, UserMDP) VALUES ('" + Utils::correctquoteSQL(login) + "', '" + Utils::correctquoteSQL(MDP) + "')");
     QString req = "select idUser from " TBL_UTILISATEURS " where UserLogin = '" + login + "' and UserMDP = '" + MDP + "'";
-    int idUser = db->getFirstRecordFromStandardSelectSQL(req,ok).at(0).toInt();
-    RemplirTableWidget(idUser);
+    int idUser = db->getFirstRecordFromStandardSelectSQL(req,m_ok).at(0).toInt();
+    RemplirTableWidget();
     widgButtons                     ->setEnabled(false);
     ui->ListUserstableWidget        ->setEnabled(false);
     ui->Principalframe              ->setEnabled(true);
@@ -857,7 +854,7 @@ void dlg_gestionusers::Slot_GestionComptes()
 
 bool dlg_gestionusers::isMDPverified()
 {
-    return MDPverified;
+    return m_MDPverified;
 }
 
 void dlg_gestionusers::ModifUser()
@@ -871,20 +868,20 @@ void dlg_gestionusers::ModifUser()
     ui->OKupSmallButton             ->setEnabled(false);
     ui->AGAupRadioButton            ->setEnabled(true);
     ui->CompteActeswidget           ->setEnabled(true);
-    gMode                           = Modifier;
+    m_mode                           = Modifier;
 }
 
 void dlg_gestionusers::Slot_GestLieux()
 {
-    MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), MDPverified );
-    if (!MDPverified)
+    m_MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), m_MDPverified );
+    if (!m_MDPverified)
             return;
     dlg_GestionLieux *gestLieux = new dlg_GestionLieux();
     gestLieux->exec();
     ReconstruitListeLieuxExercice();
     delete gestLieux;
     int idUser = ui->ListUserstableWidget->item(ui->ListUserstableWidget->selectedItems().at(0)->row(),0)->text().toInt();
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select idlieu from " TBL_JOINTURESLIEUX " where iduser = " + QString::number(idUser), ok);
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select idlieu from " TBL_JOINTURESLIEUX " where iduser = " + QString::number(idUser), m_ok);
     QList<int> idlieuxlist;
     for (int k=0; k< listlieux.size(); k++)
         idlieuxlist << listlieux.at(k).at(0).toInt();
@@ -903,7 +900,7 @@ void dlg_gestionusers::Slot_ModifMDP()
 
     UpLineEdit *ConfirmMDP = new UpLineEdit(gAskMDP);
     ConfirmMDP->setEchoMode(QLineEdit::Password);
-    ConfirmMDP->setObjectName(gConfirmMDP);
+    ConfirmMDP->setObjectName(m_confirmMDP);
     ConfirmMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12,this));
     ConfirmMDP->setAlignment(Qt::AlignCenter);
     ConfirmMDP->setMaxLength(12);
@@ -913,7 +910,7 @@ void dlg_gestionusers::Slot_ModifMDP()
     gAskMDP->dlglayout()->insertWidget(0,labelConfirmMDP);
     UpLineEdit *NouvMDP = new UpLineEdit(gAskMDP);
     NouvMDP->setEchoMode(QLineEdit::Password);
-    NouvMDP->setObjectName(gNouvMDP);
+    NouvMDP->setObjectName(m_nouvMDP);
     NouvMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_5_12,this));
     NouvMDP->setAlignment(Qt::AlignCenter);
     NouvMDP->setMaxLength(12);
@@ -925,7 +922,7 @@ void dlg_gestionusers::Slot_ModifMDP()
     AncMDP->setEchoMode(QLineEdit::Password);
     AncMDP->setAlignment(Qt::AlignCenter);
     AncMDP->setValidator(new QRegExpValidator(Utils::rgx_AlphaNumeric_3_12,this));
-    AncMDP->setObjectName(gAncMDP);
+    AncMDP->setObjectName(m_ancMDP);
     AncMDP->setMaxLength(12);
     gAskMDP->dlglayout()->insertWidget(0,AncMDP);
     UpLabel *labelOldMDP = new UpLabel();
@@ -1009,7 +1006,7 @@ void dlg_gestionusers::SupprUser()
     if (db->StandardSelectSQL("select iduser from " TBL_UTILISATEURS
                   " where iduser <> " + QString::number(idUser) +
                   " and (Soignant = 1 or Soignant = 2 or Soignant = 3)"
-                  " and (UserEnregHonoraires = 1 or UserEnregHonoraires = 2 or UserEnregHonoraires = 4)", ok).size()==0)
+                  " and (UserEnregHonoraires = 1 or UserEnregHonoraires = 2 or UserEnregHonoraires = 4)", m_ok).size()==0)
     {
         UpMessageBox::Watch(this,tr("Impossible de supprimer ") + ui->ListUserstableWidget->selectedItems().at(1)->text() +
                                      tr(" parce que c'est le seul soignant enregistré dans la base."
@@ -1019,7 +1016,7 @@ void dlg_gestionusers::SupprUser()
     }
     // si l'utilisateur est une société comptable ou s'il est employeur, on vérifie s'il a des employés et on bloque la suppression du compte si c'est le cas
     if (m_userencours->isSocComptable() || m_userencours->isLiberal())
-        if (db->StandardSelectSQL("select iduser from " TBL_UTILISATEURS " where UserEmployeur = " + QString::number(m_userencours->id()), ok).size()>0)
+        if (db->StandardSelectSQL("select iduser from " TBL_UTILISATEURS " where UserEmployeur = " + QString::number(m_userencours->id()), m_ok).size()>0)
         {
             UpMessageBox::Watch(this, tr("Impossible de supprimer ce compte d'utilisateur!"), tr("cet utilisateur est enregistré comme employeur d'autres utilisateurs"));
             return;
@@ -1056,18 +1053,18 @@ void dlg_gestionusers::SupprUser()
         foreach (int idcpt, *m_userencours->listecomptesbancaires(false))
         {
             QString icpt = QString::number(idcpt);
-            if (db->StandardSelectSQL("select idrecette from " TBL_RECETTES " where comptevirement = " + icpt, ok).size()==0)
-                if (db->StandardSelectSQL("select idligne from " TBL_ARCHIVESBANQUE " where idcompte = " + icpt, ok).size()==0)
-                    if (db->StandardSelectSQL("select iddep from " TBL_DEPENSES " where compte = " + icpt, ok).size()==0)
-                        if (db->StandardSelectSQL("select idremcheq from " TBL_REMISECHEQUES " where idcompte = " + icpt, ok).size()==0)
-                            if (db->StandardSelectSQL("select idligne from " TBL_LIGNESCOMPTES " where idcompte = " + icpt, ok).size()==0)
+            if (db->StandardSelectSQL("select idrecette from " TBL_RECETTES " where comptevirement = " + icpt, m_ok).size()==0)
+                if (db->StandardSelectSQL("select idligne from " TBL_ARCHIVESBANQUE " where idcompte = " + icpt, m_ok).size()==0)
+                    if (db->StandardSelectSQL("select iddep from " TBL_DEPENSES " where compte = " + icpt, m_ok).size()==0)
+                        if (db->StandardSelectSQL("select idremcheq from " TBL_REMISECHEQUES " where idcompte = " + icpt, m_ok).size()==0)
+                            if (db->StandardSelectSQL("select idligne from " TBL_LIGNESCOMPTES " where idcompte = " + icpt, m_ok).size()==0)
                                 Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(idcpt));
         }
         db->SupprRecordFromTable(idUser, "idUser", TBL_COTATIONS);
         db->StandardSQL("delete from " TBL_JOINTURESLIEUX " where iduser not in (select iduser from " TBL_UTILISATEURS ")");
 
         QString req = "select user, host from mysql.user where user like '" + ui->ListUserstableWidget->selectedItems().at(1)->text() + "%'";
-        QList<QVariantList> listusr = db->StandardSelectSQL(req, ok);
+        QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok);
         if (listusr.size()>0)
             for (int i=0; i<listusr.size(); i++)
                 db->StandardSQL("drop user '" + listusr.at(i).at(0).toString() + "'@'" + listusr.at(i).at(1).toString() + "'");
@@ -1077,7 +1074,7 @@ void dlg_gestionusers::SupprUser()
             exit(0);
         }
         Datas::I()->users->SupprimeUser(m_userencours);
-        RemplirTableWidget(Datas::I()->users->userconnected()->id());
+        RemplirTableWidget();
     }
 }
 
@@ -1090,7 +1087,7 @@ void dlg_gestionusers::ActualiseRsgnmtBanque(bool soccomptable)
 void dlg_gestionusers::CalcListitemsCompteActescomboBox(User *usr)
 {
     //! tous les comptes non désactivés de l'utilisateur et tous les comptes partagés
-    qDebug() << "usr->idcompteencaissementhonoraires()" << usr->idcompteencaissementhonoraires();
+    //qDebug() << "usr->idcompteencaissementhonoraires()" << usr->idcompteencaissementhonoraires();
     QList<Compte*> listcomptes;
     foreach (Compte *cpt, *Datas::I()->comptes->comptes())
         if ((cpt->idUser() == usr->id() || cpt->isPartage()) && !cpt->isDesactive())
@@ -1104,7 +1101,7 @@ void dlg_gestionusers::CalcListitemsCompteActescomboBox(User *usr)
 
 void dlg_gestionusers::CalcListitemsCompteComptacomboBox(User *usr, bool soccomptable)
 {
-    qDebug() << "usr->idcomptepardefaut()" << usr->idcomptepardefaut();
+    //qDebug() << "usr->idcomptepardefaut()" << usr->idcomptepardefaut();
     QList<Compte*> listcomptes;
     foreach (Compte *cpt, *Datas::I()->comptes->comptes())
         if (cpt->idUser() == usr->id() && !cpt->isDesactive())
@@ -1133,21 +1130,21 @@ void dlg_gestionusers::CalcListitemsEmployeurcomboBox(int iduser)
                   " and iduser <> " + user +
                   " and userdesactive is null";
     //qDebug() << req;
-    QList<QVariantList> listusr = db->StandardSelectSQL(req, ok, tr("Impossible de retrouver la liste des employeurs"));
-    if (!ok)
+    QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok, tr("Impossible de retrouver la liste des employeurs"));
+    if (!m_ok)
         return;
     ui->EmployeurcomboBox->clear();
     for (int i=0; i<listusr.size(); i++)
         ui->EmployeurcomboBox->insertItem(0, (listusr.at(i).at(1).toString() != ""? listusr.at(i).at(1).toString() + " " + listusr.at(i).at(2).toString() : listusr.at(i).at(2).toString()), listusr.at(i).at(0).toInt());
-    QVariantList idusrlst = db->getFirstRecordFromStandardSelectSQL("select UserEmployeur from " TBL_UTILISATEURS " where iduser = " + user, ok);
-    if (ok && idusrlst.size()>0)
+    QVariantList idusrlst = db->getFirstRecordFromStandardSelectSQL("select UserEmployeur from " TBL_UTILISATEURS " where iduser = " + user, m_ok);
+    if (m_ok && idusrlst.size()>0)
         ui->EmployeurcomboBox->setCurrentIndex(ui->EmployeurcomboBox->findData(idusrlst.at(0)));
 }
 
 bool  dlg_gestionusers::AfficheParamUser(int idUser)
 {
     QString req;
-    if (db->StandardSelectSQL("select idUser from " TBL_UTILISATEURS " where iduser = " + QString::number(idUser), ok).size() == 0)
+    if (db->StandardSelectSQL("select idUser from " TBL_UTILISATEURS " where iduser = " + QString::number(idUser), m_ok).size() == 0)
         return false;
     setDataUser(idUser);
 
@@ -1215,7 +1212,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     ui->NomuplineEdit               ->setText(m_userencours->nom());
     ui->PrenomuplineEdit            ->setText(m_userencours->prenom());
 
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select idlieu from " TBL_JOINTURESLIEUX " where iduser = " + QString::number(idUser), ok);
+    QList<QVariantList> listlieux = db->StandardSelectSQL("select idlieu from " TBL_JOINTURESLIEUX " where iduser = " + QString::number(idUser), m_ok);
     QList<int> idlieuxlist;
     for (int k=0; k< listlieux.size(); k++)
         idlieuxlist << listlieux.at(k).at(0).toInt();
@@ -1324,7 +1321,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
             }
         }
     }
-    widgButtons->moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(QString::number(idUser),Qt::MatchExactly).at(0)->foreground() != gcolor);
+    widgButtons->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(QString::number(idUser),Qt::MatchExactly).at(0)->foreground() != m_color);
     return true;
 }
 
@@ -1355,7 +1352,7 @@ bool dlg_gestionusers::ExisteEmployeur(int iduser)
 {
     return (db->StandardSelectSQL("select iduser from " TBL_UTILISATEURS
                       " where (((Soignant = 1 or Soignant = 2 or Soignant = 3) and UserEnregHonoraires = 1) or Soignant = 5)"
-                      " and iduser <> " + QString::number(iduser), ok).size()>0);
+                      " and iduser <> " + QString::number(iduser), m_ok).size()>0);
 }
 void dlg_gestionusers::setDataUser(int id)
 {
@@ -1392,7 +1389,7 @@ void dlg_gestionusers::ReconstruitListeLieuxExercice()
     upheader->reDim(0,0,3);
 
     QList<QVariantList> listadress = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3,"
-                                                              " LieuCodePostal, LieuVille, LieuTelephone from " TBL_LIEUXEXERCICE, ok);
+                                                              " LieuCodePostal, LieuVille, LieuTelephone from " TBL_LIEUXEXERCICE, m_ok);
     ui->AdressupTableWidget->setRowCount(listadress.size());
     for (int i=0; i< listadress.size(); i++)
     {
@@ -1450,7 +1447,7 @@ void dlg_gestionusers::ReconstruitListeLieuxExercice()
     }
 }
 
-void dlg_gestionusers::RemplirTableWidget(int iduser)
+void dlg_gestionusers::RemplirTableWidget()
 {
     ui->ListUserstableWidget->disconnect();
     QTableWidgetItem *pitem0, *pitem1;
@@ -1462,20 +1459,20 @@ void dlg_gestionusers::RemplirTableWidget(int iduser)
     ui->ListUserstableWidget->verticalHeader()->setVisible(false);
     ui->ListUserstableWidget->setHorizontalHeaderLabels(QStringList()<<""<<"Login");
     ui->ListUserstableWidget->setGridStyle(Qt::NoPen);
-    QList<QVariantList> usrlst = db->StandardSelectSQL("select IdUser, UserLogin from " TBL_UTILISATEURS " where userlogin <> '" NOM_ADMINISTRATEURDOCS "'",ok);
+    QList<QVariantList> usrlst = db->StandardSelectSQL("select IdUser, UserLogin from " TBL_UTILISATEURS " where userlogin <> '" NOM_ADMINISTRATEURDOCS "'",m_ok);
     ui->ListUserstableWidget->setRowCount(usrlst.size());
     for (int i=0; i<usrlst.size(); i++)
     {
         pitem0 = new QTableWidgetItem;
         pitem1 = new QTableWidgetItem;
-        QList<QVariantList> actlst = db->StandardSelectSQL("select count(idActe) from " TBL_ACTES " where idUser = " + usrlst.at(i).at(0).toString() + " or creepar = " + usrlst.at(i).at(0).toString(), ok);
+        QList<QVariantList> actlst = db->StandardSelectSQL("select count(idActe) from " TBL_ACTES " where idUser = " + usrlst.at(i).at(0).toString() + " or creepar = " + usrlst.at(i).at(0).toString(), m_ok);
         if (actlst.size()>0)
         {
             int nbactes = actlst.at(0).at(0).toInt();
             if (nbactes>0)
             {
-                pitem0->setForeground(gcolor);
-                pitem1->setForeground(gcolor);
+                pitem0->setForeground(m_color);
+                pitem1->setForeground(m_color);
             }
         }
         pitem0->setText(usrlst.at(i).at(0).toString());
@@ -1485,10 +1482,6 @@ void dlg_gestionusers::RemplirTableWidget(int iduser)
         ui->ListUserstableWidget->setRowHeight(i, int(fm.height()*1.3));
     }
     connect(ui->ListUserstableWidget, &QTableWidget::currentItemChanged , this, [=](QTableWidgetItem *pitem) {AfficheParamUser(ui->ListUserstableWidget->item(pitem->row(),0)->text().toInt());});
-    if (iduser<0)
-        ui->ListUserstableWidget->setCurrentItem(ui->ListUserstableWidget->item(0,1));
-    else
-        ui->ListUserstableWidget->setCurrentItem(ui->ListUserstableWidget->findItems(QString::number(iduser), Qt::MatchExactly).at(0));
 }
 
 bool dlg_gestionusers::VerifFiche()

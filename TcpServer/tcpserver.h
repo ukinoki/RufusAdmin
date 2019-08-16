@@ -32,22 +32,21 @@ class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    static      TcpServer* I();
-    bool        start();
-    QString     ListeSockets();
-    void        setId(int id);
-    void        envoyerA(int iduser, QString msg);                                          /* envoi d'un message sur un QTcpSocket en particulier */
+    static TcpServer*   I();
+    bool                start();
+    QString             ListeSockets();
+    void                setId(int id);
+    void                envoyerA(int iduser, QString msg);                                  /* envoi d'un message sur un QTcpSocket en particulier */
 
 private:
     static TcpServer*        instance;
     TcpServer();
-
-    QMap<qintptr, TcpSocket*>       socketdescriptors;                                      // le map des sockets à partir des socketdescriptor
+    QMap<qintptr, TcpSocket*>       map_socketdescriptors;                                  // le map des sockets à partir des socketdescriptor
 
     void                            AfficheListeSockets(QString fonction = "");             /* utilisé pour le debugging seulement */
     void                            envoieListeSockets(qintptr descriptor = -1);            /* envoie la liste des sockets sur tous les sockets */
-    QString                         gListeSockets;
-    int                             idAdmin;
+    QString                         m_listeSockets;
+    int                             m_idadmin;
     TcpSocket*                      SocketFromDescriptor(qintptr descriptor);
 
 signals:

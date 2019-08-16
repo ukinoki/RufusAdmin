@@ -40,6 +40,7 @@ class dlg_gestioncomptes : public UpDialog
 public:
     explicit dlg_gestioncomptes(User *DataUser, QWidget *parent = Q_NULLPTR);
     ~dlg_gestioncomptes();
+    enum Mode              {Norm, Modif, Nouv};
 
 private:
     Ui::dlg_gestioncomptes  *ui;
@@ -48,18 +49,18 @@ private:
     QList<int>              *m_listescomptesusr;
     Compte                  *m_compteencours;
     dlg_gestionbanques      *Dlg_Banq;
-    bool                    gVisible;
-    int                     gidUser, gMode;
-    int                     gidCompteParDefaut;
-    enum gMode              {Norm, Modif, Nouv};
-    QString                 gUserLogin;
-    QTimer                  *gTimer;
+    bool                    m_visible;
+    Mode                    m_mode;
+    int                     m_iduser;
+    int                     m_idcompteprardefaut;
+    QString                 m_userlogin;
+    QTimer                  *t_timer;
     void                    closeEvent(QCloseEvent *);
     void                    MetAJourListeBanques();
     void                    RemplirTableView(int idcompte = -1);
     bool                    VerifCompte();
-    WidgetButtonFrame       *widgButtons;
-    UpSmallButton           *NouvBanqupPushButton;
+    WidgetButtonFrame       *wdg_buttonframe;
+    UpSmallButton           *wdg_NouvBanqupPushButton;
     void                    ModifCompte();
     void                    NouvCompte();
     void                    SupprCompte();
