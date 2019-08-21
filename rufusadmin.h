@@ -50,7 +50,6 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define RUFUSADMIN_H
 
 #include <QDebug>
-//#include <QDomDocument>
 #include <QFileDialog>
 #include <QHostInfo>
 #include <QMainWindow>
@@ -111,6 +110,7 @@ private:
     QIcon                       ic_Backup, ic_Copy, ic_Erase, ic_Sunglasses, ic_SortirDossier, ic_OK, ic_Annul,
                                  ic_Euro,  ic_EuroCount,  ic_FermeAppuye,  ic_FermeRelache,  ic_Help,  ic_Null;
     QSettings                   *m_settings;
+    ParametresSysteme           *m_parametres;
     DataBase                    *db;
     QSystemTrayIcon             *ictray_RufusAdminTrayIcon;
     QTimer                      *t_timerUserConnecte, *t_timerVerifDivers, *t_timerSupprDocs, *t_timerDocsAExporter, *t_timerProgressBar;
@@ -175,6 +175,41 @@ private slots:
     void                        Slot_VerifPosteImport();
     void                        Slot_VerifVersionBase();
 
+    //--------------------------------------------------------------------------------------------------------
+    // les sauvegardes
+    //--------------------------------------------------------------------------------------------------------
+    /*! LA SAUVEGARDE DE LA BASE DE DONNEES
+
+      La sauvegarde de la BDD peut-être planifiée dans le Qframe ui->Sauvegardeframe de la fiche dlg_param
+      On peut planifier l'emplacement du fichier de sauvegarde, l'heure de la sauvegarde, et les jours de la sauvegarde.
+      La sauvegarde ne peut se programmer que sur le serveur et pas ailleurs. Il faut donc installer une instance de Rufus sur le serveur.
+      Les éléments du cadre ui->Sauvegardeframe sont donc désactivés si on n'est pas en mode Poste, autrement dit, sur le serveur.
+
+      Les paramètres de programmation de la sauvegarde sont sauvegardés dans la base de données dans la table ParametresSyteme
+
+      La sauvegarde se fait par un script qui lance le prg mysqldump de sauvegarde des données et recopie les fichiers d'imagerie, les factures et les videos vers l'emplacement de sauvegarde.
+      Ce script définit l'emplacement de la sauvegarde, le nom de la sauvegarde et détruit les sauvegardes datant de plus de 14 jours
+      . pour Mac c'est le script RufusBackupScript.sh situé dans le dossier /Users/nomdutilisateur/Documents/Rufus
+
+      Le lancement de la sauvegarde au moment programmé se fait
+        . Sous Mac,  par un autre script -> c'est le fichier xml rufus.bup.plist situé dans /Users/nomutilisateur/Library/LaunchAgents.
+          Ce fichier est chargé au démarrage par le launchd Apple.
+          Il est donc éxécuté même quand Rufus ne tourne pas
+        . Sous Linux, c'est un timer t_timerbackup qui lance la sauvegarde et la fonction BackupWakeUp(QString NomDirDestination, QTime timebkup, Days days)
+
+      Au chargement de Rufus, les données de Rufus.ini sont récupérées pour régler l'affichage des données dans  ui->Sauvegardeframe.
+
+      Une modification de l'emplacement de sauvegarde se fait par un clic sur le bouton ui->DirBackuppushButton qui va lancer le slot Slot_ModifDirBachup()
+            * ce slot va créer le fichier RufusScriptBackup.sh et enregistrer l'emplacement de sauvegarde dans rufus.ini
+      Un changement d'heure ou de jour lance le slot Slot_ModifScriptList().
+            * ce slot va modifier le fichier xml rufus.bup.plist, recharger ce fichier dans le launchd et enregistrer les données de programmation dans le rufusadmin.ini.
+      Le bouton ui->EffacePrgSauvupPushButton réinitialise la programmation en déclenchant la fonction EffaceAutoBackup():
+            * annule les données de programmation dans rufus.ini,`
+            * réinitialise l'affichage dans ui->Sauvegardeframe,`
+            * supprime le script de sauvegarde RufusBackupScript.sh
+            * sous Mac, supprime le script de programmation rufus.bup.plist et le décharge du launchd
+            * sous Linux, arrête le timer t_timerbackup
+     */
     /*LA SAUVEGARDE DE LA BASE DE DONNEES
 
       La sauvegarde de la BDD peut-être planifiée dans le Qframe ui->Sauvegardeframe.
@@ -203,12 +238,25 @@ private slots:
             et le script de programmation rufus.bup.plist
             et, sur Mac, décharge ce fichier du launchd
      */
+public:
+    enum Day {
+                Lundi       = 0x1,
+                Mardi       = 0x2,
+                Mercredi    = 0x4,
+                Jeudi       = 0x8,
+                Vendredi    = 0x10,
+                Samedi      = 0x20,
+                Dimanche    = 0x40
+              };    Q_ENUM(Day)
+    Q_DECLARE_FLAGS(Days, Day)
+    QTimer                  t_timerbackup;
     bool                    ImmediateBackup();
 private slots:
     void                    Slot_CalcTimeBupRestore();
     void                    Slot_ModifDirBackup();
     void                    Slot_ModifDateBackup();
     void                    Slot_EffacePrgSauvegarde();
+                            /*! efface les données de sauvegarde (moment et emplacement) dans la base de données */
 private:
     qint64                  m_basesize, m_imagessize, m_videossize, m_freespace;
     UpDialog                *dlg_askBupRestore;
@@ -217,6 +265,9 @@ private:
     void                    DefinitScriptBackup(QString path, bool AvecImages= true, bool AvecVideos = true);
     QString                 getExpressionSize(double size);
     void                    ModifParamBackup();
+    //--------------------------------------------------------------------------------------------------------
+    // fin sauvegardes
+    //--------------------------------------------------------------------------------------------------------
 
     // TCPServer, TCPSocket
     bool                m_utiliseTCP;

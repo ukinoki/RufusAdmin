@@ -426,10 +426,7 @@ void dlg_GestionLieux::ReconstruitModel()
     for (int i=0; i < m_model->rowCount(); i++)
         wdg_bigtable->setRowHeight(i, h);
     wdg_bigtable   ->setFixedWidth(larg+2);
-    bool ok;
     m_idlieuserveur = -1;
-    QVariantList serveurLieudata = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " TBL_PARAMSYSTEME, ok);
-    if (ok && serveurLieudata.size()>0)
-        m_idlieuserveur = serveurLieudata.at(0).toInt();
+    m_idlieuserveur = db->parametres()->idlieupardefaut();
 }
 

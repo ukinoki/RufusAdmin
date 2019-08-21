@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("17-08-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("21-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -92,8 +92,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (!VerifBase())
         exit(0);
 
-    m_idlieuexeercice = DetermineLieuExercice();
-    m_nomLieuExercice = "";
+    m_idlieuexeercice   = DetermineLieuExercice();
+    m_nomLieuExercice   = "";
+    m_parametres        = db->parametres();
     QList<QVariantList> listlieux = db->StandardSelectSQL("select nomlieu from " TBL_LIEUXEXERCICE " where idlieu = " + QString::number(m_idlieuexeercice), m_ok);
     m_nomLieuExercice = listlieux.at(0).at(0).toString();
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + m_nomLieuExercice + "</b></font> ");
@@ -114,9 +115,12 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
             db->StandardSQL("insert into " TBL_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')");
         req = "select iduser from " TBL_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
         listusr = db->StandardSelectSQL(req, m_ok);
-        QList<QVariantList> listmdp = db->StandardSelectSQL("select mdpadmin from " TBL_PARAMSYSTEME,m_ok);
-        if (listmdp.at(0).at(0).toString() == "")
-            db->StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + db->getDataBase().password() + "'");
+        if (m_parametres->mdpadmin() == "")
+        {
+            QString mdp = db->getDataBase().password();
+            db->StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + mdp + "'");
+            db->parametres()->setmdpadmin(mdp);
+        }
     }
     UserAdmin = new User(DataBase::I()->loadAdminData());
     m_idadmindocs = UserAdmin->id();
@@ -267,8 +271,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Remplir_Table();
     if (db->getMode() == DataBase::Poste)
     {
-        QList<QVariantList> listdir = db->StandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, m_ok);
-        QString NomDirStockageImagerie = listdir.at(0).at(0).toString();
+        QString NomDirStockageImagerie = m_parametres->dirimagerie();
         m_settings->setValue("DossierImagerie",NomDirStockageImagerie);
         setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + m_nomLieuExercice);
     }
@@ -290,12 +293,10 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ReconstruitListeLieuxExercice();
     Datas::I()->comptes->initListe();
 
-    QString VerifBasereq = "select VersionBase from " TBL_PARAMSYSTEME;
-    QList<QVariantList> listversion = db->StandardSelectSQL(VerifBasereq, m_ok);
-    if (!m_ok || listversion.size()==0)
+    if (m_parametres->versionbase()==0)
         ui->VersionBaselabel->setText(tr("Version de la base") + "\t<font color=\"red\"><b>" + tr("inconnue") + "</b></font>");
     else
-        ui->VersionBaselabel->setText(tr("Version de la base ") + "<font color=\"green\"><b>" + listversion.at(0).at(0).toString() + "</b></font>");
+        ui->VersionBaselabel->setText(tr("Version de la base ") + "<font color=\"green\"><b>" + QString::number(m_parametres->versionbase()) + "</b></font>");
     ui->VersionRufuslabel->setText(tr("Version de RufusAdmin ") + "<font color=\"green\"><b>" + qApp->applicationVersion() + "</b></font>");
 
     ui->Sauvegardeframe         ->setEnabled(db->getMode() == DataBase::Poste);
@@ -304,20 +305,18 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     if (db->getMode() == DataBase::Poste)
     {
-        QString reqBkup = "select LundiBkup, MardiBkup, MercrediBkup, JeudiBkup, VendrediBkup, SamediBkup, DimancheBkup, HeureBkup, DirBkup from " TBL_PARAMSYSTEME;
-        QList<QVariantList> listBKup = db->StandardSelectSQL(reqBkup, m_ok);
-        QString DirBkup = listBKup.at(0).at(8).toString();
-        if (QDir(DirBkup).exists())
-            ui->DirBackupuplineEdit->setText(DirBkup);
-        if (listBKup.at(0).at(7).toTime().isValid())
-            ui->HeureBackuptimeEdit->setTime(listBKup.at(0).at(7).toTime());
-        ui->LundiradioButton    ->setChecked(listBKup.at(0).at(0).toInt()==1);
-        ui->MardiradioButton    ->setChecked(listBKup.at(0).at(1).toInt()==1);
-        ui->MercrediradioButton ->setChecked(listBKup.at(0).at(2).toInt()==1);
-        ui->JeudiradioButton    ->setChecked(listBKup.at(0).at(3).toInt()==1);
-        ui->VendrediradioButton ->setChecked(listBKup.at(0).at(4).toInt()==1);
-        ui->SamediradioButton   ->setChecked(listBKup.at(0).at(5).toInt()==1);
-        ui->DimancheradioButton ->setChecked(listBKup.at(0).at(6).toInt()==1);
+         QString DirBkup = m_parametres->dirbkup();
+        if (QDir(m_parametres->dirbkup()).exists())
+            ui->DirBackupuplineEdit->setText(m_parametres->dirbkup());
+        if (m_parametres->heurebkup().isValid())
+            ui->HeureBackuptimeEdit->setTime(m_parametres->heurebkup());
+        ui->LundiradioButton    ->setChecked(m_parametres->lundibkup());
+        ui->MardiradioButton    ->setChecked(m_parametres->mardibkup());
+        ui->MercrediradioButton ->setChecked(m_parametres->mercredibkup());
+        ui->JeudiradioButton    ->setChecked(m_parametres->jeudibkup());
+        ui->VendrediradioButton ->setChecked(m_parametres->vendredibkup());
+        ui->SamediradioButton   ->setChecked(m_parametres->samedibkup());
+        ui->DimancheradioButton ->setChecked(m_parametres->dimanchebkup());
         connect(ui->DirBackuppushButton,        &QPushButton::clicked,      this,   &RufusAdmin::Slot_ModifDirBackup);
         QList<QRadioButton*> listbutton2 = ui->JourSauvegardegroupBox->findChildren<QRadioButton*>();
         for (int i=0; i<listbutton2.size(); i++)
@@ -700,7 +699,7 @@ int RufusAdmin::DetermineLieuExercice()
     if (db->getMode() == DataBase::Distant)
     {
         QString lieuxreq = "select idLieu, NomLieu from " TBL_LIEUXEXERCICE
-                           " where idLieu <> (select idLieuParDefaut from " TBL_PARAMSYSTEME ")";
+                           " where idLieu <> " + QString::number(m_parametres->idlieupardefaut());
         QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, m_ok);
         if (listlieux.size()==1)
             idLieu = listlieux.at(0).at(0).toInt();
@@ -769,15 +768,14 @@ int RufusAdmin::DetermineLieuExercice()
     }
     else
     {
-        QString lieuxreq = "select idLieuParDefaut from " TBL_PARAMSYSTEME;
-        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, m_ok);
-        if (listlieux.at(0).at(0).toInt()>=1)
-            idLieu = listlieux.at(0).at(0).toInt();
+        if (m_parametres->idlieupardefaut()>=1)
+            idLieu = m_parametres->idlieupardefaut();
         else
         {
             QList<QVariantList> listliux = db->StandardSelectSQL("select min(idlieu) from " TBL_LIEUXEXERCICE, m_ok);
             idLieu = listliux.at(0).at(0).toInt();
             db->StandardSQL("update " TBL_PARAMSYSTEME " set idLieuParDefaut = " + listliux.at(0).at(0).toString());
+            m_parametres->setidlieupardefaut(idLieu);
         }
     }
     return idLieu;
@@ -1079,7 +1077,10 @@ void RufusAdmin::Slot_ModifDirImagerie()
         QString Base = (db->getMode() == DataBase::Distant? "BDD_DISTANT/" : "");
         m_settings->setValue(Base + "DossierImagerie", dockdir.path());
         if (db->getMode() == DataBase::Poste)
+        {
             db->StandardSQL("update " TBL_PARAMSYSTEME " set dirImagerie = '" + dockdir.path() + "'");
+            m_parametres->setdirimagerie(dockdir.path());
+        }
     }
 }
 
@@ -1110,6 +1111,7 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
 void RufusAdmin::Slot_EnregistreEmplacementServeur(int idx)
 {
     db->StandardSQL("update " TBL_PARAMSYSTEME " set idlieupardefaut = " + ui->EmplacementServeurupComboBox->itemData(idx).toString());
+    m_parametres->setidlieupardefaut(ui->EmplacementServeurupComboBox->itemData(idx).toInt());
 }
 
 void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
@@ -1163,6 +1165,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
         msgbox.setText(tr("Modifications enregistrées"));
         msgbox.setInformativeText(tr("Le nouveau mot de passe a été enregistré avec succès"));
         QString req = "update " TBL_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
+        m_parametres->setmdpadmin(nouv);
         db->StandardSQL(req);
         // Enregitrer le nouveau MDP de la base
         req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(m_idadmindocs);
@@ -1954,11 +1957,8 @@ void RufusAdmin::Slot_RestaureBase()
         if (QDir(dirtorestore.absolutePath() + DIR_VIDEOS).entryList(QDir::Files | QDir::NoDotAndDotDot).size()>0)
             OKVideos = true;
 
-    QString NomDirStockageImagerie("");
-    QVariantList dirstock = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, m_ok);
-    if (m_ok && dirstock.size()>0)
-        NomDirStockageImagerie = dirstock.at(0).toString();
-    if (!m_ok || !QDir(NomDirStockageImagerie).exists())
+    QString NomDirStockageImagerie = m_parametres->dirimagerie();
+    if (!QDir(NomDirStockageImagerie).exists())
     {
         UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage valide"),
                             tr("Le dossier spécifié pour le stockage de l'imagerie n'est pas valide") + "\n"
@@ -1988,6 +1988,7 @@ void RufusAdmin::Slot_RestaureBase()
         NomDirStockageImagerie = dirstock.absolutePath();
         m_settings->setValue("BDD_POSTE/DossierImagerie", NomDirStockageImagerie);
         QString reqimg = "update " TBL_PARAMSYSTEME " set DirImagerie = '" + NomDirStockageImagerie + "'";
+        m_parametres->setdirimagerie(NomDirStockageImagerie);
         db->StandardSQL(reqimg);
     }
 
@@ -2354,12 +2355,7 @@ void RufusAdmin::Slot_VerifPosteImport()
 
 void RufusAdmin::Slot_VerifVersionBase()
 {
-    int version = VERSION_BASE;
-    QVariantList versiondata = db->getFirstRecordFromStandardSelectSQL("select versionbase from " TBL_PARAMSYSTEME, m_ok);
-    if (!m_ok)
-        return;
-    if (versiondata.size()>0)
-        version = versiondata.at(0).toInt();
+    int version = m_parametres->versionbase();
     if (version != VERSION_BASE)
     {
         UpMessageBox::Watch(this, tr("Versons incompatibles"),
@@ -2381,14 +2377,8 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
     {
         for (int i=0; i< listlieux.size(); i++)
             ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
-        int DefautLieu = 0;
-        QVariantList dftLieu = db->getFirstRecordFromStandardSelectSQL("select idlieupardefaut from " TBL_PARAMSYSTEME, m_ok);
-        if(!m_ok)
-            return;
-        if (dftLieu.size()>0)
-            DefautLieu = dftLieu.at(0).toInt();
-        if (dftLieu.size()>0 && DefautLieu>0)
-            ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(DefautLieu));
+        if (m_parametres->idlieupardefaut() > 0)
+            ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(m_parametres->idlieupardefaut()));
         else
         {
             ui->EmplacementServeurupComboBox->setCurrentIndex(0);
@@ -2403,16 +2393,10 @@ bool RufusAdmin::VerifBase()
 {
     int Versionencours  = 37; //correspond aux premières versions de MAJ de la base
     int Version         = VERSION_BASE;
-    QVariantList Versionenr = db->getFirstRecordFromStandardSelectSQL("select VersionBase from " TBL_PARAMSYSTEME,  m_ok);
     bool b              = false;
-    if (!m_ok || Versionenr.size()==0)
+    Versionencours = m_parametres->versionbase();
+    if (Versionencours < Version)
         b = true;
-    else
-    {
-        Versionencours = Versionenr.at(0).toInt();
-        if (Versionencours < Version)
-            b = true;
-    }
     bool BupDone = false;
     if (b)
     {
@@ -2497,6 +2481,7 @@ bool RufusAdmin::VerifBase()
                 else
                     UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
                 db->StandardSQL("UPDATE " TBL_PARAMSYSTEME " SET VersionBase = 53");
+                m_parametres->setversionbase(53);
             }
         }
     }
@@ -2556,6 +2541,7 @@ void RufusAdmin::Slot_ModifDirBackup()
     if (dirsauvorigin != dirSauv)
     {
         db->StandardSQL("update " TBL_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
+        m_parametres->setdirbkup(dirSauv);
         ModifParamBackup();
     }
     ConnectTimerInactive();
@@ -2619,10 +2605,7 @@ void RufusAdmin::ModifParamBackup()
     QString dirSauv   = ui->DirBackupuplineEdit->text();
     db->StandardSQL("update " TBL_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
     // ENREGISTREMENT DES PARAMETRES DE SAUVEGARDE DANS /Documents/Rufus/RufusScriptBackup.sh
-    QString NomDirStockageImagerie("");
-    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie from " TBL_PARAMSYSTEME, m_ok);
-    if (m_ok && dirdata.size()>0)
-        NomDirStockageImagerie = dirdata.at(0).toString();
+    QString NomDirStockageImagerie = m_parametres->dirimagerie();
 
     //1. Dossier de backup
     DefinitScriptBackup(NomDirStockageImagerie);
@@ -2645,6 +2628,7 @@ void RufusAdmin::ModifParamBackup()
     db->StandardSQL("update " TBL_PARAMSYSTEME " set VendrediBkup = "  + VendrediBkup);
     db->StandardSQL("update " TBL_PARAMSYSTEME " set SamediBkup = "    + SamediBkup);
     db->StandardSQL("update " TBL_PARAMSYSTEME " set DimancheBkup = "  + DimancheBkup);
+    db->initParametres();
 
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
@@ -2915,6 +2899,7 @@ void RufusAdmin::Slot_EffacePrgSauvegarde()
     db->StandardSQL("update " TBL_PARAMSYSTEME " set VendrediBkup = NULL");
     db->StandardSQL("update " TBL_PARAMSYSTEME " set SamediBkup = NULL");
     db->StandardSQL("update " TBL_PARAMSYSTEME " set DimancheBkup = NULL");
+    db->initParametres();
 #ifdef Q_OS_MACX
     QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath();
     unload += SCRIPTPLISTFILE "\"\"";
@@ -2942,14 +2927,8 @@ bool RufusAdmin::ImmediateBackup()
         return false;
     }
 
-    QString NomDirStockageImagerie("");
-    QString NomDirDestination ("");
-    QVariantList dirdata = db->getFirstRecordFromStandardSelectSQL("select dirimagerie, DirBkup from " TBL_PARAMSYSTEME, m_ok);
-    if (m_ok && dirdata.size()>0)
-    {
-        NomDirStockageImagerie = dirdata.at(0).toString();
-        NomDirDestination = dirdata.at(1).toString();
-    }
+    QString NomDirStockageImagerie = m_parametres->dirimagerie();
+    QString NomDirDestination = m_parametres->dirbkup();
     if(!QDir(NomDirDestination).exists() || NomDirDestination == "")
     {
         if (UpMessageBox::Question(this,
