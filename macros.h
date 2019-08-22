@@ -409,9 +409,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define FILE_TEST                                 "/Documents/Rufus/Ressources/test.txt"
 #define FILE_INI                                  "/Documents/RufusAdmin/RufusAdmin.ini"
 #define FILE_INIRUFUS                             "/Documents/Rufus/Rufus.ini"
-#define SCRIPTBACKUPFILE                            "/Documents/Rufus/RufusScriptBackup.sh"
-#define SCRIPTRESTOREFILE                           "/Documents/Rufus/RufusScriptRestore.sh"
-#define SCRIPTPLISTFILE                             "/Library/LaunchAgents/rufus.bup.plist"
+#define SCRIPTBACKUPFILE                          "/Documents/Rufus/RufusScriptBackup.sh"
+#define SCRIPTRESTOREFILE                         "/Documents/Rufus/RufusScriptRestore.sh"
+#define SCRIPT_MACOS_PLIST_FILE                   "/Library/LaunchAgents/rufus.bup.plist"
 
 // Variables mysql
 #define MAX_ALLOWED_PACKET                          "16"

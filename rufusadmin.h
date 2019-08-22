@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
+/*!
  * L'application RufusAdmin sert 4 taches:
  * 1. programmer les sauvegardes de la base de données et des fichiers d'images.
        Cette programmation n'est possible que si le pogramme est éxécuté sur la machine qui héberge le serveur pour des raisons techniques liés à Linux (cron table) et OSX (launchctl)
@@ -28,7 +28,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
             . un dossier NomdelAppareil_echecstranserts dans lequel sont enregistrés les fichiers qui n'ont pas pu être incorporés dans la base de données
             . un dossier NomdelAppareil_transfertOK où sont stockés les transferts réussis.
         . chaque fois qu'un nouveau fichier apparaît dans le fichier d'échange, le programme essaie de le reconnaître en identifiant l'id patient concerné dans le nom du fichier.
-            Certains appareil ne permettent pas d'enregistrer un id, le programme utilise alors nom et prenom
+            Certains appareils                                                                                       ne permettent pas d'enregistrer un id, le programme utilise alors nom et prenom
             . s'il réussit
                 . le fichier est renommé avec l'architecture idpatient_nompatient_prenompatient_dateexamen_typexamen plus l'extension jpg ou pdf
                 . il est recopié dans le dossier NomdelAppareil_transfertOK
@@ -39,10 +39,9 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
                 . le fichier est recopié dans le dossier NomdelAppareil_echectransfert
                 . il est effacé du dossier d'échange
                 . une ligne est crée dans le fichier 0journaltransferts_datedujour.txt dans le dossier NomdelAppareil_echecstransferts pour enregistrer l'opération
- * 3. Alimenter une table temporaire dans laquelle seront intégrés chaque image correspondant au dossier patient ouvert.
-      Ces tables sont alimentées à la demande avec les images de ce patient au fur et à mesure que le programme les demande
-      la table est détruite quand le dossier patient est fermé
-      Un timer lance une routine qui détruit les images des patients qui ne sont plus en consultation.
+ * 3. Alimenter la table Images.EcahngeImages dans laquelle seront intégrés chaque image correspondant au dossier patient ouvert.
+      Cette table est alimentée à la demande avec les images de ce patient au fur et à mesure que le programme les demande
+      La table est vidée avant chaque procédure de sauvegatde
  * 4. ëtre le serveur TCP du réseau local
 */
 
@@ -132,6 +131,7 @@ private:
     void                        Edit(QString txt, int delaieffacement=0);
     QStringList                 DecomposeScriptSQL(QString nomficscript);
     QString                     getDossierDocuments(QString Appareil);
+    QString                     getExpressionSize(double size);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
     void                        EffaceMessage(int pause = 1000);
     void                        NouvAppareil();
@@ -187,9 +187,9 @@ private slots:
 
       Les paramètres de programmation de la sauvegarde sont sauvegardés dans la base de données dans la table ParametresSyteme
 
-      La sauvegarde se fait par un script qui lance le prg mysqldump de sauvegarde des données et recopie les fichiers d'imagerie, les factures et les videos vers l'emplacement de sauvegarde.
+      La sauvegarde se fait par le script RufusBackupScript.sh qui lance le prg mysqldump de sauvegarde des données et recopie les fichiers d'imagerie, les factures et les videos vers l'emplacement de sauvegarde.
       Ce script définit l'emplacement de la sauvegarde, le nom de la sauvegarde et détruit les sauvegardes datant de plus de 14 jours
-      . pour Mac c'est le script RufusBackupScript.sh situé dans le dossier /Users/nomdutilisateur/Documents/Rufus
+      Le script RufusBackupScript.sh est situé dans le dossier /Users/nomdutilisateur/Documents/Rufus
 
       Le lancement de la sauvegarde au moment programmé se fait
         . Sous Mac,  par un autre script -> c'est le fichier xml rufus.bup.plist situé dans /Users/nomutilisateur/Library/LaunchAgents.
@@ -250,24 +250,48 @@ public:
               };    Q_ENUM(Day)
     Q_DECLARE_FLAGS(Days, Day)
     QTimer                  t_timerbackup;
-    bool                    ImmediateBackup();
+    bool                    ImmediateBackup(QString dirdestination = "", bool verifposteconnecte = true, bool full=false);
+                            /*! lance un backup immédiat */
 private slots:
-    void                    Slot_CalcTimeBupRestore();
-    void                    Slot_ModifDirBackup();
-    void                    Slot_ModifDateBackup();
-    void                    Slot_EffacePrgSauvegarde();
-                            /*! efface les données de sauvegarde (moment et emplacement) dans la base de données */
+    void                    Slot_ImmediateBackup();
+
 private:
     qint64                  m_basesize, m_imagessize, m_videossize, m_freespace;
     UpDialog                *dlg_askBupRestore;
     UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
     void                    AskBupRestore(bool restore, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true);
-    void                    DefinitScriptBackup(QString path, bool AvecImages= true, bool AvecVideos = true);
-    QString                 getExpressionSize(double size);
-    void                    ModifParamBackup();
+                            /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
+    void                    BackupWakeUp(QString NomDirDestination, QTime timebkup, Days days);
+                            /*! sous Linux, déclenche le backup au moment programmé */
+    void                    CalcTimeBupRestore();
+                            /*! calcule la durée approximative du backup */
+    void                    DefinitScriptBackup(QString NomDirDestination, QString NomDirStockageImagerie, bool AvecImages= true, bool AvecVideos = true);
+                            /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
+    void                    EffaceBDDDataBackup();
+                            /*! efface les données de sauvegarde (moment et emplacement) dans la base de données */
+    void                    EffaceProgrammationBackup();
+                            /*! efface le paramétrage de la sauvegarde
+                            * suppression de RufusScriptBackup.sh
+                            * suppression de rufus.bup.plist sous Mac et arrêt du timer t_timerbackup sous Linux
+                            */
+    void                    InitBackupAuto();
+                            /*! prépare le paramétrage de la fonction ParamAutoBackup() en fonction des paramètres enregistrés dans la base */
+    void                    ModifDateHeureBackup();
+                            /*! modifie l'heure ou la date du backup automatique et relance InitBackupAuto() */
+    void                    ModifDirBackup();
+                            /*! modifie le dossier de destination du backup automatique et relance InitBackupAuto() */
+    void                    ParamAutoBackup(QString dirdestination, QString dirimagerie, QTime timebackup, Days days);
+                            /*! paramètre le moment et l'emplacement de la sauvegarde
+                             * sous Mac, crée le fichier xml rufus.bup.plist
+                             * sous Linux, lance le timer t_timerbackup
+                            */
     //--------------------------------------------------------------------------------------------------------
     // fin sauvegardes
     //--------------------------------------------------------------------------------------------------------
+    void                    ProgrammeSQLVideImagesTemp(QTime timebackup);   /*! programme l'effacement des données temporaires d'imageire
+                                                                             * vide la table EchangeImages
+                                                                             * purge les champs jpg et pdf de la table Factures
+                                                                             */
 
     // TCPServer, TCPSocket
     bool                m_utiliseTCP;

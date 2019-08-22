@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("21-08-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("22-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -317,13 +317,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         ui->VendrediradioButton ->setChecked(m_parametres->vendredibkup());
         ui->SamediradioButton   ->setChecked(m_parametres->samedibkup());
         ui->DimancheradioButton ->setChecked(m_parametres->dimanchebkup());
-        connect(ui->DirBackuppushButton,        &QPushButton::clicked,      this,   &RufusAdmin::Slot_ModifDirBackup);
+        connect(ui->DirBackuppushButton,        &QPushButton::clicked,      this,   &RufusAdmin::ModifDirBackup);
         QList<QRadioButton*> listbutton2 = ui->JourSauvegardegroupBox->findChildren<QRadioButton*>();
         for (int i=0; i<listbutton2.size(); i++)
-            connect(listbutton2.at(i),          &QPushButton::clicked,      this,   &RufusAdmin::Slot_ModifDateBackup);
-        connect(ui->HeureBackuptimeEdit,        &QTimeEdit::timeChanged,    this,   &RufusAdmin::Slot_ModifDateBackup);
-        connect(ui->EffacePrgSauvupPushButton,  &QPushButton::clicked,      this,   &RufusAdmin::Slot_EffacePrgSauvegarde);
-        connect(ui->ImmediatBackupupPushButton, &QPushButton::clicked,      this,   &RufusAdmin::ImmediateBackup);
+            connect(listbutton2.at(i),          &QPushButton::clicked,      this,   &RufusAdmin::ModifDateHeureBackup);
+        connect(ui->HeureBackuptimeEdit,        &QTimeEdit::timeChanged,    this,   &RufusAdmin::ModifDateHeureBackup);
+        connect(ui->EffacePrgSauvupPushButton,  &QPushButton::clicked,      this,   &RufusAdmin::EffaceBDDDataBackup);
+        connect(ui->ImmediatBackupupPushButton, SIGNAL(clicked(bool)),      this,   SLOT(Slot_ImmediateBackup()));
     }
 
     trayIconMenu = new QMenu();
@@ -345,6 +345,19 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     Datas::I()->banques->initListe();
     Datas::I()->motifs->initListe();
+
+    //! - mise à jour du programmateur de sauvegarde et de l'effacement des fichiers images provisoires
+#ifdef Q_OS_LINUX
+    InitBackupAuto();
+#endif
+#ifdef Q_OS_MACX
+    if (db->getMode() != DataBase::Poste)
+        EffaceProgrammationBackup();
+    else
+        InitBackupAuto();
+#endif
+    if (db->getMode() == DataBase::Poste)
+        ProgrammeSQLVideImagesTemp(m_parametres->heurebkup());
 
     installEventFilter(this);
 }
@@ -518,7 +531,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         lblvolvid->setText(getExpressionSize(m_videossize));
         layVideos->addWidget(lblvolvid);
         dlg_askBupRestore->dlglayout()->insertLayout(0, layVideos);
-        connect(Videoschk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
+        connect(Videoschk, &UpCheckBox::clicked, this, [=] {CalcTimeBupRestore();});
     }
     if (OKimages)
     {
@@ -541,7 +554,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         lblvolimg->setText(getExpressionSize(m_imagessize));
         layImges->addWidget(lblvolimg);
         dlg_askBupRestore->dlglayout()->insertLayout(0, layImges);
-        connect(Imgeschk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
+        connect(Imgeschk, &UpCheckBox::clicked, this, [=] {CalcTimeBupRestore();});
     }
 
     QHBoxLayout *layBDD = new QHBoxLayout;
@@ -571,15 +584,15 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
     layVolumeLibre->addWidget(wdg_volumelibrelbl);
     dlg_askBupRestore->dlglayout()->insertLayout(dlg_askBupRestore->dlglayout()->count()-1, layVolumeLibre);
 
-    connect(BDDchk, SIGNAL(clicked(bool)), this,    SLOT(Slot_CalcTimeBupRestore()));
+    connect(BDDchk, &UpCheckBox::clicked, this, [=] {CalcTimeBupRestore();});
 
     dlg_askBupRestore->setFixedWidth(400);
     dlg_askBupRestore->AjouteLayButtons(UpDialog::ButtonOK);
     connect(dlg_askBupRestore->OKButton,    SIGNAL(clicked(bool)), dlg_askBupRestore, SLOT(accept()));
-    Slot_CalcTimeBupRestore();
+    CalcTimeBupRestore();
 }
 
-void RufusAdmin::Slot_CalcTimeBupRestore()
+void RufusAdmin::CalcTimeBupRestore()
 {
     double time(0), volume(0);
     QList<UpCheckBox*> listchk = dlg_askBupRestore->findChildren<UpCheckBox*>();
@@ -977,7 +990,7 @@ void RufusAdmin::setPosteImportDocs(bool a)
 }
 
 /*!
- * \brief Procedures::SetUserAllData(User *usr)
+ * \brief SetUserAllData(User *usr)
  * Charge les données d'un utilisateur, y compris ses données bancaires
  * cette fonction fait appel aux deux classes cls_user et cls_compte
  * et ne peut pas figurer dans la classe cls_user
@@ -2518,7 +2531,7 @@ bool RufusAdmin::VerifMDP(QString MDP, QString Msg)
     return false;
 }
 
-void RufusAdmin::Slot_ModifDirBackup()
+void RufusAdmin::ModifDirBackup()
 {
     if (db->getMode() != DataBase::Poste)
         return;
@@ -2542,14 +2555,22 @@ void RufusAdmin::Slot_ModifDirBackup()
     {
         db->StandardSQL("update " TBL_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
         m_parametres->setdirbkup(dirSauv);
-        ModifParamBackup();
+        InitBackupAuto();
     }
     ConnectTimerInactive();
 }
 
-void RufusAdmin::Slot_ModifDateBackup()
+void RufusAdmin::ModifDateHeureBackup()
 {
-    ModifParamBackup();
+    db->setheurebkup(ui->HeureBackuptimeEdit->time());
+    db->setlundibkup(ui->LundiradioButton->isChecked());
+    db->setmardibkup(ui->MardiradioButton->isChecked());
+    db->setmercredibkup(ui->MercrediradioButton->isChecked());
+    db->setjeudibkup(ui->JeudiradioButton->isChecked());
+    db->setvendredibkup(ui->VendrediradioButton->isChecked());
+    db->setsamedibkup(ui->SamediradioButton->isChecked());
+    db->setdimanchebkup(ui->DimancheradioButton->isChecked());
+    InitBackupAuto();
 }
 
 void RufusAdmin::Message(QString mess, int pause, bool bottom)
@@ -2572,75 +2593,56 @@ void RufusAdmin::EffaceMessage(int pause)
     connect (&timer, &QTimer::timeout, [=] {ui->MessageupLabel->setText("");});
 }
 
-void RufusAdmin::ModifParamBackup()
+void RufusAdmin::BackupWakeUp(QString NomDirDestination, QTime timebkup, Days days)
 {
-    if (db->getMode() != DataBase::Poste)
-        return;
-    bool NoDirBupDefined        = (ui->DirBackupuplineEdit->text() == "");
-    bool IncorrectDirBupDefined = !QDir(ui->DirBackupuplineEdit->text()).exists() && !NoDirBupDefined;
-    bool NoDayBupDefined        = true;
-    QList<QRadioButton*> listbut= ui->JourSauvegardegroupBox->findChildren<QRadioButton*>();
-    for (int i=0; i<listbut.size(); i++)
-        if (listbut.at(i)->isChecked())
-        {
-            NoDayBupDefined = false;
-            break;
-        }
-    if (NoDirBupDefined || NoDayBupDefined || IncorrectDirBupDefined)
+
+    if (QTime::currentTime().toString("HH:mm:ss") == timebkup.toString("HH:mm")+ ":00")
     {
-#ifdef Q_OS_MACX
-    QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath();
-    unload += SCRIPTPLISTFILE "\"\"";
-    QProcess dumpProcess(parent());
-    dumpProcess.start(unload);
-    dumpProcess.waitForFinished();
-    if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
-        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
-    if (QFile::exists(QDir::homePath() + SCRIPTPLISTFILE))
-        QFile::remove(QDir::homePath() + SCRIPTPLISTFILE);
-#endif
+        int day = QDate::currentDate().dayOfWeek();
+        Day daybkup = Lundi;
+        if (day==2)      daybkup = Mardi;
+        else if (day==3) daybkup = Mercredi;
+        else if (day==4) daybkup = Jeudi;
+        else if (day==5) daybkup = Vendredi;
+        else if (day==6) daybkup = Samedi;
+        else if (day==7) daybkup = Dimanche;
+        if (!days.testFlag(daybkup))
+            return;
+        Datas::I()->postesconnectes->initListe();
+        PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getById(Utils::getMACAdress());
+        bool autrespostesconnectes = false;
+        QString nomposte = "";
+        foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
+            if (post->stringid() != m_currentposteconnecte->stringid())
+                autrespostesconnectes = true;
+        if (!autrespostesconnectes)
+        {
+            bool full = true;
+            ImmediateBackup(NomDirDestination, autrespostesconnectes, full);
+        }
+    }
+}
+
+void RufusAdmin::ParamAutoBackup(QString dirdestination, QString dirimagerie, QTime timebackup, Days days)
+{
+    if (!QDir(dirdestination).exists() || !timebackup.isValid() || days<1)
+    {
+        EffaceProgrammationBackup();
         return;
     }
-
-    QString dirSauv   = ui->DirBackupuplineEdit->text();
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set DirBkup = '" + dirSauv + "'");
-    // ENREGISTREMENT DES PARAMETRES DE SAUVEGARDE DANS /Documents/Rufus/RufusScriptBackup.sh
-    QString NomDirStockageImagerie = m_parametres->dirimagerie();
-
-    //1. Dossier de backup
-    DefinitScriptBackup(NomDirStockageImagerie);
-
-    //2. Heure et date du backup
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set HeureBkup = '"    + ui->HeureBackuptimeEdit->time().toString("HH:mm") + "'");
-
-    QString LundiBkup       = (ui->LundiradioButton->isChecked()?   "1" : "NULL");
-    QString MardiBkup       = (ui->MardiradioButton->isChecked()?   "1" : "NULL");
-    QString MercrediBkup    = (ui->MercrediradioButton->isChecked()?"1" : "NULL");
-    QString JeudiBkup       = (ui->JeudiradioButton->isChecked()?   "1" : "NULL");
-    QString VendrediBkup    = (ui->VendrediradioButton->isChecked()?"1" : "NULL");
-    QString SamediBkup      = (ui->SamediradioButton->isChecked()?  "1" : "NULL");
-    QString DimancheBkup    = (ui->DimancheradioButton->isChecked()?"1" : "NULL");
-
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set LundiBkup = "     + LundiBkup);
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set MardiBkup = "     + MardiBkup);
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set MercrediBkup = "  + MercrediBkup);
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set JeudiBkup = "     + JeudiBkup);
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set VendrediBkup = "  + VendrediBkup);
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set SamediBkup = "    + SamediBkup);
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set DimancheBkup = "  + DimancheBkup);
-    db->initParametres();
-
+    DefinitScriptBackup(dirdestination, dirimagerie);
+//#ifdef Q_OS_LINUX
+    t_timerbackup.stop();
+    t_timerbackup.start(1000);
+    connect(&t_timerbackup, &QTimer::timeout, this, [=] {BackupWakeUp(dirdestination, timebackup, days);});
+//#endif
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
-    QString heure   = ui->HeureBackuptimeEdit->time().toString("H");
-    QString minute  = ui->HeureBackuptimeEdit->time().toString("m");
+    QString heure   = timebackup.toString("H");
+    QString minute  = timebackup.toString("m");
     QString jourprg;
-    int njours = 0;
-    QList<QRadioButton*> listbutton2 = ui->JourSauvegardegroupBox->findChildren<QRadioButton*>();
-    for (int i=0; i<listbutton2.size(); i++)
-       if (listbutton2.at(i)->isChecked()) njours ++;
-    QString a = (njours>1? "\t": "");
-    if (njours>1)
+    QString a = (days>1? "\t": "");
+    if (days>1)
         jourprg += "\t\t<array>\n";
 
     QString debutjour =
@@ -2654,21 +2656,21 @@ void RufusAdmin::ModifParamBackup()
         a + "\t\t\t<key>Minute</key>\n" +
         a + "\t\t\t<integer>" + minute + "</integer>\n" +
         a + "\t\t</dict>\n";
-    if (ui->LundiradioButton->isChecked())
+    if (days.testFlag(Lundi))
         jourprg += debutjour + "1" + finjour;
-    if (ui->MardiradioButton->isChecked())
+    if (days.testFlag(Mardi))
         jourprg += debutjour + "2" + finjour;
-    if (ui->MercrediradioButton->isChecked())
+    if (days.testFlag(Mercredi))
         jourprg += debutjour + "3" + finjour;
-    if (ui->JeudiradioButton->isChecked())
+    if (days.testFlag(Jeudi))
         jourprg += debutjour + "4" + finjour;
-    if (ui->VendrediradioButton->isChecked())
+    if (days.testFlag(Vendredi))
         jourprg += debutjour + "5" + finjour;
-    if (ui->SamediradioButton->isChecked())
+    if (days.testFlag(Samedi))
         jourprg += debutjour + "6" + finjour;
-    if (ui->DimancheradioButton->isChecked())
+    if (days.testFlag(Dimanche))
         jourprg += debutjour + "7" + finjour;
-    if (njours>1)
+    if (days>1)
         jourprg += "\t\t</array>\n";
 
     QString plist = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
@@ -2688,9 +2690,9 @@ void RufusAdmin::ModifParamBackup()
                             + jourprg +
                         "\t</dict>\n"
                     "</plist>\n";
-    if (QFile::exists(QDir::homePath() + SCRIPTPLISTFILE))
-        QFile::remove(QDir::homePath() + SCRIPTPLISTFILE);
-    QFile fplist(QDir::homePath() + SCRIPTPLISTFILE);
+    if (QFile::exists(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE))
+        QFile::remove(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE);
+    QFile fplist(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE);
     if (fplist.open(QIODevice::ReadWrite))
     {
         QTextStream out(&fplist);
@@ -2700,28 +2702,32 @@ void RufusAdmin::ModifParamBackup()
 
     // relance du launchd
     QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath();
-    unload += SCRIPTPLISTFILE "\"\"";
+    unload += SCRIPT_MACOS_PLIST_FILE "\"\"";
     QString load    = "bash -c \"/bin/launchctl load \""   + QDir::homePath();
-    load += SCRIPTPLISTFILE "\"\"";
+    load += SCRIPT_MACOS_PLIST_FILE "\"\"";
     QProcess dumpProcess(parent());
     dumpProcess.start(unload);
     dumpProcess.waitForFinished();
     dumpProcess.start(load);
     dumpProcess.waitForFinished();
 #endif
+    ProgrammeSQLVideImagesTemp(timebackup);
+}
 
+void RufusAdmin::ProgrammeSQLVideImagesTemp(QTime timebackup)
+{
     //programmation de l'effacement du contenu de la table ImagesEchange
     db->StandardSQL("Use " DB_IMAGES);
     db->StandardSQL("DROP EVENT IF EXISTS VideImagesEchange");
     QString req =   "CREATE EVENT VideImagesEchange "
-            "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
+            "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + timebackup.addSecs(-60).toString("HH:mm:ss") + "' "
             "DO DELETE FROM " TBL_ECHANGEIMAGES;
     db->StandardSQL(req);
     //programmation de l'effacement des pdf et jpg contenus dans Factures
     db->StandardSQL("Use " DB_COMPTA);
     db->StandardSQL("DROP EVENT IF EXISTS VideFactures");
     req =   "CREATE EVENT VideFactures "
-            "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + ui->HeureBackuptimeEdit->time().addSecs(-60).toString("HH:mm:ss") + "' "
+            "ON SCHEDULE EVERY 1 DAY STARTS '2018-03-23 " + timebackup.addSecs(-60).toString("HH:mm:ss") + "' "
             "DO UPDATE " TBL_FACTURES " SET jpg = null, pdf = null";
     db->StandardSQL(req);
 }
@@ -2784,8 +2790,10 @@ QStringList RufusAdmin::DecomposeScriptSQL(QString nomficscript)
     return listinstruct;
 }
 
-void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVideos)
+void RufusAdmin::DefinitScriptBackup(QString NomDirDestination,QString NomDirStockageImagerie, bool AvecImages, bool AvecVideos)
 {
+    if (!QDir(NomDirDestination).exists())
+        return;
     // élaboration du script de backup
     QString scriptbackup = "#!/bin/bash";
     //# Configuration de base: datestamp e.g. YYYYMMDD
@@ -2793,19 +2801,22 @@ void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVid
     scriptbackup += "DATE=$(date +\"%Y%m%d-%H%M\")";
     //# Dossier où sauvegarder les backups (créez le d'abord!)
     scriptbackup += "\n";
-    scriptbackup += "BACKUP_DIR=\"" + ui->DirBackupuplineEdit->text() + "\"";
+    scriptbackup += "BACKUP_DIR=\"" + NomDirDestination + "\"";
     //# Dossier de  ressources
     scriptbackup += "\n";
     scriptbackup += "DIR_RESSOURCES=\"" + QDir::homePath() + DIR_RUFUS DIR_RESSOURCES + "\"";
     scriptbackup += "\n";
-    scriptbackup += "DIR_IMAGES=\"" + path + DIR_IMAGES + "\"";
-    scriptbackup += "\n";
-    scriptbackup += "DIR_FACTURES=\"" + path + DIR_FACTURES + "\"";
-    scriptbackup += "\n";
-    scriptbackup += "DIR_VIDEOS=\"" + path + DIR_VIDEOS + "\"";
+    if (QDir(NomDirStockageImagerie).exists())
+    {
+        scriptbackup += "DIR_IMAGES=\"" + NomDirStockageImagerie + DIR_IMAGES + "\"";
+        scriptbackup += "\n";
+        scriptbackup += "DIR_FACTURES=\"" + NomDirStockageImagerie + DIR_FACTURES + "\"";
+        scriptbackup += "\n";
+        scriptbackup += "DIR_VIDEOS=\"" + NomDirStockageImagerie + DIR_VIDEOS + "\"";
+        scriptbackup += "\n";
+    }
     //# Rufus.ini
-    scriptbackup += "\n";
-    scriptbackup += "RUFUSINI=\"" + QDir::homePath() + FILE_INIRUFUS + "\"";
+    scriptbackup += "RUFUSINI=\"" + QDir::homePath() + FILE_INI + "\"";
     //# Identifiants MySQL
     scriptbackup += "\n";
     scriptbackup += "MYSQL_USER=\"dumprufus\"";
@@ -2815,14 +2826,20 @@ void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVid
     QDir Dir(QCoreApplication::applicationDirPath());
     Dir.cdUp();
     scriptbackup += "\n";
+    QString cheminmysql;
 #ifdef Q_OS_MACX
-    scriptbackup += "MYSQL=/usr/local/mysql/bin";           // Depuis HighSierra on ne peut plus utiliser + Dir.absolutePath() + DIR_LIBS2 - le script ne veut pas utiliser le client mysql du package (???)
+    cheminmysql = "/usr/local/mysql/bin";           // Depuis HighSierra on ne peut plus utiliser + Dir.absolutePath() + DIR_LIBS2 - le script ne veut pas utiliser le client mysql du package (???)
+#endif
+#ifdef Q_OS_LINUX
+    cheminmysql = "/usr/bin";
+#endif
+    scriptbackup += "MYSQL=" + cheminmysql;
     scriptbackup += "/mysql";
     scriptbackup += "\n";
-    scriptbackup += "MYSQLDUMP=/usr/local/mysql/bin";       // Depuis HighSierra on ne peut plus utiliser + Dir.absolutePath() + DIR_LIBS2 - le script ne veut pas utiliser le client mysql du package (???)
+    scriptbackup += "MYSQLDUMP=" + cheminmysql;
     scriptbackup += "/mysqldump";
     scriptbackup += "\n";
-#endif
+
     //# Bases de données MySQL à ignorer
     scriptbackup += "SKIPDATABASES=\"Database|information_schema|performance_schema|mysql|sys\"";
     //# Nombre de jours à garder les dossiers (seront effacés après X jours)
@@ -2850,27 +2867,32 @@ void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVid
     scriptbackup += "find $BACKUP_DIR/* -mtime +$RETENTION -delete";
     // copie les fichiers ressources
     scriptbackup += "\n";
-    scriptbackup +=  "cp -R $DIR_RESSOURCES $BACKUP_DIR/$DATE/Ressources";
-    // copie les fichiers image
-    if (AvecImages)
+    scriptbackup += "cp -R $DIR_RESSOURCES $BACKUP_DIR/$DATE/Ressources";
+    scriptbackup += "\n";
+    if (QDir(NomDirStockageImagerie).exists())
     {
-        scriptbackup += "\n";
-        scriptbackup +=  "cp -R $DIR_IMAGES $BACKUP_DIR/$DATE/Images";
-    }
-    // copie les fichiers facture
-    if (AvecImages)
-    {
-        scriptbackup += "\n";
-        scriptbackup +=  "cp -R $DIR_FACTURES $BACKUP_DIR/$DATE/Factures";
-    }
-    // copie les fichiers video
-    if (AvecVideos)
-    {
-        scriptbackup += "\n";
-        scriptbackup +=  "cp -R $DIR_VIDEOS $BACKUP_DIR/$DATE/Videos";
+        // copie les fichiers image
+        if (AvecImages)
+        {
+            scriptbackup += "mkdir -p $BACKUP_DIR/Images";
+            scriptbackup += "\n";
+            scriptbackup += "mkdir -p $BACKUP_DIR/Factures";
+            scriptbackup += "\n";
+            scriptbackup += "cp -R -f $DIR_IMAGES $BACKUP_DIR";
+            scriptbackup += "\n";
+            scriptbackup += "cp -R -f $DIR_FACTURES $BACKUP_DIR";
+            scriptbackup += "\n";
+        }
+        // copie les fichiers video
+        if (AvecVideos)
+        {
+            scriptbackup += "mkdir -p $BACKUP_DIR/Videos";
+            scriptbackup += "\n";
+            scriptbackup += "cp -R -f $DIR_VIDEOS $BACKUP_DIR";
+            scriptbackup += "\n";
+        }
     }
     // copie Rufus.ini
-    scriptbackup += "\n";
     scriptbackup +=  "cp $RUFUSINI $BACKUP_DIR/$DATE/Rufus.ini";
     if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
         QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
@@ -2882,77 +2904,138 @@ void RufusAdmin::DefinitScriptBackup(QString path, bool AvecImages, bool AvecVid
         fbackup.close();
     }
 }
-
-void RufusAdmin::Slot_EffacePrgSauvegarde()
+void RufusAdmin::EffaceBDDDataBackup()
 {
     QList<QRadioButton*> listbutton2 = ui->JourSauvegardegroupBox->findChildren<QRadioButton*>();
     for (int i=0; i<listbutton2.size(); i++)
        listbutton2.at(i)->setChecked(false);
     ui->DirBackupuplineEdit->setText("");
     ui->HeureBackuptimeEdit->setTime(QTime(0,0));
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set HeureBkup = ''");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set DirBkup = ''");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set LundiBkup = NULL");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set MardiBkup = NULL");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set MercrediBkup = NULL");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set JeudiBkup = NULL");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set VendrediBkup = NULL");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set SamediBkup = NULL");
-    db->StandardSQL("update " TBL_PARAMSYSTEME " set DimancheBkup = NULL");
-    db->initParametres();
+    QString Base = db->getBase();
+    if (Base == "")
+        return;
+    db->setlundibkup(false);
+    db->setmardibkup(false);
+    db->setmercredibkup(false);
+    db->setjeudibkup(false);
+    db->setvendredibkup(false);
+    db->setsamedibkup(false);
+    db->setdimanchebkup(false);
+    db->setheurebkup();
+    db->setdirbkup();
+    EffaceProgrammationBackup();
+}
+
+void RufusAdmin::EffaceProgrammationBackup()
+{
+    if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
+        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
+#ifdef Q_OS_LINUX
+    t_timerbackup.stop();
+#endif
 #ifdef Q_OS_MACX
-    QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath();
-    unload += SCRIPTPLISTFILE "\"\"";
+    QString file = QDir::homePath() + SCRIPT_MACOS_PLIST_FILE;                          /*! file = "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist" */
+    if (!QFile::exists(file))
+        return;
+    QString unload  = "bash -c \"/bin/launchctl unload \"" + file + "\"\"";             /*! unload = bash -c "/bin/launchctl unload "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist"" */
     QProcess dumpProcess(parent());
     dumpProcess.start(unload);
     dumpProcess.waitForFinished();
-    if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
-        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
-    if (QFile::exists(QDir::homePath() + SCRIPTPLISTFILE))
-        QFile::remove(QDir::homePath() + SCRIPTPLISTFILE);
 #endif
 }
 
-bool RufusAdmin::ImmediateBackup()
+/*!
+ *  \brief InitBackupAuto()
+ * prépare le paramétrage de la fonction ParamAutoBackup() en fonction des paramètres enregistrés dans la base
+ * utilisé au moment du lancement du programme
+ */
+void RufusAdmin::InitBackupAuto()
 {
-    QString req = "select NomPosteConnecte from " TBL_USERSCONNECTES " where NomPosteConnecte <> '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS + "'";
-    QList<QVariantList> listpostes = db->StandardSelectSQL(req, m_ok);
-    if (listpostes.size() > 0)
+    if (db->getMode() != DataBase::Poste)
+        return;
+    Days days;
+    QString dirdestination ("");
+    QString dirimagerie("");
+    QTime timebackup = m_parametres->heurebkup();
+    dirdestination  = m_parametres->dirbkup();
+    if (m_parametres->lundibkup())      days.setFlag(Lundi);
+    if (m_parametres->mardibkup())      days.setFlag(Mardi);
+    if (m_parametres->mercredibkup())   days.setFlag(Mercredi);
+    if (m_parametres->jeudibkup())      days.setFlag(Jeudi);
+    if (m_parametres->vendredibkup())   days.setFlag(Vendredi);
+    if (m_parametres->samedibkup())     days.setFlag(Samedi);
+    if (m_parametres->dimanchebkup())   days.setFlag(Dimanche);
+
+    ParamAutoBackup(dirdestination, dirimagerie, timebackup, days);
+}
+
+void RufusAdmin::Slot_ImmediateBackup()
+{
+    Datas::I()->postesconnectes->initListe();
+    PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getById(Utils::getMACAdress());
+    QString nomposte = "";
+    foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
+        if (post->stringid() != m_currentposteconnecte->stringid())
     {
         UpMessageBox::Information(this, tr("Autres postes connectés!"),
-                                     tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
+                                  tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
                                      " si vous n'êtes pas le seul poste connecté.\n"
-                                     "Le poste ") + listpostes.at(0).at(0).toString() + tr(" est aussi connecté"));
+                                     "Le poste ") + post->nomposte() + " " + tr("est aussi connecté"));
         show();
-        return false;
+        return;
+    }
+    QString dirsauvorigin   = ui->DirBackupuplineEdit->text();
+    QString dirSauv         = QFileDialog::getExistingDirectory(this,
+                                                                tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
+                                                                   "Le nom de dossier ne doit pas contenir d'espace"),
+                                                                (QDir(dirsauvorigin).exists()? dirsauvorigin : QDir::homePath()),
+                                                                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (dirSauv.contains(" "))
+    {
+        UpMessageBox::Watch(this, tr("Nom de dossier non conforme"),tr("Vous ne pouvez pas choisir un dossier dont le nom contient des espaces"));
+        return;
+    }
+    if (dirSauv != "")
+        ImmediateBackup(dirSauv, false);
+}
+
+bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte, bool full)
+{
+    if (verifposteconnecte)
+    {
+        Datas::I()->postesconnectes->initListe();
+        PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getById(Utils::getMACAdress());
+        QString nomposte = "";
+        foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
+            if (post->stringid() != m_currentposteconnecte->stringid())
+        {
+            UpMessageBox::Information(this, tr("Autres postes connectés!"),
+                                      tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
+                                         " si vous n'êtes pas le seul poste connecté.\n"
+                                         "Le poste ") + post->nomposte() + " " + tr("est aussi connecté"));
+            show();
+            return false;
+        }
     }
 
     QString NomDirStockageImagerie = m_parametres->dirimagerie();
     QString NomDirDestination = m_parametres->dirbkup();
-    if(!QDir(NomDirDestination).exists() || NomDirDestination == "")
+    if (dirdestination == "")
     {
-        if (UpMessageBox::Question(this,
-                                   tr("Pas de destination"),
-                                   NomDirDestination == ""?
-                                   tr("Vous n'avez pas spécifié de dossier de destination\npour la sauvegarde\nVoulez-vous le faire maintenant?") :
-                                   tr("Le dossier de destination de sauvegarde") + "\n" +  NomDirDestination + "\n" + tr("nest pas valide\nVoulez-vous choisir un autre dossier?"),
-                                   UpDialog::ButtonCancel | UpDialog::ButtonOK,
-                                   QStringList() << tr("Annuler") << tr("Choisir un dossier"))
-            == UpSmallButton::STARTBUTTON)
-        {
-            QString dirSauv         = QFileDialog::getExistingDirectory(this,tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
-                                                                        "Le nom de dossier ne doit pas contenir d'espace"), QDir::homePath());
-            if (dirSauv == "")
-                return false;
-            if (dirSauv.contains(" "))
-            {
-                UpMessageBox::Watch(this, tr("Nom de dossier non conforme"),tr("Vous ne pouvez pas choisir un dossier dont le nom contient des espaces"));
-                return false;
-            }
-            NomDirDestination = dirSauv;
-        }
-        else return false;
+        QString dirSauv = QFileDialog::getExistingDirectory(Q_NULLPTR,
+                                                            tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base") + "\n" + tr("Le nom de dossier ne doit pas contenir d'espace"),
+                                                            (QDir(NomDirDestination).exists()? NomDirDestination : QDir::homePath()));
+        if (dirSauv.contains(" "))
+            UpMessageBox::Watch(Q_NULLPTR, tr("Nom de dossier non conforme"),tr("Vous ne pouvez pas choisir un dossier dont le nom contient des espaces"));
+        if (dirSauv == "" || dirSauv.contains(" "))
+            return false;
+        NomDirDestination = dirSauv;
     }
+    else
+        NomDirDestination = dirdestination;
+    if (!QDir(NomDirDestination).exists())
+        return false;
+
     DisconnectTimerInactive();
     AskBupRestore(false, NomDirStockageImagerie, NomDirDestination);
     if (dlg_askBupRestore->exec()==0)
@@ -2987,7 +3070,7 @@ bool RufusAdmin::ImmediateBackup()
     {
         QFile precBup(QDir::homePath() + SCRIPTBACKUPFILE);
         bool b = precBup.exists();
-        DefinitScriptBackup(NomDirStockageImagerie, OKImages, OKVideos);
+        DefinitScriptBackup(m_parametres->dirbkup(), m_parametres->dirimagerie(), OKImages, OKVideos);
         QString msg = "sh " + QDir::homePath() + SCRIPTBACKUPFILE;
         QProcess dumpProcess(parent());
         dumpProcess.start(msg);
@@ -3001,10 +3084,9 @@ bool RufusAdmin::ImmediateBackup()
             msg = tr("Incident pendant la sauvegarde - code incident") + " " + QString::number(a);
         Message(msg,3000,false);
         if (b)
-            DefinitScriptBackup(NomDirStockageImagerie);
+            DefinitScriptBackup(m_parametres->dirbkup(), m_parametres->dirimagerie());
         else
             QFile (QDir::homePath() + SCRIPTBACKUPFILE).remove();
-
     }
     else
     {
