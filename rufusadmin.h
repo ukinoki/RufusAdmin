@@ -119,7 +119,7 @@ private:
     WidgetButtonFrame           *wdg_buttonframe;
     User                        *UserAdmin;
 
-    qint64                      CalcBaseSize();
+    bool                        AutresPostesConnectes();
     int                         DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
     void                        setMapDatas();
@@ -131,7 +131,6 @@ private:
     void                        Edit(QString txt, int delaieffacement=0);
     QStringList                 DecomposeScriptSQL(QString nomficscript);
     QString                     getDossierDocuments(QString Appareil);
-    QString                     getExpressionSize(double size);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
     void                        EffaceMessage(int pause = 1000);
     void                        NouvAppareil();
@@ -170,7 +169,6 @@ private slots:
     void                        Slot_MetAJourLaConnexion();
     void                        Slot_ModifMDP();
     void                        Slot_ImportDocsExternes();
-    void                        Slot_RestaureBase();
     void                        Slot_TrayIconMenu();
     void                        Slot_VerifPosteImport();
     void                        Slot_VerifVersionBase();
@@ -237,7 +235,7 @@ private slots:
 
      La fonction DefinitScriptBackup crée le fichier RufusScriptBackup.sh qui va éxécuter la sauvegarde.
      Elle est lancée par
-        * ParamAutoBackup()
+        * ParamAutoBackup() sous Mac
         * Backup() utilisée pour un backup immédiat de la base (ImmediateBackup() ou backup auto sous Linux (BackupWakeUp())
      */
 
@@ -256,23 +254,28 @@ public:
 private slots:
 
 private:
-    qint64                  m_basesize, m_imagessize, m_videossize, m_freespace;
+    qint64                  m_basesize, m_imagessize, m_videossize, m_facturessize,  m_freespace;
     UpDialog                *dlg_buprestore;
     UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
-    void                    AskBupRestore(bool restore, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true);
+    void                    AskBupRestore(bool restore, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true, bool OKfactures = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
-    bool                    Backup(QString dirSauv, bool OKBase, bool OKImages = false, bool OKVideos = false, bool OKFactures = false);
+    bool                    Backup(QString pathdirdestination, bool OKBase, bool OKImages = false, bool OKVideos = false, bool OKFactures = false);
                             /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore() */
     void                    BackupWakeUp(QTime timebkup, Days days);
                             /*! sous Linux, déclenche le backup au moment programmé */
+    qint64                  CalcBaseSize();
+                            /*! calcule le volume de la base */
     void                    CalcTimeBupRestore();
                             /*! calcule la durée approximative du backup */
-    void                    DefinitScriptBackup(QString NomDirDestination, bool AvecImages= true, bool AvecVideos = true);
+    void                    DefinitScriptBackup(QString pathdirdestination, bool AvecImages= true, bool AvecVideos = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
+    void                    DefinitScriptRestore(QStringList ListNomFiles);
+                            /*! crée le script RufusScriptRestore.sh qui va éxécuter la restauration de la base MySQL et le lance */
     void                    EffaceBDDDataBackup();
-                            /*! efface les données de sauvegarde (moment et emplacement) dans la base de données */
+                            /*! efface le paramètrage de sauvegarde (moment et emplacement) dans la base de données */
     void                    EffaceProgrammationBackup();
-                            /*! efface le paramétrage de la sauvegarde
+                            /*! efface la programmation de la sauvegarde qui a étée créé sur le poste à partir du paramètrage enregistré dans la base de données
+                            * n'efface pas le paramètrage de sauvegarde (moment et emplacement) dans la base de données
                             * suppression de RufusScriptBackup.sh
                             * suppression de rufus.bup.plist sous Mac et arrêt du timer t_timerbackup sous Linux
                             */
@@ -291,6 +294,7 @@ private:
                              * sous Mac, crée le fichier xml rufus.bup.plist
                              * sous Linux, lance le timer t_timerbackup
                             */
+    void                    RestaureBase();
     //--------------------------------------------------------------------------------------------------------
     // fin sauvegardes
     //--------------------------------------------------------------------------------------------------------
