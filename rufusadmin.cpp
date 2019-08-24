@@ -2625,10 +2625,10 @@ void RufusAdmin::EffaceMessage(int pause)
     connect (&timer, &QTimer::timeout, [=] {ui->MessageupLabel->setText("");});
 }
 
-void RufusAdmin::BackupWakeUp(QTime timebkup, Days days)
+void RufusAdmin::BackupWakeUp(Days days)
 {
 
-    if (QTime::currentTime().toString("HH:mm:ss") == timebkup.toString("HH:mm")+ ":00")
+    if (QTime::currentTime().toString("HH:mm:ss") == m_parametres->heurebkup().toString("HH:mm")+ ":00")
     {
         int day = QDate::currentDate().dayOfWeek();
         Day daybkup = Lundi;
@@ -2640,21 +2640,14 @@ void RufusAdmin::BackupWakeUp(QTime timebkup, Days days)
         else if (day==7) daybkup = Dimanche;
         if (!days.testFlag(daybkup))
             return;
-        Datas::I()->postesconnectes->initListe();
-        PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getById(Utils::getMACAdress());
-        bool autrespostesconnectes = false;
-        QString nomposte = "";
-        foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
-            if (post->stringid() != m_currentposteconnecte->stringid())
-                autrespostesconnectes = true;
-        if (!autrespostesconnectes)
+        if (AutresPostesConnectes())
             Backup(m_parametres->dirbkup(), true, true, true, true);
     }
 }
 
-void RufusAdmin::ParamAutoBackup(QTime timebackup, Days days)
+void RufusAdmin::ParamAutoBackup(Days days)
 {
-    if (m_parametres->dirbkup() == "" || !QDir(m_parametres->dirbkup()).exists() || !timebackup.isValid() || days<1)
+    if (m_parametres->dirbkup() == "" || !QDir(m_parametres->dirbkup()).exists() || !m_parametres->heurebkup().isValid() || days<1)
     {
         EffaceProgrammationBackup();
         return;
@@ -2662,13 +2655,13 @@ void RufusAdmin::ParamAutoBackup(QTime timebackup, Days days)
 #ifdef Q_OS_LINUX
     t_timerbackup.stop();
     t_timerbackup.start(1000);
-    connect(&t_timerbackup, &QTimer::timeout, this, [=] {BackupWakeUp(timebackup, days);});
+    connect(&t_timerbackup, &QTimer::timeout, this, [=] {BackupWakeUp(days);});
 #endif
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
     DefinitScriptBackup(m_parametres->dirbkup());
-    QString heure   = timebackup.toString("H");
-    QString minute  = timebackup.toString("m");
+    QString heure   = m_parametres->heurebkup().toString("H");
+    QString minute  = m_parametres->heurebkup().toString("m");
     QString jourprg;
     QString a = (days>1? "\t": "");
     if (days>1)
@@ -3038,7 +3031,7 @@ void RufusAdmin::InitBackupAuto()
     if (m_parametres->samedibkup())     days.setFlag(Samedi);
     if (m_parametres->dimanchebkup())   days.setFlag(Dimanche);
 
-    ParamAutoBackup(m_parametres->heurebkup(), days);
+    ParamAutoBackup(days);
 }
 
 void RufusAdmin::startImmediateBackup()

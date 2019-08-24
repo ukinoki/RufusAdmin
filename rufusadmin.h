@@ -261,7 +261,7 @@ private:
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
     bool                    Backup(QString pathdirdestination, bool OKBase, bool OKImages = false, bool OKVideos = false, bool OKFactures = false);
                             /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore() */
-    void                    BackupWakeUp(QTime timebkup, Days days);
+    void                    BackupWakeUp(Days days);
                             /*! sous Linux, déclenche le backup au moment programmé */
     qint64                  CalcBaseSize();
                             /*! calcule le volume de la base */
@@ -289,7 +289,7 @@ private:
                             /*! modifie l'heure ou la date du backup automatique et relance InitBackupAuto() */
     void                    ModifDirBackup();
                             /*! modifie le dossier de destination du backup automatique et relance InitBackupAuto() */
-    void                    ParamAutoBackup(QTime timebackup, Days days);
+    void                    ParamAutoBackup(Days days);
                             /*! paramètre le moment et l'emplacement de la sauvegarde
                              * sous Mac, crée le fichier xml rufus.bup.plist
                              * sous Linux, lance le timer t_timerbackup
