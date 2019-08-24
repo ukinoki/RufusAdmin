@@ -347,13 +347,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     //! - mise à jour du programmateur de sauvegarde
 #ifdef Q_OS_LINUX
-    InitBackupAuto();
+    ParamAutoBackup();
 #endif
 #ifdef Q_OS_MACX
     if (db->getMode() != DataBase::Poste)
         EffaceProgrammationBackup();
     else
-        InitBackupAuto();
+        ParamAutoBackup();
 #endif
     //! - mise à jour du programmateur de l'effacement des fichiers images provisoires
     if (db->getMode() == DataBase::Poste)
@@ -2587,7 +2587,7 @@ void RufusAdmin::ModifDirBackup()
     if (dirsauvorigin != dirSauv)
     {
         db->setdirbkup(dirSauv);
-        InitBackupAuto();
+        ParamAutoBackup();
     }
     ConnectTimerInactive();
 }
@@ -2602,7 +2602,7 @@ void RufusAdmin::ModifDateHeureBackup()
     db->setvendredibkup(ui->VendrediradioButton->isChecked());
     db->setsamedibkup(ui->SamediradioButton->isChecked());
     db->setdimanchebkup(ui->DimancheradioButton->isChecked());
-    InitBackupAuto();
+    ParamAutoBackup();
 }
 
 void RufusAdmin::Message(QString mess, int pause, bool bottom)
@@ -2625,29 +2625,29 @@ void RufusAdmin::EffaceMessage(int pause)
     connect (&timer, &QTimer::timeout, [=] {ui->MessageupLabel->setText("");});
 }
 
-void RufusAdmin::BackupWakeUp(Days days)
+void RufusAdmin::BackupWakeUp()
 {
 
     if (QTime::currentTime().toString("HH:mm:ss") == m_parametres->heurebkup().toString("HH:mm")+ ":00")
     {
         int day = QDate::currentDate().dayOfWeek();
-        Day daybkup = Lundi;
-        if (day==2)      daybkup = Mardi;
-        else if (day==3) daybkup = Mercredi;
-        else if (day==4) daybkup = Jeudi;
-        else if (day==5) daybkup = Vendredi;
-        else if (day==6) daybkup = Samedi;
-        else if (day==7) daybkup = Dimanche;
-        if (!days.testFlag(daybkup))
+        Utils::Day daybkup = Utils::Lundi;
+        if (day==2)      daybkup = Utils::Mardi;
+        else if (day==3) daybkup = Utils::Mercredi;
+        else if (day==4) daybkup = Utils::Jeudi;
+        else if (day==5) daybkup = Utils::Vendredi;
+        else if (day==6) daybkup = Utils::Samedi;
+        else if (day==7) daybkup = Utils::Dimanche;
+        if (!m_parametres->daysbkup().testFlag(daybkup))
             return;
         if (AutresPostesConnectes())
             Backup(m_parametres->dirbkup(), true, true, true, true);
     }
 }
 
-void RufusAdmin::ParamAutoBackup(Days days)
+void RufusAdmin::ParamAutoBackup()
 {
-    if (m_parametres->dirbkup() == "" || !QDir(m_parametres->dirbkup()).exists() || !m_parametres->heurebkup().isValid() || days<1)
+    if (m_parametres->dirbkup() == "" || !QDir(m_parametres->dirbkup()).exists() || !m_parametres->heurebkup().isValid() || !m_parametres->daysbkup())
     {
         EffaceProgrammationBackup();
         return;
@@ -2655,7 +2655,7 @@ void RufusAdmin::ParamAutoBackup(Days days)
 #ifdef Q_OS_LINUX
     t_timerbackup.stop();
     t_timerbackup.start(1000);
-    connect(&t_timerbackup, &QTimer::timeout, this, [=] {BackupWakeUp(days);});
+    connect(&t_timerbackup, &QTimer::timeout, this, [=] {BackupWakeUp();});
 #endif
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
@@ -2663,8 +2663,8 @@ void RufusAdmin::ParamAutoBackup(Days days)
     QString heure   = m_parametres->heurebkup().toString("H");
     QString minute  = m_parametres->heurebkup().toString("m");
     QString jourprg;
-    QString a = (days>1? "\t": "");
-    if (days>1)
+    QString a = (m_parametres->daysbkup()>1? "\t": "");
+    if (m_parametres->daysbkup())
         jourprg += "\t\t<array>\n";
 
     QString debutjour =
@@ -2678,21 +2678,21 @@ void RufusAdmin::ParamAutoBackup(Days days)
         a + "\t\t\t<key>Minute</key>\n" +
         a + "\t\t\t<integer>" + minute + "</integer>\n" +
         a + "\t\t</dict>\n";
-    if (days.testFlag(Lundi))
+    if (m_parametres->daysbkup().testFlag(Utils::Lundi))
         jourprg += debutjour + "1" + finjour;
-    if (days.testFlag(Mardi))
+    if (m_parametres->daysbkup().testFlag(Utils::Mardi))
         jourprg += debutjour + "2" + finjour;
-    if (days.testFlag(Mercredi))
+    if (m_parametres->daysbkup().testFlag(Utils::Mercredi))
         jourprg += debutjour + "3" + finjour;
-    if (days.testFlag(Jeudi))
+    if (m_parametres->daysbkup().testFlag(Utils::Jeudi))
         jourprg += debutjour + "4" + finjour;
-    if (days.testFlag(Vendredi))
+    if (m_parametres->daysbkup().testFlag(Utils::Vendredi))
         jourprg += debutjour + "5" + finjour;
-    if (days.testFlag(Samedi))
+    if (m_parametres->daysbkup().testFlag(Utils::Samedi))
         jourprg += debutjour + "6" + finjour;
-    if (days.testFlag(Dimanche))
+    if (m_parametres->daysbkup().testFlag(Utils::Dimanche))
         jourprg += debutjour + "7" + finjour;
-    if (days>1)
+    if (m_parametres->daysbkup())
         jourprg += "\t\t</array>\n";
 
     QString plist = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
@@ -3013,25 +3013,6 @@ void RufusAdmin::EffaceProgrammationBackup()
     dumpProcess.start(unload);
     dumpProcess.waitForFinished();
 #endif
-}
-
-/*!
- *  \brief InitBackupAuto()
- * prépare le paramétrage de la fonction ParamAutoBackup() en fonction des paramètres enregistrés dans la base
- */
-void RufusAdmin::InitBackupAuto()
-{
-    Days days;
-    QString dirimagerie("");
-    if (m_parametres->lundibkup())      days.setFlag(Lundi);
-    if (m_parametres->mardibkup())      days.setFlag(Mardi);
-    if (m_parametres->mercredibkup())   days.setFlag(Mercredi);
-    if (m_parametres->jeudibkup())      days.setFlag(Jeudi);
-    if (m_parametres->vendredibkup())   days.setFlag(Vendredi);
-    if (m_parametres->samedibkup())     days.setFlag(Samedi);
-    if (m_parametres->dimanchebkup())   days.setFlag(Dimanche);
-
-    ParamAutoBackup(days);
 }
 
 void RufusAdmin::startImmediateBackup()

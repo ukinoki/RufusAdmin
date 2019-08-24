@@ -210,7 +210,7 @@ private slots:
 
       Au lancement du programme,
       si le programme est utilisé sur le  serveur,
-      la programmation de sauvegarde est créée avec la fonction InitBackupAuto() qui va créer les paramètres de la fonction ParamAutoBackup() et la lancer
+      la programmation de sauvegarde est créée avec la fonction ParamAutoBackup()
             * en recréant le fichier rufus.bup.plist sous MacOS
             * en lançant le timer t_timerbackup sous Linux
       dans le cas contraire le fichier rufus.bup.plist est effacé ou le timer t_timerbackup n'est pas lancé - EffaceProgrammationBackup()
@@ -219,11 +219,11 @@ private slots:
 
       Une modification de l'heure ou du jour du backup
       lance la fonction ModifDateHeureBackup() qui va modifier les paramètres de backup en BDD
-      puis lancer InitBackupAuto() qui va créer les paramètres de la fonction ParamAutoBackup() et la lancer
+      puis lancer ParamAutoBackup()
 
       Une modification du dossier de destination du backup
       lance la fonction ModifDirBackup() qui va modifier les paramètres de backup en BDD
-      puis lancer InitBackupAuto() qui va créer les paramètres de la fonction ParamAutoBackup() et la lancer
+      puis lancer ParamAutoBackup()
 
       Le  bouton ui->ImmediatBackupupPushButton lance la fonction startImmediateBackup() qui va
         * vérifier qu'il n'y a pas d'autres postes connectés
@@ -240,16 +240,6 @@ private slots:
      */
 
 public:
-    enum Day {
-                Lundi       = 0x1,
-                Mardi       = 0x2,
-                Mercredi    = 0x4,
-                Jeudi       = 0x8,
-                Vendredi    = 0x10,
-                Samedi      = 0x20,
-                Dimanche    = 0x40
-              };    Q_ENUM(Day)
-    Q_DECLARE_FLAGS(Days, Day)
     QTimer                  t_timerbackup;
 private slots:
 
@@ -261,7 +251,7 @@ private:
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
     bool                    Backup(QString pathdirdestination, bool OKBase, bool OKImages = false, bool OKVideos = false, bool OKFactures = false);
                             /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore() */
-    void                    BackupWakeUp(Days days);
+    void                    BackupWakeUp();
                             /*! sous Linux, déclenche le backup au moment programmé */
     qint64                  CalcBaseSize();
                             /*! calcule le volume de la base */
@@ -283,13 +273,11 @@ private:
                             /*! paramètre la fonction ImmediateBackup() et la lance */
     bool                    ImmediateBackup(QString dirdestination = "", bool verifposteconnecte = true);
                             /*! lance un backup immédiat */
-    void                    InitBackupAuto();
-                            /*! prépare le paramétrage de la fonction ParamAutoBackup() en fonction des paramètres enregistrés dans la base */
     void                    ModifDateHeureBackup();
-                            /*! modifie l'heure ou la date du backup automatique et relance InitBackupAuto() */
+                            /*! modifie l'heure ou la date du backup automatique et relance ParamAutoBackup() */
     void                    ModifDirBackup();
-                            /*! modifie le dossier de destination du backup automatique et relance InitBackupAuto() */
-    void                    ParamAutoBackup(Days days);
+                            /*! modifie le dossier de destination du backup automatique et relance ParamAutoBackup() */
+    void                    ParamAutoBackup();
                             /*! paramètre le moment et l'emplacement de la sauvegarde
                              * sous Mac, crée le fichier xml rufus.bup.plist
                              * sous Linux, lance le timer t_timerbackup
