@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("24-08-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("26-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -309,13 +309,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
             ui->DirBackupuplineEdit->setText(m_parametres->dirbkup());
         if (m_parametres->heurebkup().isValid())
             ui->HeureBackuptimeEdit->setTime(m_parametres->heurebkup());
-        ui->LundiradioButton    ->setChecked(m_parametres->lundibkup());
-        ui->MardiradioButton    ->setChecked(m_parametres->mardibkup());
-        ui->MercrediradioButton ->setChecked(m_parametres->mercredibkup());
-        ui->JeudiradioButton    ->setChecked(m_parametres->jeudibkup());
-        ui->VendrediradioButton ->setChecked(m_parametres->vendredibkup());
-        ui->SamediradioButton   ->setChecked(m_parametres->samedibkup());
-        ui->DimancheradioButton ->setChecked(m_parametres->dimanchebkup());
+        ui->LundiradioButton    ->setChecked(m_parametres->daysbkup().testFlag(Utils::Lundi));
+        ui->MardiradioButton    ->setChecked(m_parametres->daysbkup().testFlag(Utils::Mardi));
+        ui->MercrediradioButton ->setChecked(m_parametres->daysbkup().testFlag(Utils::Mercredi));
+        ui->JeudiradioButton    ->setChecked(m_parametres->daysbkup().testFlag(Utils::Jeudi));
+        ui->VendrediradioButton ->setChecked(m_parametres->daysbkup().testFlag(Utils::Vendredi));
+        ui->SamediradioButton   ->setChecked(m_parametres->daysbkup().testFlag(Utils::Samedi));
+        ui->DimancheradioButton ->setChecked(m_parametres->daysbkup().testFlag(Utils::Dimanche));
         connect(ui->DirBackuppushButton,        &QPushButton::clicked,      this,   &RufusAdmin::ModifDirBackup);
         foreach(QRadioButton *butt, ui->JourSauvegardegroupBox->findChildren<QRadioButton*>())
             connect(butt,                       &QPushButton::clicked,      this,   &RufusAdmin::ModifDateHeureBackup);
@@ -323,6 +323,10 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         connect(ui->EffacePrgSauvupPushButton,  &QPushButton::clicked,      this,   &RufusAdmin::EffaceBDDDataBackup);
         connect(ui->ImmediatBackupupPushButton, &QPushButton::clicked,      this,   &RufusAdmin::startImmediateBackup);
         connect(ui->RestaurBaseupPushButton,    &QPushButton::clicked,      this,   &RufusAdmin::RestaureBase);
+        ui->EffacePrgSauvupPushButton->setEnabled(m_parametres->daysbkup()
+                                               && QDir(m_parametres->dirbkup()).exists()
+                                               && m_parametres->dirbkup() != ""
+                                               && m_parametres->heurebkup() != QTime());
     }
 
     trayIconMenu = new QMenu();
@@ -2588,6 +2592,10 @@ void RufusAdmin::ModifDirBackup()
     {
         db->setdirbkup(dirSauv);
         ParamAutoBackup();
+        ui->EffacePrgSauvupPushButton->setEnabled(m_parametres->daysbkup()
+                                               && QDir(m_parametres->dirbkup()).exists()
+                                               && m_parametres->dirbkup() != ""
+                                               && m_parametres->heurebkup() != QTime());
     }
     ConnectTimerInactive();
 }
@@ -2603,6 +2611,10 @@ void RufusAdmin::ModifDateHeureBackup()
     db->setsamedibkup(ui->SamediradioButton->isChecked());
     db->setdimanchebkup(ui->DimancheradioButton->isChecked());
     ParamAutoBackup();
+    ui->EffacePrgSauvupPushButton->setEnabled(m_parametres->daysbkup()
+                                           && QDir(m_parametres->dirbkup()).exists()
+                                           && m_parametres->dirbkup() != ""
+                                           && m_parametres->heurebkup() != QTime());
 }
 
 void RufusAdmin::Message(QString mess, int pause, bool bottom)
@@ -2641,7 +2653,7 @@ void RufusAdmin::BackupWakeUp()
         if (!m_parametres->daysbkup().testFlag(daybkup))
             return;
         if (AutresPostesConnectes())
-            Backup(m_parametres->dirbkup(), true, true, true, true);
+            Backup(m_parametres->dirbkup(), true, true, true, true, true);
     }
 }
 
@@ -2662,22 +2674,18 @@ void RufusAdmin::ParamAutoBackup()
     DefinitScriptBackup(m_parametres->dirbkup());
     QString heure   = m_parametres->heurebkup().toString("H");
     QString minute  = m_parametres->heurebkup().toString("m");
-    QString jourprg;
-    QString a = (m_parametres->daysbkup()>1? "\t": "");
-    if (m_parametres->daysbkup())
-        jourprg += "\t\t<array>\n";
-
+    QString jourprg = "\t\t<array>\n";
     QString debutjour =
-        a + "\t\t<dict>\n" +
-        a + "\t\t\t<key>Weekday</key>\n" +
-        a + "\t\t\t<integer>";
+        "\t\t\t<dict>\n"
+        "\t\t\t\t<key>Weekday</key>\n"
+        "\t\t\t\t<integer>";
     QString finjour =
-        "</integer>\n" +
-        a + "\t\t\t<key>Hour</key>\n" +
-        a + "\t\t\t<integer>"+ heure + "</integer>\n" +
-        a + "\t\t\t<key>Minute</key>\n" +
-        a + "\t\t\t<integer>" + minute + "</integer>\n" +
-        a + "\t\t</dict>\n";
+        "</integer>\n"
+        "\t\t\t\t<key>Hour</key>\n"
+        "\t\t\t\t<integer>"+ heure + "</integer>\n"
+        "\t\t\t\t<key>Minute</key>\n"
+        "\t\t\t\t<integer>" + minute + "</integer>\n"
+        "\t\t\t</dict>\n";
     if (m_parametres->daysbkup().testFlag(Utils::Lundi))
         jourprg += debutjour + "1" + finjour;
     if (m_parametres->daysbkup().testFlag(Utils::Mardi))
@@ -2692,8 +2700,7 @@ void RufusAdmin::ParamAutoBackup()
         jourprg += debutjour + "6" + finjour;
     if (m_parametres->daysbkup().testFlag(Utils::Dimanche))
         jourprg += debutjour + "7" + finjour;
-    if (m_parametres->daysbkup())
-        jourprg += "\t\t</array>\n";
+    jourprg += "\t\t</array>\n";
 
     QString plist = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
                     "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
@@ -3012,6 +3019,7 @@ void RufusAdmin::EffaceProgrammationBackup()
     QProcess dumpProcess(parent());
     dumpProcess.start(unload);
     dumpProcess.waitForFinished();
+    QFile::remove(file);
 #endif
 }
 
@@ -3088,10 +3096,10 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
 
     if (!OKbase && !OKImages && !OKVideos && !OKFactures)
         return false;
-    return Backup(dirdestination, OKbase, OKImages, OKVideos, OKFactures);
+    return Backup(dirdestination, OKbase, OKImages, OKVideos, OKFactures, false);
 }
 
-bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages, bool OKVideos, bool OKFactures)
+bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages, bool OKVideos, bool OKFactures, bool isbkupauto)
 {
     if (QDir(m_parametres->dirimagerie()).exists())
     {
@@ -3130,6 +3138,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         else
             msg = tr("Incident pendant la sauvegarde");
         Message(msg,3000,false);
+        Logs::ERROR(msg);
         QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
         if (b)
         {
@@ -3175,7 +3184,8 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     if (OKVideos)
         Utils::cleanfolder(pathdirdestination + DIR_VIDEOS);
     ConnectTimerInactive();
-    UpMessageBox::Watch(this, tr("Sauvegarde terminée"));
+    if (!isbkupauto)
+        UpMessageBox::Watch(this, tr("Sauvegarde terminée"));
     return result;
 }
 

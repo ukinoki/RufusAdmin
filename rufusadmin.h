@@ -193,27 +193,27 @@ private slots:
         . Sous Mac,  par un autre script -> c'est le fichier xml rufus.bup.plist situé dans /Users/nomutilisateur/Library/LaunchAgents.
           Ce fichier est chargé au démarrage par le launchd Apple.
           Il est donc éxécuté même quand Rufus ne tourne pas
-        . Sous Linux, c'est un timer t_timerbackup qui lance la sauvegarde et la fonction BackupWakeUp(QString NomDirDestination, QTime timebkup, Days days)
+        . Sous Linux, c'est un timer t_timerbackup qui lance la sauvegarde et la fonction BackupWakeUp()
 
-      Au chargement de Rufus, les données de Rufus.ini sont récupérées pour régler l'affichage des données dans  ui->Sauvegardeframe.
+      Au lancement du programme,
+            * les paramètres de sauvegarde automatique sont récupérés pour régler l'affichage des données dans  ui->Sauvegardeframe.
+            * si le programme est utilisé sur le  serveur, et s'il y a une programmation valide des sauvegardes automatiques
+            * la programmation de sauvegarde va lancer la fonction ParamAutoBackup()
+                * en recréant le fichier rufus.bup.plist sous MacOS
+                * en lançant le timer t_timerbackup sous Linux
+            * dans le cas contraire, la fonction EffaceProgrammationBackup() efface le fichier rufus.bup.plist sous MacOS
 
-      Une modification de l'emplacement de sauvegarde se fait par un clic sur le bouton ui->DirBackuppushButton qui va lancer le slot Slot_ModifDirBachup()
-            * ce slot va créer le fichier RufusScriptBackup.sh et enregistrer l'emplacement de sauvegarde dans rufus.ini
-      Un changement d'heure ou de jour lance le slot Slot_ModifScriptList().
-            * ce slot va modifier le fichier xml rufus.bup.plist, recharger ce fichier dans le launchd et enregistrer les données de programmation dans le rufusadmin.ini.
+      Une modification de l'emplacement de sauvegarde se fait par un clic sur le bouton ui->DirBackuppushButton qui va lancer ModifDirBachup()
+            * cette fonction va créer le fichier RufusScriptBackup.sh et modifier le paramètres correspondant de sauvegarde automatique dans la base de données
+      Un changement d'heure ou de jour lance ModifDateHeureBackup().
+            * cette fonction va modifier les paramètres correspondants de sauvegarde automatique dans la base de données
+            * sous MacOs, cette fonction va modifier le fichier xml rufus.bup.plist et recharger ce fichier dans le launchd
       Le bouton ui->EffacePrgSauvupPushButton réinitialise la programmation en déclenchant la fonction EffaceAutoBackup():
             * annule les données de programmation dans rufus.ini,`
             * réinitialise l'affichage dans ui->Sauvegardeframe,`
             * supprime le script de sauvegarde RufusBackupScript.sh
             * sous Mac, supprime le script de programmation rufus.bup.plist et le décharge du launchd
             * sous Linux, arrête le timer t_timerbackup
-
-      Au lancement du programme,
-      si le programme est utilisé sur le  serveur,
-      la programmation de sauvegarde est créée avec la fonction ParamAutoBackup()
-            * en recréant le fichier rufus.bup.plist sous MacOS
-            * en lançant le timer t_timerbackup sous Linux
-      dans le cas contraire le fichier rufus.bup.plist est effacé ou le timer t_timerbackup n'est pas lancé - EffaceProgrammationBackup()
 
       Si le programme s'éxécute sur le serveur le QFrame ui->Sauvegardeframe est enabled, pas dans le cas contraire
 
@@ -236,7 +236,8 @@ private slots:
      La fonction DefinitScriptBackup crée le fichier RufusScriptBackup.sh qui va éxécuter la sauvegarde.
      Elle est lancée par
         * ParamAutoBackup() sous Mac
-        * Backup() utilisée pour un backup immédiat de la base (ImmediateBackup() ou backup auto sous Linux (BackupWakeUp())
+        * Backup() utilisée pour un backup immédiat de la base (ImmediateBackup() ou backup auto sous Linux avec BackupWakeUp())
+
      */
 
 public:
@@ -249,8 +250,9 @@ private:
     UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
     void                    AskBupRestore(bool restore, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true, bool OKfactures = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
-    bool                    Backup(QString pathdirdestination, bool OKBase, bool OKImages = false, bool OKVideos = false, bool OKFactures = false);
-                            /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore() */
+    bool                    Backup(QString pathdirdestination, bool OKBase, bool OKImages, bool OKVideos, bool OKFactures, bool isbkupauto);
+                            /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore()
+                            * et par le timer t_timerbackup sous Linux pour effectuer une sauvegarde automatique et sans choix des options dans ce cas */
     void                    BackupWakeUp();
                             /*! sous Linux, déclenche le backup au moment programmé */
     qint64                  CalcBaseSize();
