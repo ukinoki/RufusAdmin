@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("26-08-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("27-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -86,7 +86,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Utils::mkpath(QDir::homePath() + DIR_RUFUS);
 
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
-    setMapDatas();    
+    setMapIcons();
 
     ConnexionBase();
     m_parametres        = db->parametres();
@@ -318,8 +318,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         ui->DimancheradioButton ->setChecked(m_parametres->daysbkup().testFlag(Utils::Dimanche));
         connect(ui->DirBackuppushButton,        &QPushButton::clicked,      this,   &RufusAdmin::ModifDirBackup);
         foreach(QRadioButton *butt, ui->JourSauvegardegroupBox->findChildren<QRadioButton*>())
-            connect(butt,                       &QPushButton::clicked,      this,   &RufusAdmin::ModifDateHeureBackup);
-        connect(ui->HeureBackuptimeEdit,        &QTimeEdit::timeChanged,    this,   &RufusAdmin::ModifDateHeureBackup);
+            connect(butt,                       &QPushButton::clicked,      this,   &RufusAdmin::ModifDateBackup);
+        connect(ui->HeureBackuptimeEdit,        &QTimeEdit::timeChanged,    this,   &RufusAdmin::ModifHeureBackup);
         connect(ui->EffacePrgSauvupPushButton,  &QPushButton::clicked,      this,   &RufusAdmin::EffaceBDDDataBackup);
         connect(ui->ImmediatBackupupPushButton, &QPushButton::clicked,      this,   &RufusAdmin::startImmediateBackup);
         connect(ui->RestaurBaseupPushButton,    &QPushButton::clicked,      this,   &RufusAdmin::RestaureBase);
@@ -1240,7 +1240,7 @@ void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
     }
 }
 
-void RufusAdmin::setMapDatas()
+void RufusAdmin::setMapIcons()
 {
     map_icons["OK"]             = ic_OK;
     map_icons["Annul"]          = ic_Annul;
@@ -2600,16 +2600,27 @@ void RufusAdmin::ModifDirBackup()
     ConnectTimerInactive();
 }
 
-void RufusAdmin::ModifDateHeureBackup()
+void RufusAdmin::ModifDateBackup()
+{
+    Utils::Days days;
+    days.setFlag(Utils::Lundi,      ui->LundiradioButton->isChecked());
+    days.setFlag(Utils::Mardi,      ui->MardiradioButton->isChecked());
+    days.setFlag(Utils::Mercredi,   ui->MercrediradioButton->isChecked());
+    days.setFlag(Utils::Jeudi,      ui->JeudiradioButton->isChecked());
+    days.setFlag(Utils::Vendredi,   ui->VendrediradioButton->isChecked());
+    days.setFlag(Utils::Samedi,     ui->SamediradioButton->isChecked());
+    days.setFlag(Utils::Dimanche,   ui->DimancheradioButton->isChecked());
+    db->setdaysbkup(days);
+    ParamAutoBackup();
+    ui->EffacePrgSauvupPushButton->setEnabled(m_parametres->daysbkup()
+                                           && QDir(m_parametres->dirbkup()).exists()
+                                           && m_parametres->dirbkup() != ""
+                                           && m_parametres->heurebkup() != QTime());
+}
+
+void RufusAdmin::ModifHeureBackup()
 {
     db->setheurebkup(ui->HeureBackuptimeEdit->time());
-    db->setlundibkup(ui->LundiradioButton->isChecked());
-    db->setmardibkup(ui->MardiradioButton->isChecked());
-    db->setmercredibkup(ui->MercrediradioButton->isChecked());
-    db->setjeudibkup(ui->JeudiradioButton->isChecked());
-    db->setvendredibkup(ui->VendrediradioButton->isChecked());
-    db->setsamedibkup(ui->SamediradioButton->isChecked());
-    db->setdimanchebkup(ui->DimancheradioButton->isChecked());
     ParamAutoBackup();
     ui->EffacePrgSauvupPushButton->setEnabled(m_parametres->daysbkup()
                                            && QDir(m_parametres->dirbkup()).exists()
@@ -2850,7 +2861,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
         }
     }
     //# Rufus.ini
-    scriptbackup += "RUFUSINI=\"" + QDir::homePath() + FILE_INI + "\"";
+    scriptbackup += "RUFUSADMININI=\"" + QDir::homePath() + FILE_INI + "\"";
     //# Identifiants MySQL
     scriptbackup += "\n";
     scriptbackup += "MYSQL_USER=\"dumprufus\"";
@@ -2927,7 +2938,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
         }
     }
     // copie Rufus.ini
-    scriptbackup +=  "cp $RUFUSINI $BACKUP_DIR/$DATE/Rufus.ini";
+    scriptbackup +=  "cp $RUFUSADMININI $BACKUP_DIR/$DATE/RufusAdmin.ini";
     if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
         QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
     QFile fbackup(QDir::homePath() + SCRIPTBACKUPFILE);
@@ -2992,13 +3003,7 @@ void RufusAdmin::EffaceBDDDataBackup()
     QString Base = db->getBase();
     if (Base == "")
         return;
-    db->setlundibkup(false);
-    db->setmardibkup(false);
-    db->setmercredibkup(false);
-    db->setjeudibkup(false);
-    db->setvendredibkup(false);
-    db->setsamedibkup(false);
-    db->setdimanchebkup(false);
+    db->setdaysbkup(nullptr);
     db->setheurebkup();
     db->setdirbkup();
     EffaceProgrammationBackup();

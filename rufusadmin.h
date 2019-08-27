@@ -122,7 +122,7 @@ private:
     bool                        AutresPostesConnectes();
     int                         DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
-    void                        setMapDatas();
+    void                        setMapIcons();
     QMap<QString, QIcon>        MapIcons();
     void                        closeEvent(QCloseEvent *);
     void                        AskAppareil();
@@ -205,7 +205,7 @@ private slots:
 
       Une modification de l'emplacement de sauvegarde se fait par un clic sur le bouton ui->DirBackuppushButton qui va lancer ModifDirBachup()
             * cette fonction va créer le fichier RufusScriptBackup.sh et modifier le paramètres correspondant de sauvegarde automatique dans la base de données
-      Un changement d'heure ou de jour lance ModifDateHeureBackup().
+      Un changement de jour lance ModifDateBackup().
             * cette fonction va modifier les paramètres correspondants de sauvegarde automatique dans la base de données
             * sous MacOs, cette fonction va modifier le fichier xml rufus.bup.plist et recharger ce fichier dans le launchd
       Le bouton ui->EffacePrgSauvupPushButton réinitialise la programmation en déclenchant la fonction EffaceAutoBackup():
@@ -266,7 +266,7 @@ private:
     void                    EffaceBDDDataBackup();
                             /*! efface le paramètrage de sauvegarde (moment et emplacement) dans la base de données */
     void                    EffaceProgrammationBackup();
-                            /*! efface la programmation de la sauvegarde qui a étée créé sur le poste à partir du paramètrage enregistré dans la base de données
+                            /*! efface la programmation de la sauvegarde qui a été créé sur le poste à partir du paramètrage enregistré dans la base de données
                             * n'efface pas le paramètrage de sauvegarde (moment et emplacement) dans la base de données
                             * suppression de RufusScriptBackup.sh
                             * suppression de rufus.bup.plist sous Mac et arrêt du timer t_timerbackup sous Linux
@@ -275,8 +275,10 @@ private:
                             /*! paramètre la fonction ImmediateBackup() et la lance */
     bool                    ImmediateBackup(QString dirdestination = "", bool verifposteconnecte = true);
                             /*! lance un backup immédiat */
-    void                    ModifDateHeureBackup();
-                            /*! modifie l'heure ou la date du backup automatique et relance ParamAutoBackup() */
+    void                    ModifHeureBackup();
+                            /*! modifie l'heure du backup automatique et relance ParamAutoBackup() */
+    void                    ModifDateBackup();
+                            /*! modifie la date du backup automatique et relance ParamAutoBackup() */
     void                    ModifDirBackup();
                             /*! modifie le dossier de destination du backup automatique et relance ParamAutoBackup() */
     void                    ParamAutoBackup();
