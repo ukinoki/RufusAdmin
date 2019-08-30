@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("27-08-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("30-08-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -78,11 +78,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     ui->FermepushButton->setUpButtonStyle(UpSmallButton::CLOSEBUTTON);
     m_nomfichierini         = QDir::homePath() + FILE_INI;
-    m_settings        = new QSettings(m_nomfichierini, QSettings::IniFormat);
+    m_settings              = new QSettings(m_nomfichierini, QSettings::IniFormat);
     m_nomfichieriniRufus    = QDir::homePath() + FILE_INIRUFUS;
-    m_nouvMDP            = "nouv";
-    m_ancMDP             = "anc";
-    m_confirmMDP         = "confirm";
+    m_nouvMDP               = "nouv";
+    m_ancMDP                = "anc";
+    m_confirmMDP            = "confirm";
     Utils::mkpath(QDir::homePath() + DIR_RUFUS);
 
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
@@ -268,25 +268,25 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->Sauvegardeframe         ->setFixedWidth(wdg_buttonframe->widgButtonParent()->width() + marge + marge + marge);
     setFixedWidth(ui->Appareilsconnectesframe->width() + 20);
     Remplir_Table();
-    if (db->getMode() == DataBase::Poste)
+    if (db->getMode() == Utils::Poste)
     {
         QString NomDirStockageImagerie = m_parametres->dirimagerie();
         m_settings->setValue("DossierImagerie",NomDirStockageImagerie);
         setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + m_nomLieuExercice);
     }
-    else if (db->getMode() == DataBase::ReseauLocal)
+    else if (db->getMode() == Utils::ReseauLocal)
     {
         setWindowTitle("RufusAdmin - " + tr("Réseau local") + " - " + m_nomLieuExercice);
     }
-    else if (db->getMode() == DataBase::Distant)
+    else if (db->getMode() == Utils::Distant)
     {
         setWindowTitle("RufusAdmin - " + tr("Accès distant crypté SSL") + " - " + m_nomLieuExercice);
         ui->Exportframe         ->setVisible(false);
         ui->Diversframe         ->setVisible(false);
     }
 
-    ui->Exportframe         ->setVisible(db->getMode() != DataBase::Distant);
-    QString Base = (db->getMode() == DataBase::Distant? "BDD_DISTANT/" : "");
+    ui->Exportframe         ->setVisible(db->getMode() != Utils::Distant);
+    QString Base = (db->getMode() == Utils::Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
     ui->StockageupLineEdit->setText(m_settings->value(Base + "DossierImagerie").toString());
 
     ReconstruitListeLieuxExercice();
@@ -298,11 +298,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         ui->VersionBaselabel->setText(tr("Version de la base ") + "<font color=\"green\"><b>" + QString::number(m_parametres->versionbase()) + "</b></font>");
     ui->VersionRufuslabel->setText(tr("Version de RufusAdmin ") + "<font color=\"green\"><b>" + qApp->applicationVersion() + "</b></font>");
 
-    ui->Sauvegardeframe         ->setEnabled(db->getMode() == DataBase::Poste);
-    ui->ParamSauvegardelabel    ->setVisible(db->getMode() != DataBase::Poste);
-    ui->ParamSauvegardelabel    ->setEnabled(db->getMode() != DataBase::Poste);
+    ui->Sauvegardeframe         ->setEnabled(db->getMode() == Utils::Poste);
+    ui->ParamSauvegardelabel    ->setVisible(db->getMode() != Utils::Poste);
+    ui->ParamSauvegardelabel    ->setEnabled(db->getMode() != Utils::Poste);
 
-    if (db->getMode() == DataBase::Poste)
+    if (db->getMode() == Utils::Poste)
     {
          QString DirBkup = m_parametres->dirbkup();
         if (QDir(m_parametres->dirbkup()).exists())
@@ -338,7 +338,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::Slot_TrayIconMenu);
     ui->MessageupLabel->setText("");
 
-    ImportDocsExtThread = new ImportDocsExternesThread(m_idadmindocs, m_idlieuexeercice, db->getMode() != DataBase::Distant);
+    ImportDocsExtThread = new ImportDocsExternesThread(m_idadmindocs, m_idlieuexeercice, db->getMode() != Utils::Distant);
     connect(ImportDocsExtThread,    SIGNAL(emitmsg(QStringList, int, bool)),    this,       SLOT(AfficheMessageImport(QStringList, int, bool)));
     if (m_utiliseTCP)
         connect(ImportDocsExtThread,SIGNAL(emitmsg(QString)),                   TCPServer,  SLOT(envoyerATous(QString)));
@@ -350,17 +350,14 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I()->motifs->initListe();
 
     //! - mise à jour du programmateur de sauvegarde
-#ifdef Q_OS_LINUX
-    ParamAutoBackup();
-#endif
-#ifdef Q_OS_MACX
-    if (db->getMode() != DataBase::Poste)
-        EffaceProgrammationBackup();
-    else
+    if (db->getMode() == Utils::Poste)
         ParamAutoBackup();
+#ifdef Q_OS_MACX
+    else
+        EffaceProgrammationBackup();
 #endif
     //! - mise à jour du programmateur de l'effacement des fichiers images provisoires
-    if (db->getMode() == DataBase::Poste)
+    if (db->getMode() == Utils::Poste)
         ProgrammeSQLVideImagesTemp(m_parametres->heurebkup());
 
     installEventFilter(this);
@@ -678,7 +675,7 @@ void RufusAdmin::ConnectTimers()
     connect (t_timerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
     connect (t_timerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
     connect (t_timerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
-    if (db->getMode() != DataBase::Distant)
+    if (db->getMode() != Utils::Distant)
     {
         connect (t_timerUserConnecte,    &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
         connect (t_timerSupprDocs,       &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
@@ -748,7 +745,7 @@ void RufusAdmin::ConnexionBase()
 int RufusAdmin::DetermineLieuExercice()
 {
     int idLieu = 1;
-    if (db->getMode() == DataBase::Distant)
+    if (db->getMode() == Utils::Distant)
     {
         QString lieuxreq = "select idLieu, NomLieu from " TBL_LIEUXEXERCICE
                            " where idLieu <> " + QString::number(m_parametres->idlieupardefaut());
@@ -1002,7 +999,7 @@ void RufusAdmin::Remplir_Table()
 
 void RufusAdmin::setPosteImportDocs(bool a)
 {
-    if (db->getMode() == DataBase::Distant)
+    if (db->getMode() == Utils::Distant)
         return;
     // Il n'y pas de variables utilisateur globale dans MySQL, on est donc obligé de passer par une procédure stockée pour en simuler une
     // pour créer une procédure avec Qt, séparer le drop du create, ne pas utiliser les délimiteurs et utiliser les retours à la ligne \n\.......
@@ -1119,16 +1116,16 @@ void RufusAdmin::Slot_ModifDirImagerie()
     if (dialog.exec()>0)
     {
         QDir dockdir = dialog.directory();
-        if (db->getMode() == DataBase::Poste)
+        if (db->getMode() == Utils::Poste)
             if (!dockdir.match(QDir::homePath() + DIR_RUFUS "/*", dockdir.path()))
             {
                 UpMessageBox::Watch(this, tr("Vous devez choisir un sous-dossier du dossier Rufus"), QDir::homePath() + DIR_RUFUS);
                 return;
             }
         ui->StockageupLineEdit->setText(dockdir.path());
-        QString Base = (db->getMode() == DataBase::Distant? "BDD_DISTANT/" : "");
+        QString Base = (db->getMode() == Utils::Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
         m_settings->setValue(Base + "DossierImagerie", dockdir.path());
-        if (db->getMode() == DataBase::Poste)
+        if (db->getMode() == Utils::Poste)
             db->setdirimagerie(dockdir.path());
     }
 }
@@ -1259,7 +1256,7 @@ QMap<QString, QIcon> RufusAdmin::MapIcons()
 
 void RufusAdmin::Slot_CalcExporteDocs()
 {
-    if (db->getMode() == DataBase::Distant)
+    if (db->getMode() == Utils::Distant)
         return;
     QString totreq = "SELECT idimpression FROM " TBL_DOCSEXTERNES " where jpg is not null or pdf is not null limit 1";
     //qDebug() << totreq;
@@ -2038,7 +2035,7 @@ void RufusAdmin::RestaureBase()
             ConnectTimers();
             return;
         }
-        m_settings->setValue("BDD_POSTE/DossierImagerie", NomDirStockageImagerie);
+        m_settings->setValue(Utils::getBaseFromMode(Utils::Poste) + "DossierImagerie", NomDirStockageImagerie);
         db->setdirimagerie(NomDirStockageImagerie);
     }
 
@@ -2363,7 +2360,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
 
 void RufusAdmin::Slot_VerifPosteImport()
 {
-    if (db->getMode() == DataBase::Distant)
+    if (db->getMode() == Utils::Distant)
         return;
 
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
@@ -3000,9 +2997,7 @@ void RufusAdmin::EffaceBDDDataBackup()
        listbutton2.at(i)->setChecked(false);
     ui->DirBackupuplineEdit->setText("");
     ui->HeureBackuptimeEdit->setTime(QTime(0,0));
-    QString Base = db->getBase();
-    if (Base == "")
-        return;
+
     db->setdaysbkup(nullptr);
     db->setheurebkup();
     db->setdirbkup();

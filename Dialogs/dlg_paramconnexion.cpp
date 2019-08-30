@@ -75,7 +75,7 @@ bool dlg_paramconnexion::TestConnexion()
 
     if ( Password.isEmpty() ) {UpMessageBox::Watch(this,tr("Vous n'avez pas précisé votre mot de passe!"));   ui->MDPlineEdit->setFocus();    return 0;}
     //à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
-    db->initFromFirstConnexion("BDD_POSTE", "localhost", ui->PortcomboBox->currentText().toInt(), false);
+    db->initFromFirstConnexion(Utils::getBaseFromMode(Utils::Poste), "localhost", ui->PortcomboBox->currentText().toInt(), false);
     error = db->connectToDataBase(DB_CONSULTS, Login, Password);
 
     if( error.size() )
@@ -89,9 +89,9 @@ bool dlg_paramconnexion::TestConnexion()
     }
 
     QString Client;
-    if (db->getBase() == "BDD_DISTANT")
+    if (db->getMode() == Utils::Distant)
         Client = "%";
-    else if (db->getBase() == "BDD_LOCAL" && Utils::rgx_IPV4.exactMatch(db->getServer()))
+    else if (db->getMode() == Utils::ReseauLocal && Utils::rgx_IPV4.exactMatch(db->getServer()))
     {
         QStringList listIP = db->getServer().split(".");
         for (int i=0;i<listIP.size()-1;i++)
@@ -108,7 +108,7 @@ bool dlg_paramconnexion::TestConnexion()
     db->StandardSQL("SET GLOBAL event_scheduler = 1 ;");
     db->StandardSQL("SET GLOBAL max_allowed_packet=" MAX_ALLOWED_PACKET "*1024*1024 ;");
 
-    QString req = "show grants for '" + Login + (db->getBase() == "BDD_DISTANT"? "SSL" : "")  + "'@'" + Client + "'";
+    QString req = "show grants for '" + Login + (db->getMode() == Utils::Distant? "SSL" : "")  + "'@'" + Client + "'";
     bool ok;
     QVariantList grantsdata = db->getFirstRecordFromStandardSelectSQL(req,ok);
 

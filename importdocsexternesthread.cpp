@@ -628,7 +628,7 @@ void ImportDocsExternesThread::EchecImport(QString txt)
 
 bool ImportDocsExternesThread::DefinitDossiers()
 {
-    QString Base = (m_acces==Distant? "BDD_DISTANT/" : "");
+    QString Base = (m_acces==Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
     m_pathdirstockageimagerie  = m_settings->value(Base + "DossierImagerie").toString();
     if (!QDir(m_pathdirstockageimagerie).exists() || m_pathdirstockageimagerie == "")
     {
