@@ -1465,7 +1465,7 @@ void dlg_gestionusers::RemplirTableWidget()
     {
         pitem0 = new QTableWidgetItem;
         pitem1 = new QTableWidgetItem;
-        QList<QVariantList> actlst = db->StandardSelectSQL("select count(idActe) from " TBL_ACTES " where idUser = " + usrlst.at(i).at(0).toString() + " or creepar = " + usrlst.at(i).at(0).toString(), m_ok);
+        QList<QVariantList> actlst = db->StandardSelectSQL("select count(idActe) from " TBL_ACTES " where " CP_IDUSER_ACTES " = " + usrlst.at(i).at(0).toString() + " or " CP_IDUSERCREATEUR_ACTES " = " + usrlst.at(i).at(0).toString(), m_ok);
         if (actlst.size()>0)
         {
             int nbactes = actlst.at(0).at(0).toInt();
