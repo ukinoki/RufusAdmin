@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("01-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-09-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -376,18 +376,24 @@ void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause, bool botto
 bool RufusAdmin::AutresPostesConnectes()
 {
     Datas::I()->postesconnectes->initListe();
-    PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getById(Utils::getMACAdress());
-    QString nomposte = "";
-    foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
-        if (post->stringid() != m_currentposteconnecte->stringid())
+    QString id = Utils::getMACAdress() + " - " + QString::number(UserAdmin->id());
+    PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getByStringId(id);
+    if (m_currentposteconnecte == Q_NULLPTR)
     {
-        UpMessageBox::Information(this, tr("Autres postes connectés!"),
-                                  tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
-                                     " si vous n'êtes pas le seul poste connecté.\n"
-                                     "Le poste ") + post->nomposte() + " " + tr("est aussi connecté"));
-        show();
+        UpMessageBox::Information(this, tr("Problème avec ce poste!"),
+                                  tr("Le poste RufusAdmin n'est pas connecté"));
         return true;
     }
+    foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
+        if (post->stringid() != m_currentposteconnecte->stringid())
+        {
+            UpMessageBox::Information(this, tr("Autres postes connectés!"),
+                                      tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
+                                         " si vous n'êtes pas le seul poste connecté.\n"
+                                         "Le poste ") + post->nomposte() + " " + tr("est aussi connecté"));
+            show();
+            return true;
+        }
     return false;
 }
 
@@ -3025,19 +3031,8 @@ void RufusAdmin::EffaceProgrammationBackup()
 
 void RufusAdmin::startImmediateBackup()
 {
-    Datas::I()->postesconnectes->initListe();
-    PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getById(Utils::getMACAdress());
-    QString nomposte = "";
-    foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
-        if (post->stringid() != m_currentposteconnecte->stringid())
-    {
-        UpMessageBox::Information(this, tr("Autres postes connectés!"),
-                                  tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"
-                                     " si vous n'êtes pas le seul poste connecté.\n"
-                                     "Le poste ") + post->nomposte() + " " + tr("est aussi connecté"));
-        show();
+    if (AutresPostesConnectes())
         return;
-    }
     QString dirsauvorigin   = ui->DirBackupuplineEdit->text();
     QString dirSauv         = QFileDialog::getExistingDirectory(this,
                                                                 tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
