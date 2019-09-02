@@ -27,8 +27,6 @@ Datas* Datas::I()
 }
 Datas::Datas()
 {
-    userConnected = Q_NULLPTR;
-
     banques         = new Banques();
     comptes         = new Comptes();
     motifs          = new Motifs();

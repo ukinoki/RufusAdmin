@@ -35,7 +35,6 @@ private:
 public:
     static Datas *I();
 
-    User *userConnected;
     Users *users;                       //!< Les users
     Comptes *comptes;                   //!< tous les comptes bancaires
     Banques *banques;                   //!< toutes les banques
