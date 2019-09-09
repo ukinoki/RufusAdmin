@@ -34,9 +34,9 @@ dlg_paramconnexion::dlg_paramconnexion(QWidget *parent) :
     ui->AnnuluppushButton   ->setShortcut(QKeySequence("F12"));
     ui->OKuppushButton      ->setShortcut(QKeySequence("Meta+Return"));
 
-    connect(ui->AnnuluppushButton,      SIGNAL(clicked(bool)),          this,   SLOT(reject()));
-    connect(ui->OKuppushButton,         SIGNAL(clicked(bool)),          this,   SLOT(Slot_Verif()));
-    connect(ui->TestuppushButton,       SIGNAL(clicked(bool)),          this,   SLOT(Slot_Test()));
+    connect(ui->AnnuluppushButton,      &QPushButton::clicked,          this,   &dlg_paramconnexion::reject);
+    connect(ui->OKuppushButton,         &QPushButton::clicked,          this,   &dlg_paramconnexion::Verif);
+    connect(ui->TestuppushButton,       &QPushButton::clicked,          this,   &dlg_paramconnexion::Test);
 }
 
 dlg_paramconnexion::~dlg_paramconnexion()
@@ -44,13 +44,13 @@ dlg_paramconnexion::~dlg_paramconnexion()
     delete ui;
 }
 
-void dlg_paramconnexion::Slot_Test()
+void dlg_paramconnexion::Test()
 {
     if (TestConnexion())
         UpMessageBox::Watch(this,tr("Paramètres OK!"));
 }
 
-void dlg_paramconnexion::Slot_Verif()
+void dlg_paramconnexion::Verif()
 {
     if (TestConnexion())
         accept();

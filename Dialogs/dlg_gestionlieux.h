@@ -44,12 +44,7 @@ public:
     explicit dlg_GestionLieux(QWidget *parent = Q_NULLPTR);
     ~dlg_GestionLieux();
 private slots:
-    void                    Slot_EnregLieux();
     void                    Slot_AfficheDetails(QModelIndex, QModelIndex);
-    void                    Slot_ChoixButtonFrame(int i);
-    void                    Slot_EnableOKButton();
-    void                    Slot_EnregNouvLieu();
-    void                    Slot_ModifLieu();
 
 private:
     DataBase                *db;
@@ -69,7 +64,11 @@ private:
     int                     m_idlieuamodifier;
     int                     m_idlieuserveur;
     bool                    m_ok;
+    void                    ChoixButtonFrame();
     void                    CreerLieu();
+    void                    enregLieux();
+    void                    enregNouvLieu();
+    void                    enregModifLieu();
     void                    ModifLieu();
     void                    SupprLieu();
     void                    ModifLieuxDialog();

@@ -24,9 +24,9 @@ dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     db              = DataBase::I();
     AjouteLayButtons(UpDialog::ButtonClose);
-    connect(CloseButton, SIGNAL(clicked(bool)), this, SLOT(Slot_EnregLieux()));
+    connect(CloseButton, &QPushButton::clicked, this, &dlg_GestionLieux::enregLieux);
 
-     wdg_bigtable = new QTableView(this);
+    wdg_bigtable = new QTableView(this);
     wdg_adresselbl = new UpLabel();
     wdg_adresselbl->setFixedWidth(240);
 
@@ -45,7 +45,7 @@ dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
     dlglayout()     ->insertLayout(0,hlay);
     dlglayout()     ->setSizeConstraint(QLayout::SetFixedSize);
 
-    connect(wdg_buttonframe,                       SIGNAL(choix(int)),                                 this,   SLOT(Slot_ChoixButtonFrame(int)));
+    connect(wdg_buttonframe,    &WidgetButtonFrame::choix,  this,   &dlg_GestionLieux::ChoixButtonFrame);
 }
 
 dlg_GestionLieux::~dlg_GestionLieux()
@@ -103,24 +103,22 @@ void dlg_GestionLieux::Slot_AfficheDetails(QModelIndex idx, QModelIndex)
                                   && m_model->itemData(m_model->index(row,0)).value(0).toInt() != m_idlieuserveur);
 }
 
-void dlg_GestionLieux::Slot_ChoixButtonFrame(int i)
+void dlg_GestionLieux::ChoixButtonFrame()
 {
-    switch (i) {
-    case 1:
+    switch (wdg_buttonframe->Choix()) {
+    case WidgetButtonFrame::Plus:
         CreerLieu();
         break;
-    case 0:
+    case WidgetButtonFrame::Modifier:
         ModifLieu();
         break;
-    case -1:
+    case WidgetButtonFrame::Moins:
         SupprLieu();
-        break;
-    default:
         break;
     }
 }
 
-void dlg_GestionLieux::Slot_EnregLieux()
+void dlg_GestionLieux::enregLieux()
 {
 
     reject();
@@ -129,17 +127,12 @@ void dlg_GestionLieux::Slot_EnregLieux()
 void dlg_GestionLieux::CreerLieu()
 {
     ModifLieuxDialog();
-    connect(dlg_lieu->OKButton, SIGNAL(clicked(bool)), this, SLOT(Slot_EnregNouvLieu()));
+    connect(dlg_lieu->OKButton, &QPushButton::clicked, this, &dlg_GestionLieux::enregNouvLieu);
     dlg_lieu->exec();
     delete  dlg_lieu;
 }
 
-void dlg_GestionLieux::Slot_EnableOKButton()
-{
-    dlg_lieu->OKButton->setEnabled(true);
-}
-
-void dlg_GestionLieux::Slot_EnregNouvLieu()
+void dlg_GestionLieux::enregNouvLieu()
 {
     if (ValidationFiche())
     {
@@ -248,7 +241,7 @@ void dlg_GestionLieux::ModifLieuxDialog()
     layledit->addSpacerItem(new QSpacerItem(5,5,QSizePolicy::Expanding,QSizePolicy::Expanding));
 
     for (int i=0; i< dlg_lieu->findChildren<UpLineEdit*>().size(); i++)
-        connect(dlg_lieu->findChildren<UpLineEdit*>().at(i), SIGNAL(textEdited(QString)), this, SLOT(Slot_EnableOKButton()));
+        connect(dlg_lieu->findChildren<UpLineEdit*>().at(i), &QLineEdit::textEdited, this, [=]{    dlg_lieu->OKButton->setEnabled(true);});
     dlg_lieu->OKButton->setEnabled(false);
 
     laycom->addLayout(laylbl);
@@ -280,12 +273,12 @@ void dlg_GestionLieux::ModifLieu()
     wdg_villeledit  ->setText(lieurcd.at(6).toString());
     wdg_telledit    ->setText(lieurcd.at(7).toString());
     wdg_faxledit    ->setText(lieurcd.at(8).toString());
-    connect(dlg_lieu->OKButton, SIGNAL(clicked(bool)), this, SLOT(Slot_ModifLieu()));
+    connect(dlg_lieu->OKButton, &QPushButton::clicked, this, &dlg_GestionLieux::enregModifLieu);
     dlg_lieu->exec();
     delete  dlg_lieu;
 }
 
-void dlg_GestionLieux::Slot_ModifLieu()
+void dlg_GestionLieux::enregModifLieu()
 {
 
     if (ValidationFiche())

@@ -111,7 +111,8 @@ private:
     bool                    VerifFiche();
 
     void                    setDataUser(int id);
-    WidgetButtonFrame       *widgButtons;
+    WidgetButtonFrame       *wdg_buttonframe;
+    void                    ChoixButtonFrame();
     void                    CreerUser();
     void                    ModifUser();
     void                    SupprUser();
@@ -127,7 +128,6 @@ private slots:
     void                    Slot_ModifMDP();
     void                    Slot_RegleAffichage();
     void                    Slot_EnregistreNouvUser();
-    void                    Slot_ChoixButtonFrame(int);
 };
 
 #endif // DLG_gestionusers_H

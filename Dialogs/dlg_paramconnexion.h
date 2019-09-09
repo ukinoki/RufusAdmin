@@ -50,10 +50,8 @@ private:
     bool            VerifFiche();
     DataBase        *db;
     bool            TestConnexion();
-
-private slots:
-    void    Slot_Test();
-    void    Slot_Verif();
+    void            Test();
+    void            Verif();
 };
 
 #endif // DLG_PARAMCONNEXION_H

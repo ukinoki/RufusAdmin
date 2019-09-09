@@ -66,7 +66,7 @@ private:
     void            AnnuleModifBanque();
     void            AfficheBanque();
     void            ValideModifBanque();
-    void            ChoixButtonFrame(int);
+    void            ChoixButtonFrame();
 };
 
 #endif // DLG_GESTIONBANQUES_H

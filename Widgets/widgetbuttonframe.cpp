@@ -21,7 +21,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 WidgetButtonFrame::WidgetButtonFrame(QWidget *proprio)
 {
     wdg_proprio = proprio;
-    wdg_parent = new QWidget(dynamic_cast<QWidget*>(wdg_proprio->parent()));
+    widg_parent = new QWidget(dynamic_cast<QWidget*>(wdg_proprio->parent()));
     setStyleSheet("");
     setStyleSheet("border-style: none;");
 }
@@ -50,27 +50,27 @@ void WidgetButtonFrame::AddButtons(Buttons Butt)
         butt->setVisible(false);
         butt->setIconSize(QSize(szicon, szicon));
         butt->setFixedSize(geo,geo);
-        connect(butt, &QPushButton::clicked, [=] {Reponse(butt->iD());});
+        connect(butt, &QPushButton::clicked, [=] {Choix(butt->iD());});
     }
     QHBoxLayout *ilay = new QHBoxLayout();
     ilay->setContentsMargins(0,0,0,0);
     ilay->setSpacing(0);
     setLayout(ilay);
-    wdg_buttonslayout  = new QHBoxLayout();
-    wdg_buttonslayout  ->setContentsMargins(0,0,0,0);
-    wdg_buttonslayout  ->setSpacing(0);
-    wdg_buttonslayout  ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding));
-    wdg_buttonslayout  ->addWidget(this);
+    wdg_buttonwidglayout  = new QHBoxLayout();
+    wdg_buttonwidglayout  ->setContentsMargins(0,0,0,0);
+    wdg_buttonwidglayout  ->setSpacing(0);
+    wdg_buttonwidglayout  ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding));
+    wdg_buttonwidglayout  ->addWidget(this);
     QVBoxLayout *vlay = new QVBoxLayout();
     vlay        ->setContentsMargins(0,0,0,0);
     vlay        ->setSpacing(0);
-    vlay        ->addLayout(wdg_buttonslayout);
-    wdg_parent  ->resize(wdg_proprio->width(),wdg_proprio->height()+height());
-    wdg_parent  ->setFixedWidth(wdg_proprio->width());
-    wdg_proprio    ->setParent(wdg_parent);
-    setParent(wdg_parent);
+    vlay        ->addLayout(wdg_buttonwidglayout);
+    widg_parent  ->resize(wdg_proprio->width(),wdg_proprio->height()+height());
+    widg_parent  ->setFixedWidth(wdg_proprio->width());
+    wdg_proprio  ->setParent(widg_parent);
+    setParent(widg_parent);
     vlay        ->insertWidget(0, wdg_proprio);
-    wdg_parent  ->setLayout(vlay);
+    widg_parent  ->setLayout(vlay);
 
     int a = 0;
     if (Butt.testFlag(WidgetButtonFrame::PlusButton))
@@ -99,23 +99,27 @@ void WidgetButtonFrame::replace()
     move(wdg_proprio->x()+wdg_proprio->width()-width(), wdg_proprio->y()+wdg_proprio->height()-1);
 }
 
-void WidgetButtonFrame::Reponse(int id)
+void WidgetButtonFrame::Choix(int id)
 {
-    m_reponse = id;
-    emit choix(m_reponse);
+    switch (id) {
+    case 1:     m_reponse = Plus;       break;
+    case 0:     m_reponse = Modifier;   break;
+    case -1:    m_reponse = Moins;      break;
+    }
+    emit choix();
 }
 
-int WidgetButtonFrame::Reponse() const
+WidgetButtonFrame::Bouton WidgetButtonFrame::Choix() const
 {
     return m_reponse;
 }
 
 QWidget* WidgetButtonFrame::widgButtonParent() const
 {
-    return wdg_parent;
+    return widg_parent;
 }
 
 QHBoxLayout* WidgetButtonFrame::layButtons() const
 {
-    return wdg_buttonslayout;
+    return wdg_buttonwidglayout;
 }

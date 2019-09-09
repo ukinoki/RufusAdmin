@@ -96,15 +96,15 @@ dlg_gestionbanques::dlg_gestionbanques(QWidget *parent, QString nouvbanqueabrege
         RemplirTableView();
         uptablebanq->setCurrentCell(0,1);
         AfficheBanque();
-        connect(uptablebanq,        &UpTableWidget::itemSelectionChanged,   [=] {AfficheBanque();});
-        connect(wdg_buttonframe,        &WidgetButtonFrame::choix,              [=] {ChoixButtonFrame(wdg_buttonframe->Reponse());});
-        connect(CloseButton,        &QPushButton::clicked,                  [=] {accept();});
+        connect(uptablebanq,        &UpTableWidget::itemSelectionChanged,   this,   &dlg_gestionbanques::AfficheBanque);
+        connect(wdg_buttonframe,    &WidgetButtonFrame::choix,              this,   &dlg_gestionbanques::ChoixButtonFrame);
+        connect(CloseButton,        &QPushButton::clicked,                  this,   &dlg_gestionbanques::accept);
         ui->AnnulModifupSmallButton ->setVisible(false);
         ui->OKModifupSmallButton    ->setVisible(false);
     }
 
-    connect(ui->AnnulModifupSmallButton,    &QPushButton::clicked,    [=] {AnnuleModifBanque();});
-    connect(ui->OKModifupSmallButton,       &QPushButton::clicked,    [=] {ValideModifBanque();});
+    connect(ui->AnnulModifupSmallButton,    &QPushButton::clicked,    this,   &dlg_gestionbanques::AnnuleModifBanque);
+    connect(ui->OKModifupSmallButton,       &QPushButton::clicked,    this,   &dlg_gestionbanques::ValideModifBanque);
 
     ui->NomBanqueupLineEdit ->setValidator(new QRegExpValidator(Utils::rgx_rx));
     QRegExp val             = QRegExp("[A-Z]*");
@@ -151,19 +151,17 @@ void dlg_gestionbanques::AnnuleModifBanque()
     }
 }
 
-void dlg_gestionbanques::ChoixButtonFrame(int i)
+void dlg_gestionbanques::ChoixButtonFrame()
 {
-    switch (i) {
-    case 1:
+    switch (wdg_buttonframe->Choix()) {
+    case WidgetButtonFrame::Plus:
         NouvBanque();
         break;
-    case 0:
+    case WidgetButtonFrame::Modifier:
         ModifBanque();
         break;
-    case -1:
+    case WidgetButtonFrame::Moins:
         SupprBanque();
-        break;
-    default:
         break;
     }
 }

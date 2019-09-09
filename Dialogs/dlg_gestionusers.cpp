@@ -42,11 +42,11 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
 
     AjouteLayButtons(UpDialog::ButtonClose);
 
-    widgButtons = new WidgetButtonFrame(ui->ListUserstableWidget);
-    widgButtons->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
+    wdg_buttonframe = new WidgetButtonFrame(ui->ListUserstableWidget);
+    wdg_buttonframe->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
 
     QHBoxLayout *play = new QHBoxLayout;
-    play        ->addWidget(widgButtons->widgButtonParent());
+    play        ->addWidget(wdg_buttonframe->widgButtonParent());
     play        ->addWidget(ui->Principalframe);
     int marge   = 10;
     play        ->setContentsMargins(marge,marge,marge,marge);
@@ -105,7 +105,7 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     connect(ui->GestLieuxpushButton,            SIGNAL(clicked(bool)),                  this,   SLOT(Slot_GestLieux()));
 
     connect(CloseButton,                        SIGNAL(clicked(bool)),                  this,   SLOT(Slot_FermeFiche()));
-    connect(widgButtons,                        SIGNAL(choix(int)),                     this,   SLOT(Slot_ChoixButtonFrame(int)));
+    connect(wdg_buttonframe,                    &WidgetButtonFrame::choix,              this,   &dlg_gestionusers::ChoixButtonFrame);
     QList<UpLineEdit*> listline  = findChildren<UpLineEdit*>();
     for (int i=0; i<listline.size(); i++)
         connect(listline.at(i),                 SIGNAL(textEdited(QString)),            this,   SLOT(Slot_EnableOKpushButton()));
@@ -176,7 +176,7 @@ void dlg_gestionusers::setConfig(enum UserMode mode)
         ui->ComptaLiberalupRadioButton      ->setChecked(true);
         ui->ResponsableupRadioButton        ->setChecked(true);
         CloseButton                         ->setVisible(false);
-        widgButtons->widgButtonParent()     ->setVisible(false);
+        wdg_buttonframe->widgButtonParent()     ->setVisible(false);
         ui->ModifMDPUserupLabel             ->setVisible(false);
         ui->Principalframe                  ->setEnabled(true);
         Slot_RegleAffichage();
@@ -192,12 +192,12 @@ void dlg_gestionusers::setConfig(enum UserMode mode)
         CloseButton                         ->setVisible(false);
         ui->InactivUsercheckBox             ->setVisible(false);
         ui->ModifMDPUserupLabel             ->setVisible(true);
-        widgButtons->widgButtonParent()     ->setVisible(false);
+        wdg_buttonframe->widgButtonParent()     ->setVisible(false);
         break;
     case ADMIN:
         ui->ModifMDPUserupLabel             ->setVisible(false);
         ui->Principalframe                  ->setEnabled(false);
-        widgButtons                         ->setEnabled(true);
+        wdg_buttonframe                         ->setEnabled(true);
         ui->ListUserstableWidget            ->setEnabled(true);
         break;
     }
@@ -212,7 +212,7 @@ void dlg_gestionusers::Slot_Annulation()
             Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()).first()));
         RemplirTableWidget();
         ui->Principalframe->setEnabled(false);
-        widgButtons->setEnabled(true);
+        wdg_buttonframe->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
         m_mode = Modifier;
     }
@@ -231,24 +231,22 @@ void dlg_gestionusers::Slot_Annulation()
             ui->ListUserstableWidget->selectRow(row);
         }
         ui->Principalframe->setEnabled(false);
-        widgButtons->setEnabled(true);
+        wdg_buttonframe->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
     }
 }
 
-void dlg_gestionusers::Slot_ChoixButtonFrame(int i)
+void dlg_gestionusers::ChoixButtonFrame()
 {
-    switch (i) {
-    case 1:
+    switch (wdg_buttonframe->Choix()) {
+    case WidgetButtonFrame::Plus:
         CreerUser();
         break;
-    case 0:
+    case WidgetButtonFrame::Modifier:
         ModifUser();
         break;
-    case -1:
+    case WidgetButtonFrame::Moins:
         SupprUser();
-        break;
-    default:
         break;
     }
 }
@@ -707,16 +705,16 @@ void dlg_gestionusers::Slot_EnregistreUser()
         db->StandardSQL("grant all on *.* to '" + login + "'@'" + MasqueReseauLocal + "' identified by '" + MDP + "' with grant option");
         m_mode = Modifier;
         ui->Principalframe->setEnabled(false);
-        widgButtons->setEnabled(true);
+        wdg_buttonframe->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
-        widgButtons->wdg_moinsBouton->setEnabled(true);
+        wdg_buttonframe->wdg_moinsBouton->setEnabled(true);
     }
     else
     {
         ui->Principalframe->setEnabled(false);
-        widgButtons->setEnabled(true);
+        wdg_buttonframe->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
-        widgButtons->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(ui->idUseruplineEdit->text(),Qt::MatchExactly).at(0)->foreground() != m_color);
+        wdg_buttonframe->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(ui->idUseruplineEdit->text(),Qt::MatchExactly).at(0)->foreground() != m_color);
     }
     ui->OKupSmallButton->setEnabled(false);
 }
@@ -775,7 +773,7 @@ void dlg_gestionusers::Slot_EnregistreNouvUser()
     QString req = "select idUser from " TBL_UTILISATEURS " where UserLogin = '" + login + "' and UserMDP = '" + MDP + "'";
     int idUser = db->getFirstRecordFromStandardSelectSQL(req,m_ok).at(0).toInt();
     RemplirTableWidget();
-    widgButtons                     ->setEnabled(false);
+    wdg_buttonframe                     ->setEnabled(false);
     ui->ListUserstableWidget        ->setEnabled(false);
     ui->Principalframe              ->setEnabled(true);
     ui->ComptagroupBox              ->setEnabled(true);
@@ -860,7 +858,7 @@ bool dlg_gestionusers::isMDPverified()
 void dlg_gestionusers::ModifUser()
 {
     ui->ListUserstableWidget        ->setEnabled(false);
-    widgButtons                     ->setEnabled(false);
+    wdg_buttonframe                     ->setEnabled(false);
     ui->Principalframe              ->setEnabled(true);
     ui->ModeExercicegroupBox        ->setEnabled(true);
     ui->SecteurgroupBox             ->setEnabled(true);
@@ -1321,7 +1319,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
             }
         }
     }
-    widgButtons->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(QString::number(idUser),Qt::MatchExactly).at(0)->foreground() != m_color);
+    wdg_buttonframe->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(QString::number(idUser),Qt::MatchExactly).at(0)->foreground() != m_color);
     return true;
 }
 
