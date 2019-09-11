@@ -54,10 +54,13 @@ private:
     void                ChoixButtonFrame();
     void                CreeMotif();
     void                DeplaceVersRow(int id, int anc, int nouv);
+    void                DropMotif(QByteArray);
     void                EnregistreMotifs();
     Motif*              getMotifFromRow(int row) const;
     void                ModifCouleur();
     void                ModifPD();
+    void                ModifMotif();
+    void                ModifRaccouci();
     void                ModifUtil();
     void                RecalculeLesRows();
     void                RemplirTableWidget();
@@ -66,9 +69,6 @@ private:
     UpCheckBox*         UpchkFromTableW(QTableWidget*, int row, int col) const;
 
 private slots:
-    void                Slot_DropMotif(QByteArray);
-    void                Slot_ModifMotif(QString);
-    void                Slot_ModifRaccouci(QString);
     void                Slot_ParDefaut();
     void                Slot_Utiliser(bool);
 };

@@ -126,13 +126,28 @@ private:
     QMap<QString, QIcon>        MapIcons();
     void                        closeEvent(QCloseEvent *);
     void                        AskAppareil();
+    void                        CalcExporteDocs();
+    void                        ChoixButtonFrame();
     void                        ChoixMenuSystemTray(QString txt);
     void                        ConnexionBase();
-    void                        Edit(QString txt, int delaieffacement=0);
     QStringList                 DecomposeScriptSQL(QString nomficscript);
+    void                        Edit(QString txt, int delaieffacement=0);
+    void                        EnregistreAppareil();
+    void                        EnregistreEmplacementServeur(int);
     QString                     getDossierDocuments(QString Appareil);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
     void                        EffaceMessage(int pause = 1000);
+    void                        EnregistreNouvMDPAdmin();
+    void                        GestionBanques();
+    void                        GestionMotifs();
+    void                        GestionLieux();
+    void                        GestionUsers();
+    void                        ImportDocsExternes();
+    void                        ListeAppareils();
+    void                        MasqueAppli();
+    void                        MetAJourLaConnexion();
+    void                        ModifDirImagerie();
+    void                        ModifMDP();
     void                        NouvAppareil();
     void                        Remplir_Table();
     void                        RestoreFontAppli();
@@ -141,8 +156,11 @@ private:
     void                        setPosteImportDocs(bool a = true);
     bool                        SetUserAllData(User *usr);
     void                        ReconstruitListeLieuxExercice();
+    void                        TrayIconMenu();
     bool                        VerifBase();
     bool                        VerifMDP(QString MDP, QString Msg);
+    void                        VerifPosteImport();
+    void                        VerifVersionBase();
 
     void                        ConnectTimers();
     void                        DisconnectTimers();
@@ -152,26 +170,9 @@ private:
     void                        ExporteDocs();
 private slots:
     void                        AfficheMessageImport(QStringList listmsg, int pause, bool bottom=true);
-    void                        ListeAppareils();
-    void                        Slot_CalcExporteDocs();
-    void                        Slot_ChoixButtonFrame(int);
     void                        Slot_ChoixDossierStockageApp();
-    void                        Slot_ModifDirImagerie();
-    void                        Slot_EnregistreAppareil();
     void                        Slot_EnregDossierStockageApp(QString dir);
-    void                        Slot_EnregistreEmplacementServeur(int);
-    void                        Slot_EnregistreNouvMDPAdmin();
-    void                        Slot_GestionBanques();
-    void                        Slot_GestionMotifs();
-    void                        Slot_GestLieux();
-    void                        Slot_GestUser();
-    void                        Slot_MasqueAppli();
-    void                        Slot_MetAJourLaConnexion();
-    void                        Slot_ModifMDP();
-    void                        Slot_ImportDocsExternes();
-    void                        Slot_TrayIconMenu();
-    void                        Slot_VerifPosteImport();
-    void                        Slot_VerifVersionBase();
+
 
     //--------------------------------------------------------------------------------------------------------
     // les sauvegardes
@@ -242,7 +243,6 @@ private slots:
 
 public:
     QTimer                  t_timerbackup;
-private slots:
 
 private:
     qint64                  m_basesize, m_imagessize, m_videossize, m_facturessize,  m_freespace;

@@ -116,17 +116,14 @@ private:
     qint32                          m_datasize;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
     int                             m_iduser;                                                 //!> stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
     QString                         m_datasclient;                                            //!> stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
+    void                            Deconnexion();
+    void                            erreurSocket(QAbstractSocket::SocketError);
+    void                            TraiteDonneesRecues();
 
 signals:
     void                            errorskt(QAbstractSocket::SocketError socketerror);
     void                            emitmsg(qintptr sktdescriptor, QString msg);
     void                            deconnexion(qintptr sktdescriptor);
-
-public slots:
-    void                            TraiteDonneesRecues();
-    void                            Deconnexion();
-private slots:
-    void                            erreurSocket(QAbstractSocket::SocketError);
-};
+ };
 
 #endif // TCPSOCKET_H

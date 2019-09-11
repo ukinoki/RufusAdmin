@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("09-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("11-09-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -169,9 +169,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     t_timerProgressBar           = new QTimer(this);     // progression de la progressbar - quand la progressbar est au maximum, la fiche est cachée
 
     setPosteImportDocs(); // on prend la place d'importateur des documents dans les utilisateurs connectés
-    Slot_VerifPosteImport();
-    Slot_VerifVersionBase();
-    Slot_CalcExporteDocs();
+    VerifPosteImport();
+    VerifVersionBase();
+    CalcExporteDocs();
     QList<QVariantList> listdate = db->StandardSelectSQL("select max(creele) from " TBL_MESSAGES, m_ok);
     if (listdate.size()==0)
         m_dateDernierMessage = QDateTime::currentDateTime();
@@ -199,13 +199,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ConnectTimers();
 
     connect(ui->ExportImagespushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ExporteDocs);
-    connect(ui->FermepushButton,                SIGNAL(clicked(bool)),              this,   SLOT(Slot_MasqueAppli()));
-    connect(ui->GestionBanquespushButton,       SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestionBanques()));
-    connect(ui->GestLieuxpushButton,            SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestLieux()));
-    connect(ui->GestionMotifspushButton,        SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestionMotifs()));
-    connect(ui->GestUserpushButton,             SIGNAL(clicked(bool)),              this,   SLOT(Slot_GestUser()));
-    connect(ui->InitMDPAdminpushButton,         SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifMDP()));;
-    connect(ui->StockageupPushButton,           SIGNAL(clicked(bool)),              this,   SLOT(Slot_ModifDirImagerie()));
+    connect(ui->FermepushButton,                &QPushButton::clicked,              this,   &RufusAdmin::MasqueAppli);
+    connect(ui->GestionBanquespushButton,       &QPushButton::clicked,              this,   &RufusAdmin::GestionBanques);
+    connect(ui->GestLieuxpushButton,            &QPushButton::clicked,              this,   &RufusAdmin::GestionLieux);
+    connect(ui->GestionMotifspushButton,        &QPushButton::clicked,              this,   &RufusAdmin::GestionMotifs);
+    connect(ui->GestUserpushButton,             &QPushButton::clicked,              this,   &RufusAdmin::GestionUsers);
+    connect(ui->InitMDPAdminpushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ModifMDP);;
+    connect(ui->StockageupPushButton,           &QPushButton::clicked,              this,   &RufusAdmin::ModifDirImagerie);
     connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(m_socketStatut, 20000);});
     // MAJ Salle d'attente ----------------------------------------------------------------------------------
     connect(flags,                              &Flags::UpdSalleDAttente,           this,   [=](int a)  { m_flagsalledattente = a; } );
@@ -218,7 +218,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     wdg_buttonframe = new WidgetButtonFrame(ui->AppareilsConnectesupTableWidget);
     wdg_buttonframe->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::MoinsButton);
-    connect(wdg_buttonframe, SIGNAL(choix(int)), this, SLOT(Slot_ChoixButtonFrame(int)));
+    connect(wdg_buttonframe, &WidgetButtonFrame::choix, this, &RufusAdmin::ChoixButtonFrame);
 
     // Mise en forme de la table AppareilsConnectes
     ui->AppareilsConnectesupTableWidget->setPalette(QPalette(Qt::white));
@@ -335,7 +335,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ictray_RufusAdminTrayIcon->setContextMenu(trayIconMenu);
     ictray_RufusAdminTrayIcon->setIcon(ic_RufusAdmin);
     ictray_RufusAdminTrayIcon->setVisible(true);
-    connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::Slot_TrayIconMenu);
+    connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::TrayIconMenu);
     ui->MessageupLabel->setText("");
 
     ImportDocsExtThread = new ImportDocsExternesThread(m_idadmindocs, m_idlieuexeercice, db->getMode() != Utils::Distant);
@@ -344,7 +344,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         connect(ImportDocsExtThread,SIGNAL(emitmsg(QString)),                   TCPServer,  SLOT(envoyerATous(QString)));
     connect(&t_timer,                   &QTimer::timeout,                           this,       &RufusAdmin::ListeAppareils);
     t_timer             .setInterval(5000);
-    Slot_ImportDocsExternes();
+    ImportDocsExternes();
 
     Datas::I()->banques->initListe();
     Datas::I()->motifs->initListe();
@@ -441,7 +441,7 @@ void RufusAdmin::AskAppareil()
     dlg_askAppareil->dlglayout()->insertLayout(0,lay);
     dlg_askAppareil->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
     dlg_askAppareil->AjouteLayButtons(UpDialog::ButtonOK);
-    connect(dlg_askAppareil->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreAppareil()));
+    connect(dlg_askAppareil->OKButton,    &QPushButton::clicked, this, &RufusAdmin::EnregistreAppareil);
     dlg_askAppareil->exec();
     upCombo->showPopup();
     ConnectTimerInactive();
@@ -625,7 +625,7 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
 
     dlg_buprestore->setFixedWidth(400);
     dlg_buprestore->AjouteLayButtons(UpDialog::ButtonOK);
-    connect(dlg_buprestore->OKButton,    SIGNAL(clicked(bool)), dlg_buprestore, SLOT(accept()));
+    connect(dlg_buprestore->OKButton,    &QPushButton::clicked, dlg_buprestore, &QDialog::accept);
     CalcTimeBupRestore();
 }
 
@@ -677,30 +677,30 @@ void RufusAdmin::CalcTimeBupRestore()
 
 void RufusAdmin::ConnectTimers()
 {
-    connect (t_timerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
-    connect (t_timerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
-    connect (t_timerVerifDivers,         SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
-    connect (t_timerUserConnecte,        SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
+    connect (t_timerUserConnecte,        &QTimer::timeout,      this,   &RufusAdmin::MetAJourLaConnexion);
+    connect (t_timerVerifDivers,         &QTimer::timeout,      this,   &RufusAdmin::VerifPosteImport);
+    connect (t_timerVerifDivers,         &QTimer::timeout,      this,   &RufusAdmin::VerifVersionBase);
+    connect (t_timerUserConnecte,        &QTimer::timeout,      this,   &RufusAdmin::ImportDocsExternes);
     if (db->getMode() != Utils::Distant)
     {
-        connect (t_timerUserConnecte,    &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
-        connect (t_timerSupprDocs,       &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
-        connect (t_timerDocsAExporter,   SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
+        connect (t_timerUserConnecte,    &QTimer::timeout,      this,   &RufusAdmin::ExporteDocs);
+        connect (t_timerSupprDocs,       &QTimer::timeout,      this,   &RufusAdmin::SupprimerDocsEtFactures);
+        connect (t_timerDocsAExporter,   &QTimer::timeout,      this,   &RufusAdmin::CalcExporteDocs);
     }
     ConnectTimerInactive();
-    connect (t_timerSalDatCorrespMsg,    &QTimer::timeout,       this,   &RufusAdmin::VerifModifsFlags);
-    connect (t_timerVerifVerrou,         &QTimer::timeout,       this,   &RufusAdmin::VerifVerrouDossier);
+    connect (t_timerSalDatCorrespMsg,    &QTimer::timeout,      this,   &RufusAdmin::VerifModifsFlags);
+    connect (t_timerVerifVerrou,         &QTimer::timeout,      this,   &RufusAdmin::VerifVerrouDossier);
 }
 
 void RufusAdmin::DisconnectTimers()
 {
-    disconnect (t_timerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_MetAJourLaConnexion()));
-    disconnect (t_timerSupprDocs,        &QTimer::timeout,       this,   &RufusAdmin::SupprimerDocsEtFactures);
-    disconnect (t_timerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifPosteImport()));
-    disconnect (t_timerVerifDivers,      SIGNAL(timeout()),      this,   SLOT(Slot_VerifVersionBase()));
-    disconnect (t_timerUserConnecte,     SIGNAL(timeout()),      this,   SLOT(Slot_ImportDocsExternes()));
-    disconnect (t_timerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
-    disconnect (t_timerUserConnecte,     &QTimer::timeout,       this,   &RufusAdmin::ExporteDocs);
+    disconnect (t_timerUserConnecte,     &QTimer::timeout,      this,   &RufusAdmin::MetAJourLaConnexion);
+    disconnect (t_timerSupprDocs,        &QTimer::timeout,      this,   &RufusAdmin::SupprimerDocsEtFactures);
+    disconnect (t_timerVerifDivers,      &QTimer::timeout,      this,   &RufusAdmin::VerifPosteImport);
+    disconnect (t_timerVerifDivers,      &QTimer::timeout,      this,   &RufusAdmin::VerifVersionBase);
+    disconnect (t_timerUserConnecte,     &QTimer::timeout,      this,   &RufusAdmin::ImportDocsExternes);
+    disconnect (t_timerDocsAExporter,    &QTimer::timeout,      this,   &RufusAdmin::CalcExporteDocs);
+    disconnect (t_timerUserConnecte,     &QTimer::timeout,      this,   &RufusAdmin::ExporteDocs);
     DisconnectTimerInactive();
     t_timerSalDatCorrespMsg  ->disconnect();
     t_timerVerifVerrou       ->disconnect();
@@ -711,7 +711,7 @@ void RufusAdmin::ConnectTimerInactive()
     connect(ui->MiseEnVeilleprogressBar, &QProgressBar::valueChanged, this, [=]
     {
         if (ui->MiseEnVeilleprogressBar->value() == ui->MiseEnVeilleprogressBar->minimum())
-            Slot_MasqueAppli();
+            MasqueAppli();
     });
 }
 
@@ -811,7 +811,7 @@ int RufusAdmin::DetermineLieuExercice()
             boxlieux            ->setLayout(vbox);
             gAskLieux           ->setModal(true);
             gAskLieux->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
-            connect(gAskLieux->OKButton,   SIGNAL(clicked(bool)),  gAskLieux, SLOT(accept()));
+            connect(gAskLieux->OKButton,   &QPushButton::clicked,  gAskLieux, &QDialog::accept);
             gAskLieux->exec();
             QList<QRadioButton*> listbutt = boxlieux->findChildren<QRadioButton*>();
             for (int j=0; j<listbutt.size(); j++)
@@ -986,7 +986,7 @@ void RufusAdmin::Remplir_Table()
         l->addWidget(dossbouton);
         widg->setLayout(l);
         ui->AppareilsConnectesupTableWidget->setCellWidget(i,col,widg);
-        connect(dossbouton,       SIGNAL(clicked(bool)), this   ,SLOT(Slot_ChoixDossierStockageApp()));
+        connect(dossbouton,       SIGNAL(clicked(bool)), this   , SLOT(Slot_ChoixDossierStockageApp()));
 
         ui->AppareilsConnectesupTableWidget->setRowHeight(i,int(fm.height()*1.3));
     }
@@ -1028,7 +1028,7 @@ void RufusAdmin::setPosteImportDocs(bool a)
           END ;";
     db->StandardSQL(req);
     if (a)
-        Slot_MetAJourLaConnexion();
+        MetAJourLaConnexion();
 }
 
 /*!
@@ -1055,13 +1055,13 @@ bool RufusAdmin::SetUserAllData(User *usr)
     return true;
 }
 
-void RufusAdmin::Slot_ChoixButtonFrame(int i)
+void RufusAdmin::ChoixButtonFrame()
 {
-    switch (i) {
-    case 1:
+    switch (wdg_buttonframe->Choix()) {
+    case WidgetButtonFrame::Plus:
         NouvAppareil();
         break;
-    case -1:
+    case WidgetButtonFrame::Moins:
         SupprAppareil();
         break;
     default:
@@ -1100,7 +1100,7 @@ void RufusAdmin::Slot_ChoixDossierStockageApp()
     ConnectTimerInactive();
 }
 
-void RufusAdmin::Slot_EnregistreAppareil()
+void RufusAdmin::EnregistreAppareil()
 {
     if (!dlg_askAppareil) return;
     QString req = "insert into " TBL_APPAREILSCONNECTESCENTRE " (idAppareil, idLieu) Values("
@@ -1111,7 +1111,7 @@ void RufusAdmin::Slot_EnregistreAppareil()
     Remplir_Table();
 }
 
-void RufusAdmin::Slot_ModifDirImagerie()
+void RufusAdmin::ModifDirImagerie()
 {
     QString dir = ui->StockageupLineEdit->text();
     if (dir == "")
@@ -1160,13 +1160,13 @@ void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
         m_settings->setValue("DossierEchangeImagerie/" + exam, dir);
 }
 
-void RufusAdmin::Slot_EnregistreEmplacementServeur(int idx)
+void RufusAdmin::EnregistreEmplacementServeur(int idx)
 {
     db->StandardSQL("update " TBL_PARAMSYSTEME " set idlieupardefaut = " + ui->EmplacementServeurupComboBox->itemData(idx).toString());
     m_parametres->setidlieupardefaut(ui->EmplacementServeurupComboBox->itemData(idx).toInt());
 }
 
-void RufusAdmin::Slot_EnregistreNouvMDPAdmin()
+void RufusAdmin::EnregistreNouvMDPAdmin()
 {
     if (dlg_askMDP != Q_NULLPTR)
     {
@@ -1260,7 +1260,7 @@ QMap<QString, QIcon> RufusAdmin::MapIcons()
     return map_icons;
 }
 
-void RufusAdmin::Slot_CalcExporteDocs()
+void RufusAdmin::CalcExporteDocs()
 {
     if (db->getMode() == Utils::Distant)
         return;
@@ -1302,7 +1302,7 @@ void RufusAdmin::ExporteDocs()
                                    tr("Voulez vous le faire maintenant?"))
                                    !=UpSmallButton::STARTBUTTON)
         {
-            disconnect (t_timerDocsAExporter,    SIGNAL(timeout()),      this,   SLOT(Slot_CalcExporteDocs()));
+            disconnect (t_timerDocsAExporter,    &QTimer::timeout,      this,   &RufusAdmin::CalcExporteDocs);
             return;
         }
     }
@@ -1755,7 +1755,7 @@ void RufusAdmin::ExporteDocs()
     ConnectTimers();
 }
 
-void RufusAdmin::Slot_GestionBanques()
+void RufusAdmin::GestionBanques()
 {
     DisconnectTimerInactive();
     Dlg_Banq = new dlg_gestionbanques(this);
@@ -1763,7 +1763,7 @@ void RufusAdmin::Slot_GestionBanques()
     ConnectTimerInactive();
 }
 
-void RufusAdmin::Slot_GestLieux()
+void RufusAdmin::GestionLieux()
 {
     DisconnectTimerInactive();
     dlg_GestionLieux *gestLieux = new dlg_GestionLieux(this);
@@ -1772,7 +1772,7 @@ void RufusAdmin::Slot_GestLieux()
     ConnectTimerInactive();
 }
 
-void RufusAdmin::Slot_GestionMotifs()
+void RufusAdmin::GestionMotifs()
 {
     DisconnectTimerInactive();
     Dlg_motifs = new dlg_motifs(this);
@@ -1782,7 +1782,7 @@ void RufusAdmin::Slot_GestionMotifs()
     ConnectTimerInactive();
 }
 
-void RufusAdmin::Slot_GestUser()
+void RufusAdmin::GestionUsers()
 {
     DisconnectTimerInactive();
     Dlg_GestUsr = new dlg_gestionusers(ui->EmplacementServeurupComboBox->currentData().toInt(), dlg_gestionusers::ADMIN, true, this);
@@ -1799,7 +1799,7 @@ void RufusAdmin::Slot_GestUser()
     ConnectTimerInactive();
 }
 
-void RufusAdmin::Slot_ImportDocsExternes()
+void RufusAdmin::ImportDocsExternes()
 {
     // si aucun appareil n'a de dossier d'échange, inutile de lancer l'import des documents
     bool verifdocs = false;
@@ -1822,7 +1822,7 @@ void RufusAdmin::Slot_ImportDocsExternes()
     }
 }
 
-void RufusAdmin::Slot_MasqueAppli()
+void RufusAdmin::MasqueAppli()
 {
     setEnabled(false);
     foreach (QDialog* d , findChildren<QDialog*>())
@@ -1830,7 +1830,7 @@ void RufusAdmin::Slot_MasqueAppli()
     hide();
 }
 
-void RufusAdmin::Slot_MetAJourLaConnexion()
+void RufusAdmin::MetAJourLaConnexion()
 {
     QString macadress =  Utils::getMACAdress() + " - " + NOM_ADMINISTRATEURDOCS;
     QString MAJConnexionRequete;
@@ -1887,7 +1887,7 @@ void RufusAdmin::Slot_MetAJourLaConnexion()
     }
 }
 
-void RufusAdmin::Slot_ModifMDP()
+void RufusAdmin::ModifMDP()
 {
     DisconnectTimerInactive();
     dlg_askMDP    = new UpDialog(this);
@@ -1931,7 +1931,7 @@ void RufusAdmin::Slot_ModifMDP()
     for (int i = 0; i<ListTab.size()-1 ; i++ )
         dlg_askMDP->setTabOrder(ListTab.at(i), ListTab.at(i+1));
     dlg_askMDP    ->setWindowTitle(tr("Mot de passe utilisateur"));
-    connect(dlg_askMDP->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreNouvMDPAdmin()));
+    connect(dlg_askMDP->OKButton,    &QPushButton::clicked, this, &RufusAdmin::EnregistreNouvMDPAdmin);
     dlg_askMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
 
     dlg_askMDP->exec();
@@ -2316,7 +2316,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
     }
 }
 
-void RufusAdmin::Slot_TrayIconMenu()
+void RufusAdmin::TrayIconMenu()
 {
     trayIconMenu->clear();
     if (! isVisible())
@@ -2340,7 +2340,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     if (!VerifMDP(db->getDataBase().password(),tr("Saisissez le mot de passe Administrateur")))
     {
         if (!visible)
-            Slot_MasqueAppli();
+            MasqueAppli();
         return;
     }
 
@@ -2364,7 +2364,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     setEnabled(true);
 }
 
-void RufusAdmin::Slot_VerifPosteImport()
+void RufusAdmin::VerifPosteImport()
 {
     if (db->getMode() == Utils::Distant)
         return;
@@ -2408,7 +2408,7 @@ void RufusAdmin::Slot_VerifPosteImport()
         setPosteImportDocs();
 }
 
-void RufusAdmin::Slot_VerifVersionBase()
+void RufusAdmin::VerifVersionBase()
 {
     int version = m_parametres->versionbase();
     if (version != VERSION_BASE)
@@ -2425,7 +2425,7 @@ void RufusAdmin::Slot_VerifVersionBase()
 void RufusAdmin::ReconstruitListeLieuxExercice()
 {
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
-    disconnect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
+    disconnect(ui->EmplacementServeurupComboBox,   QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
     ui->EmplacementServeurupComboBox->clear();
     QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " TBL_LIEUXEXERCICE, m_ok);
     if (m_ok && listlieux.size()>0)
@@ -2437,10 +2437,10 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
         else
         {
             ui->EmplacementServeurupComboBox->setCurrentIndex(0);
-            Slot_EnregistreEmplacementServeur(0);
+            EnregistreEmplacementServeur(0);
         }
     }
-    connect(ui->EmplacementServeurupComboBox,   SIGNAL(currentIndexChanged(int)),   this,   SLOT(Slot_EnregistreEmplacementServeur(int)));
+    connect(ui->EmplacementServeurupComboBox,   QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
 }
 
@@ -3252,7 +3252,7 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
     gAsk->dlglayout()->insertWidget(0,TxtEdit);
 
     gAsk->AjouteLayButtons();
-    connect(gAsk->OKButton,SIGNAL(clicked(bool)),gAsk,SLOT(accept()));
+    connect(gAsk->OKButton, &QPushButton::clicked, gAsk, &QDialog::accept);
     gAsk->restoreGeometry(m_settings->value("PositionsFiches/PositionEdit").toByteArray());
 
     if (delaieffacement > 0)

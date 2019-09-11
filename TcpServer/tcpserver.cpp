@@ -57,8 +57,8 @@ void TcpServer::incomingConnection(qintptr descriptor)
     Logs::MSGSOCKET("void TcpServer::incomingConnection(qintptr socketDescriptor) - " + QString::number(descriptor));
     TcpSocket *socket = new TcpSocket(descriptor);
 
-    connect(socket,     SIGNAL(emitmsg(qintptr, QString)),              this,   SLOT(TraiteMessageRecu(qintptr, QString)));
-    connect(socket,     SIGNAL(deconnexion(qintptr)),                   this,   SLOT(Deconnexion(qintptr)));
+    connect(socket,     &TcpSocket::emitmsg,              this,   &TcpServer::TraiteMessageRecu);
+    connect(socket,     &TcpSocket::deconnexion,          this,   &TcpServer::Deconnexion);
 
     map_socketdescriptors  .insert(descriptor, socket);
 }

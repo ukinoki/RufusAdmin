@@ -37,6 +37,8 @@ public:
     QString             ListeSockets();
     void                setId(int id);
     void                envoyerA(int iduser, QString msg);                                  /* envoi d'un message sur un QTcpSocket en particulier */
+public slots:
+    void                envoyerATous(QString msg, qintptr emetteurorigin = 0);              /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
 
 private:
     static TcpServer*        instance;
@@ -48,16 +50,11 @@ private:
     QString                         m_listeSockets;
     int                             m_idadmin;
     TcpSocket*                      SocketFromDescriptor(qintptr descriptor);
-
-signals:
-    void                            ModifListeSockets();
-
-private slots:
     void                            TraiteMessageRecu(qintptr descriptor, QString msg);     /* traitement des messages reçus*/
     void                            Deconnexion(qintptr descriptor);                        /* deconnexion d'un socket */
 
-public slots:
-    void                            envoyerATous(QString msg, qintptr emetteurorigin = 0);  /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
+signals:
+    void                            ModifListeSockets();
 
 protected:
     void                            incomingConnection(qintptr descriptor);
