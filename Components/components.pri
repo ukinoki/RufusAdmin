@@ -9,7 +9,7 @@ SOURCES += $$PWD/upcheckbox.cpp \
         $$PWD/updoublevalidator.cpp \
         $$PWD/upgroupbox.cpp \
         $$PWD/uplabel.cpp \
-    $$PWD/uplabeldelegate.cpp \
+        $$PWD/uplabeldelegate.cpp \
         $$PWD/uplineedit.cpp \
         $$PWD/upmessagebox.cpp \
         $$PWD/uppushbutton.cpp \
@@ -19,9 +19,9 @@ SOURCES += $$PWD/upcheckbox.cpp \
         $$PWD/uptablewidget.cpp \
         $$PWD/uptextedit.cpp \
         $$PWD/uptoolbar.cpp \
-    $$PWD/upheaderview.cpp \
-    $$PWD/upstandarditem.cpp \
-    $$PWD/uptableview.cpp
+        $$PWD/upheaderview.cpp \
+        $$PWD/upstandarditem.cpp \
+        $$PWD/uptableview.cpp
 
 HEADERS += $$PWD/upcheckbox.h \
         $$PWD/upcombobox.h \
@@ -30,7 +30,7 @@ HEADERS += $$PWD/upcheckbox.h \
         $$PWD/updoublevalidator.h \
         $$PWD/upgroupbox.h \
         $$PWD/uplabel.h \
-    $$PWD/uplabeldelegate.h \
+        $$PWD/uplabeldelegate.h \
         $$PWD/uplineedit.h \
         $$PWD/upmessagebox.h \
         $$PWD/uppushbutton.h \
@@ -40,7 +40,7 @@ HEADERS += $$PWD/upcheckbox.h \
         $$PWD/uptablewidget.h \
         $$PWD/uptextedit.h \
         $$PWD/uptoolbar.h \
-    $$PWD/upheaderview.h \
-    $$PWD/upstandarditem.h \
-    $$PWD/uptableview.h
+        $$PWD/upheaderview.h \
+        $$PWD/upstandarditem.h \
+        $$PWD/uptableview.h
 
