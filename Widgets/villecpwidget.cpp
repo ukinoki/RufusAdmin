@@ -17,9 +17,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "villecpwidget.h"
 #include "ui_villecpwidget.h"
-#include "database.h"
-#include "cls_villes.h"
-#include "utils.h"
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------- GESTION DES VILLES ET DES CODES POSTAUX

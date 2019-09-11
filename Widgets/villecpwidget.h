@@ -27,6 +27,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "upmessagebox.h"
 #include "database.h"
 #include "gbl_datas.h"
+#include "cls_villes.h"
 #include "utils.h"
 
 namespace Ui {
