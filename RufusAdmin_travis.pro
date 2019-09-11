@@ -58,7 +58,6 @@ SOURCES += \
     importdocsexternesthread.cpp \
     utils.cpp \
     gbl_datas.cpp \
-    qlabeldelegate.cpp \
     flags.cpp
 
 HEADERS += \
@@ -69,7 +68,6 @@ HEADERS += \
     gbl_datas.h \
     log.h \
     icons.h \
-    qlabeldelegate.h \
     flags.h
 
 FORMS += \

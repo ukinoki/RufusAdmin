@@ -41,7 +41,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    qlabeldelegate.cpp \
     rufusadmin.cpp \
     importdocsexternesthread.cpp \
     utils.cpp \
@@ -49,7 +48,6 @@ SOURCES += \
     flags.cpp
 
 HEADERS += \
-    qlabeldelegate.h \
     rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \
@@ -60,7 +58,7 @@ HEADERS += \
     flags.h
 
 FORMS += \
-        rufusadmin.ui \
+    rufusadmin.ui \
 
 RESOURCES += \
     assets/Images/images.qrc \
