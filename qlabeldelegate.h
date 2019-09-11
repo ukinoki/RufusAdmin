@@ -27,11 +27,10 @@ class QLabelDelegate : public QStyledItemDelegate
 
 public:
     QLabelDelegate(QObject* parent = Q_NULLPTR);
-    ~QLabelDelegate();
 
     QWidget*    createEditor    (QWidget* parent,   const QStyleOptionViewItem& option, const QModelIndex &index) const  Q_DECL_OVERRIDE;
     void        setEditorData   (QWidget* editor,   const QModelIndex& index) const Q_DECL_OVERRIDE;
-    bool        editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)  Q_DECL_OVERRIDE;
+    bool        editorEvent     (QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)  Q_DECL_OVERRIDE;
 
 signals:
     void        focusitem(int a);

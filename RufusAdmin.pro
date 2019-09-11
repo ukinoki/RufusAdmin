@@ -40,9 +40,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        main.cpp \
+    main.cpp \
     qlabeldelegate.cpp \
-        rufusadmin.cpp \
+    rufusadmin.cpp \
     importdocsexternesthread.cpp \
     utils.cpp \
     gbl_datas.cpp \
@@ -50,7 +50,7 @@ SOURCES += \
 
 HEADERS += \
     qlabeldelegate.h \
-        rufusadmin.h \
+    rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \
     utils.h \

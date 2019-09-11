@@ -23,11 +23,6 @@ QLabelDelegate::QLabelDelegate(QObject *parent) : QStyledItemDelegate(parent)
 
 }
 
-QLabelDelegate::~QLabelDelegate()
-{
-
-}
-
 QWidget* QLabelDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex &index) const
 {
     if (index.data().canConvert(QMetaType::QString))

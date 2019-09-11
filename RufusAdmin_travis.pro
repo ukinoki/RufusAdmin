@@ -53,21 +53,23 @@ linux-g++ {
 }
 
 SOURCES += \
-        main.cpp \
-        rufusadmin.cpp \
+	main.cpp \
+    rufusadmin.cpp \
     importdocsexternesthread.cpp \
     utils.cpp \
     gbl_datas.cpp \
+    qlabeldelegate.cpp \
     flags.cpp
 
 HEADERS += \
-        rufusadmin.h \
+    rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \
     utils.h \
     gbl_datas.h \
     log.h \
     icons.h \
+    qlabeldelegate.h \
     flags.h
 
 FORMS += \
