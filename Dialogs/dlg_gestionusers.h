@@ -100,12 +100,21 @@ private:
     QStringList             gListBanques;
     UpDialog                *gAskMDP;
     void                    ActualiseRsgnmtBanque(bool soccomptable);
+    void                    Annulation();
     bool                    AfficheParamUser(int idUser);
     void                    CalcListitemsCompteActescomboBox(User *usr);
     void                    CalcListitemsCompteComptacomboBox(User *usr, bool soccomptable);
     void                    CalcListitemsEmployeurcomboBox(int iduser);
     void                    DefinitLesVariables();
+    void                    EnregistreNouvMDP();
+    void                    EnregistreNouvUser();
+    void                    EnregistreUser();
     bool                    ExisteEmployeur(int iduser);
+    void                    FermeFiche();
+    void                    GestionComptes();
+    void                    GestionLieux();
+    void                    ModifMDP();
+    void                    RegleAffichage();
     void                    RemplirTableWidget();
     void                    ReconstruitListeLieuxExercice();
     bool                    VerifFiche();
@@ -116,18 +125,6 @@ private:
     void                    CreerUser();
     void                    ModifUser();
     void                    SupprUser();
-
-private slots:
-    void                    Slot_Annulation();
-    void                    Slot_EnableOKpushButton();
-    void                    Slot_EnregistreNouvMDP();
-    void                    Slot_EnregistreUser();
-    void                    Slot_FermeFiche();
-    void                    Slot_GestionComptes();
-    void                    Slot_GestLieux();
-    void                    Slot_ModifMDP();
-    void                    Slot_RegleAffichage();
-    void                    Slot_EnregistreNouvUser();
 };
 
 #endif // DLG_gestionusers_H

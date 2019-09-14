@@ -3,18 +3,10 @@
 #--------------------
 INCLUDEPATH += $$PWD
 
-FORMS += \
-    $$PWD/villecpwidget.ui \
-    $$PWD/widgtono.ui
+FORMS +=
 
 HEADERS += \
-    $$PWD/playercontrols.h \
-    $$PWD/villecpwidget.h \
-    $$PWD/widgetbuttonframe.h \
-    $$PWD/widgtono.h
+    $$PWD/widgetbuttonframe.h
 
 SOURCES += \
-    $$PWD/playercontrols.cpp \
-    $$PWD/villecpwidget.cpp \
-    $$PWD/widgetbuttonframe.cpp \
-    $$PWD/widgtono.cpp
+    $$PWD/widgetbuttonframe.cpp

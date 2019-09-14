@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("11-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("14-09-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -339,10 +339,12 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->MessageupLabel->setText("");
 
     ImportDocsExtThread = new ImportDocsExternesThread(m_idadmindocs, m_idlieuexeercice, db->getMode() != Utils::Distant);
-    connect(ImportDocsExtThread,    SIGNAL(emitmsg(QStringList, int, bool)),    this,       SLOT(AfficheMessageImport(QStringList, int, bool)));
+    connect(ImportDocsExtThread,        QOverload<QStringList, int, bool>::of(&ImportDocsExternesThread::emitmsg),
+                                                            this,       &RufusAdmin::AfficheMessageImport);
     if (m_utiliseTCP)
-        connect(ImportDocsExtThread,SIGNAL(emitmsg(QString)),                   TCPServer,  SLOT(envoyerATous(QString)));
-    connect(&t_timer,                   &QTimer::timeout,                           this,       &RufusAdmin::ListeAppareils);
+        connect(ImportDocsExtThread,    QOverload<QString>::of(&ImportDocsExternesThread::emitmsg),
+                                                            TCPServer,  [=] (QString msg) {TCPServer->envoyerATous(msg);});
+    connect(&t_timer,                   &QTimer::timeout,   this,       &RufusAdmin::ListeAppareils);
     t_timer             .setInterval(5000);
     ImportDocsExternes();
 
@@ -967,7 +969,7 @@ void RufusAdmin::Remplir_Table()
         line4->setFocusPolicy(Qt::NoFocus);
         line4->setStyleSheet("UpLineEdit {background-color:white; border: 0px solid rgb(150,150,150);border-radius: 0px;}"
                               "UpLineEdit:focus {border: 0px solid rgb(164, 205, 255);border-radius: 0px;}");
-        connect(line4,                    SIGNAL(TextModified(QString)),         this,   SLOT(Slot_EnregDossierStockageApp(QString)));
+        connect(line4,  &UpLineEdit::TextModified,   this,   &RufusAdmin::EnregDossierStockageApp);
         ui->AppareilsConnectesupTableWidget->setCellWidget(i,col,line4);
 
         col++; //5                                                                    // bouton
@@ -986,7 +988,7 @@ void RufusAdmin::Remplir_Table()
         l->addWidget(dossbouton);
         widg->setLayout(l);
         ui->AppareilsConnectesupTableWidget->setCellWidget(i,col,widg);
-        connect(dossbouton,       SIGNAL(clicked(bool)), this   , SLOT(Slot_ChoixDossierStockageApp()));
+        connect(dossbouton, &QPushButton::clicked,  this,   &RufusAdmin::ChoixDossierStockageApp);
 
         ui->AppareilsConnectesupTableWidget->setRowHeight(i,int(fm.height()*1.3));
     }
@@ -1069,7 +1071,7 @@ void RufusAdmin::ChoixButtonFrame()
     }
 }
 
-void RufusAdmin::Slot_ChoixDossierStockageApp()
+void RufusAdmin::ChoixDossierStockageApp()
 {
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
     QString req = "select TitreExamen, NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->iD());
@@ -1136,7 +1138,7 @@ void RufusAdmin::ModifDirImagerie()
     }
 }
 
-void RufusAdmin::Slot_EnregDossierStockageApp(QString dir)
+void RufusAdmin::EnregDossierStockageApp(QString dir)
 {
     UpLineEdit *line    = dynamic_cast<UpLineEdit*>(sender());
     if (line==Q_NULLPTR) return;

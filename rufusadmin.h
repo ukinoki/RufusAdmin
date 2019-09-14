@@ -119,6 +119,7 @@ private:
     WidgetButtonFrame           *wdg_buttonframe;
     User                        *UserAdmin;
 
+    void                        AfficheMessageImport(QStringList listmsg, int pause, bool bottom=true);
     bool                        AutresPostesConnectes();
     int                         DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
@@ -128,6 +129,7 @@ private:
     void                        AskAppareil();
     void                        CalcExporteDocs();
     void                        ChoixButtonFrame();
+    void                        ChoixDossierStockageApp();
     void                        ChoixMenuSystemTray(QString txt);
     void                        ConnexionBase();
     QStringList                 DecomposeScriptSQL(QString nomficscript);
@@ -137,6 +139,7 @@ private:
     QString                     getDossierDocuments(QString Appareil);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
     void                        EffaceMessage(int pause = 1000);
+    void                        EnregDossierStockageApp(QString dir);
     void                        EnregistreNouvMDPAdmin();
     void                        GestionBanques();
     void                        GestionMotifs();
@@ -168,11 +171,6 @@ private:
     void                        DisconnectTimerInactive();
 
     void                        ExporteDocs();
-private slots:
-    void                        AfficheMessageImport(QStringList listmsg, int pause, bool bottom=true);
-    void                        Slot_ChoixDossierStockageApp();
-    void                        Slot_EnregDossierStockageApp(QString dir);
-
 
     //--------------------------------------------------------------------------------------------------------
     // les sauvegardes

@@ -40,11 +40,6 @@ public:
     Banques *banques;                   //!< toutes les banques
     Motifs *motifs;                     //!< tous les motifs d'actes
     PostesConnectes *postesconnectes;   //!> tous les postes connectes
-
-signals:
-
-
-public slots:
 };
 
 #endif // GBL_DATAS_H

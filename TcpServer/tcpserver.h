@@ -37,7 +37,6 @@ public:
     QString             ListeSockets();
     void                setId(int id);
     void                envoyerA(int iduser, QString msg);                                  /* envoi d'un message sur un QTcpSocket en particulier */
-public slots:
     void                envoyerATous(QString msg, qintptr emetteurorigin = 0);              /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
 
 private:

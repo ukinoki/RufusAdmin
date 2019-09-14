@@ -25,15 +25,15 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
-    db                      = DataBase::I();
-    m_mode                   = Modifier;
-    m_MDPverified             = mdpverified;
+    db                  = DataBase::I();
+    m_mode              = Modifier;
+    m_MDPverified       = mdpverified;
 
-    m_idlieu                 = idlieu;
+    m_idlieu            = idlieu;
 
-    m_nouvMDP        = "nouv";
-    m_ancMDP         = "anc";
-    m_confirmMDP     = "confirm";
+    m_nouvMDP           = "nouv";
+    m_ancMDP            = "anc";
+    m_confirmMDP        = "confirm";
 
     m_loginledit        = "LoginupLineEdit";
     m_MDPledit          = "MDPupLineEdit";
@@ -77,41 +77,42 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
 
     ui->ModifMDPUserupLabel->setToolTip(tr("Modifier le mot de passe"));
 
-    connect(ui->AnnulupSmallButton,             SIGNAL(clicked(bool)),                  this,   SLOT(Slot_Annulation()));
-    connect(ui->OKupSmallButton,                SIGNAL(clicked(bool)),                  this,   SLOT(Slot_EnregistreUser()));
-    connect(ui->OPHupRadioButton,               SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->OrthoptistupRadioButton,        SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->AutreSoignantupRadioButton,     SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->AutreNonSoignantupRadioButton,  SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->SecretaireupRadioButton,        SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->ComptaLiberalupRadioButton,     SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->ComptaNoLiberalupRadioButton,   SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->ComptaRemplaupRadioButton,      SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->NoComptaupRadioButton,          SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->OPTAMupRadioButton,             SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->ResponsableupRadioButton,       SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->ResponsableLes2upRadioButton,   SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->AssistantupRadioButton,         SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->SocieteComptableupRadioButton,  SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->GererCompteuppushButton,        SIGNAL(clicked(bool)),                  this,   SLOT(Slot_GestionComptes()));
-    connect(ui->InactivUsercheckBox,            SIGNAL(clicked(bool)),                  this,   SLOT(Slot_EnableOKpushButton()));
-    connect(ui->CotationupRadioButton,          SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->AGAupRadioButton,               SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->MedecincheckBox,                SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->ModifMDPUserupLabel,            SIGNAL(clicked(int)),                   this,   SLOT(Slot_ModifMDP()));
-    connect(ui->Secteur1upRadioButton,          SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->Secteur2upRadioButton,          SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->Secteur3upRadioButton,          SIGNAL(clicked(bool)),                  this,   SLOT(Slot_RegleAffichage()));
-    connect(ui->GestLieuxpushButton,            SIGNAL(clicked(bool)),                  this,   SLOT(Slot_GestLieux()));
+    connect(ui->AnnulupSmallButton,             &QPushButton::clicked,      this,   &dlg_gestionusers::Annulation);
+    connect(ui->OKupSmallButton,                &QPushButton::clicked,      this,   &dlg_gestionusers::EnregistreUser);
+    connect(ui->OPHupRadioButton,               &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->OrthoptistupRadioButton,        &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AutreSoignantupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AutreNonSoignantupRadioButton,  &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->SecretaireupRadioButton,        &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ComptaLiberalupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ComptaNoLiberalupRadioButton,   &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ComptaRemplaupRadioButton,      &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->NoComptaupRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->OPTAMupRadioButton,             &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ResponsableupRadioButton,       &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ResponsableLes2upRadioButton,   &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AssistantupRadioButton,         &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->SocieteComptableupRadioButton,  &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->GererCompteuppushButton,        &QPushButton::clicked,      this,   &dlg_gestionusers::GestionComptes);
+    connect(ui->InactivUsercheckBox,            &QCheckBox::clicked,        this,   [=] {ui->OKupSmallButton->setEnabled(true);});
+    connect(ui->CotationupRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AGAupRadioButton,               &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->MedecincheckBox,                &QCheckBox::clicked,        this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ModifMDPUserupLabel,            &UpLabel::clicked,          this,   &dlg_gestionusers::ModifMDP);
+    connect(ui->Secteur1upRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->Secteur2upRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->Secteur3upRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->GestLieuxpushButton,            &QPushButton::clicked,      this,   &dlg_gestionusers::GestionLieux);
 
-    connect(CloseButton,                        SIGNAL(clicked(bool)),                  this,   SLOT(Slot_FermeFiche()));
-    connect(wdg_buttonframe,                    &WidgetButtonFrame::choix,              this,   &dlg_gestionusers::ChoixButtonFrame);
+    connect(CloseButton,                        &QPushButton::clicked,      this,   &dlg_gestionusers::FermeFiche);
+    connect(wdg_buttonframe,                    &WidgetButtonFrame::choix,  this,   &dlg_gestionusers::ChoixButtonFrame);
     QList<UpLineEdit*> listline  = findChildren<UpLineEdit*>();
     for (int i=0; i<listline.size(); i++)
-        connect(listline.at(i),                 SIGNAL(textEdited(QString)),            this,   SLOT(Slot_EnableOKpushButton()));
+        connect(listline.at(i),                 &QLineEdit::textEdited,     this,   [=] {ui->OKupSmallButton->setEnabled(true);});
     QList<UpComboBox*> listcombo     = findChildren<UpComboBox*>();
     for (int i=0; i<listcombo.size(); i++)
-        connect(listcombo.at(i),                SIGNAL(currentIndexChanged(int)),       this,   SLOT(Slot_EnableOKpushButton()));
+        connect(listcombo.at(i),                QOverload<int>::of(&QComboBox::currentIndexChanged),
+                                                                            this,   [=] {ui->OKupSmallButton->setEnabled(true);});
     QList<UpRadioButton*> listbutton = findChildren<UpRadioButton*>();
     for (int i=0; i<listbutton.size(); i++)
     {
@@ -126,12 +127,12 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
         */
         //qDebug() << listbutton.at(i)->objectName();
         //listbutton.at(i)->setToggleable(false); // pour contourner un bug d'affichage de Qt...
-        connect(listbutton.at(i),               SIGNAL(clicked(bool)),                  this,   SLOT(Slot_EnableOKpushButton()));
+        connect(listbutton.at(i),               &QPushButton::clicked,      this,   [=] {ui->OKupSmallButton->setEnabled(true);});
     }
 
     RemplirTableWidget();
 
-    Slot_RegleAffichage();
+    RegleAffichage();
 
     dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
 
@@ -179,7 +180,7 @@ void dlg_gestionusers::setConfig(enum UserMode mode)
         wdg_buttonframe->widgButtonParent()     ->setVisible(false);
         ui->ModifMDPUserupLabel             ->setVisible(false);
         ui->Principalframe                  ->setEnabled(true);
-        Slot_RegleAffichage();
+        RegleAffichage();
         break;
     case MODIFUSER:
         ui->FonctiongroupBox                ->setEnabled(false);
@@ -203,7 +204,7 @@ void dlg_gestionusers::setConfig(enum UserMode mode)
     }
 }
 
-void dlg_gestionusers::Slot_Annulation()
+void dlg_gestionusers::Annulation()
 {
     if (m_mode == Creer)
     {
@@ -298,7 +299,7 @@ void dlg_gestionusers::CreerUser()
     label3                      ->setText(tr("Confirmez le mot de passe"));
 
     dlg_ask                        ->AjouteLayButtons(UpDialog::ButtonOK);
-    connect(dlg_ask->OKButton,     SIGNAL(clicked(bool)),  this,   SLOT(Slot_EnregistreNouvUser()));
+    connect(dlg_ask->OKButton,     &QPushButton::clicked,  this,   &dlg_gestionusers::EnregistreNouvUser);
 
     lay                         ->addWidget(label);
     lay                         ->addWidget(Line);
@@ -318,12 +319,7 @@ void dlg_gestionusers::CreerUser()
     delete dlg_ask;
 }
 
-void dlg_gestionusers::Slot_EnableOKpushButton()
-{
-    ui->OKupSmallButton->setEnabled(true);
-}
-
-void dlg_gestionusers::Slot_EnregistreNouvMDP()
+void dlg_gestionusers::EnregistreNouvMDP()
 {
     if (gAskMDP)
     {
@@ -394,7 +390,7 @@ void dlg_gestionusers::Slot_EnregistreNouvMDP()
     }
 }
 
-void dlg_gestionusers::Slot_EnregistreUser()
+void dlg_gestionusers::EnregistreUser()
 {
     if (!VerifFiche()) return;
     QString titre = (ui->OPHupRadioButton->isChecked()?       "'" + Utils::correctquoteSQL(ui->TitreupcomboBox->currentText()) + "'" : "null");
@@ -719,7 +715,7 @@ void dlg_gestionusers::Slot_EnregistreUser()
     ui->OKupSmallButton->setEnabled(false);
 }
 
-void dlg_gestionusers::Slot_EnregistreNouvUser()
+void dlg_gestionusers::EnregistreNouvUser()
 {
     if (!dlg_ask) return;
     QString msg = "";
@@ -783,10 +779,10 @@ void dlg_gestionusers::Slot_EnregistreNouvUser()
     ui->ComptaLiberalupRadioButton    ->setChecked(true);
     ui->CotationupRadioButton         ->setChecked(true);
     ui->Secteur1upRadioButton         ->setChecked(true);
-    Slot_RegleAffichage();
+    RegleAffichage();
 }
 
-void dlg_gestionusers::Slot_FermeFiche()
+void dlg_gestionusers::FermeFiche()
 {
     if (ui->OKupSmallButton->isEnabled())
     {
@@ -819,7 +815,7 @@ void dlg_gestionusers::Slot_FermeFiche()
 // ----------------------------------------------------------------------------------
 // Ouverture de la fiche dlg_gestioncomptes
 // ----------------------------------------------------------------------------------
-void dlg_gestionusers::Slot_GestionComptes()
+void dlg_gestionusers::GestionComptes()
 {
     bool modif      = false;
     bool verifempl  = ui->Employeurwidget->isVisible();
@@ -869,7 +865,7 @@ void dlg_gestionusers::ModifUser()
     m_mode                           = Modifier;
 }
 
-void dlg_gestionusers::Slot_GestLieux()
+void dlg_gestionusers::GestionLieux()
 {
     m_MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), m_MDPverified );
     if (!m_MDPverified)
@@ -890,7 +886,7 @@ void dlg_gestionusers::Slot_GestLieux()
     }
 }
 
-void dlg_gestionusers::Slot_ModifMDP()
+void dlg_gestionusers::ModifMDP()
 {
     gAskMDP    = new UpDialog(this);
     gAskMDP    ->setModal(true);
@@ -934,13 +930,13 @@ void dlg_gestionusers::Slot_ModifMDP()
     for (int i = 0; i<ListTab.size()-1 ; i++ )
         gAskMDP->setTabOrder(ListTab.at(i), ListTab.at(i+1));
     gAskMDP    ->setWindowTitle(tr("Mot de passe utilisateur"));
-    connect(gAskMDP->OKButton,    SIGNAL(clicked(bool)), this, SLOT(Slot_EnregistreNouvMDP()));
+    connect(gAskMDP->OKButton,    &QPushButton::clicked, this, &dlg_gestionusers::EnregistreNouvMDP);
     gAskMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
 
     gAskMDP->exec();
 }
 
-void dlg_gestionusers::Slot_RegleAffichage()
+void dlg_gestionusers::RegleAffichage()
 {
     /* Valeurs de soignant
      * 1 = ophtalmo
@@ -995,7 +991,7 @@ void dlg_gestionusers::Slot_RegleAffichage()
         CalcListitemsEmployeurcomboBox(ui->idUseruplineEdit->text().toInt());
         ui->EmployeurcomboBox->setCurrentIndex(0);
     }
-    Slot_EnableOKpushButton();
+    ui->OKupSmallButton->setEnabled(true);
 }
 
 void dlg_gestionusers::SupprUser()
@@ -1424,7 +1420,7 @@ void dlg_gestionusers::ReconstruitListeLieuxExercice()
                     db->StandardSQL("insert into " TBL_JOINTURESLIEUX "(iduser, idlieu) values (" + ui->idUseruplineEdit->text() + ", " + QString::number(idlieu) + ")");
                 }
             }
-            Slot_EnableOKpushButton();
+            ui->OKupSmallButton->setEnabled(true);
         });
         ui->AdressupTableWidget->setCellWidget(i,0,buttn);
 
