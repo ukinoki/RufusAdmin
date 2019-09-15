@@ -32,6 +32,7 @@ Datas::Datas()
     motifs          = new Motifs();
     users           = new Users();
     postesconnectes = new PostesConnectes();
+    sites           = new Sites();
 }
 
 

@@ -22,8 +22,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_banques.h"
 #include "cls_comptes.h"
 #include "cls_motifs.h"
-#include <cls_users.h>
+#include "cls_users.h"
 #include "cls_postesconnectes.h"
+#include "cls_sites.h"
 
 class Datas : public QObject
 {
@@ -40,6 +41,7 @@ public:
     Banques *banques;                   //!< toutes les banques
     Motifs *motifs;                     //!< tous les motifs d'actes
     PostesConnectes *postesconnectes;   //!> tous les postes connectes
+    Sites *sites;                       //!< Les lieux de travail
 };
 
 #endif // GBL_DATAS_H
