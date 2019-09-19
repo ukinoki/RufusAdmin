@@ -621,55 +621,11 @@ void Utils::cleanfolder(const QString DirPath)
 double Utils::mmToInches(double mm )  { return mm * 0.039370147; }
 
 
-//---------------------------------------------------------------------------------
-// Calcul de la formule de refraction
-//---------------------------------------------------------------------------------
-QString Utils::CalculeFormule(QMap<QString,QVariant> Mesure,  QString Cote)
+QString Utils::PrefixePlus(double Dioptr)                          // convertit en QString signé + ou - les valeurs de dioptries issues des appareils de mesure
 {
-        QString mSphere;
-        QString mCyl;
-        QString mAxe;
-        QString mAdd;
-        if (Cote == "D")
-        {
-            mSphere   = PrefixePlus(Mesure["SphereOD"].toString());
-            mCyl      = PrefixePlus(Mesure["CylOD"].toString());
-            mAxe      = QString::number(Mesure["AxeOD"].toInt());
-            mAdd      = PrefixePlus(Mesure["AddOD"].toString());
-        }
-        else if (Cote == "G")
-        {
-            mSphere   = PrefixePlus(Mesure["SphereOG"].toString());
-            mCyl      = PrefixePlus(Mesure["CylOG"].toString());
-            mAxe      = QString::number(Mesure["AxeOG"].toInt());
-            mAdd      = PrefixePlus(Mesure["AddOG"].toString());
-        }
-        else return "";
-        QString Resultat;
-        if (QLocale().toDouble(mCyl) != 0.00 && QLocale().toDouble(mSphere) != 0.00)
-            Resultat = mSphere + " (" + mCyl + QObject::tr(" à ") + mAxe + "°)" ;
-        if (QLocale().toDouble(mCyl) == 0.00 && QLocale().toDouble(mSphere) != 0.00)
-            Resultat = mSphere ;
-        if (QLocale().toDouble(mCyl) != 0.00 && QLocale().toDouble(mSphere) == 0.00)
-            Resultat = mCyl + QObject::tr(" à ") + mAxe + "°" ;
-        if (QLocale().toDouble(mCyl) == 0.00 && QLocale().toDouble(mSphere) == 0.00)
-            Resultat = QObject::tr("plan");
-        if (QLocale().toDouble(mAdd) > 0.00)
-            Resultat += " add." + mAdd + " VP" ;
-        return Resultat;
-}
-
-QString Utils::PrefixePlus(QString Dioptr)                          // convertit en QString signé + ou - les valeurs de dioptries issues des appareils de mesure
-{
-    double i = Dioptr.toDouble();
-    if (Dioptr != "")
-        return (i>0 ?
-                    "+" + QLocale().toString(Dioptr.toDouble(),'f',2)
-                    :
-                    QLocale().toString(Dioptr.toDouble(),'f',2)
-                    );
-    else
+    if  (Dioptr == 0.0)
         return "";
+    return (Dioptr > 0 ? "+" : "") + QLocale().toString(Dioptr,'f',2);
 }
 
 /*!

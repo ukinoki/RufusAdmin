@@ -358,14 +358,13 @@ bool dlg_GestionLieux::ValidationFiche()
 
 void dlg_GestionLieux::ReconstruitModel()
 {
-    QMap<int, Site*> *listsites = Datas::I()->sites->sites();
     m_tabmodel = dynamic_cast<QStandardItemModel*>(wdg_bigtable->model());
     if (m_tabmodel != Q_NULLPTR)
         m_tabmodel->clear();
     else
         m_tabmodel = new QStandardItemModel;
 
-    foreach (Site* sit, listsites->values() )
+    foreach (Site* sit, *Datas::I()->sites->sites())
     {
         UpStandardItem *pitem0 = new UpStandardItem(sit->nom()==""? tr("non défini") : sit->nom());
         pitem0->setitem(sit);

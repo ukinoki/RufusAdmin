@@ -24,7 +24,7 @@ class Refraction : public Item
 {
     Q_OBJECT
 public:
-    explicit Refraction(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
+    explicit Refraction(QJsonObject data = QJsonObject(), QObject *parent = Q_NULLPTR);
     enum Mesure {Fronto, Autoref, Acuite, Prescription, NoMesure};      Q_ENUM(Mesure)
     enum Distance {Loin, Pres, AllDistance, Inconnu};                   Q_ENUM(Distance)
     enum Oeil {Droit, Gauche, Les2};                                    Q_ENUM(Oeil)
@@ -73,7 +73,7 @@ private:
     Oeil m_oeil;                    //!> l'oeil pour lequel les verres sont prescrits
     int m_monture;                  //!> le nombre de montures
     bool m_isverreteinte;           //!> les verres sont teintés
-    int m_ecartIP;                  //!> ecart interpuppilaire
+    int m_ecartIP = 0;              //!> ecart interpuppilaire
 
 public:
     int idpat() { return m_idpat; }                             //!> l'id du patient
@@ -88,7 +88,7 @@ public:
     int axecylindreOD() { return m_axecylindreOD; }             //!> axe OD
     QString avlOD() { return m_avlOD; }                         //!> acuité de loin OD
     double addVPOD() { return m_addVPOD; }                      //!> addition de près OD
-    QString avpPOD() { return m_avpPOD; }                       //!> acuité de près OD
+    QString avpOD() { return m_avpPOD; }                        //!> acuité de près OD
     double prismeOD() { return m_prismeOD; }                    //!> prismeOD
     int baseprismeOD() { return m_baseprismeOD; }               //!> base prisme OD en degré
     QString baseprismetextOD() { return m_baseprismetextOD; }   //!> base prisme OD en texte (nasal, temporal, supérieur, inférieur
@@ -103,7 +103,7 @@ public:
     int axecylindreOG() { return m_axecylindreOG; }             //!> axe OG
     QString avlOG() { return m_avlOG; }                         //!> acuité de loin OG
     double addVPOG() { return m_addVPOG; }                      //!> addition de près OG
-    QString avpPOG() { return m_avpPOG; }                       //!> acuité de près OG
+    QString avpOG() { return m_avpPOG; }                        //!> acuité de près OG
     double prismeOG() { return m_prismeOG; }                    //!> prismeOG
     int baseprismeOG() { return m_baseprismeOG; }               //!> base prisme OG en degré
     QString baseprismetextOG() { return m_baseprismetextOG; }   //!> base prisme OG en texte (nasal, temporal, supérieur, inférieur
@@ -131,7 +131,7 @@ public:
     void setaxecylindreOD(int axe)          { m_axecylindreOD = axe; }                          //!> axe OD
     void setavlOD(QString txt)              { m_avlOD = txt; }                                  //!> acuité de loin OD
     void setaddVPOD(double val)             { m_addVPOD = val; }                                //!> addition de près OD
-    void setavpPOD(QString txt)             { m_avpPOD = txt; }                                 //!> acuité de près OD
+    void setavpOD(QString txt)              { m_avpPOD = txt; }                                 //!> acuité de près OD
     void setprismeOD(double val)            { m_prismeOD = val; }                               //!> prismeOD
     void setbaseprismeOD(int base)          { m_baseprismeOD = base; }                          //!> base prisme OD en degré
     void setbaseprismetextOD(QString txt)   { m_baseprismetextOD = txt; }                       //!> base prisme OD en texte (nasal, temporal, supérieur, inférieur
@@ -146,7 +146,7 @@ public:
     void setaxecylindreOG(int axe)          { m_axecylindreOG = axe; }                          //!> axe OG
     void setavlOG(QString txt)              { m_avlOG = txt; }                                  //!> acuité de loin OG
     void setaddVPOG(double val)             { m_addVPOG = val; }                                //!> addition de près OG
-    void setavpPOG(QString txt)             { m_avpPOG = txt; }                                 //!> acuité de près OG
+    void setavpOG(QString txt)              { m_avpPOG = txt; }                                 //!> acuité de près OG
     void setprismeOG(double val)            { m_prismeOG = val; }                               //!> prismeOG
     void setbaseprismeOG(int base)          { m_baseprismeOG = base; }                          //!> base prisme OG en degré
     void setbaseprismetextOG(QString txt)   { m_baseprismetextOG = txt; }                       //!> base prisme OG en texte (nasal, temporal, supérieur, inférieur
@@ -162,6 +162,7 @@ public:
     void setisverreteinte(bool logic)       { m_isverreteinte = logic; }                        //!> les verres sont teintés
     void setecartIP(int val)                { m_ecartIP = val; }                                //!> ecart interpuppilaire
 
+    void setdataclean(Refraction::Mesure mesure = Refraction::NoMesure);
 
     static Distance    ConvertDistance(QString distance);
     static Mesure      ConvertMesure(QString Mesure);

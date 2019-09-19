@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("16-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("19-09-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -289,6 +289,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     QString Base = (db->getMode() == Utils::Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
     ui->StockageupLineEdit->setText(m_settings->value(Base + "DossierImagerie").toString());
 
+    Datas::I()->sites->initListe();
     ReconstruitListeLieuxExercice();
     Datas::I()->comptes->initListe();
 
@@ -2427,13 +2428,11 @@ void RufusAdmin::VerifVersionBase()
 void RufusAdmin::ReconstruitListeLieuxExercice()
 {
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
-    disconnect(ui->EmplacementServeurupComboBox,   QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
+    disconnect(ui->EmplacementServeurupComboBox,    QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
     ui->EmplacementServeurupComboBox->clear();
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select idLieu, NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone from " TBL_LIEUXEXERCICE, m_ok);
-    if (m_ok && listlieux.size()>0)
+    foreach (Site* site, *Datas::I()->sites->sites())
     {
-        for (int i=0; i< listlieux.size(); i++)
-            ui->EmplacementServeurupComboBox->addItem(listlieux.at(i).at(1).toString(), listlieux.at(i).at(0));
+        ui->EmplacementServeurupComboBox->addItem(site->nom(), site->id());
         if (m_parametres->idlieupardefaut() > 0)
             ui->EmplacementServeurupComboBox->setCurrentIndex(ui->EmplacementServeurupComboBox->findData(m_parametres->idlieupardefaut()));
         else
@@ -2442,7 +2441,7 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
             EnregistreEmplacementServeur(0);
         }
     }
-    connect(ui->EmplacementServeurupComboBox,   QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
+    connect(ui->EmplacementServeurupComboBox,       QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
     /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
 }
 
