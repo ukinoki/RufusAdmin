@@ -22,7 +22,7 @@ UpSpinBox::UpSpinBox(QWidget *parent) : QSpinBox(parent)
     m_valeuravant = 0;
     installEventFilter(this);
     setKeyboardTracking(false);
-    m_corrigeaxe = true;
+    gCorrigeAxe = true;
     setContextMenuPolicy(Qt::NoContextMenu);
 }
 UpSpinBox::~UpSpinBox()
@@ -49,12 +49,12 @@ bool UpSpinBox::eventFilter(QObject *obj, QEvent *event)
         }
         if(keyEvent->key()==Qt::Key_Up)
         {
-            if (m_corrigeaxe) CorrigeAxe(Up);
+            if (gCorrigeAxe) CorrigeAxe(Up);
             return true;
         }
         if(keyEvent->key()==Qt::Key_Down)
         {
-            if (m_corrigeaxe) CorrigeAxe(Down);
+            if (gCorrigeAxe) CorrigeAxe(Down);
             return true;
         }
     }
@@ -85,7 +85,7 @@ void UpSpinBox::CorrigeAxe(int UpDown)
 
 void UpSpinBox::setAutorCorrigeAxe(bool Autor)
 {
-    m_corrigeaxe = Autor;
+    gCorrigeAxe = Autor;
 }
 
 void UpSpinBox::setvaleuravant(int ValPrec)

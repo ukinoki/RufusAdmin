@@ -18,14 +18,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef IMPORTDOCSEXTERNESTHREAD_H
 #define IMPORTDOCSEXTERNESTHREAD_H
 
-#include <QDir>
-#include <QDateTime>
 #include <QHostInfo>
-#include <QSqlDatabase>
-#include <QSqlQuery>
 #include <QSettings>
 #include <QThread>
-#include <QMessageBox>
 #include "macros.h"
 #include "upmessagebox.h"
 #include "database.h"

@@ -21,11 +21,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QColorDialog>
 #include <QToolTip>
 #include <QVBoxLayout>
-#include <QSqlQuery>
 
 #include "upcheckbox.h"
-#include "uplineedit.h"
-#include "uplabel.h"
 #include "uptablewidget.h"
 #include "widgetbuttonframe.h"
 #include "gbl_datas.h"

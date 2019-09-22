@@ -18,9 +18,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef LOG_H
 #define LOG_H
 
-#include <QDate>
-#include <QDir>
-#include <QString>
 #include "macros.h"
 #include "upmessagebox.h"
 #include "dlg_message.h"

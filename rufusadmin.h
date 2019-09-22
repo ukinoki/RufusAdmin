@@ -63,13 +63,10 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "dlg_paramconnexion.h"
 #include "importdocsexternesthread.h"
 #include "widgetbuttonframe.h"
-#include "utils.h"
 #include "tcpserver.h"
 #include "tcpsocket.h"
 #include "gbl_datas.h"
-#include "cls_item.h"
 #include "database.h"
-#include "cls_user.h"
 #include <QTimer>
 #include "flags.h"
 

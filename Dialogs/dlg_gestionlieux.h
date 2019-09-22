@@ -18,23 +18,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DLG_GESTIONLIEUX_H
 #define DLG_GESTIONLIEUX_H
 
-#include <QApplication>
-#include <QDir>
 #include <QHeaderView>
-#include <QStandardItemModel>
 #include <QTableView>
-#include <QSqlQuery>
-#include "dlg_message.h"
 #include "database.h"
 #include "gbl_datas.h"
-#include "macros.h"
-#include "updialog.h"
-#include "uplabel.h"
-#include "uplineedit.h"
-#include "upmessagebox.h"
 #include "upstandarditem.h"
 #include "widgetbuttonframe.h"
-#include "utils.h"
 
 /* sert à gérer les lieux d'exercice
  * IDENTIQUE POUR RUFUS ET RUFUSADMIN*/

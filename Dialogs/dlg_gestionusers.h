@@ -22,19 +22,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QInputDialog>
 #include <QNetworkInterface>
 #include <QTableWidgetItem>
-#include <QtSql>
-#include <QSqlDatabase>
 
-#include "database.h"
 #include "dlg_gestioncomptes.h"
 #include "dlg_gestionlieux.h"
-#include "uplineedit.h"
-#include "uptextedit.h"
-#include "widgetbuttonframe.h"
-#include "macros.h"
-#include "icons.h"
-#include "utils.h"
-#include "cls_user.h"
 #include "upheaderview.h"
 
 /* sert à gérer les comptes utilisateurs

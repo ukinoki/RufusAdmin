@@ -20,7 +20,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDoubleSpinBox>
 #include <QSound>
-#include <QMessageBox>
 #include <cmath>            // sert à introduire la fonction floor()
 #include "upmessagebox.h"
 
@@ -34,12 +33,12 @@ public:
     double                  valeuravant() const;
     void                    setAutorCorrigeDioptr(bool);
     enum gUpDown            {Up,Down,Near};    Q_ENUM(gUpDown)
-    bool                    m_correctiondioptries;
     void                    CorrigeDioptrie(int UpDownNear);
 
 private:
     bool                    eventFilter(QObject *, QEvent *);
     double                  m_valeuravant;
+    bool                    m_correctiondioptries;
 };
 
 #endif // UPDOUBLESPINBOX_H

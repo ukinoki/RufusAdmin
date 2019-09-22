@@ -59,10 +59,11 @@ private:
     void            closeEvent(QCloseEvent *);
     void            UpdateTabOrder();
     double          m_stageheight = 35;
-    QObject*        odj_data;
+    QObject*        obj_data;
 
 public:
     UpSmallButton   *OKButton, *CancelButton, *PrintButton, *SupprButton, *CloseButton, *EditButton, *RecordButton;
+    void            setEnregPosition(bool);
     void            AjouteLayButtons(Buttons Button=ButtonOK);
     void            AjouteWidgetLayButtons(QWidget *widg, bool ALaFin = true);
     void            setMode(Mode mode);
@@ -72,8 +73,9 @@ public:
     QHBoxLayout*    buttonslayout() const;
     QWidget*        widgetbuttons() const;
     void            setStageCount(double stage =  0);
-    QObject*        data() const { return odj_data; }
-    void            setdata(QObject* data) { odj_data = data; }
+    QObject*        data() const { return obj_data; }
+    void            setdata(QObject* data) { obj_data = data; }
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(UpDialog::Buttons)

@@ -27,7 +27,7 @@ UpDialog::UpDialog(QString NomSettings, QString NomPosition, QWidget *parent) : 
     restoreGeometry(m_settings->value(m_position).toByteArray());
     AjouteLay();
     setStageCount(0);
-     m_mode           = NullMode;
+    m_mode           = NullMode;
 }
 
 UpDialog::UpDialog(QWidget *parent) : QDialog(parent)
@@ -175,12 +175,12 @@ void UpDialog::AjouteWidgetLayButtons(QWidget *widg, bool ALaFin)
 
 void UpDialog::setMode(Mode mode)
 {
-      m_mode = mode;
+     m_mode = mode;
 }
 
 UpDialog::Mode UpDialog::mode() const
 {
-    return  m_mode;
+    return m_mode;
 }
 
 void UpDialog::closeEvent(QCloseEvent *event)
@@ -188,6 +188,11 @@ void UpDialog::closeEvent(QCloseEvent *event)
     if (m_enregistreposition)
         m_settings->setValue(m_position, saveGeometry());
     event->accept();
+}
+
+void UpDialog::setEnregPosition(bool a)
+{
+    m_enregistreposition = a;
 }
 
 void UpDialog::TuneSize(bool fix)

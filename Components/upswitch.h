@@ -15,31 +15,31 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UPSPINBOX_H
-#define UPSPINBOX_H
+#ifndef UPSWITCH_H
+#define UPSWITCH_H
 
-#include <QSpinBox>
-#include <QKeyEvent>
-#include <cmath>            // sert à introduire la fonction floor()
+#include <QFrame>
+#include <QLabel>
+#include <QPixmap>
+#include <QEvent>
+#include "macros.h"
 
-class UpSpinBox : public QSpinBox
+class UpSwitch : public QFrame
 {
     Q_OBJECT
-
 public:
-    explicit        UpSpinBox(QWidget *parent = Q_NULLPTR);
-    ~UpSpinBox();
-    void            setvaleuravant(int ValPrec);
-    int             valeuravant() const;
-    enum UpDown     {Up,Down};      Q_ENUM(UpDown)
-    void            setAutorCorrigeAxe(bool);
-    void            CorrigeAxe(int UpDown);
+    explicit UpSwitch(QWidget *parent = Q_NULLPTR);
+    int     PosSwitch() const;
 
 private:
-    int             m_valeuravant;
-    bool            eventFilter(QObject *, QEvent *);
-    bool            gCorrigeAxe;
+    int     pos;
+    QLabel  *Activelbl;
+    bool    eventFilter(QObject *watched, QEvent *event);
+    void    BasculeSwitch();
+    QLabel  *datelbl, *cursorlbl, *typelbl;
 
+signals:
+    void    Bascule();
 };
 
-#endif // UPSPINBOX_H
+#endif // UPSWITCH_H

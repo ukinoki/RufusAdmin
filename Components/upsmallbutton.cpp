@@ -17,6 +17,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "upsmallbutton.h"
 #include "icons.h"
+#include "macros.h"
 
 
 UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
@@ -31,9 +32,7 @@ UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
     m_style             = NOBUTTON;
     m_luggage            = -1;
     m_tooltipmsg         = "";
-    setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
-        "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
-        "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
+    setStyleSheet(STYLE_UPSMALLBUTTON);
 }
 UpSmallButton::UpSmallButton(QString text, QWidget *parent) : UpSmallButton(parent)
 {
@@ -46,14 +45,14 @@ UpSmallButton::~UpSmallButton()
 
 void UpSmallButton::AfficheToolTip()
 {
-    if (m_tooltipmsg != "" && (isEnabled() || m_AfficheToolTipMemeSiDisabled))
+    if (m_tooltipmsg != "" && (isEnabled() || AfficheToolTipMemeSiDisabled))
         QToolTip::showText(cursor().pos(),m_tooltipmsg);
 }
 
 void UpSmallButton::setImmediateToolTip(QString Msg, bool affichettipmemesidisabled)
 {
     m_tooltipmsg = Msg;
-    m_AfficheToolTipMemeSiDisabled = affichettipmemesidisabled;
+    AfficheToolTipMemeSiDisabled = affichettipmemesidisabled;
 }
 
 void UpSmallButton::setUpButtonStyle(enum StyleBouton Style)
@@ -96,9 +95,7 @@ void UpSmallButton::setText(QString txt)
                             même si txt = "", ce qui entraîne alors obligatoirement le changement de style du bouton*/
     setFocusPolicy(Qt::StrongFocus);
     setFixedHeight(45);
-    setStyleSheet("UpSmallButton {border-style: none; margin: 3px 3px 3px 3px;}"
-        "UpSmallButton:pressed {background-color: rgb(205, 205, 205);}"
-        "UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}");
+    setStyleSheet(STYLE_UPSMALLBUTTON);
 }
 
 void UpSmallButton::setdata(QVariant var)

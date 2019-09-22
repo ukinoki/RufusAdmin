@@ -44,12 +44,12 @@ public:
     void        setImmediateToolTip(QString Msg, bool  affichettipmemesidisabled = false);
 
 private:
-    StyleBouton m_style;
     bool        eventFilter(QObject *obj, QEvent *event)  ;
     int         m_id;
+    StyleBouton m_style;
     QVariant    m_luggage;
     void        AfficheToolTip();
-    bool        m_AfficheToolTipMemeSiDisabled = false;
+    bool        AfficheToolTipMemeSiDisabled = false;
     QString     m_tooltipmsg;
 
 signals:

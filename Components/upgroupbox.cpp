@@ -16,12 +16,11 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upgroupbox.h"
-#include "macros.h"
 
 UpGroupBox::UpGroupBox(QWidget *parent) : QGroupBox(parent)
 {
     installEventFilter(this);
-    setStyleSheet(UPGROUBOXINACTIVE);
+    setStyleSheet(STYLE_UPGROUBOXINACTIVE);
 }
 
 bool UpGroupBox::eventFilter(QObject *obj, QEvent *event)           //!> ce code ne marche pas et provoque un plantage sous MacOS à partir de Qt5.10 - pas sous Linux (XCode?)
@@ -35,13 +34,13 @@ bool UpGroupBox::eventFilter(QObject *obj, QEvent *event)           //!> ce code
     {
         QWidget *widg = dynamic_cast<QWidget *>(obj);
         if (widg!=Q_NULLPTR)
-            setStyleSheet(UPGROUBOXACTIVE);
+            setStyleSheet(STYLE_UPGROUBOXACTIVE);
     }
     else if (event->type() == QEvent::FocusOut )
     {
         QWidget *widg = dynamic_cast<QWidget *>(obj);
         if (widg!=Q_NULLPTR)
-            setStyleSheet(UPGROUBOXINACTIVE);
+            setStyleSheet(STYLE_UPGROUBOXINACTIVE);
     }
     return QWidget::eventFilter(obj, event);
 }

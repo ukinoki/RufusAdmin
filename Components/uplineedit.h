@@ -34,8 +34,8 @@ public:
     int         Row() const;
     void        setiD(int m_id);
     int         iD() const;
-    int         Column() const;
     void        setColumn(int val);
+    int         Column() const;
     void        setdatas(QVariant data);
     QVariant    datas() const;
     void        setvaleuravant(QString valprec);

@@ -20,13 +20,11 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QMessageBox>
 #include <QNetworkInterface>
-#include <QSqlDatabase>
 #include <QtSql>
 #include "macros.h"
 #include "upmessagebox.h"
 #include "database.h"
 #include "icons.h"
-#include "utils.h"
 
 /* Cette classe sert à paramétrer la connexion au serveur
  * DIFFERENTE POUR RUFUS ET RUFUSADMIN
