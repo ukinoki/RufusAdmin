@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("22-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("27-09-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -141,32 +141,32 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(m_idadmindocs) + " and idlieu = " + QString::number(m_idlieuexeercice));
 
     // 5 mettre en place le TcpSocket
-    m_IPadress                      = Utils::getIpAdress();
-    m_macAdress                  = Utils::getMACAdress();
-    m_utiliseTCP = (m_IPadress!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
-    flags                       = Flags::I();
+    m_IPadress      = Utils::getIpAdress();
+    m_macAdress     = Utils::getMACAdress();
+    m_utiliseTCP    = (m_IPadress!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
+    flags           = Flags::I();
     if (m_utiliseTCP)
     {
-        TCPServer                   = TcpServer::I();
-        TCPServer                   ->setId(m_idadmindocs);
-        connect(TCPServer,          &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
-        TCPServer                   ->start();
+        TCPServer           = TcpServer::I();
+        TCPServer           ->setId(m_idadmindocs);
+        connect(TCPServer,  &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
+        TCPServer           ->start();
     }
 
-    m_flagcorrespondants        = flags->flagCorrespondants();
-    m_flagmessages              = flags->flagMessages();
-    m_flagsalledattente         = flags->flagSalleDAttente();
+    m_flagcorrespondants    = flags->flagCorrespondants();
+    m_flagmessages          = flags->flagMessages();
+    m_flagsalledattente     = flags->flagSalleDAttente();
 
-    t_timerSalDatCorrespMsg      = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants et de l'arrivée de nouveaux messages utilisé par
+    t_timerSalDatCorrespMsg = new QTimer(this);     /* scrutation des modifs de la salle d'attente et des correspondants et de l'arrivée de nouveaux messages utilisé par
                                                            pour verifier les modifications faites par les postes distants
                                                         */
-    t_timerVerifVerrou           = new QTimer(this);     // utilisé par le TcpServer pour vérifier l'absence d'utilisateurs déconnectés dans la base
+    t_timerVerifVerrou      = new QTimer(this);     // utilisé par le TcpServer pour vérifier l'absence d'utilisateurs déconnectés dans la base
 
-    t_timerUserConnecte          = new QTimer(this);     // mise à jour de la connexion à la base de données
-    t_timerSupprDocs             = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
-    t_timerVerifDivers           = new QTimer(this);     // vérification du poste importateur des documents et e la version de la base
-    t_timerSupprDocs             = new QTimer(this);     // verification des documents à supprimer
-    t_timerProgressBar           = new QTimer(this);     // progression de la progressbar - quand la progressbar est au maximum, la fiche est cachée
+    t_timerUserConnecte     = new QTimer(this);     // mise à jour de la connexion à la base de données
+    t_timerSupprDocs        = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
+    t_timerVerifDivers      = new QTimer(this);     // vérification du poste importateur des documents et e la version de la base
+    t_timerSupprDocs        = new QTimer(this);     // verification des documents à supprimer
+    t_timerProgressBar      = new QTimer(this);     // progression de la progressbar - quand la progressbar est au maximum, la fiche est cachée
 
     setPosteImportDocs(); // on prend la place d'importateur des documents dans les utilisateurs connectés
     VerifPosteImport();
@@ -191,11 +191,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->MiseEnVeilleprogressBar->setMaximum(m_dureeVeille);
     ui->MiseEnVeilleprogressBar->setInvertedAppearance(true);
     connect(t_timerProgressBar, &QTimer::timeout, this, [=] {ui->MiseEnVeilleprogressBar->setValue(ui->MiseEnVeilleprogressBar->value()-1);});
-    t_timerProgressBar->start(1);
-    t_timerSupprDocs->start(60000);// "toutes les 60 secondes"
-    t_timerDocsAExporter = new QTimer(this);
-    t_timerDocsAExporter->start(60000);// "toutes les 60 secondes"
-
+    t_timerProgressBar      ->start(1);
+    t_timerSupprDocs        ->start(60000);     // "toutes les 60 secondes"
+    t_timerDocsAExporter    = new QTimer(this);
+    t_timerDocsAExporter    ->start(60000);     // "toutes les 60 secondes"
+    MetAJourLaConnexion();
     ConnectTimers();
 
     connect(ui->ExportImagespushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ExporteDocs);
@@ -204,7 +204,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(ui->GestLieuxpushButton,            &QPushButton::clicked,              this,   &RufusAdmin::GestionLieux);
     connect(ui->GestionMotifspushButton,        &QPushButton::clicked,              this,   &RufusAdmin::GestionMotifs);
     connect(ui->GestUserpushButton,             &QPushButton::clicked,              this,   &RufusAdmin::GestionUsers);
-    connect(ui->InitMDPAdminpushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ModifMDP);;
+    connect(ui->InitMDPAdminpushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ModifMDP);
     connect(ui->StockageupPushButton,           &QPushButton::clicked,              this,   &RufusAdmin::ModifDirImagerie);
     connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(m_socketStatut, 20000);});
     // MAJ Salle d'attente ----------------------------------------------------------------------------------
@@ -1835,6 +1835,13 @@ void RufusAdmin::MasqueAppli()
 
 void RufusAdmin::MetAJourLaConnexion()
 {
+    int flag = flags->flagUserDistant();
+    if (flag > m_flaguserdistant)
+    {
+        Datas::I()->postesconnectes->initListe();
+        m_flaguserdistant = flag;
+        TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+    }
     QString macadress =  Utils::getMACAdress() + " - " + NOM_ADMINISTRATEURDOCS;
     QString MAJConnexionRequete;
     QList<QVariantList> listusers = db->StandardSelectSQL("select iduser from " TBL_USERSCONNECTES

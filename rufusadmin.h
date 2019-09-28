@@ -92,7 +92,10 @@ private:
     bool                        m_ok;
     int                         m_idadmindocs;
     int                         m_idlieuexeercice;
-    int                         m_flagcorrespondants, m_flagsalledattente, m_flagmessages;
+    int                         m_flagcorrespondants;
+    int                         m_flagsalledattente;
+    int                         m_flagmessages;
+    int                         m_flaguserdistant = 0;
     int                         m_dureeVeille;
     QIcon                       ic_RufusAdmin;
     QMenu                       *trayIconMenu;
