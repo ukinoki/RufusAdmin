@@ -136,6 +136,7 @@ private:
     void                        Edit(QString txt, int delaieffacement=0);
     void                        EnregistreAppareil();
     void                        EnregistreEmplacementServeur(int);
+    void                        EpureLogs(int anciennete = 7);                                            //!> supprime les fichiers de logs antérieurs à J - anciennete jours
     QString                     getDossierDocuments(QString Appareil);
     void                        Message(QString mess, int pause = 1000, bool bottom = true);
     void                        EffaceMessage(int pause = 1000);

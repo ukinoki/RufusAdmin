@@ -55,10 +55,6 @@ public:
             out << timelog << " - " << type << " : " << msg << (infoMsg==""? "" : " : " + infoMsg) << "\n";
             testfile.close();
         }
-        //else UpMessageBox::Watch(Q_NULLPTR, tr("Impossible d'ouvrir le fichier\n") + fileName);
-
-        if( showMessage() )
-            UpMessageBox::Show(Q_NULLPTR, msg, infoMsg);
     }
     static void MSGSOCKET(QString msg, QString infoMsg = "")
     {

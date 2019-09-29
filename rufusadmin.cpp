@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("27-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("29-09-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -152,7 +152,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         connect(TCPServer,  &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         TCPServer           ->start();
     }
-
+    flags->remiseAZeroFlags();
     m_flagcorrespondants    = flags->flagCorrespondants();
     m_flagmessages          = flags->flagMessages();
     m_flagsalledattente     = flags->flagSalleDAttente();
@@ -364,6 +364,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         ProgrammeSQLVideImagesTemp(m_parametres->heurebkup());
 
     installEventFilter(this);
+    EpureLogs();
 }
 
 RufusAdmin::~RufusAdmin()
@@ -1169,6 +1170,20 @@ void RufusAdmin::EnregistreEmplacementServeur(int idx)
     m_parametres->setidlieupardefaut(ui->EmplacementServeurupComboBox->itemData(idx).toInt());
 }
 
+//!> supprime les fichiers de logs antérieurs à J - anciennete jours
+void RufusAdmin::EpureLogs(int anciennete)
+{
+    QDir dirlogs = QDir(QDir::homePath() + DIR_RUFUSADMIN DIR_LOGS);
+    QStringList listfiles = dirlogs.entryList();
+    for (int i=0; i<listfiles.size(); ++i)
+    {
+        QFile file(listfiles.at(i));
+        QDate datefile = QDate::fromString(file.fileName().left(10), "yyyy-MM-dd");
+        if (datefile < QDate::currentDate().addDays(-anciennete))
+            QFile::remove(QDir::homePath() + DIR_RUFUSADMIN DIR_LOGS + "/" + file.fileName());
+    }
+}
+
 void RufusAdmin::EnregistreNouvMDPAdmin()
 {
     if (dlg_askMDP != Q_NULLPTR)
@@ -1836,11 +1851,11 @@ void RufusAdmin::MasqueAppli()
 void RufusAdmin::MetAJourLaConnexion()
 {
     int flag = flags->flagUserDistant();
+    bool majlistusers = false;
     if (flag > m_flaguserdistant)
     {
-        Datas::I()->postesconnectes->initListe();
         m_flaguserdistant = flag;
-        TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+        majlistusers = true;
     }
     QString macadress =  Utils::getMACAdress() + " - " + NOM_ADMINISTRATEURDOCS;
     QString MAJConnexionRequete;
@@ -1893,7 +1908,13 @@ void RufusAdmin::MetAJourLaConnexion()
             db->StandardSQL("delete from " TBL_USERSCONNECTES " where NomPosteConnecte = '" + listoldusers.at(i).at(1).toString() + "'");
             Message(tr("Le poste ") + Poste + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
         }
+        majlistusers = true;
         TCPServer->envoyerATous(TCPMSG_EnvoieListSocket);
+    }
+    if (majlistusers)
+    {
+        Datas::I()->postesconnectes->initListe();
+        TCPServer->envoyerATous(TCPMSG_MAJListePostes);
     }
 }
 
@@ -2508,6 +2529,7 @@ bool RufusAdmin::VerifBase()
                 {
                     result = 1;
                     UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
+                    db->initParametres();
                 }
                 else
                 {
