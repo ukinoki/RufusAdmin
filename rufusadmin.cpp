@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("30-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-10-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2165,8 +2165,11 @@ void RufusAdmin::RestaureBase()
                     }
                 }
             }
+        }
+        foreach (UpCheckBox *chk, dlg_buprestore->findChildren<UpCheckBox*>())
+        {
             /*! 4b - restauration du fichier ini */
-            else if (chk->accessibleDescription() == "ini")
+            if (chk->accessibleDescription() == "ini")
             {
                 if (chk->isChecked())
                 {
