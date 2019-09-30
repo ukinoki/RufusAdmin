@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("29-09-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("30-09-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -524,6 +524,9 @@ void RufusAdmin::AskBupRestore(bool Restore, QString pathorigin, QString pathdes
         layRssces->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
         dlg_buprestore->dlglayout()->insertLayout(0, layRssces);
     }
+    QDir rootimgvid = QDir(pathorigin);
+    if (rootimgvid.cdUp())
+        pathorigin = rootimgvid.absolutePath();
     if (OKvideos)
     {
         // taille du dossier video ---------------------------------------------------------------------------------------------------------------------------------------
@@ -2267,7 +2270,7 @@ void RufusAdmin::RestaureBase()
                         DirDestVid.removeRecursively();
                         DirDestVid.mkdir(dirdestinationvid);
                     }
-                    if (DirDestVid.exists())
+                    if (!DirDestVid.exists())
                     {
                         QString Msg = tr("le dossier de destination des videos n'existe pas");
                         Message(Msg, 3000, false);
@@ -3255,6 +3258,12 @@ void RufusAdmin::ResumeTCPSocketStatut()
             else
                 statut += "\t" + tr("inconnu") + "\n";
         }
+    }
+    foreach (PosteConnecte *post, *Datas::I()->postesconnectes->postesconnectes())
+    {
+        if(post->isdistant())
+            m_socketStatut += "\t" + Datas::I()->sites->getById(post->idlieu())->nom() + " ---- "
+                    + Datas::I()->users->getLoginById(post->id()) + "\n";
     }
     m_socketStatut = statut;
     emit ModifEdit(m_socketStatut); // déclenche la modification de la fenêtre resumestatut
