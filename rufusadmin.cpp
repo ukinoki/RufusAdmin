@@ -93,9 +93,27 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (!VerifBase())
         exit(0);
 
-    MetAJourLaConnexion();
+    UserAdmin = new User(DataBase::I()->loadAdminData());
+    DataBase::I()->setUserConnected(UserAdmin);
+    // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
+    QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
+                   " where idUser = " + QString::number(UserAdmin->id()) +
+                   " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
+                   " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
+                   " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
+    QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, m_ok);
+    if (listusr2.size()>0)
+    {
+        UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + listusr2.at(0).at(0).toString().remove(" - " NOM_ADMINISTRATEURDOCS), tr("Sortie du programme"));
+        exit(0);
+    }
+    else
+        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(UserAdmin->id()) + " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()));
+
     Datas::I()->sites->initListe();
     DetermineLieuExercice();
+    flags           = Flags::I();
+    MetAJourLaConnexion();
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + Datas::I()->sites->currentsite()->nom() + "</b></font> ");
 
     //recherche de l'idUser du compte AdminDocs
@@ -120,29 +138,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
             db->parametres()->setmdpadmin(mdp);
         }
     }
-    UserAdmin = new User(DataBase::I()->loadAdminData());
-    DataBase::I()->setUserConnected(UserAdmin);
-
-    // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
-    QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
-                   " where idUser = " + QString::number(UserAdmin->id()) +
-                   " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                   " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
-                   " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
-    QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, m_ok);
-    if (listusr2.size()>0)
-    {
-        UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + listusr2.at(0).at(0).toString().remove(" - " NOM_ADMINISTRATEURDOCS), tr("Sortie du programme"));
-        exit(0);
-    }
-    else
-        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(UserAdmin->id()) + " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()));
 
     // 5 mettre en place le TcpSocket
     m_IPadress      = Utils::getIpAdress();
     m_macAdress     = Utils::getMACAdress();
     m_utiliseTCP    = (m_IPadress!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
-    flags           = Flags::I();
     if (m_utiliseTCP)
     {
         TCPServer           = TcpServer::I();
