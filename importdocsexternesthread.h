@@ -25,6 +25,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "upmessagebox.h"
 #include "database.h"
 #include "utils.h"
+#include "gbl_datas.h"
 
 /* Cette classe tourne en tache de fond et importe les documents d'imagerie dans la base de données
  * DIFFERENTE POUR RUFUS ET RUFUSADMIN
@@ -239,7 +240,7 @@ class ImportDocsExternesThread : public QObject
 {
     Q_OBJECT
 public:
-    explicit ImportDocsExternesThread(int iduser, int idlieu, bool local = true);
+    explicit ImportDocsExternesThread(bool local = true);
     void                        RapatrieDocumentsThread(QList<QVariantList> listdocs);
     enum Acces                  {Local, Distant}; Q_ENUM(Acces)
 
@@ -248,8 +249,6 @@ signals:
     void                        emitmsg(QString msg);
 
 private:
-    int                         m_idadmindocs;
-    int                         m_idlieuexercice;
     void                        EchecImport(QString txt);
     bool                        m_encours;
     QString                     m_nomfichierini;

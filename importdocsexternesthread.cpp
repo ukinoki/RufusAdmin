@@ -17,18 +17,16 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "importdocsexternesthread.h"
 
-ImportDocsExternesThread::ImportDocsExternesThread(int iduser, int idlieu, bool local)
+ImportDocsExternesThread::ImportDocsExternesThread(bool local)
 {
-    thread          = new QThread;
+    thread              = new QThread;
     moveToThread(thread);
-    db              = DataBase::I();
-    m_idadmindocs     = iduser;
-    m_idlieuexercice  = idlieu;
-    m_acces           = (local? Local : Distant);
-    m_encours         = false;
+    db                  = DataBase::I();
+    m_acces             = (local? Local : Distant);
+    m_encours           = false;
     m_nomfichierini     = QDir::homePath() + FILE_INI;
-    m_settings    = new QSettings(m_nomfichierini, QSettings::IniFormat);
-    thread          ->start();
+    m_settings          = new QSettings(m_nomfichierini, QSettings::IniFormat);
+    thread              ->start();
 }
 
 void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > listdocs)     // INCORPORATION DES FICHIERS IMAGE DANS LA BASE  =====
@@ -482,17 +480,17 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                                                                " UserEmetteur, lienversfichier, EmisRecu, FormatDoc, idLieu)"
                                                                " values("
                             + QString::number(idimpr) + ", "
-                            + QString::number(m_idadmindocs) + ", "
+                            + QString::number(Datas::I()->users->userconnected()->id()) + ", "
                             + idPatient + ", '"
                             + Typedoc + "', '"
                             + SousTypeDoc + "', '"
                             + Titredoc + "', '"
                             + datestring + " " + QTime::currentTime().toString("HH:mm:ss") + "', "
-                            + QString::number(m_idadmindocs) + ", '"
+                            + QString::number(Datas::I()->users->userconnected()->id()) + ", '"
                             + "/" + m_datetransfer + "/" + NomFileDoc + "', "
                             + "0" + ", '"
                             IMAGERIE "', "
-                            + QString::number(m_idlieuexercice) + ")";
+                            + QString::number(Datas::I()->sites->idcurrentsite()) + ")";
 
                     if(db->StandardSQL(req))
                     {
@@ -546,17 +544,17 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                     // on doit passer par les bindvalue pour incorporer le bytearray dans la requête
                     QHash<QString, QVariant> listbinds;
                     listbinds["idimpression"] =    idimpr;
-                    listbinds["iduser"] =          m_idadmindocs;
+                    listbinds["iduser"] =          Datas::I()->users->userconnected()->id();
                     listbinds["idpat"] =           idPatient;
                     listbinds["typeDoc"] =         Typedoc;
                     listbinds["soustypedoc"] =     SousTypeDoc;
                     listbinds["titre"] =           Titredoc;
                     listbinds["dateimpression"] =  datestring + " " + QTime::currentTime().toString("HH:mm:ss");
-                    listbinds["useremetteur"] =    m_idadmindocs;
+                    listbinds["useremetteur"] =    Datas::I()->users->userconnected()->id();
                     listbinds[formatdoc] =         ba;
                     listbinds["emisrecu"] =        "0";
                     listbinds["formatdoc"] =       IMAGERIE;
-                    listbinds["idlieu"] =          m_idlieuexercice;
+                    listbinds["idlieu"] =          Datas::I()->sites->idcurrentsite();
 
                     if(db->InsertSQLByBinds(TBL_DOCSEXTERNES, listbinds))
                     {

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("01-10-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-10-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -93,14 +93,12 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (!VerifBase())
         exit(0);
 
-    m_idlieuexeercice   = DetermineLieuExercice();
-    m_nomLieuExercice   = "";
-    QList<QVariantList> listlieux = db->StandardSelectSQL("select nomlieu from " TBL_LIEUXEXERCICE " where idlieu = " + QString::number(m_idlieuexeercice), m_ok);
-    m_nomLieuExercice = listlieux.at(0).at(0).toString();
-    ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + m_nomLieuExercice + "</b></font> ");
+    MetAJourLaConnexion();
+    Datas::I()->sites->initListe();
+    DetermineLieuExercice();
+    ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + Datas::I()->sites->currentsite()->nom() + "</b></font> ");
 
     //recherche de l'idUser du compte AdminDocs
-    m_idadmindocs = 0;
     QString req = "select iduser from " TBL_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
     QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok);
     if (listusr.size()==0)
@@ -123,13 +121,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         }
     }
     UserAdmin = new User(DataBase::I()->loadAdminData());
-    m_idadmindocs = UserAdmin->id();
+    DataBase::I()->setUserConnected(UserAdmin);
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
-                   " where idUser = " + QString::number(m_idadmindocs) +
+                   " where idUser = " + QString::number(UserAdmin->id()) +
                    " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                   " and idlieu = " + QString::number(m_idlieuexeercice) +
+                   " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
     QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, m_ok);
     if (listusr2.size()>0)
@@ -138,7 +136,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         exit(0);
     }
     else
-        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(m_idadmindocs) + " and idlieu = " + QString::number(m_idlieuexeercice));
+        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(UserAdmin->id()) + " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()));
 
     // 5 mettre en place le TcpSocket
     m_IPadress      = Utils::getIpAdress();
@@ -148,7 +146,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (m_utiliseTCP)
     {
         TCPServer           = TcpServer::I();
-        TCPServer           ->setId(m_idadmindocs);
+        TCPServer           ->setId(UserAdmin->id());
         connect(TCPServer,  &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         TCPServer           ->start();
     }
@@ -195,7 +193,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     t_timerSupprDocs        ->start(60000);     // "toutes les 60 secondes"
     t_timerDocsAExporter    = new QTimer(this);
     t_timerDocsAExporter    ->start(60000);     // "toutes les 60 secondes"
-    MetAJourLaConnexion();
     ConnectTimers();
 
     connect(ui->ExportImagespushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ExporteDocs);
@@ -272,15 +269,15 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     {
         QString NomDirStockageImagerie = m_parametres->dirimagerie();
         m_settings->setValue("DossierImagerie",NomDirStockageImagerie);
-        setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + m_nomLieuExercice);
+        setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + Datas::I()->sites->currentsite()->nom());
     }
     else if (db->getMode() == Utils::ReseauLocal)
     {
-        setWindowTitle("RufusAdmin - " + tr("Réseau local") + " - " + m_nomLieuExercice);
+        setWindowTitle("RufusAdmin - " + tr("Réseau local") + " - " + Datas::I()->sites->currentsite()->nom());
     }
     else if (db->getMode() == Utils::Distant)
     {
-        setWindowTitle("RufusAdmin - " + tr("Accès distant crypté SSL") + " - " + m_nomLieuExercice);
+        setWindowTitle("RufusAdmin - " + tr("Accès distant crypté SSL") + " - " + Datas::I()->sites->currentsite()->nom());
         ui->Exportframe         ->setVisible(false);
         ui->Diversframe         ->setVisible(false);
     }
@@ -289,7 +286,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     QString Base = (db->getMode() == Utils::Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
     ui->StockageupLineEdit->setText(m_settings->value(Base + "DossierImagerie").toString());
 
-    Datas::I()->sites->initListe();
     ReconstruitListeLieuxExercice();
     Datas::I()->comptes->initListe();
 
@@ -339,7 +335,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::TrayIconMenu);
     ui->MessageupLabel->setText("");
 
-    ImportDocsExtThread = new ImportDocsExternesThread(m_idadmindocs, m_idlieuexeercice, db->getMode() != Utils::Distant);
+    ImportDocsExtThread = new ImportDocsExternesThread(db->getMode() != Utils::Distant);
     connect(ImportDocsExtThread,        QOverload<QStringList, int, bool>::of(&ImportDocsExternesThread::emitmsg),
                                                             this,       &RufusAdmin::AfficheMessageImport);
     if (m_utiliseTCP)
@@ -404,7 +400,7 @@ bool RufusAdmin::AutresPostesConnectes()
 void RufusAdmin::ListeAppareils()
 {
     QString req = "select distinct list.TitreExamen, list.NomAPPareil from " TBL_APPAREILSCONNECTESCENTRE " appcon, " TBL_LISTEAPPAREILS " list"
-          " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(m_idlieuexeercice);
+          " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(Datas::I()->sites->idcurrentsite());
     //qDebug()<< req;
     bool ok;
     QList<QVariantList> listdocs = db->StandardSelectSQL(req, ok);
@@ -419,7 +415,7 @@ void RufusAdmin::closeEvent(QCloseEvent *)
     // on retire Admin de la table des utilisateurs connectés
     QString req = "delete from " TBL_USERSCONNECTES
                   " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                  " and idlieu = " + QString::number(m_idlieuexeercice);
+                  " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
     db->StandardSQL(req);
 }
 
@@ -755,92 +751,90 @@ void RufusAdmin::ConnexionBase()
 /*-----------------------------------------------------------------------------------------------------------------
     -- Détermination du lieu exercice pour la session en cours -------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------*/
-int RufusAdmin::DetermineLieuExercice()
+void RufusAdmin::DetermineLieuExercice()
 {
-    int idLieu = 1;
     if (db->getMode() == Utils::Distant)
     {
-        QString lieuxreq = "select idLieu, NomLieu from " TBL_LIEUXEXERCICE
-                           " where idLieu <> " + QString::number(m_parametres->idlieupardefaut());
-        QList<QVariantList> listlieux = db->StandardSelectSQL(lieuxreq, m_ok);
-        if (listlieux.size()==1)
-            idLieu = listlieux.at(0).at(0).toInt();
-        else if (listlieux.size()>1)
+        QList<Site*> listEtab;
+        foreach (Site *site, *Datas::I()->sites->sites())
         {
-            DisconnectTimerInactive();
-            UpDialog *gAskLieux     = new UpDialog();
-            gAskLieux               ->AjouteLayButtons();
-            QGroupBox*boxlieux      = new QGroupBox();
-            gAskLieux->dlglayout()  ->insertWidget(0,boxlieux);
-            boxlieux                ->setAccessibleName("Parent");
-            boxlieux                ->setTitle(tr("D'où vous connectez-vous?"));
-
-            QFontMetrics fm         = QFontMetrics(qApp->font());
-            int hauteurligne        = int(fm.height()*1.6);
-            boxlieux                ->setFixedHeight(((listlieux.size() + 1)*hauteurligne)+5);
-            QVBoxLayout *vbox       = new QVBoxLayout;
-            for (int i=0; i<listlieux.size(); i++)
-            {
-                UpRadioButton   *pradiobutt = new UpRadioButton(boxlieux);
-                pradiobutt      ->setText(listlieux.at(i).at(1).toString());
-                pradiobutt      ->setAccessibleName(listlieux.at(i).at(0).toString());
-                QString data ("");
-                if (listlieux.at(i).at(1).toString()!="")
-                    data += listlieux.at(i).at(1).toString();
-                if (data == "" )
-                {
-                    data += listlieux.at(i).at(2).toString();
-                    if (listlieux.at(i).at(6).toString()!="")
-                        data += (data != ""? " " : "") + listlieux.at(i).at(6).toString();
-                }
-                if (listlieux.at(i).at(6).toString()!="")
-                    data += (data != ""? " - " : "") + listlieux.at(i).at(6).toString();
-                data = "";
-                if (listlieux.at(i).at(1).toString()!="")
-                    data += listlieux.at(i).at(1).toString();
-                if (listlieux.at(i).at(2).toString()!="")
-                    data += (data != ""? "\n" : "") + listlieux.at(i).at(2).toString();
-                if (listlieux.at(i).at(3).toString()!="")
-                    data += (data != ""? "\n" : "") + listlieux.at(i).at(3).toString();
-                if (listlieux.at(i).at(4).toString()!="")
-                    data += (data != ""? "\n" : "") + listlieux.at(i).at(4).toString();
-                if (listlieux.at(i).at(5).toString()!="")
-                    data += (data != ""? "\n" : "") + listlieux.at(i).at(5).toString();
-                if (listlieux.at(i).at(6).toString()!="")
-                    data += (data != ""? " " : "") + listlieux.at(i).at(6).toString();
-                if (listlieux.at(i).at(7).toString()!="")
-                    data += (data != ""? "\nTel: " : "Tel: ") + listlieux.at(i).at(7).toString();
-                pradiobutt      ->setImmediateToolTip(data);
-                pradiobutt      ->setChecked(i==0);
-                vbox            ->addWidget(pradiobutt);
-            }
-            vbox                ->setContentsMargins(8,0,8,0);
-            boxlieux            ->setLayout(vbox);
-            gAskLieux           ->setModal(true);
-            gAskLieux->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
-            connect(gAskLieux->OKButton,   &QPushButton::clicked,  gAskLieux, &QDialog::accept);
-            gAskLieux->exec();
-            QList<QRadioButton*> listbutt = boxlieux->findChildren<QRadioButton*>();
-            for (int j=0; j<listbutt.size(); j++)
-                if (listbutt.at(j)->isChecked())
-                    idLieu = listbutt.at(j)->accessibleName().toInt();
-            delete gAskLieux;
-            ConnectTimerInactive();
+            if (site->id() != m_parametres->idlieupardefaut())
+            listEtab << site;
         }
+        if (listEtab.size() == 0)
+            return;
+        else if (listEtab.size() == 1)
+        {
+            Datas::I()->sites->setcurrentsite(listEtab.first());
+            return;
+        }
+
+        /* Cas ou le praticien travaille dans plusieur centres
+         * on lui demande de sélectionner le centre où il se trouve au moment de la connexion
+        */
+        DisconnectTimerInactive();
+        UpDialog *gAskLieux     = new UpDialog();
+        gAskLieux               ->AjouteLayButtons();
+        QGroupBox*boxlieux      = new QGroupBox();
+        gAskLieux->dlglayout()  ->insertWidget(0,boxlieux);
+        boxlieux                ->setAccessibleName("Parent");
+        boxlieux                ->setTitle(tr("D'où vous connectez-vous?"));
+        QFontMetrics fm         = QFontMetrics(qApp->font());
+        int hauteurligne        = int(fm.height()*1.6);
+        boxlieux                ->setFixedHeight(((listEtab.size() + 1)*hauteurligne)+5);
+        QVBoxLayout *vbox       = new QVBoxLayout;
+        bool isFirst = true;
+        foreach (Site *etab, listEtab)
+        {
+            UpRadioButton *pradiobutt = new UpRadioButton(boxlieux);
+            pradiobutt->setText(etab->nom());
+            pradiobutt->setitem(etab);
+            QString data("");
+            if( etab->nom().size() )
+                data += etab->nom();
+            if( etab->adresse1().size() )
+                data += (data.size() ? "\n" : "") + etab->adresse1();
+            if( etab->adresse2().size() )
+                data += (data.size() ? "\n" : "") + etab->adresse2();
+            if( etab->adresse3().size() )
+                data += (data.size() ? "\n" : "") + etab->adresse3();
+            if( etab->codePostal() )
+                data += (data.size() ? "\n" : "") + QString::number(etab->codePostal());
+            if( etab->ville().size() )
+                data += (data.size() ? "\n" : "") + etab->ville();
+            if( etab->telephone().size() )
+                data += (data != ""? "\nTel: " : "Tel: ") + etab->telephone();
+            pradiobutt->setImmediateToolTip(data);
+            pradiobutt->setChecked(isFirst);
+            vbox      ->addWidget(pradiobutt);
+            isFirst = false;
+        }
+        vbox                    ->setContentsMargins(8,0,8,0);
+        boxlieux                ->setLayout(vbox);
+        gAskLieux               ->setModal(true);
+        gAskLieux->dlglayout()  ->setSizeConstraint(QLayout::SetFixedSize);
+        connect(gAskLieux->OKButton,   &QPushButton::clicked,  gAskLieux, &UpDialog::accept);
+        gAskLieux->exec();
+        foreach (UpRadioButton * rb, boxlieux->findChildren<UpRadioButton*>())
+            if( rb->isChecked() )
+            {
+                Datas::I()->sites->setcurrentsite(qobject_cast<Site*>(rb->item()));
+                break;
+            }
+        delete gAskLieux;
+        ConnectTimerInactive();
     }
     else
     {
         if (m_parametres->idlieupardefaut()>=1)
-            idLieu = m_parametres->idlieupardefaut();
+            Datas::I()->sites->setcurrentsite(Datas::I()->sites->getById(m_parametres->idlieupardefaut()));
         else
         {
-            QList<QVariantList> listliux = db->StandardSelectSQL("select min(idlieu) from " TBL_LIEUXEXERCICE, m_ok);
-            idLieu = listliux.at(0).at(0).toInt();
-            db->StandardSQL("update " TBL_PARAMSYSTEME " set idLieuParDefaut = " + listliux.at(0).at(0).toString());
-            m_parametres->setidlieupardefaut(idLieu);
+            Datas::I()->sites->setcurrentsite(Datas::I()->sites->sites()->first());
+            db->StandardSQL("update " TBL_PARAMSYSTEME " set idLieuParDefaut = " + QString::number(Datas::I()->sites->idcurrentsite()));
+            m_parametres->setidlieupardefaut(Datas::I()->sites->idcurrentsite());
         }
     }
-    return idLieu;
 }
 
 bool RufusAdmin::eventFilter(QObject *obj, QEvent *event)
@@ -892,7 +886,7 @@ void RufusAdmin::SupprAppareil()
     {
         req = "delete from " TBL_APPAREILSCONNECTESCENTRE " where idAppareil = "
                 + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text()
-                + " and idLieu = " + QString::number(m_idlieuexeercice);
+                + " and idLieu = " + QString::number(Datas::I()->sites->idcurrentsite());
         db->StandardSQL(req);
         m_settings->remove("DossierEchangeImagerie/" + listapps.at(0).at(1).toString());
         Remplir_Table();
@@ -937,7 +931,7 @@ void RufusAdmin::Remplir_Table()
     QString  Remplirtablerequete = "SELECT list.idAppareil, list.TitreExamen, list.NomAppareil, Format"
               " FROM "  TBL_APPAREILSCONNECTESCENTRE " appcon , " TBL_LISTEAPPAREILS " list"
               " where list.idappareil = appcon.idappareil"
-              " and idLieu = " + QString::number(m_idlieuexeercice) +
+              " and idLieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
               " ORDER BY TitreExamen";
     QList<QVariantList> listapps = db->StandardSelectSQL(Remplirtablerequete, m_ok);
     if (!m_ok)
@@ -1000,7 +994,7 @@ void RufusAdmin::Remplir_Table()
 
     m_listeAppareils.clear();
     QString req = "select NomAppareil from " TBL_LISTEAPPAREILS
-                  " where idAppareil not in (select idAppareil from " TBL_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(m_idlieuexeercice) + ")";
+                  " where idAppareil not in (select idAppareil from " TBL_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) + ")";
     QList<QVariantList> listnomsapps = db->StandardSelectSQL(req, m_ok);
     if (listnomsapps.size() == 0)
         wdg_buttonframe->wdg_plusBouton->setEnabled(false);
@@ -1112,7 +1106,7 @@ void RufusAdmin::EnregistreAppareil()
     if (!dlg_askAppareil) return;
     QString req = "insert into " TBL_APPAREILSCONNECTESCENTRE " (idAppareil, idLieu) Values("
                   " (select idappareil from " TBL_LISTEAPPAREILS " where NomAppareil = '" + dlg_askAppareil->findChildren<UpComboBox*>().at(0)->currentText() + "'), "
-                  + QString::number(m_idlieuexeercice) + ")";
+                  + QString::number(Datas::I()->sites->idcurrentsite()) + ")";
     db->StandardSQL(req);
     dlg_askAppareil->done(0);
     Remplir_Table();
@@ -1241,7 +1235,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         m_parametres->setmdpadmin(nouv);
         db->StandardSQL(req);
         // Enregitrer le nouveau MDP de la base
-        req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(m_idadmindocs);
+        req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(UserAdmin->id());
         db->StandardSQL(req);
         // Enregitrer le nouveau MDP de connexion à MySQL
         req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'localhost' = '" + nouv + "'";
@@ -1864,23 +1858,18 @@ void RufusAdmin::MetAJourLaConnexion()
     QString MAJConnexionRequete;
     QList<QVariantList> listusers = db->StandardSelectSQL("select iduser from " TBL_USERSCONNECTES
                                                              " where MACAdressePosteConnecte = '" + macadress + "'"
-                                                             " and idlieu = " + QString::number(m_idlieuexeercice),m_ok);
+                                                             " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()),m_ok);
     if (listusers.size()>0)
+    {
         MAJConnexionRequete = "UPDATE " TBL_USERSCONNECTES " SET HeureDerniereConnexion = NOW(), "
-                                                                 " idUser = " + QString::number(m_idadmindocs) + ","
+                                                                 " idUser = " + QString::number(UserAdmin->id()) + ","
                                                                  " NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                                                                  " where MACAdressePosteConnecte = '" + macadress + "'"
-                                                                 " and idlieu = " + QString::number(m_idlieuexeercice);
+                                                                 " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
+        db->StandardSQL(MAJConnexionRequete);
+    }
     else
-        MAJConnexionRequete = "insert into " TBL_USERSCONNECTES "(HeureDerniereConnexion, idUser, UserSuperviseur, UserComptable, UserParent, NomPosteConnecte, MACAdressePosteConnecte, idlieu, IPAdress)"
-                                                                      " VALUES(NOW()," +
-                                                                      QString::number(m_idadmindocs) + ", -1, -1, -1, '" +
-                                                                      QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "', '" +
-                                                                      macadress +  "', " +
-                                                                      QString::number(m_idlieuexeercice) + ", '" +
-                                                                      Utils::getIpAdress() + "')";
-    //qDebug() << MAJConnexionRequete;
-    db->StandardSQL(MAJConnexionRequete);
+        Datas::I()->postesconnectes->CreationPosteConnecte(Datas::I()->sites->idcurrentsite());
 
     // Deconnecter les users débranchés accidentellement
     QList<QVariantList> listoldusers = db->StandardSelectSQL("select idUser, NomPosteConnecte, MACAdressePosteConnecte from  " TBL_USERSCONNECTES
@@ -2388,7 +2377,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
         // on retire Admin de la table des utilisateurs connectés
         QString req = "delete from " TBL_USERSCONNECTES
                       " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
-                      " and idlieu = " + QString::number(m_idlieuexeercice);
+                      " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
         db->StandardSQL(req);
         if (m_utiliseTCP)
         {

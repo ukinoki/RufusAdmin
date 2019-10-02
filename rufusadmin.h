@@ -90,8 +90,6 @@ private:
     dlg_paramconnexion          *DlgParam;
     Flags                       *flags;
     bool                        m_ok;
-    int                         m_idadmindocs;
-    int                         m_idlieuexeercice;
     int                         m_flagcorrespondants;
     int                         m_flagsalledattente;
     int                         m_flagmessages;
@@ -104,7 +102,6 @@ private:
     QString                     m_nomfichieriniRufus;
     QString                     m_nouvMDP, m_ancMDP, m_confirmMDP;
     QString                     m_domaine;
-    QString                     m_nomLieuExercice;
     QStringList                 m_listeAppareils;
     QIcon                       ic_Backup, ic_Copy, ic_Erase, ic_Sunglasses, ic_SortirDossier, ic_OK, ic_Annul,
                                  ic_Euro,  ic_EuroCount,  ic_FermeAppuye,  ic_FermeRelache,  ic_Help,  ic_Null;
@@ -121,7 +118,7 @@ private:
 
     void                        AfficheMessageImport(QStringList listmsg, int pause, bool bottom=true);
     bool                        AutresPostesConnectes();
-    int                         DetermineLieuExercice();
+    void                        DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
     void                        setMapIcons();
     QMap<QString, QIcon>        MapIcons();
