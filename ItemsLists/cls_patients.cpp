@@ -48,6 +48,21 @@ void Patients::setdossierpatientaouvrir(int id)
     DataBase::I()->loadPatientById(id, m_dossierpatientaouvrir, Item::LoadDetails);
 }
 
+DonneesOphtaPatient* Patients::donneesophtapatients()
+{
+    setdonneesophtapatients();
+    return DataBase::I()->donneesophtapatient();
+}
+void Patients::setdonneesophtapatients ()
+{
+    if(DataBase::I()->donneesophtapatient()->id() != m_currentpatient->id())
+        DataBase::I()->initDonnesOphtaPatient(m_currentpatient->id());
+}
+
+void Patients::actualisedonneesophtapatients ()
+{
+    DataBase::I()->initDonnesOphtaPatient(m_currentpatient->id());
+}
 
 
 /*! charge les données du patient corresondant à l'id * \brief Patients::getById
