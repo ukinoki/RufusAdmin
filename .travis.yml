@@ -11,8 +11,8 @@ before_install:
   - sudo apt-get update -qq
  
 install:
-  - sudo apt-get -y install qt510base qt510websockets qt510multimedia
-  - source /opt/qt510/bin/qt510-env.sh
+  - sudo apt-get -y install qt512base qt512websockets qt512multimedia
+  - source /opt/qt512/bin/qt512-env.sh
   - sudo rm /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
   - sudo cp ./libs/libmysqlclient.so.18 /usr/lib/x86_64-linux-gnu/
   - sudo apt-get -y install gcc-7 g++-7 cmake libyelp-dev yelp-tools libsecret-1-dev libnautilus-extension-dev libpulse-dev libpulse-mainloop-glib0       
