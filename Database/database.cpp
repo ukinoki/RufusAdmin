@@ -518,6 +518,7 @@ void DataBase::initDonnesOphtaPatient(int idpat)
     QString req = "select " CP_ID_DATAOPHTA ", " CP_SPHEREOD_DATAOPHTA ", " CP_CYLINDREOD_DATAOPHTA ", " CP_AXECYLINDREOD_DATAOPHTA ", " CP_DATEREFRACTIONOD_DATAOPHTA ", "
                             CP_SPHEREOG_DATAOPHTA ", " CP_CYLINDREOG_DATAOPHTA ", " CP_AXECYLINDREOG_DATAOPHTA ", " CP_DATEREFRACTIONOG_DATAOPHTA ", " CP_ECARTIP_DATAOPHTA
                             " from " TBL_DONNEES_OPHTA_PATIENTS " where " CP_IDPATIENT_DATAOPHTA " = " + QString::number(idpat) + " and " CP_MESURE_DATAOPHTA " = 'A' order by idmesure asc" ;
+    //qDebug() << req;
     QVariantList ophtadata = getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver les données opthalmologiques du patient"));
     if(ok && ophtadata.size() > 0)
     {
@@ -533,6 +534,11 @@ void DataBase::initDonnesOphtaPatient(int idpat)
         data[CP_AXECYLINDREOG_DATAOPHTA "A"]    = ophtadata.at(7).toInt();
         data[CP_DATEREFRACTIONOG_DATAOPHTA "A"] = ophtadata.at(8).toDate().toString("yyyy-MM-dd");
         data[CP_ECARTIP_DATAOPHTA "A"]          = ophtadata.at(9).toInt();
+    }
+    else
+    {
+        m_donneesophtapatient->cleandatas();
+        return;
     }
 
     req = "select " CP_K1OD_DATAOPHTA  ", " CP_K2OD_DATAOPHTA ", " CP_AXEKOD_DATAOPHTA ", " CP_K1OG_DATAOPHTA ", " CP_K2OG_DATAOPHTA ", "
@@ -2276,6 +2282,8 @@ QJsonObject             DataBase::loadRefractionData(QVariantList refdata)      
     data[CP_MONTURE_REFRACTIONS]            = refdata.at(40).toString();
     data[CP_VERRETEINTE_REFRACTIONS]        = (refdata.at(41).toInt() == 1);
     data[CP_PD_REFRACTIONS]                 = refdata.at(42).toInt();
+    data["isODmesure"]                      = (refdata.at(8) != QVariant());
+    data["isOGmesure"]                      = (refdata.at(23) != QVariant());
     return data;
 }
 
