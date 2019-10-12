@@ -27,32 +27,33 @@ public:
     void setData(QJsonObject data);
 
 private:
-    int m_idpat;                        //!> idpatient
-    QString m_mesure;                   //!> A = autoref R = refraction
+    int m_idpat = 0;                        //!> idpatient
+    QString m_mesure = "";                   //!> A = autoref R = refraction
 
     //!< les données de réfraction subjective
-    int m_idsubjectif = 0;              //!> le no de l'enregistrement de refraction dans la table
-    QDate m_daterefOG;                  //!> date refraction OG
-    QString m_distance;                 //!> distance de mesure pour les réfractions
-    double m_sphereOD;                  //!> sphereODsubjectif
-    double m_cylindreOD;                //!> cylindreODsubjectif
-    int m_axecylindreOD;                //!> axecylindreODsubjectif
-    QString m_AVLOD;                    //!> AV loin OD
-    double m_addVPOD;                   //!> addition VP OD
-    QString m_AVPOD;                    //!> AV près OD
-    QDate m_daterefOD;                  //!> date refraction OD
-    double m_sphereOG;                  //!> spherereOGsubjectif
-    double m_cylindreOG;                //!> cylindreOGsubjectif
-    int m_axecylindreOG;                //!> axecylindreOGsubjectif
-    QString m_AVLOG;                    //!> AV loin OG
-    double m_addVPOG;                   //!> addition VP OG
-    QString m_AVPOG;                    //!> AV près OG
-    int m_ecartIP;                      //!> ecart interpupillaire
+    int m_idsubjectif = 0;                  //!> le no de l'enregistrement de refraction dans la table
+    QDate m_daterefOG = QDate();            //!> date refraction OG
+    QString m_distance = "";                //!> distance de mesure pour les réfractions
+    double m_sphereOD = 0;                  //!> sphereODsubjectif
+    double m_cylindreOD = 0;                //!> cylindreODsubjectif
+    int m_axecylindreOD = 0;                //!> axecylindreODsubjectif
+    QString m_AVLOD = "";                   //!> AV loin OD
+    double m_addVPOD = 0;                   //!> addition VP OD
+    QString m_AVPOD = "";                   //!> AV près OD
+    QDate m_daterefOD = QDate();            //!> date refraction OD
+    double m_sphereOG = 0;                  //!> spherereOGsubjectif
+    double m_cylindreOG = 0;                //!> cylindreOGsubjectif
+    int m_axecylindreOG = 0;                //!> axecylindreOGsubjectif
+    QString m_AVLOG = "";                   //!> AV loin OG
+    double m_addVPOG = 0;                   //!> addition VP OG
+    QString m_AVPOG = "";                   //!> AV près OG
+    int m_ecartIP = 0;                      //!> ecart interpupillaire
 
     //!< les données mesurées par l'autoref : kératométrie et autoref
     int m_idautoref = 0;                //!> le no de l'enregistrement d'autoref dans la table
-    QDate m_dateK;                      //!> date keratométrie
-    QString m_origineK;                 //!> origine de la mesure de keratométrie A = autoref T = Topographe
+
+    QDate m_dateK = QDate();            //!> date keratométrie
+    QString m_origineK = "";            //!> origine de la mesure de keratométrie A = autoref T = Topographe
     double m_K1OD = 0;                  //!> K1OD
     double m_K2OD = 0;                  //!> K2OD
     int m_axeKOD = 0;                   //!> AxeKOD
@@ -64,15 +65,15 @@ private:
     double m_dioptriesK1OG = 0;         //!> diotries K1OG
     double m_dioptriesK2OG = 0;         //!> diotries K2OG
 
-    double m_sphereODautoref;           //!> sphereODautoref
-    double m_cylindreODautoref;         //!> cylindreODautoref
-    int m_axecylindreODautoref;         //!> axecylindreODautoref
-    QDate m_daterefODautoref;           //!> date de la mesure autoref OD
-    double m_sphereOGautoref;           //!> spherereOGautoref
-    double m_cylindreOGautoref;         //!> cylindreOGautoref
-    int m_axecylindreOGautoref;         //!> axecylindreOGautoref
-    QDate m_daterefOGautoref;           //!> date de la mesure autoref OG
-    int m_ecartIPautoref;               //!> ecart interpupillaire mesuré par l'autoref
+    double m_sphereODautoref = 0;           //!> sphereODautoref
+    double m_cylindreODautoref = 0;         //!> cylindreODautoref
+    int m_axecylindreODautoref = 0;         //!> axecylindreODautoref
+    QDate m_daterefODautoref = QDate();     //!> date de la mesure autoref OD
+    double m_sphereOGautoref = 0;           //!> spherereOGautoref
+    double m_cylindreOGautoref = 0;         //!> cylindreOGautoref
+    int m_axecylindreOGautoref = 0;         //!> axecylindreOGautoref
+    QDate m_daterefOGautoref = QDate();     //!> date de la mesure autoref OG
+    int m_ecartIPautoref = 0;               //!> ecart interpupillaire mesuré par l'autoref
 
 public:
     int idpat() const                   { return m_idpat; }
@@ -103,6 +104,7 @@ public:
     QString origineK() const            { return m_origineK; }
     double K1OD() const                 { return m_K1OD; }
     double K2OD() const                 { return m_K2OD; }
+    double KMOD() const                 { return (m_K1OD + m_K2OD)/2;}
     int axeKOD() const                  { return m_axeKOD; }
     double dioptriesK1OD() const        { return m_dioptriesK1OD; }
     double dioptriesK2OD() const        { return m_dioptriesK2OD; }
@@ -110,10 +112,11 @@ public:
     double dioptriesKMOD() const        { return (m_dioptriesK1OD + m_dioptriesK2OD)/2; }
     double K1OG() const                 { return m_K1OG; }
     double K2OG() const                 { return m_K2OG; }
+    double KMOG() const                 { return (m_K1OG + m_K2OG)/2;}
     int axeKOG() const                  { return m_axeKOG; }
     double dioptriesK1OG() const        { return m_dioptriesK1OG; }
     double dioptriesK2OG() const        { return m_dioptriesK2OG; }
-    double dioptriesKMG() const         { return (m_dioptriesK1OG - m_dioptriesK2OG); }
+    double dioptriesKOG() const         { return (m_dioptriesK1OG - m_dioptriesK2OG); }
     double dioptriesKMOG() const        { return (m_dioptriesK1OG + m_dioptriesK2OG)/2; }
 
     double sphereODautoref() const      { return m_sphereODautoref; }
