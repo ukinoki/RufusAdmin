@@ -23,6 +23,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "uplabel.h"
 #include <QHBoxLayout>
 #include <QDesktopWidget>
+#include <QSystemTrayIcon>
 #include <QTimer>
 #include <QDebug>
 #include <QDialog>
@@ -37,17 +38,37 @@ int pause       = la durée d'affichage du message en ms (1000 par défaut)
 bool bottom     = si true le message est affiché en bas à droite de l'écran, sinon, en plein centre (en bas à droite par défaut)
  * IDENTIQUE POUR RUFUS ET RUFUSADMIN
 */
-class dlg_message : public QObject
+class Message : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit        dlg_message(QStringList listmsg, int pause = 1000, bool bottom = true);
-    explicit        dlg_message(QString msg, int pause = 1000, bool bottom = true);
-    ~dlg_message();
+    static Message *instance;
+    static Message* I()
+    {
+        if( !instance )
+            instance = new Message();
+        return instance;
+    }
+    void TrayMessage(QString msg, int duree = 3000)
+    {
+        ict_messageIcon->setIcon(Icons::icSunglasses());
+        ict_messageIcon->show();
+        ict_messageIcon->showMessage(tr("Messages"), msg, Icons::icSunglasses(), duree);
+        QTimer::singleShot(duree + 200, this, [=]{ ict_messageIcon->hide();});
+        LogMessage(msg);
+    }
+    void TrayMessage(QStringList listmsg, int duree = 3000)
+    {
+        for (int i=0; i<listmsg.size(); i++)
+            TrayMessage(listmsg.at(i), duree);
+    }
+
 private:
-    void            AfficheMsg(QStringList listmes, int pause, bool bottom);
-    void            delay(int msec);
-    void            LogMessage(QString msg);
+    Message() {}
+    QSystemTrayIcon *ict_messageIcon = new QSystemTrayIcon;
+    void LogMessage(QString msg);
+
 };
 
 #endif // DLG_MESSAGE_H

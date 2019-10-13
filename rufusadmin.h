@@ -116,7 +116,7 @@ private:
     WidgetButtonFrame           *wdg_buttonframe;
     User                        *UserAdmin;
 
-    void                        AfficheMessageImport(QStringList listmsg, int pause, bool bottom=true);
+    void                        AfficheMessageImport(QStringList listmsg, int pause);
     bool                        AutresPostesConnectes();
     void                        DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
@@ -135,8 +135,6 @@ private:
     void                        EnregistreEmplacementServeur(int);
     void                        EpureLogs(int anciennete = 7);                                            //!> supprime les fichiers de logs antérieurs à J - anciennete jours
     QString                     getDossierDocuments(QString Appareil);
-    void                        Message(QString mess, int pause = 1000, bool bottom = true);
-    void                        EffaceMessage(int pause = 1000);
     void                        EnregDossierStockageApp(QString dir);
     void                        EnregistreNouvMDPAdmin();
     void                        GestionBanques();

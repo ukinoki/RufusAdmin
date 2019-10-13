@@ -245,7 +245,7 @@ public:
     enum Acces                  {Local, Distant}; Q_ENUM(Acces)
 
 signals:
-    void                        emitmsg(QStringList m_listmsg, int pause, bool bottom);
+    void                        emitmsg(QStringList m_listmsg, int pause);
     void                        emitmsg(QString msg);
 
 private:
