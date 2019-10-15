@@ -82,7 +82,6 @@ private:
     UpDialog                *dlg_ask;
     QBrush                  m_color;
     Mode                    m_mode;
-    int                     m_iduserdepart;
     int                     m_idlieu;
     User                    *m_userencours;
     QString                 m_loginledit, m_MDPledit, m_confirmMDPledit;

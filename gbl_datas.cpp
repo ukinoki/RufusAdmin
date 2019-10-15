@@ -31,6 +31,7 @@ Datas::Datas()
     comptes         = new Comptes();
     motifs          = new Motifs();
     users           = new Users();
+    patientsencours = new PatientsEnCours();
     postesconnectes = new PostesConnectes();
     sites           = new Sites();
 }

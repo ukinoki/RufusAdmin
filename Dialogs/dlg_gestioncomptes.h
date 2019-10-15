@@ -30,7 +30,6 @@ class dlg_gestioncomptes;
 
 class dlg_gestioncomptes : public UpDialog
 {
-    Q_OBJECT
 
 public:
     explicit dlg_gestioncomptes(User *DataUser, QWidget *parent = Q_NULLPTR);

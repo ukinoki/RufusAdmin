@@ -36,7 +36,6 @@ class dlg_paramconnexion;
 
 class dlg_paramconnexion : public QDialog
 {
-    Q_OBJECT
 
 public:
     explicit dlg_paramconnexion(QWidget *parent = Q_NULLPTR);

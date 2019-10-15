@@ -293,14 +293,13 @@ private:
     bool                m_utiliseTCP;
     TcpServer           *TCPServer;
     quint16             m_portTCPserver;
-    QTimer              *t_timerSalDatCorrespMsg, *t_timerVerifVerrou;
+    QTimer              *t_timerSalDatCorrespMsg;
     QString             m_IPadress, m_macAdress;
     QString             m_socketStatut;
     QDateTime           m_dateDernierMessage;
     void                ResumeTCPSocketStatut();
 
     void                VerifModifsFlags();
-    void                VerifVerrouDossier();
 signals:
     void                ModifEdit(QString txt);
 
