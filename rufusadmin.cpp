@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("16-10-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("18-10-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1937,7 +1937,7 @@ void RufusAdmin::MetAJourLaConnexion()
             {
                 bool posttrouve = false;
                 foreach(PosteConnecte* post, *Datas::I()->postesconnectes->postesconnectes())
-                    if (post->id() == pat->iduser() && post->nomposte() == pat->posteexamen())
+                    if (post->id() == pat->iduserencoursexam() && post->nomposte() == pat->posteexamen())
                     {
                         posttrouve = true;
                         break;
