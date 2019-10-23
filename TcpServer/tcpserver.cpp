@@ -76,8 +76,10 @@ void TcpServer::Deconnexion(qintptr descriptor)
     QString login = Datas::I()->users->getLoginById(skt->idUser());
     Message::I()->TrayMessage(QStringList() << login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
     map_socketdescriptors   .remove(descriptor);
-    envoieListeSockets();
-    AfficheListeSockets("Deconnexion(qintptr sktdesciptor)");
+
+    QString postestringid = skt->MACAdress() + " - " + QString::number(skt->idUser());
+    emit deconnexionposte(postestringid);
+
     skt->deleteLater();
 
     Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion adress " + adress + " - " + login);

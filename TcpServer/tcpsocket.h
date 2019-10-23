@@ -57,8 +57,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
             *
             *
             * RufusAdmin crée sa propre connexion avec le serveur TCP en raison d'un bug de Qt.
-            * Le TCPserver "s'endort" quand il n'est pas sollicité depuis plusieus heures et on est obligé d'arrêter RufusAdmin et le redémarrer pour le réveiller
-            * La connexion utilisée par RufusADmin ne sert qu'à une chose, envoyer un message de test à intervalles définis par un timer pour empêcher l'arrêt du serveur.
             */
 
 /*! LES MESSAGES
@@ -107,6 +105,9 @@ public:
     int                             idUser() const;
     void                            setData(QString datas);
     QString                         datas();
+    QString                         IPAdress();
+    QString                         MACAdress();
+    QString                         localHostName();
 
 private:
     int                             a;
@@ -115,7 +116,8 @@ private:
     QByteArray                      m_bufferarray;                                            //!> le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
     qint32                          m_datasize;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
     int                             m_iduser;                                                 //!> stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
-    QString                         m_datasclient;                                            //!> stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
+    QString                         m_datasclient;                                            /*! stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
+                                                                                               * IpAdress() + TCPMSG_Separator + MACAdress + TCPMSG_Separator + localHostName */
     void                            Deconnexion();
     void                            erreurSocket(QAbstractSocket::SocketError);
     void                            TraiteDonneesRecues();

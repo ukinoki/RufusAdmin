@@ -62,6 +62,9 @@ void            TcpSocket::setIdUser(int id)                        {m_iduser = 
 int             TcpSocket::idUser() const                           {return m_iduser;}
 void            TcpSocket::setData(QString datas)                   {m_datasclient = datas;}
 QString         TcpSocket::datas()                                  {return m_datasclient;}
+QString         TcpSocket::IPAdress()                               { return (m_datasclient.split(TCPMSG_Separator).size() > 0? m_datasclient.split(TCPMSG_Separator).at(0) : "");}
+QString         TcpSocket::MACAdress()                              { return (m_datasclient.split(TCPMSG_Separator).size() > 1? m_datasclient.split(TCPMSG_Separator).at(1) : "");}
+QString         TcpSocket::localHostName()                          { return (m_datasclient.split(TCPMSG_Separator).size() > 2? m_datasclient.split(TCPMSG_Separator).at(2) : "");}
 
 void TcpSocket::TraiteDonneesRecues()
 {
@@ -116,14 +119,14 @@ void TcpSocket::envoyerMessage(QString msg)
 
 void TcpSocket::Deconnexion()
 {
-    qDebug() << "deconnexion socket entrant";
+    //qDebug() << "deconnexion socket entrant";
     emit deconnexion(sktdescriptor);
 }
 
 void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
 {
-    qDebug() << "le cient ne répond plus - " << erreur << " - " << errorString();
-
+    //qDebug() << "le cient ne répond plus - " << erreur << " - " << errorString();
+    Logs::MSGSOCKET(QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(erreur));
     /*
         le cient ne répond plus
         QAbstractSocket::RemoteHostClosedError

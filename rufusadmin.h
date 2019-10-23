@@ -93,7 +93,6 @@ private:
     int                         m_flagcorrespondants;
     int                         m_flagsalledattente;
     int                         m_flagmessages;
-    int                         m_flaguserdistant = 0;
     int                         m_dureeVeille;
     QIcon                       ic_RufusAdmin;
     QMenu                       *trayIconMenu;
@@ -118,6 +117,7 @@ private:
 
     void                        AfficheMessageImport(QStringList listmsg, int pause);
     bool                        AutresPostesConnectes();
+    void                        DeconnexionPoste(QString postestringid);
     void                        DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
     void                        setMapIcons();
