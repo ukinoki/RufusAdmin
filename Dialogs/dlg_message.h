@@ -41,7 +41,6 @@ bool bottom     = si true le message est affiché en bas à droite de l'écran, 
 class Message : public QObject
 {
     Q_OBJECT
-
 public:
     static Message *instance;
     static Message* I()
@@ -64,6 +63,11 @@ public:
             TrayMessage(listmsg.at(i), duree);
     }
     void SplashMessage(QString msg, int duree = 3000);
+    void SplashMessage(QStringList listmsg, int duree = 3000)
+    {
+        for (int i=0; i<listmsg.size(); i++)
+            SplashMessage(listmsg.at(i), duree);
+    }
 
 private:
     Message() {}
