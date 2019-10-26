@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("25-10-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("26-10-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2102,6 +2102,7 @@ void RufusAdmin::RestaureBase()
     bool OKini      = false;
     bool OKImages   = false;
     bool OKVideos   = false;
+    bool OKFactures = false;
 
     QString msg;
 
@@ -2114,12 +2115,18 @@ void RufusAdmin::RestaureBase()
     QDir rootimgvid = dirtorestore;
     if (rootimgvid.cdUp())
     {
+//        qDebug() << rootimgvid.absolutePath() + DIR_IMAGES;
+//        qDebug() << rootimgvid.absolutePath() + DIR_VIDEOS;
+//        qDebug() << rootimgvid.absolutePath() + DIR_FACTURES;
         if (QDir(rootimgvid.absolutePath() + DIR_IMAGES).exists())
-            if (QDir(dirtorestore.absolutePath() + DIR_IMAGES).entryList(QDir::Dirs).size()>0)
+            if (QDir(rootimgvid.absolutePath() + DIR_IMAGES).entryList(QDir::Dirs).size()>0)
                 OKImages = true;
         if (QDir(rootimgvid.absolutePath() + DIR_VIDEOS).exists())
-            if (QDir(dirtorestore.absolutePath() + DIR_VIDEOS).entryList(QDir::Files | QDir::NoDotAndDotDot).size()>0)
+            if (QDir(rootimgvid.absolutePath() + DIR_VIDEOS).entryList(QDir::Files | QDir::NoDotAndDotDot).size()>0)
                 OKVideos = true;
+        if (QDir(rootimgvid.absolutePath() + DIR_FACTURES).exists())
+            if (QDir(rootimgvid.absolutePath() + DIR_FACTURES).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size()>0)
+                OKFactures = true;
     }
 
     /*! 3 - détermination de l'emplacement de destination des fichiers d'imagerie */
@@ -2157,7 +2164,7 @@ void RufusAdmin::RestaureBase()
     }
 
     /*! 4 - choix des éléments à restaurer */
-    AskBupRestore(RestoreOp, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKRessces, OKImages, OKVideos);
+    AskBupRestore(RestoreOp, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKRessces, OKImages, OKVideos, OKFactures);
     if (dlg_buprestore->exec()>0)
     {
         foreach (UpCheckBox *chk, dlg_buprestore->findChildren<UpCheckBox*>())
@@ -2755,7 +2762,7 @@ void RufusAdmin::BackupWakeUp()
         if (!m_parametres->daysbkup().testFlag(daybkup))
             return;
         if (!AutresPostesConnectes())
-            Backup(m_parametres->dirbkup(), true, true, true, true);
+            Backup(m_parametres->dirbkup());
     }
 }
 
@@ -2766,11 +2773,11 @@ void RufusAdmin::ParamAutoBackup()
         EffaceProgrammationBackup();
         return;
     }
-#ifdef Q_OS_LINUX
+    t_timerbackup.disconnect();
     t_timerbackup.stop();
     t_timerbackup.start(1000);
     connect(&t_timerbackup, &QTimer::timeout, this, [=] {BackupWakeUp();});
-#endif
+    /*! la suite n'est plus utilisée depuis OsX Catalina parce que OsX Catalina n'accepte plus les launchagents
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
     DefinitScriptBackup(m_parametres->dirbkup());
@@ -2842,6 +2849,7 @@ void RufusAdmin::ParamAutoBackup()
     dumpProcess.start(load);
     dumpProcess.waitForFinished();
 #endif
+    */
 }
 
 void RufusAdmin::ProgrammeSQLVideImagesTemp(QTime timebackup)
@@ -2920,7 +2928,7 @@ QStringList RufusAdmin::DecomposeScriptSQL(QString nomficscript)
     return listinstruct;
 }
 
-void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages, bool AvecVideos)
+void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages, bool AvecVideos, bool AvecFactures)
 {
     if (!QDir(pathdirdestination).exists())
         return;
@@ -2942,6 +2950,9 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
         {
             scriptbackup += "DIR_IMAGES=\"" + m_parametres->dirimagerie() + DIR_IMAGES + "\"";
             scriptbackup += "\n";
+        }
+        if (AvecFactures)
+        {
             scriptbackup += "DIR_FACTURES=\"" + m_parametres->dirimagerie() + DIR_FACTURES + "\"";
             scriptbackup += "\n";
         }
@@ -3014,6 +3025,9 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
             scriptbackup += "\n";
             scriptbackup += "cp -R -f $DIR_IMAGES $BACKUP_DIR";
             scriptbackup += "\n";
+        }
+        if (AvecFactures)
+        {
             scriptbackup += "mkdir -p $BACKUP_DIR" DIR_FACTURES;
             scriptbackup += "\n";
             scriptbackup += "cp -R -f $DIR_FACTURES $BACKUP_DIR";
@@ -3102,19 +3116,20 @@ void RufusAdmin::EffaceProgrammationBackup()
 {
     if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
         QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
-#ifdef Q_OS_LINUX
+    t_timerbackup.disconnect();
     t_timerbackup.stop();
-#endif
+    /*! la suite n'est plus utilisée depuis OsX Catalina parce que OsX Catalina n'accepte plus les launchagents
 #ifdef Q_OS_MACX
-    QString file = QDir::homePath() + SCRIPT_MACOS_PLIST_FILE;                          /*! file = "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist" */
+    QString file = QDir::homePath() + SCRIPT_MACOS_PLIST_FILE;                          // file = "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist"
     if (!QFile::exists(file))
         return;
-    QString unload  = "bash -c \"/bin/launchctl unload \"" + file + "\"\"";             /*! unload = bash -c "/bin/launchctl unload "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist"" */
+    QString unload  = "bash -c \"/bin/launchctl unload \"" + file + "\"\"";             // unload = bash -c "/bin/launchctl unload "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist""
     QProcess dumpProcess(parent());
     dumpProcess.start(unload);
     dumpProcess.waitForFinished();
     QFile::remove(file);
 #endif
+    */
 }
 
 void RufusAdmin::startImmediateBackup()
@@ -3197,17 +3212,15 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         OKFactures = false;
     }
 
+    QString msg = tr("Sauvegarde effectuée avec succès");
     Message::I()->TrayMessage(tr("Sauvegarde en cours"),3000);
     DisconnectTimerInactive();
 
     bool result = true;
     if (OKBase)
     {
-        QFile precBup(QDir::homePath() + SCRIPTBACKUPFILE);
-        bool b = precBup.exists();
-        if (b)
-            precBup.copy(QDir::homePath() + DIR_RUFUS DIR_PROV SCRIPTBACKUPFILE);
-        DefinitScriptBackup(pathdirdestination, OKImages, OKVideos);
+        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
+        DefinitScriptBackup(pathdirdestination, OKImages, OKVideos, OKFactures);
         QString task = "sh " + QDir::homePath() + SCRIPTBACKUPFILE;
         QProcess dumpProcess(parent());
         dumpProcess.start(task);
@@ -3215,25 +3228,16 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         int  a = 99;
         if (dumpProcess.exitStatus() == QProcess::NormalExit)
             a = dumpProcess.exitCode();
-        QString msg ("");
-        if (a == 0)
-            msg = tr("Sauvegarde effectuée avec succès");
-        else
+        if (a != 0)
             msg = tr("Incident pendant la sauvegarde");
-        Message::I()->TrayMessage(msg,3000);
         Logs::ERROR(msg);
-        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
-        if (b)
-        {
-            QFile(QDir::homePath() + DIR_RUFUS DIR_PROV SCRIPTBACKUPFILE).copy(QDir::homePath() + SCRIPTBACKUPFILE);
-            QFile::remove(QDir::homePath() + DIR_RUFUS DIR_PROV SCRIPTBACKUPFILE);
-        }
         result = (a==0);
     }
     else //! si on a choisi de ne pas sauvegarder la base mais seulement des fcihiers d'imagerie ou les videos, la copie se fait directement depuis Qt
     {
+        pathdirdestination += "/" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmm");
         QDir dirdest;
-        if (OKImages || OKVideos)
+        if (OKImages || OKVideos || OKFactures)
             dirdest.mkdir(pathdirdestination);
         if (OKImages)
         {
@@ -3260,18 +3264,13 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
             Message::I()->TrayMessage(tr("Fichiers video sauvegardés!"), 3000);
         }
     }
-    if (OKImages || OKFactures || OKVideos)
-    {
-        QDir rootimgvid = QDir(pathdirdestination);
-        if (rootimgvid.cdUp())
-            pathdirdestination = rootimgvid.absolutePath();
-    }
     if (OKImages)
         Utils::cleanfolder(pathdirdestination + DIR_IMAGES);
     if (OKFactures)
         Utils::cleanfolder(pathdirdestination + DIR_FACTURES);
     if (OKVideos)
         Utils::cleanfolder(pathdirdestination + DIR_VIDEOS);
+    Message::I()->TrayMessage(msg,3000);
     ConnectTimerInactive();
     return result;
 }

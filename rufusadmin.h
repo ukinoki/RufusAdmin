@@ -245,7 +245,7 @@ private:
     UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
     void                    AskBupRestore(BkupRestore op, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true, bool OKfactures = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
-    bool                    Backup(QString pathdirdestination, bool OKBase, bool OKImages, bool OKVideos, bool OKFactures);
+    bool                    Backup(QString pathdirdestination, bool OKBase = true, bool OKImages = true, bool OKVideos = true, bool OKFactures = true);
                             /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore()
                             * et par le timer t_timerbackup sous Linux pour effectuer une sauvegarde automatique et sans choix des options dans ce cas */
     void                    BackupWakeUp();
@@ -254,7 +254,7 @@ private:
                             /*! calcule le volume de la base */
     void                    CalcTimeBupRestore();
                             /*! calcule la durée approximative du backup */
-    void                    DefinitScriptBackup(QString pathdirdestination, bool AvecImages= true, bool AvecVideos = true);
+    void                    DefinitScriptBackup(QString pathdirdestination, bool AvecImages= true, bool AvecVideos = true, bool AvecFactures = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
     void                    DefinitScriptRestore(QStringList ListNomFiles);
                             /*! crée le script RufusScriptRestore.sh qui va éxécuter la restauration de la base MySQL et le lance */
