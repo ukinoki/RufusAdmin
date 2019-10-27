@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("26-10-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("28-10-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -346,10 +346,19 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     //! - mise à jour du programmateur de sauvegarde
     if (db->getMode() == Utils::Poste)
         ParamAutoBackup();
+    /*! la suite sert à décharger le launchagent du programme de backup sous MacOs, plus utilisé depuis Catalina */
 #ifdef Q_OS_MACX
-    else
-        EffaceProgrammationBackup();
+    if (QFile::exists(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE))
+    {
+        QFile::remove(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE);
+        // décharge du launchd
+        QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath() + SCRIPT_MACOS_PLIST_FILE "\"\"";
+        QProcess dumpProcess(this);
+        dumpProcess.start(unload);
+        dumpProcess.waitForFinished();
+    }
 #endif
+
     //! - mise à jour du programmateur de l'effacement des fichiers images provisoires
     if (db->getMode() == Utils::Poste)
         ProgrammeSQLVideImagesTemp(m_parametres->heurebkup());
@@ -2749,7 +2758,7 @@ void RufusAdmin::ModifHeureBackup()
 
 void RufusAdmin::BackupWakeUp()
 {
-    if (QTime::currentTime().toString("HH:mm:ss") == m_parametres->heurebkup().toString("HH:mm")+ ":00")
+    if (QTime::currentTime().toString("HH:mm:ss") == m_parametres->heurebkup().toString("HH:mm:ss"))
     {
         int day = QDate::currentDate().dayOfWeek();
         Utils::Day daybkup = Utils::Lundi;
@@ -2777,19 +2786,7 @@ void RufusAdmin::ParamAutoBackup()
     t_timerbackup.stop();
     t_timerbackup.start(1000);
     connect(&t_timerbackup, &QTimer::timeout, this, [=] {BackupWakeUp();});
-    /*! la suite sert à décharge le launchagent du programme de backup sous MacOs, plus utilisé depuis Catalina */
-#ifdef Q_OS_MACX
-    if (QFile::exists(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE))
-    {
-        QFile::remove(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE);
-        // décharge du launchd
-        QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath();
-        unload += SCRIPT_MACOS_PLIST_FILE "\"\"";
-        QProcess dumpProcess(parent());
-        dumpProcess.start(unload);
-        dumpProcess.waitForFinished();
-    }
-#endif
+
     /*! la suite n'est plus utilisée depuis OsX Catalina parce que OsX Catalina n'accepte plus les launchagents
 #ifdef Q_OS_MACX
     // elaboration de rufus.bup.plist
@@ -3226,7 +3223,8 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     }
 
     QString msg = tr("Sauvegarde effectuée avec succès");
-    Message::I()->TrayMessage(tr("Sauvegarde en cours"),3000);
+    int a = 0;
+    Message::I()->PriorityMessage(tr("Sauvegarde en cours"), a);
     DisconnectTimerInactive();
 
     bool result = true;
@@ -3284,6 +3282,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     if (OKVideos)
         Utils::cleanfolder(pathdirdestination + DIR_VIDEOS);
     Message::I()->TrayMessage(msg,3000);
+    Message::I()->ClosePriorityMessage(a);
     ConnectTimerInactive();
     return result;
 }
