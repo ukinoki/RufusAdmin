@@ -3223,7 +3223,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     }
 
     QString msg = tr("Sauvegarde effectuée avec succès");
-    int a = 0;
+    qintptr a = 0;
     Message::I()->PriorityMessage(tr("Sauvegarde en cours"), a);
     DisconnectTimerInactive();
 
