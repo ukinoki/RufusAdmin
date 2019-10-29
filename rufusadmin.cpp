@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("28-10-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("29-10-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1468,7 +1468,7 @@ void RufusAdmin::ExporteDocs()
             QTime dieTime= QTime::currentTime().addMSecs(2);
             while (QTime::currentTime() < dieTime)
                 QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-            Message::I()->TrayMessage(listmsg, 10);
+            UpSystemTrayIcon::I()->showMessages(tr("Messages"),listmsg, Icons::icSunglasses(), 10);
         }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
@@ -1508,9 +1508,8 @@ void RufusAdmin::ExporteDocs()
             Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
             if (!document || document->isLocked() || document == Q_NULLPTR)
             {
-                QStringList listmsg;
-                listmsg << tr("Impossible de charger le document ") + NomFileDoc;
-                Message::I()->TrayMessage(listmsg, 3000);
+                QString msg;
+                UpSystemTrayIcon::I()->showMessage(tr("Messages"),msg, Icons::icSunglasses(), 3000);
                 QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
                 QFile   echectrsfer(echectrsfername);
                 if (echectrsfer.open(QIODevice::Append))
@@ -1557,13 +1556,13 @@ void RufusAdmin::ExporteDocs()
             QTime dieTime= QTime::currentTime().addMSecs(2);
             while (QTime::currentTime() < dieTime)
                 QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-            Message::I()->TrayMessage(listmsg, 10);
+            UpSystemTrayIcon::I()->showMessages(tr("Messages"),listmsg, Icons::icSunglasses(), 10);
         }
     int totdoc = listexportjpg.size() + listexportpdf.size();
     if (totdoc > 0)
     {
         listmsg <<  tr("export terminé") << QString::number(totdoc) + (totdoc>1? tr(" documents exportés en ") : tr(" document exporté en "))  + duree;
-        Message::I()->TrayMessage(listmsg, 3000);
+        UpSystemTrayIcon::I()->showMessages(tr("Messages"),listmsg, Icons::icSunglasses(), 3000);
     }
 
 
@@ -1687,7 +1686,7 @@ void RufusAdmin::ExporteDocs()
             QTime dieTime= QTime::currentTime().addMSecs(2);
             while (QTime::currentTime() < dieTime)
                 QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-            Message::I()->TrayMessage(listmsg, 10);
+            UpSystemTrayIcon::I()->showMessages(tr("Messages"),listmsg, Icons::icSunglasses(), 10);
         }
 
     //-----------------------------------------------------------------------------------------------------------------------------------------
@@ -1751,7 +1750,7 @@ void RufusAdmin::ExporteDocs()
             if (!document || document->isLocked() || document == Q_NULLPTR)
             {
                 QString msg = tr("Impossible de charger le document ") + NomFileDoc;
-                Message::I()->TrayMessage(msg, 3000);
+                UpSystemTrayIcon::I()->showMessage(tr("Messages"), msg, Icons::icSunglasses(), 3000);
                 QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
                 QFile   echectrsfer(echectrsfername);
                 if (echectrsfer.open(QIODevice::Append))
@@ -1797,11 +1796,14 @@ void RufusAdmin::ExporteDocs()
             QTime dieTime= QTime::currentTime().addMSecs(2);
             while (QTime::currentTime() < dieTime)
                 QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
-            Message::I()->TrayMessage(listmsg, 10);
+            UpSystemTrayIcon::I()->showMessages(tr("Messages"), listmsg, Icons::icSunglasses(), 10);
         }
     int totfac = listexportjpgfact.size() + listexportpdffact.size();
     if (totfac > 0)
-        Message::I()->TrayMessage(tr("export terminé") + "\n" + QString::number(totfac) + (totfac>1? tr(" documents comptables exportés en ") :tr(" document comptable exporté en ")) + duree);
+        UpSystemTrayIcon::I()->showMessage(tr("Messages"),
+                                           tr("export terminé") + "\n" + QString::number(totfac) + (totfac>1? tr(" documents comptables exportés en ") :tr(" document comptable exporté en ")) + duree,
+                                           Icons::icSunglasses(),
+                                           3000);
     ConnectTimers();
 }
 
@@ -1959,7 +1961,7 @@ void RufusAdmin::MetAJourLaConnexion()
                }
            if (usernotconnectedever)
                db->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where PosePar = " + QString::number(idposte));
-           Message::I()->TrayMessage(tr("Le poste ") + nomposte + tr(" a été retiré de la liste des postes connectés actuellement au serveur"),1000);
+           UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Le poste ") + nomposte + tr(" a été retiré de la liste des postes connectés actuellement au serveur"), Icons::icSunglasses(), 3000);
        }
        TCPServer->envoieListeSockets();
     }
@@ -2237,14 +2239,14 @@ void RufusAdmin::RestaureBase()
                     {
                         //! Suppression de toutes les tables
                         QString Msg = tr("Suppression de l'ancienne base Rufus en cours");
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         db->VideDatabases();
 
                         //! Restauration à partir du dossier sélectionné
                         int a = 99;
                         Msg = (tr("Restauration de la base Rufus") + "\n"
                                + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         DefinitScriptRestore(listnomsfilestorestore);
                         QString task = "sh " + QDir::homePath() + SCRIPTRESTOREFILE;
                         QProcess dumpProcess(parent());
@@ -2273,7 +2275,7 @@ void RufusAdmin::RestaureBase()
                     QFile rufusini(fileini);
                     rufusini.copy(m_nomfichieriniRufus);
                     msg += tr("Fichier de paramétrage Rufus.ini restauré\n");
-                    Message::I()->TrayMessage(tr("Fichier de paramétrage Rufus.ini restauré"), 3000);
+                    UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichier de paramétrage Rufus.ini restauré"), Icons::icSunglasses(), 3000);
                 }
             }
             /*! 4c - restauration des fichiers ressources */
@@ -2291,7 +2293,7 @@ void RufusAdmin::RestaureBase()
                         ficACopier.copy(QDir::homePath() + DIR_RUFUS DIR_RESSOURCES + "/" + nomficACopier);
                     }
                     msg += tr("Fichiers de ressources d'impression restaurés\n");
-                    Message::I()->TrayMessage(tr("Fichiers de ressources d'impression restaurés"), 3000);
+                    UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers de ressources d'impression restaurés"), Icons::icSunglasses(), 3000);
                 }
             }
             /*! 4d - restauration des images */
@@ -2309,18 +2311,18 @@ void RufusAdmin::RestaureBase()
                     if (!DirDestImg.exists())
                     {
                         QString Msg = tr("le dossier de destination de l'imagerie n'existe pas");
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                     }
                     else
                     {
                         QString Msg = (tr("Restauration des fichiers d'imagerie\n")
                                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base d'images"));
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         QDir dirrestaureimagerie    = QDir(rootimgvid.absolutePath() + DIR_IMAGES);
                         QString task  = "cp -R " + dirrestaureimagerie.absolutePath() + " " + NomDirStockageImagerie;
                         QProcess::execute(task);
                         msg += tr("Fichiers d'imagerie restaurés\n");
-                        Message::I()->TrayMessage(tr("Fichiers d'imagerie restaurés"), 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers d'imagerie restaurés"), Icons::icSunglasses(), 3000);
                     }
                 }
             }
@@ -2339,18 +2341,18 @@ void RufusAdmin::RestaureBase()
                     if (!DirDestFact.exists())
                     {
                         QString Msg = tr("le dossier de destination des factures n'existe pas");
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                     }
                     else
                     {
                         QString Msg = (tr("Restauration des factures\n")
                                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de factures"));
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         QDir dirrestaurefactures    = QDir(rootimgvid.absolutePath() + DIR_FACTURES);
                         QString task = "cp -R " + dirrestaurefactures.absolutePath() + " " + NomDirStockageImagerie;
                         QProcess::execute(task);
                         msg += tr("Fichiers factures restaurés\n");
-                        Message::I()->TrayMessage(tr("Fichiers factures restaurés"), 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers factures restaurés"), Icons::icSunglasses(), 3000);
                     }
                 }
             }
@@ -2369,18 +2371,18 @@ void RufusAdmin::RestaureBase()
                     if (!DirDestVid.exists())
                     {
                         QString Msg = tr("le dossier de destination des videos n'existe pas");
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                     }
                     else
                     {
                         QString Msg = (tr("Restauration des fichiers videos\n")
                                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
-                        Message::I()->TrayMessage(Msg, 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         QDir dirrestaurevideo = QDir(rootimgvid.absolutePath() + DIR_VIDEOS);
                         QString task = "cp -R " + dirrestaurevideo.absolutePath() + " " + NomDirStockageImagerie;
                         QProcess::execute(task);
                         msg += tr("Fichiers videos restaurés\n");
-                        Message::I()->TrayMessage(tr("Fichiers videos restaurés"), 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"),tr("Fichiers videos restaurés"), Icons::icSunglasses(), 3000);
                     }
                 }
             }
@@ -3254,25 +3256,25 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         {
             QString Msg = (tr("Sauvegarde des fichiers d'imagerie\n")
                            + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
-            Message::I()->TrayMessage(Msg, 3000);
+            UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
             QProcess::execute("cp -R " + m_parametres->dirimagerie() + DIR_IMAGES + " " + pathdirdestination);
-            Message::I()->TrayMessage(tr("Fichiers d'imagerie sauvegardés!"), 3000);
+            UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers d'imagerie sauvegardés!"), Icons::icSunglasses(), 3000);
         }
         if (OKFactures)
         {
             QString Msg = (tr("Sauvegarde des factures\n")
                            + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
-            Message::I()->TrayMessage(Msg, 3000);
+            UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
             QProcess::execute("cp -R " + m_parametres->dirimagerie() + DIR_FACTURES + " " + pathdirdestination);
-            Message::I()->TrayMessage(tr("Fichiers factures sauvegardés!"), 3000);
+            UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers factures sauvegardés!"), Icons::icSunglasses(), 3000);
         }
         if (OKVideos)
         {
             QString Msg = (tr("Sauvegarde des fichiers videos\n")
                            + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
-            Message::I()->TrayMessage(Msg, 3000);
+            UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
             QProcess::execute("cp -R " + m_parametres->dirimagerie() + DIR_VIDEOS + " " + pathdirdestination);
-            Message::I()->TrayMessage(tr("Fichiers video sauvegardés!"), 3000);
+            UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers video sauvegardés!"), Icons::icSunglasses(), 3000);
         }
     }
     if (OKImages)
@@ -3281,7 +3283,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         Utils::cleanfolder(pathdirdestination + DIR_FACTURES);
     if (OKVideos)
         Utils::cleanfolder(pathdirdestination + DIR_VIDEOS);
-    Message::I()->TrayMessage(msg,3000);
+    UpSystemTrayIcon::I()->showMessage(tr("Messages"), msg, Icons::icSunglasses(), 3000);
     Message::I()->ClosePriorityMessage(a);
     ConnectTimerInactive();
     return result;

@@ -60,6 +60,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "log.h"
 #include "utils.h"
+#include "upsystemtrayicon.h"
 
 class DataBase : public QObject
 {
