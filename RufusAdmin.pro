@@ -41,6 +41,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
+    ostask.cpp \
     rufusadmin.cpp \
     importdocsexternesthread.cpp \
     utils.cpp \
@@ -48,6 +49,7 @@ SOURCES += \
     flags.cpp
 
 HEADERS += \
+    ostask.h \
     rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \

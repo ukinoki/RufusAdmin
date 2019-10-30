@@ -69,6 +69,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "database.h"
 #include <QTimer>
 #include "flags.h"
+#include "ostask.h"
 
 namespace Ui {
 class RufusAdmin;
@@ -88,6 +89,7 @@ private:
     dlg_gestionusers            *Dlg_GestUsr;
     dlg_motifs                  *Dlg_motifs;
     dlg_paramconnexion          *DlgParam;
+    Controller                  m_controller;
     Flags                       *flags;
     bool                        m_ok;
     int                         m_flagcorrespondants;
@@ -282,9 +284,15 @@ private:
                              * sous Linux, lance le timer t_timerbackup
                             */
     void                    RestaureBase();
+    void                    BackupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
+signals:
+    void                    backupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
     //--------------------------------------------------------------------------------------------------------
     // fin sauvegardes
     //--------------------------------------------------------------------------------------------------------
+
+
+private:
     void                    ProgrammeSQLVideImagesTemp(QTime timebackup);   /*! programme l'effacement des données temporaires d'imageire
                                                                              * vide la table EchangeImages
                                                                              * purge les champs jpg et pdf de la table Factures

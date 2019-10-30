@@ -53,7 +53,8 @@ linux-g++ {
 }
 
 SOURCES += \
-	main.cpp \
+    main.cpp \
+    ostask.cpp \
     rufusadmin.cpp \
     importdocsexternesthread.cpp \
     utils.cpp \
@@ -61,6 +62,7 @@ SOURCES += \
     flags.cpp
 
 HEADERS += \
+    ostask.h \
     rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \
