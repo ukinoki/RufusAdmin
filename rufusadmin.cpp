@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("30-10-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("31-10-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2305,10 +2305,8 @@ void RufusAdmin::RestaureBase()
                     QString dirdestinationimg   = NomDirStockageImagerie + DIR_IMAGES;
                     QDir DirDestImg(dirdestinationimg);
                     if (DirDestImg.exists())
-                    {
                         DirDestImg.removeRecursively();
-                        DirDestImg.mkdir(dirdestinationimg);
-                    }
+                    DirDestImg.mkdir(dirdestinationimg);
                     if (!DirDestImg.exists())
                     {
                         QString Msg = tr("le dossier de destination de l'imagerie n'existe pas");
@@ -2335,10 +2333,8 @@ void RufusAdmin::RestaureBase()
                     QString dirdestinationfact  = NomDirStockageImagerie + DIR_FACTURES;
                     QDir DirDestFact(dirdestinationfact);
                     if (DirDestFact.exists())
-                    {
                         DirDestFact.removeRecursively();
-                        DirDestFact.mkdir(dirdestinationfact);
-                    }
+                    DirDestFact.mkdir(dirdestinationfact);
                     if (!DirDestFact.exists())
                     {
                         QString Msg = tr("le dossier de destination des factures n'existe pas");
@@ -2365,10 +2361,8 @@ void RufusAdmin::RestaureBase()
                     QString dirdestinationvid   =  NomDirStockageImagerie + DIR_VIDEOS;
                     QDir DirDestVid(dirdestinationvid);
                     if (DirDestVid.exists())
-                    {
                         DirDestVid.removeRecursively();
-                        DirDestVid.mkdir(dirdestinationvid);
-                    }
+                    DirDestVid.mkdir(dirdestinationvid);
                     if (!DirDestVid.exists())
                     {
                         QString Msg = tr("le dossier de destination des videos n'existe pas");
@@ -3348,18 +3342,17 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         });
         m_controller.execute(task);
     }
-    else //! si on a choisi de ne pas sauvegarder la base mais seulement des fcihiers d'imagerie ou les videos, la copie se fait directement depuis Qt
+    else if (OKImages || OKVideos || OKFactures) //! si on a choisi de ne pas sauvegarder la base mais seulement des fcihiers d'imagerie ou les videos, la copie se fait directement depuis Qt
     {
         QDir dirdest;
-        if (OKImages || OKVideos || OKFactures)
-            dirdest.mkdir(pathdirdestination);
-        else
-        {
-            result(handledlg, this);
-            return false;
-        }
+        dirdest.mkdir(pathdirdestination);
         pathdirdestination += "/" + QDateTime::currentDateTime().toString("yyyyMMdd-HHmm");
         emit backupDossiers(pathdirdestination, handledlg, OKFactures, OKImages, OKVideos);
+    }
+    else
+    {
+        result(handledlg, this);
+        return false;
     }
     return true;
 }
