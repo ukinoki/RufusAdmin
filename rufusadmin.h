@@ -112,7 +112,7 @@ private:
     QSystemTrayIcon             *ictray_RufusAdminTrayIcon;
     QTimer                      *t_timerUserConnecte, *t_timerVerifDivers, *t_timerSupprDocs, *t_timerDocsAExporter, *t_timerProgressBar;
     QTimer                      t_timer;
-    ImportDocsExternesThread    *ImportDocsExtThread;
+    ImportController            m_importcontroller;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
     User                        *UserAdmin;

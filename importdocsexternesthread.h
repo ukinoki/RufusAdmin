@@ -236,11 +236,11 @@ II - SUPPRESSION D'UN FICHIER
 
 
 
-class ImportDocsExternesThread : public QObject
+class ImportDocsExternes : public QObject
 {
     Q_OBJECT
 public:
-    explicit ImportDocsExternesThread(bool local = true);
+    explicit                    ImportDocsExternes();
     void                        RapatrieDocumentsThread(QList<QVariantList> listdocs);
     enum Acces                  {Local, Distant}; Q_ENUM(Acces)
 
@@ -270,5 +270,44 @@ private:
     QStringList                 m_listmsg;
     QFile                       file_image, file_origine;
 };
+
+class ImportController : public QObject
+{
+    Q_OBJECT
+    QThread m_thread;
+
+private:
+    ImportDocsExternes *m_task = Q_NULLPTR;
+public:
+    ImportController() {
+                            qRegisterMetaType<QList<QVariantList>>("QList"); //! permet de connecter le signal operate(const QList<QVariantList> &)
+                       }
+    ~ImportController() {
+        m_thread.quit();
+        m_thread.wait();
+    }
+    void execute(const QList<QVariantList> &list)
+    {
+        disconnect(SIGNAL(operate(const QList<QVariantList> &)));
+        m_thread.disconnect();
+        if (m_task != Q_NULLPTR)
+            delete m_task;
+        m_task  = new ImportDocsExternes();
+        m_task  ->moveToThread(&m_thread);
+        connect(&m_thread,      &QThread::finished,                 m_task, &QObject::deleteLater);
+        connect(this,           &ImportController::operate,         m_task, &ImportDocsExternes::RapatrieDocumentsThread);
+        connect(m_task,         QOverload<QStringList, int>::of(&ImportDocsExternes::emitmsg),
+                                                                    this,   QOverload<QStringList, int>::of(&ImportController::emitmsg));
+        connect(m_task,         QOverload<QString>::of(&ImportDocsExternes::emitmsg),
+                                                                    this,   QOverload<QString>::of(&ImportController::emitmsg));
+        m_thread.start();
+        emit operate(list);
+    }
+signals:
+    void operate(const QList<QVariantList> &);
+    void emitmsg(QStringList m_listemessages, int pause);
+    void emitmsg(QString msg);
+};
+
 
 #endif // IMPORTDOCSEXTERNESTHREAD_H

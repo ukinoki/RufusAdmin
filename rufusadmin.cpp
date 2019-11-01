@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("31-10-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-11-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -331,12 +331,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::TrayIconMenu);
     ui->MessageupLabel->setText("");
 
-    ImportDocsExtThread = new ImportDocsExternesThread(db->getMode() != Utils::Distant);
-    connect(ImportDocsExtThread,        QOverload<QStringList, int>::of(&ImportDocsExternesThread::emitmsg),
-                                                            this,       &RufusAdmin::AfficheMessageImport);
+    connect(&m_importcontroller,     QOverload<QStringList, int>::of(&ImportController::emitmsg),    this,       &RufusAdmin::AfficheMessageImport);
     if (m_utiliseTCP)
-        connect(ImportDocsExtThread,    QOverload<QString>::of(&ImportDocsExternesThread::emitmsg),
-                                                            TCPServer,  [=] (QString msg) {TCPServer->envoyerATous(msg);});
+        connect(&m_importcontroller,    QOverload<QString>::of(&ImportController::emitmsg), TCPServer,  [=] (QString msg) {TCPServer->envoyerATous(msg);});
     connect(&t_timer,                   &QTimer::timeout,   this,       &RufusAdmin::ListeAppareils);
     t_timer             .setInterval(5000);
     ImportDocsExternes();
@@ -452,7 +449,7 @@ void RufusAdmin::ListeAppareils()
     bool ok;
     QList<QVariantList> listdocs = db->StandardSelectSQL(req, ok);
     if (listdocs.size()>0)
-        ImportDocsExtThread->RapatrieDocumentsThread(listdocs);
+        m_importcontroller.execute(listdocs);
 }
 
 void RufusAdmin::closeEvent(QCloseEvent *)
@@ -2145,10 +2142,13 @@ void RufusAdmin::RestaureBase()
     QString NomDirStockageImagerie = m_parametres->dirimagerie();
     if (!QDir(NomDirStockageImagerie).exists())
     {
-        UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage valide"),
-                            tr("Le dossier spécifié pour le stockage de l'imagerie n'est pas valide") + "\n"
-                            + tr("Indiquez un dossier valide dans la boîte de dialogue qui suit"));
-        QFileDialog dialogimg(Q_NULLPTR,tr("Stocker les images dans le dossier") , QDir::homePath() + DIR_RUFUS);
+        bool exist = QDir().exists(QDir::homePath() + DIR_RUFUS DIR_IMAGERIE);
+        QString existdir = (exist? "" : "\n" + tr("Créez-le au besoin"));
+        UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage d'imagerie"),
+                            tr("Indiquez un dossier valide dans la boîte de dialogue qui suit") + "\n" +
+                            tr("Utilisez de préférence le dossier ") + QDir::homePath() + DIR_RUFUS DIR_IMAGERIE +
+                            existdir);
+        QFileDialog dialogimg(Q_NULLPTR,tr("Stocker les images dans le dossier") , QDir::homePath() + DIR_RUFUS + (exist? DIR_IMAGERIE : ""));
         dialogimg.setViewMode(QFileDialog::List);
         dialogimg.setFileMode(QFileDialog::DirectoryOnly);
         bool b = (dialogimg.exec()>0);
