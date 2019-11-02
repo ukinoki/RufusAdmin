@@ -256,8 +256,6 @@ private:
     QString                     pathdossierdocuments(QString Appareil) const;
     bool                        DefinitDossiers();
     bool                        m_ok;
-    DataBase                    *db;
-    QThread                     *thread;
 
     Acces                       m_acces;
 

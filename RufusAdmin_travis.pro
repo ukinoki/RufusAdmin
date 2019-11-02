@@ -66,6 +66,7 @@ HEADERS += \
     rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \
+    timerthread.h \
     utils.h \
     gbl_datas.h \
     log.h \

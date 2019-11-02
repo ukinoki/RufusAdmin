@@ -70,6 +70,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTimer>
 #include "flags.h"
 #include "ostask.h"
+#include "timerthread.h"
 
 namespace Ui {
 class RufusAdmin;
@@ -238,7 +239,7 @@ private:
      */
 
 public:
-    QTimer                  t_timerbackup;
+    TimerController         t_timerbackup;
     enum BkupRestore { BackupOp, RestoreOp}; Q_ENUM(BkupRestore)
 
 private:
