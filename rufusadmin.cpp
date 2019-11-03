@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("02-11-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("04-11-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2845,12 +2845,9 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
 
 void RufusAdmin::BackupWakeUp()
 {
-    //qDebug() << "BKUP" << "currentTime() = " + QTime::currentTime().toString("HH:mm:ss") + " - m_parametres->heurebkup() = " + m_parametres->heurebkup().toString("HH:mm:ss");
     //Logs::trace("BKUP", "currentTime() = " + QTime::currentTime().toString("HH:mm:ss") + " - m_parametres->heurebkup() = " + m_parametres->heurebkup().toString("HH:mm:ss"));
-    if (QTime::currentTime().toString("HH:mm") == m_parametres->heurebkup().toString("HH:mm"))
+    if (QTime::currentTime().toString("HH:mm") == m_parametres->heurebkup().toString("HH:mm") && QDate::currentDate() > m_lastbackupdate)
     {
-        //qDebug() << "LANCEMENT DU BKUP" << "currentTime() = " + QTime::currentTime().toString("HH:mm:ss") + " - m_parametres->heurebkup() = " + m_parametres->heurebkup().toString("HH:mm:ss");
-        //Logs::trace("LANCEMENT DU BKUP", "currentTime() = " + QTime::currentTime().toString("HH:mm:ss") + " - m_parametres->heurebkup() = " + m_parametres->heurebkup().toString("HH:mm:ss"));
         Utils::Day daybkup = Utils::Lundi;
         switch (QDate::currentDate().dayOfWeek()) {
         case 1: daybkup = Utils::Lundi; break;
@@ -2861,10 +2858,13 @@ void RufusAdmin::BackupWakeUp()
         case 6: daybkup = Utils::Samedi; break;
         case 7: daybkup = Utils::Dimanche;
         }
-        if (!m_parametres->daysbkup().testFlag(daybkup))
-            return;
-        if (!AutresPostesConnectes())
-            Backup(m_parametres->dirbkup());
+        if (m_parametres->daysbkup().testFlag(daybkup))
+            if (!AutresPostesConnectes())
+            {
+                Logs::trace("LANCEMENT DU BKUP", "currentTime() = " + QTime::currentTime().toString("HH:mm:ss") + " - m_parametres->heurebkup() = " + m_parametres->heurebkup().toString("HH:mm:ss"));
+                m_lastbackupdate = QDate::currentDate();
+                Backup(m_parametres->dirbkup());
+            }
     }
 }
 
@@ -2875,10 +2875,12 @@ void RufusAdmin::ParamAutoBackup()
         EffaceProgrammationBackup();
         return;
     }
-    //t_timerbackup.disconnect();
     t_timerbackup.disconnect(SIGNAL(timeout()));
     t_timerbackup.stop();
-    t_timerbackup.start(60000);
+    t_timerbackup.start(30000); /*! le timer de déclenchement de la sauvegrade est lancé plus d'une fois par mintue à cause de la grande imprécision des QTimer
+                                  * si on le lance toutes les 60", il est possible que le timer ne soit pas lancé dans la minute définie pour la sauvegarde.
+                                  * En le lançant toutes les 30", ça marche.
+                                  * C'est de la bidouille, je sais */
     connect(&t_timerbackup, &TimerController::timeout, this, [=] {BackupWakeUp();});
 
     /*! la suite n'est plus utilisée depuis OsX Catalina parce que OsX Catalina n'accepte plus les launchagents

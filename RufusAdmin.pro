@@ -41,7 +41,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    ostask.cpp \
     rufusadmin.cpp \
     importdocsexternesthread.cpp \
     utils.cpp \

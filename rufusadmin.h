@@ -246,13 +246,17 @@ private:
     qint64                  m_basesize, m_imagessize, m_videossize, m_facturessize,  m_freespace;
     UpDialog                *dlg_buprestore;
     UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
+    QDate                   m_lastbackupdate = QDate::currentDate().addDays(-1);
+                            /*! la variable m_lastbackupdate est utilisée parce que les Qtimer ont parfois une imprécision énorme
+                             *  et peuvent se lancer à plusieurs reprises dans le même intervalle ou ne pas se lancer aubout du même intervalle.
+                             * Cela évite de lancer 2 fois la sauvegarde */
     void                    AskBupRestore(BkupRestore op, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true, bool OKfactures = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
     bool                    Backup(QString pathdirdestination, bool OKBase = true, bool OKImages = true, bool OKVideos = true, bool OKFactures = true);
                             /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore()
                             * et par le timer t_timerbackup sous Linux pour effectuer une sauvegarde automatique et sans choix des options dans ce cas */
     void                    BackupWakeUp();
-                            /*! sous Linux, déclenche le backup au moment programmé */
+                            /*! déclenche le backup au moment programmé */
     qint64                  CalcBaseSize();
                             /*! calcule le volume de la base */
     void                    CalcTimeBupRestore();
