@@ -122,7 +122,7 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         msg.remove(TCPMSG_idUser);
         SocketFromDescriptor(descriptor)->setIdUser(msg.toInt());
     }
-    else if (msg.contains(TCPMSG_DataSocket))         // les datas  du client qui vient de se connecter reçues par le serveur
+    else if (msg.contains(TCPMSG_DataSocket))         // les datas  du client qui vient de se connecter reçues par le serveur -> composé de adresseIP, adresseMac, LoaclhostName()
     {
         msg.remove(TCPMSG_DataSocket);
         //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;

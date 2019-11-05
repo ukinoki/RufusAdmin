@@ -26,9 +26,7 @@ DataBase* DataBase::instance = Q_NULLPTR;
 DataBase* DataBase::I()
 {
     if( !instance )
-    {
         instance = new DataBase();
-    }
     return instance;
 }
 
@@ -365,7 +363,7 @@ QVariantList DataBase::getFirstRecordFromStandardSelectSQL(QString req , bool &O
 
 void DataBase::VideDatabases()
 {
-    UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Suppression de l'ancienne base Rufus en cours"), Icons::icSunglasses(), 2000);
+    UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Suppression de l'ancienne base Rufus en cours"), Icons::icSunglasses(), 3000);
     StandardSQL ("drop database if exists " DB_COMPTA );
     StandardSQL ("drop database if exists " DB_OPHTA );
     StandardSQL ("drop database if exists " DB_CONSULTS );
@@ -1403,7 +1401,7 @@ QList<Recette*> DataBase::loadRecettesByDate(QDate datedebut, QDate datefin)
             QJsonObject jData{};
             jData["id"] = i;
             jData["idacte"] = (recetteslist.at(i).at(0) == QVariant()? -1 : recetteslist.at(i).at(0).toInt());
-            jData["date"] = recetteslist.at(i).at(1).toDate().toString("yyyy-MM-dd");;
+            jData["date"] = recetteslist.at(i).at(1).toDate().toString("yyyy-MM-dd");
             jData["payeur"] = recetteslist.at(i).at(2).toString();
             jData["cotationacte"] = recetteslist.at(i).at(3).toString();
             jData["montant"] = recetteslist.at(i).at(4).toDouble();
