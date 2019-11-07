@@ -9,7 +9,6 @@ SOURCES += $$PWD/upcheckbox.cpp \
         $$PWD/updoublevalidator.cpp \
         $$PWD/upgroupbox.cpp \
         $$PWD/uplabel.cpp \
-    $$PWD/uplabeldelegate.cpp \
         $$PWD/uplineedit.cpp \
         $$PWD/upmessagebox.cpp \
         $$PWD/uppushbutton.cpp \
@@ -32,7 +31,6 @@ HEADERS += $$PWD/upcheckbox.h \
         $$PWD/updoublevalidator.h \
         $$PWD/upgroupbox.h \
         $$PWD/uplabel.h \
-    $$PWD/uplabeldelegate.h \
         $$PWD/uplineedit.h \
         $$PWD/upmessagebox.h \
         $$PWD/uppushbutton.h \
