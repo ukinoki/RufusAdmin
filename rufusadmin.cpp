@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("10-11-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("17-11-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -786,11 +786,53 @@ qint64 RufusAdmin::CalcBaseSize()
 
 void RufusAdmin::ConnexionBase()
 {
-    DlgParam = new dlg_paramconnexion();
-    if (DlgParam->exec()>0)
-        db = DataBase::I();
-    else
+    db = DataBase::I();
+    QString error = "";
+    QString Base, server;
+
+    QString Login = NOM_ADMINISTRATEURDOCS;
+    QString Password = NOM_MDPADMINISTRATEUR;
+
+    //à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
+    db->initFromFirstConnexion(Utils::getBaseFromMode(Utils::Poste), "localhost", 3306, false);
+    error = db->connectToDataBase(DB_CONSULTS, Login, Password);
+
+    if( error.size() )
+    {
+        UpMessageBox::Watch(this, tr("Erreur sur le serveur MySQL"),
+                            tr("Impossible de se connecter au serveur avec le login ") + Login
+                            + tr(" et ce mot de passe") + "\n"
+                            + tr("Revoyez le réglage des paramètres de connexion dans le fichier rufus.ini.") + "\n"
+                            + error);
         exit(0);
+    }
+
+    QString Client;
+    Client = db->getServer();
+
+    db->StandardSQL("set global sql_mode = 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES';");
+    db->StandardSQL("SET GLOBAL event_scheduler = 1 ;");
+    db->StandardSQL("SET GLOBAL max_allowed_packet=" MAX_ALLOWED_PACKET "*1024*1024 ;");
+
+    QString req = "show grants for '" + Login + (db->getMode() == Utils::Distant? "SSL" : "")  + "'@'" + Client + "'";
+    bool ok;
+    QVariantList grantsdata = db->getFirstRecordFromStandardSelectSQL(req,ok);
+
+    if (!ok || grantsdata.size()==0)
+    {
+        UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
+                            tr("Impossible de retrouver les droits de l'utilisateur ") + NOM_ADMINISTRATEURDOCS);
+        exit(0);
+    }
+    QString reponse = grantsdata.at(0).toString();
+    if (reponse.left(9) != "GRANT ALL")
+    {
+        UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
+                            tr("L'utilisateur ") + NOM_ADMINISTRATEURDOCS + tr(" existe mais ne dispose pas "
+                                                                               "de toutes les autorisations pour modifier ou créer des données sur le serveur.\n"
+                                                                               "Choisissez un autre utilisateur ou modifiez les droits de cet utilisateur au niveau du serveur.\n"));
+        exit(0);
+    }
 }
 
 /*-----------------------------------------------------------------------------------------------------------------
@@ -1250,7 +1292,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
             msgbox.exec();
             return;
         }
-        if (anc != db->getDataBase().password())
+        if (anc != db->getMDPAdmin())
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas le bon\n"));
@@ -1258,7 +1300,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
             msgbox.exec();
             return;
         }
-        if (!Utils::rgx_AlphaNumeric_5_12.exactMatch(nouv) || nouv == "")
+        if (!Utils::rgx_AlphaNumeric_3_12.exactMatch(nouv) || nouv == "")
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le nouveau mot de passe n'est pas conforme\n(au moins 3 caractères - chiffres ou lettres non accentuées -\n"));
@@ -1279,24 +1321,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         QString req = "update " TBL_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
         m_parametres->setmdpadmin(nouv);
         db->StandardSQL(req);
-        // Enregitrer le nouveau MDP de la base
-        req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(UserAdmin->id());
-        db->StandardSQL(req);
-        // Enregitrer le nouveau MDP de connexion à MySQL
-        req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'localhost' = '" + nouv + "'";
-        db->StandardSQL(req);
-        QString AdressIP;
-        foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
-            if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
-                 AdressIP = address.toString();
-        }
-        QString Domaine;
-        QStringList listIP = AdressIP.split(".");
-        for (int i=0;i<listIP.size()-1;i++)
-            Domaine += listIP.at(i) + ".";
-        req = "set password for '" NOM_ADMINISTRATEURDOCS "'@'" + Domaine + "%' = '" + nouv + "'";
-        db->StandardSQL(req);
-        req = "set password for '" NOM_ADMINISTRATEURDOCS "SSL'@'%' = '" + nouv + "'";
+         req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(UserAdmin->id());
         db->StandardSQL(req);
         dlg_askMDP->done(0);
         msgbox.exec();
@@ -2212,7 +2237,7 @@ void RufusAdmin::RestaureBase()
                         msg += tr("Base non restaurée");
                         break;
                     }
-                    if (!VerifMDP(db->getDataBase().password(),tr("Saisissez le mot de passe Administrateur")))
+                    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
                     {
                         msg += tr("Base non restaurée");
                         break;
@@ -2464,7 +2489,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     bool visible = isVisible();
     if (!visible)
         showNormal();
-    if (!VerifMDP(db->getDataBase().password(),tr("Saisissez le mot de passe Administrateur")))
+    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
     {
         if (!visible)
             MasqueAppli();

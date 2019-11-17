@@ -18,9 +18,11 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef LOG_H
 #define LOG_H
 
+#include <QDate>
+#include <QDir>
+#include <QString>
 #include "macros.h"
 #include "upmessagebox.h"
-#include "dlg_message.h"
 
 /*!
 * \file Log.h
@@ -42,7 +44,7 @@ public:
     static void trace(QString type, QString msg, QString infoMsg = "")
     {
         QDir DirRssces;
-        QString dirlog = QDir::homePath() + DIR_RUFUSADMIN DIR_LOGS;
+        QString dirlog = QDir::homePath() + DIR_RUFUS DIR_LOGS;
         if (!DirRssces.exists(dirlog))
             DirRssces.mkdir(dirlog);
         QString datelog = QDate::currentDate().toString("yyyy-MM-dd");
@@ -55,6 +57,10 @@ public:
             out << timelog << " - " << type << " : " << msg << (infoMsg==""? "" : " : " + infoMsg) << "\n";
             testfile.close();
         }
+        //else UpMessageBox::Watch(Q_NULLPTR, tr("Impossible d'ouvrir le fichier\n") + fileName);
+
+        if( showMessage() )
+            UpMessageBox::Show(Q_NULLPTR, msg, infoMsg);
     }
     static void MSGSOCKET(QString msg, QString infoMsg = "")
     {
@@ -64,7 +70,7 @@ public:
     static void tracesocket(QString type, QString msg, QString infoMsg = "")
     {
         QDir DirRssces;
-        QString dirlog = QDir::homePath() + DIR_RUFUSADMIN DIR_LOGS;
+        QString dirlog = QDir::homePath() + DIR_RUFUS DIR_LOGS;
         if (!DirRssces.exists(dirlog))
             DirRssces.mkdir(dirlog);
         QString datelog = QDate::currentDate().toString("yyyy-MM-dd");
@@ -78,21 +84,22 @@ public:
             testfile.close();
         }
     }
-    static bool LogToFile(QString NomFichier, QByteArray TexteFichier)
+    static void LogToFile(QString NomFichier, QString msg)
     {
-        //syntaxe = LogToFile(QDir::homePath()+ "/Documents/test.txt", texte);
+        //syntaxe = LogToFile(test.txt", texte);
         QDir DirRssces;
-        if (!DirRssces.exists(QDir::homePath() + "/Documents/Rufus/Ressources"))
-            DirRssces.mkdir(QDir::homePath() + "/Documents/Rufus/Ressources");
-        QFile testfile(NomFichier);
-        if (!testfile.open(QIODevice::ReadWrite))
+        QString dirlog = QDir::homePath() + DIR_RUFUS DIR_LOGS;
+        if (!DirRssces.exists(dirlog))
+            DirRssces.mkdir(dirlog);
+        QString datelog = QDate::currentDate().toString("yyyy-MM-dd");
+        QString fileName(dirlog + "/" + datelog + "_" + NomFichier);
+        QFile testfile(fileName);
+        if (testfile.open(QIODevice::ReadWrite))
         {
-            UpMessageBox::Watch(Q_NULLPTR, QObject::tr("Impossible d'ouvrir le fichier\n") + NomFichier);
-            return false;
+            QTextStream out(&testfile);
+            QString timelog = QTime::currentTime().toString();
+            out << timelog << " - " << msg;
         }
-        QTextStream out(&testfile);
-        out << TexteFichier;
-        return true;
     }
 };
 

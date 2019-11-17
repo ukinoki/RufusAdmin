@@ -52,6 +52,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QFileDialog>
 #include <QHostInfo>
 #include <QMainWindow>
+#include <QStorageInfo>
 #include <QSplashScreen>
 #include <QSystemTrayIcon>
 #include <poppler-qt5.h>
@@ -60,7 +61,6 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "dlg_gestionlieux.h"
 #include "dlg_message.h"
 #include "dlg_motifs.h"
-#include "dlg_paramconnexion.h"
 #include "importdocsexternesthread.h"
 #include "widgetbuttonframe.h"
 #include "tcpserver.h"
@@ -89,7 +89,6 @@ private:
     dlg_gestionbanques          *Dlg_Banq;
     dlg_gestionusers            *Dlg_GestUsr;
     dlg_motifs                  *Dlg_motifs;
-    dlg_paramconnexion          *DlgParam;
     Controller                  m_controller;
     Flags                       *flags;
     bool                        m_ok;
