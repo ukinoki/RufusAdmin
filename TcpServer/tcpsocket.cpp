@@ -107,7 +107,7 @@ void TcpSocket::envoyerMessage(QString msg)
         msg2 = TCPMSG_MAJCorrespondants;
     else if (msg.contains(TCPMSG_MAJDocsExternes))
         msg2 = TCPMSG_MAJDocsExternes;
-    Logs::MSGSOCKET("void TcpSocket::envoyerMessage(QString msg) - msg " + msg + " - " + msg2 + " - destinataire = " + login);
+    Logs::LogSktMessage("void TcpSocket::envoyerMessage(QString msg) - msg " + msg + " - " + msg2 + " - destinataire = " + login);
     //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
     if(state() == QAbstractSocket::ConnectedState)
     {
@@ -126,7 +126,7 @@ void TcpSocket::Deconnexion()
 void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
 {
     //qDebug() << "le cient ne répond plus - " << erreur << " - " << errorString();
-    Logs::MSGSOCKET(QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(erreur));
+    Logs::LogSktMessage(QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(erreur));
     /*
         le cient ne répond plus
         QAbstractSocket::RemoteHostClosedError

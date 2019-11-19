@@ -33,14 +33,14 @@ TcpServer::TcpServer()
 
 void TcpServer::setId(int id)
 {
-    Logs::MSGSOCKET("void TcpServer::setId(int id)");
+    Logs::LogSktMessage("void TcpServer::setId(int id)");
     m_idadmin = id;
     m_listeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(m_idadmin) + "{}" TCPMSG_ListeSockets;
 }
 
 bool TcpServer::start()
 {
-    Logs::MSGSOCKET("void TcpServer::start()");
+    Logs::LogSktMessage("void TcpServer::start()");
     QString port = NOM_PORT_TCPSERVEUR;
     if (!listen(QHostAddress::Any, port.toUShort())) // Démarrage du serveur sur toutes les IP disponibles et sur le port NOM_PORT_TCPSERVEUR
     {
@@ -54,7 +54,7 @@ bool TcpServer::start()
 
 void TcpServer::incomingConnection(qintptr descriptor)
 {
-    Logs::MSGSOCKET("void TcpServer::incomingConnection(qintptr socketDescriptor) - " + QString::number(descriptor));
+    Logs::LogSktMessage("void TcpServer::incomingConnection(qintptr socketDescriptor) - " + QString::number(descriptor));
     TcpSocket *socket = new TcpSocket(descriptor);
 
     connect(socket,     &TcpSocket::emitmsg,              this,   &TcpServer::TraiteMessageRecu);
@@ -65,7 +65,7 @@ void TcpServer::incomingConnection(qintptr descriptor)
 
 void TcpServer::Deconnexion(qintptr descriptor)
 {
-    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor)- skt descriptor " + QString::number(descriptor));
+    Logs::LogSktMessage("void TcpServer::Deconnexion(qintptr sktdescriptor)- skt descriptor " + QString::number(descriptor));
 
     TcpSocket *skt = SocketFromDescriptor(descriptor);
     if ( skt == Q_NULLPTR)
@@ -82,12 +82,12 @@ void TcpServer::Deconnexion(qintptr descriptor)
 
     skt->deleteLater();
 
-    Logs::MSGSOCKET("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion adress " + adress + " - " + login);
+    Logs::LogSktMessage("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion adress " + adress + " - " + login);
 }
 
 void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
 {
-    Logs::MSGSOCKET("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(descriptor) + " msg " + msg);
+    Logs::LogSktMessage("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(descriptor) + " msg " + msg);
     //qDebug() << msg;
     if (SocketFromDescriptor(descriptor) == Q_NULLPTR)
         return;
@@ -163,7 +163,7 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
 
 void TcpServer::envoieListeSockets(qintptr descriptor)
 {
-    Logs::MSGSOCKET("void TcpServer::envoieListeSockets(qintptr sktdescriptor)");
+    Logs::LogSktMessage("void TcpServer::envoieListeSockets(qintptr sktdescriptor)");
     ListeSockets();
     if (descriptor == -1)
         envoyerATous(m_listeSockets);
@@ -177,7 +177,7 @@ void TcpServer::envoieListeSockets(qintptr descriptor)
 
 QString TcpServer::ListeSockets()
 {
-    Logs::MSGSOCKET("void TcpServer::ListeSockets()");
+    Logs::LogSktMessage("void TcpServer::ListeSockets()");
     m_listeSockets = Utils::getIpAdress();
     m_listeSockets += TCPMSG_Separator + Utils::getMACAdress();
     m_listeSockets += TCPMSG_Separator + QHostInfo::localHostName();
@@ -201,24 +201,24 @@ TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
         itskt.next();
         if (itskt.key() == descriptor)
         {
-            Logs::MSGSOCKET(msg + " - trouvé");
+            Logs::LogSktMessage(msg + " - trouvé");
             return itskt.value();
         }
     }
-    Logs::MSGSOCKET(msg + " = QNULLPTR");
+    Logs::LogSktMessage(msg + " = QNULLPTR");
     return Q_NULLPTR;
 }
 
 void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)
 {
-    Logs::MSGSOCKET("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - skt descriptor " + QString::number(emetteurorigin) + " msg " + msg);
+    Logs::LogSktMessage("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - skt descriptor " + QString::number(emetteurorigin) + " msg " + msg);
     QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
     while (itskt.hasNext())
     {
         itskt.next();
         if (itskt.key() != emetteurorigin)
         {
-            Logs::MSGSOCKET("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - sktdescriptor destinataire " + QString::number(itskt.key()) + " msg " + msg);
+            Logs::LogSktMessage("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - sktdescriptor destinataire " + QString::number(itskt.key()) + " msg " + msg);
             itskt.value()->envoyerMessage(msg);
         }
     }
@@ -226,7 +226,7 @@ void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)
 
 void TcpServer::envoyerA(int iduser, QString msg)
 {
-    Logs::MSGSOCKET("void TcpServer::envoyerA(int iduser, QString msg)");
+    Logs::LogSktMessage("void TcpServer::envoyerA(int iduser, QString msg)");
     QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
     while (itskt.hasNext())
     {

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("17-11-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("18-11-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -793,8 +793,7 @@ void RufusAdmin::ConnexionBase()
     QString Login = NOM_ADMINISTRATEURDOCS;
     QString Password = NOM_MDPADMINISTRATEUR;
 
-    //à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
-    db->initFromFirstConnexion(Utils::getBaseFromMode(Utils::Poste), "localhost", 3306, false);
+    db->initFromFirstConnexion(Utils::getBaseFromMode(Utils::Poste), "localhost", 3306, false);    //! à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
     error = db->connectToDataBase(DB_CONSULTS, Login, Password);
 
     if( error.size() )
@@ -1330,8 +1329,8 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
 
 void RufusAdmin::setMapIcons()
 {
-    map_icons["OK"]             = ic_OK;
-    map_icons["Annul"]          = ic_Annul;
+    map_icons["OK"]             =  ic_OK;
+    map_icons["Annul"]          =  ic_Annul;
     map_icons["Euro"]           =  ic_Euro;
     map_icons["EuroCount"]      =  ic_EuroCount;
     map_icons["FermeAppuye"]    =  ic_FermeAppuye;
@@ -1350,7 +1349,6 @@ void RufusAdmin::CalcExporteDocs()
     if (db->getMode() == Utils::Distant)
         return;
     QString totreq = "SELECT idimpression FROM " TBL_DOCSEXTERNES " where jpg is not null or pdf is not null limit 1";
-    //qDebug() << totreq;
     ui->ExportImagespushButton->setEnabled(db->StandardSelectSQL(totreq, m_ok).size()>0);
 }
 
@@ -1450,7 +1448,7 @@ void RufusAdmin::ExporteDocs()
             QByteArray ba = listexportjpg.at(i).at(6).toByteArray();
             QPixmap pix;
             pix.loadFromData(ba);
-            /*
+        /*!
          * On utilise le passage par les QPixmap parce que le mèthode suivante consistant
          * à réintégrer le QByteArray directement dans le fichier aboutit à un fichier corrompu...
          * QFile prov (CheminOKTransfrProv);
@@ -1627,7 +1625,8 @@ void RufusAdmin::ExporteDocs()
                     continue;
                 }
             }
-            /* nommage d'un fichier facture
+            /*!
+             * nommage d'un fichier facture
              * idFacture + "_" + "ECHEANCIER ou FACTURE" + "_" + Intitule + "_" + DateFacture + ( + "_" + iddepense si facture et pas échéancier)
              */
             QDate datetransfer  = listexportjpgfact.at(i).at(1).toDate();
@@ -1670,7 +1669,7 @@ void RufusAdmin::ExporteDocs()
             QByteArray ba = listexportjpgfact.at(i).at(6).toByteArray();
             QPixmap pix;
             pix.loadFromData(ba);
-            /*
+        /*!
          * On utilise le passage par les QPixmap parce que le mèthode suivante consistant
          * à réintégrer le QByteArray directement dans le fichier aboutit à un fichier corrompu et je ne sais pas pourquoi
          * QFile prov (CheminOKTransfrProv);
@@ -1880,7 +1879,7 @@ void RufusAdmin::GestionUsers()
 
 void RufusAdmin::ImportDocsExternes()
 {
-    // si aucun appareil n'a de dossier d'échange, inutile de lancer l'import des documents
+    //! si aucun appareil n'a de dossier d'échange, inutile de lancer l'import des documents
     bool verifdocs = false;
     for (int row=0; row<ui->AppareilsConnectesupTableWidget->rowCount(); row++)
     {
@@ -2418,9 +2417,11 @@ void RufusAdmin::RestaureBase()
     ConnectTimers();
 }
 
-// utilisé par RufusAdmin pour supprimer les documents et les factures
-// ayant été inscrits dans les tables DocsASupprimer et FacturesASupprimer
-// par les autres postes
+/*!
+ * utilisé par RufusAdmin pour supprimer les documents et les factures
+ * ayant été inscrits dans les tables DocsASupprimer et FacturesASupprimer
+ * par les autres postes
+ */
 
 void RufusAdmin::SupprimerDocsEtFactures()
 {
@@ -2484,8 +2485,8 @@ void RufusAdmin::TrayIconMenu()
 
 void RufusAdmin::ChoixMenuSystemTray(QString txt)
 {
-    // il faut montrer la fiche d'abord sinon la fermeture du QInputDialog de VerifMDP()
-    // provoque la fermeture du programme quoiqu'il arrive (???)
+    //! il faut montrer la fiche d'abord sinon la fermeture du QInputDialog de VerifMDP()
+    //! provoque la fermeture du programme quoiqu'il arrive (???)
     bool visible = isVisible();
     if (!visible)
         showNormal();
@@ -2576,7 +2577,6 @@ void RufusAdmin::VerifVersionBase()
 
 void RufusAdmin::ReconstruitListeLieuxExercice()
 {
-    /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
     disconnect(ui->EmplacementServeurupComboBox,    QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
     ui->EmplacementServeurupComboBox->clear();
     foreach (Site* site, *Datas::I()->sites->sites())
@@ -2591,7 +2591,6 @@ void RufusAdmin::ReconstruitListeLieuxExercice()
         }
     }
     connect(ui->EmplacementServeurupComboBox,       QOverload<int>::of(&QComboBox::currentIndexChanged),   this,   &RufusAdmin::EnregistreEmplacementServeur);
-    /*-------------------- GESTION DES LIEUX D'EXERCICE-------------------------------------------------------*/
 }
 
 bool RufusAdmin::VerifBase()
@@ -2665,8 +2664,8 @@ bool RufusAdmin::VerifBase()
                 /*! dans les anciennes versions du programme antérieures à la 53, pour des raisons d'économie d'espace disque,
                  * la création d'un dossier n'entraînait pas systématiquement
                  * la création d'une ligne corresondante dans la table renseignementsmedicauxpatients
-                 * à partir de la version 53, cette ligen est créée systématiquement pour ne pas avoir à on vérifier sa présence
-                 *  à chaque fois qu'on veut enregistrer un renseignement
+                 * à partir de la version 53, cette ligne est créée systématiquement pour ne pas avoir à en vérifier sa présence
+                 * à chaque fois qu'on veut enregistrer un renseignement
                  * A partir de la version 53, cette ligne est systématiquement créée lors de la création d'un dossier
                  * il n'y a donc plus à faire cette vérification
                  * cette MAJ crée une ligne pour tous les dossiers n'ayant pas la correspondance dans la table renseignementsmedicauxpatients
@@ -3065,6 +3064,8 @@ QStringList RufusAdmin::DecomposeScriptSQL(QString nomficscript)
 
 void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages, bool AvecVideos, bool AvecFactures)
 {
+    if (!Utils::mkpath(pathdirdestination))
+        return;
     if (!QDir(pathdirdestination).exists())
         return;
     // élaboration du script de backup

@@ -240,35 +240,35 @@ class ImportDocsExternesThread : public QObject
 {
     Q_OBJECT
 public:
-    explicit ImportDocsExternesThread();
-    void                        RapatrieDocumentsThread(QList<QVariantList> listdocs);
-    enum Acces                  {Local, Distant}; Q_ENUM(Acces)
+    explicit        ImportDocsExternesThread();
+    void            RapatrieDocumentsThread(QList<QVariantList> listdocs);
+    enum Acces      {Local, Distant}; Q_ENUM(Acces)
 
 signals:
-    void                        emitmsg(QStringList m_listmsg, int pause);
-    void                        emitmsg(QString msg);
+    void            emitmsg(QStringList m_listmsg, int pause);
+    void            emitmsg(QString msg);
 
 private:
-    void                        EchecImport(QString txt);
-    bool                        m_encours;
-    QString                     m_nomfichierini;
-    QSettings                   *m_settings;
-    QString                     pathdossierdocuments(QString Appareil) const;
-    bool                        DefinitDossiers();
-    bool                        m_ok;
-    DataBase                    *db;
-    QThread                     *thread;
+    void            EchecImport(QString txt);
+    bool            m_encours;
+    QString         m_nomfichierini;
+    QSettings       *m_settings;
+    QString         pathdossierdocuments(QString Appareil) const;
+    bool            DefinitDossiers();
+    bool            m_ok;
+    DataBase        *db;
+    QThread         *thread;
 
-    Acces                       m_acces;
+    Acces           m_acces;
 
-    QString                     m_pathdirstockageprovisoire;
-    QString                     m_pathdirstockageimagerie;
-    QString                     m_pathdirOKtransfer;
-    QString                     m_pathdirOKtransferorigin;
-    QString                     m_datetransfer;
-    QString                     m_pathdirEchectransfer;
-    QStringList                 m_listmsg;
-    QFile                       file_image, file_origine;
+    QString         m_pathdirstockageprovisoire;
+    QString         m_pathdirstockageimagerie;
+    QString         m_pathdirOKtransfer;
+    QString         m_pathdirOKtransferorigin;
+    QString         m_datetransfer;
+    QString         m_pathdirEchectransfer;
+    QStringList     m_listmsg;
+    QFile           file_image, file_origine;
 };
 
 #endif // IMPORTDOCSEXTERNESTHREAD_H

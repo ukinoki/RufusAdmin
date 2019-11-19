@@ -36,7 +36,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 class Logs
 {
 public:
-    static bool showMessage() { return true; }
     static void ERROR(QString msg, QString infoMsg = "")
     {
         trace("ERROR", msg, infoMsg);
@@ -57,17 +56,8 @@ public:
             out << timelog << " - " << type << " : " << msg << (infoMsg==""? "" : " : " + infoMsg) << "\n";
             testfile.close();
         }
-        //else UpMessageBox::Watch(Q_NULLPTR, tr("Impossible d'ouvrir le fichier\n") + fileName);
-
-        if( showMessage() )
-            UpMessageBox::Show(Q_NULLPTR, msg, infoMsg);
     }
-    static void MSGSOCKET(QString msg, QString infoMsg = "")
-    {
-        QByteArray ba, bainfo;
-        tracesocket("MSG", ba.append(msg), bainfo.append(infoMsg));
-    }
-    static void tracesocket(QString type, QString msg, QString infoMsg = "")
+    static void LogSktMessage(QString msg, QString infoMsg = "")
     {
         QDir DirRssces;
         QString dirlog = QDir::homePath() + DIR_RUFUS DIR_LOGS;
@@ -80,13 +70,13 @@ public:
         {
             QTextStream out(&testfile);
             QString timelog = QTime::currentTime().toString();
-            out << timelog << " - " << type << "\t-> " << msg.replace(TCPMSG_Separator, ":::") << (infoMsg == ""? "" : " : " + infoMsg.replace(TCPMSG_Separator, ":::")) << "\n";
+            out << timelog << " - " << "MSG\t-> " << msg.replace(TCPMSG_Separator, ":::") << (infoMsg == ""? "" : " : " + infoMsg.replace(TCPMSG_Separator, ":::")) << "\n";
             testfile.close();
         }
     }
     static void LogToFile(QString NomFichier, QString msg)
     {
-        //syntaxe = LogToFile(test.txt", texte);
+        //syntaxe = LogToFile("test.txt", texte);
         QDir DirRssces;
         QString dirlog = QDir::homePath() + DIR_RUFUS DIR_LOGS;
         if (!DirRssces.exists(dirlog))
