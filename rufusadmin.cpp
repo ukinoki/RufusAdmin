@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("19-11-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("23-11-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1942,12 +1942,12 @@ void RufusAdmin::MetAJourLaConnexion()
     QList<PosteConnecte*> listpostsAEliminer = QList<PosteConnecte*>();
     foreach(PosteConnecte* post, *Datas::I()->postesconnectes->postesconnectes())
     {
-        qint64 tempsecouledepuisactualisation = post->heurederniereconnexion().secsTo(timenow);
+        qint64 tempsecouledepuisactualisation = post->dateheurederniereconnexion().secsTo(timenow);
         if (tempsecouledepuisactualisation > 90)
         {
             qDebug() << "Suppression d'un poste débranché accidentellement" << "RufusAdmin::MetAJourLaConnexion()";
             qDebug() << "timenow = " << timenow;
-            qDebug() << "heure dernière connexion = " << post->heurederniereconnexion();
+            qDebug() << "heure dernière connexion = " << post->dateheurederniereconnexion();
             qDebug() << "temps ecoule depuis actualisation = " << tempsecouledepuisactualisation;
             qDebug() << "nom du poste)" << post->stringid();
             qDebug() << "user = " << Datas::I()->users->getById(post->id())->login();

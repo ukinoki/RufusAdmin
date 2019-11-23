@@ -498,10 +498,7 @@ QString Utils::getIpAdress()
 
 QString Utils::getMACAdress()
 {
-    QString IPadress = "";
-    foreach (const QHostAddress &address, QNetworkInterface::allAddresses())
-        if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
-            IPadress = address.toString();
+    QString IPadress = getIpAdress();
     QString MACAddress = "";
        QString localNetmask;
        foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
@@ -854,4 +851,23 @@ QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance, QString Sexe, QDa
 QString Utils::EnumDescription(QMetaEnum metaEnum, int val)
 {
     return metaEnum.valueToKey(val);
+}
+
+
+//! calcule la taille idéale en points d'une police pour l'adapetr aux fenêtres Rufus
+//! \param la QFont
+//! \return int -> la taille en points
+void Utils::CalcFontSize(QFont &font)
+{
+    for (int i = 5; i < 30; i++)
+    {
+        font.setPointSize(i);
+        QFontMetrics fm(font);
+        int Htaille = fm.width("date de naissance");
+        if (Htaille > 108 || fm.height()*1.1 > 20)
+        {
+            font.setPointSize(i-1);
+            i=30;
+        }
+    }
 }
