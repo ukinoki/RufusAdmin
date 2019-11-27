@@ -41,4 +41,3 @@ void PosteConnecte::setData(QJsonObject data)
     setDataString(data, "stringid", m_stringid);
     m_data = data;
 }
-

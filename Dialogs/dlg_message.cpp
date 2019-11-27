@@ -29,24 +29,6 @@ Message::Message()
     idprioritymessage = 0;
 }
 
-void Message::LogMessage(QString msg)
-{
-    QDir DirRssces;
-    QString dirlog = QDir::homePath() + DIR_RUFUS DIR_LOGS;
-    if (!DirRssces.exists(dirlog))
-        DirRssces.mkdir(dirlog);
-    QString datelog = QDate::currentDate().toString("yyyy-MM-dd");
-    QString fileName(dirlog + "/" + datelog + "_errorlog.txt");
-    QFile testfile(fileName);
-    if( testfile.open(QIODevice::Append) )
-    {
-        QTextStream out(&testfile);
-        QString timelog = QTime::currentTime().toString();
-        out << timelog << " - " << "MESSAGE" << " : " << msg << "\n";
-        testfile.close();
-    }
-}
-
 void Message::SplashMessage(QString msg, int duree)
 {
     QDialog *dlg = new QDialog();
@@ -93,11 +75,11 @@ void Message::SplashMessage(QString msg, int duree)
     QTimer::singleShot(duree, dlg, &QDialog::reject);
 }
 
-void Message::PriorityMessage(QString msg, qintptr &idmessage)
+void Message::PriorityMessage(QString msg, qintptr &idmessage, int duree, QWidget *parent)
 {
     idprioritymessage ++;
     idmessage           = idprioritymessage;
-    QDialog             *prioritydlg = new QDialog();
+    QDialog             *prioritydlg = new QDialog(parent);
     prioritydlg         ->setAttribute(Qt::WA_DeleteOnClose);
     prioritydlg         ->setSizeGripEnabled(false);
 
@@ -134,6 +116,16 @@ void Message::PriorityMessage(QString msg, qintptr &idmessage)
     int xx              = qApp->desktop()->availableGeometry().width();
     prioritydlg         ->move(xx/2 - w/2 - marge - lay->spacing()-15, yy/2 - (int(hauteurligne)*nlignes)/2 - marge);
     prioritydlg         ->show();
+    if (parent != Q_NULLPTR)
+        parent->setEnabled(false);
     Utils::Pause(500);
-    connect(this,   &Message::closeprioiritydlg, prioritydlg, [=](qintptr a) { if (idmessage == a) prioritydlg->reject(); });
+    connect(this,   &Message::closeprioiritydlg, prioritydlg, [=](qintptr a) { if (idmessage == a) {
+            if (prioritydlg->parent() != Q_NULLPTR)
+                static_cast<QWidget*>(prioritydlg->parent())->setEnabled(true);
+            prioritydlg->reject();
+        }
+        });
+    if (duree > 0)
+        QTimer::singleShot(duree, prioritydlg, &QDialog::reject);
+
 }

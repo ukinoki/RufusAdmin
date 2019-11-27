@@ -64,15 +64,15 @@ private:
     QString m_nom = "";                 //!< nom de l'utilisateur
     QString m_droits = "";              //!> les droits de l'utilisateur - correspond à l'enum METIER -> Ophtalmo, Orthoptiste, AutreSoignant, NonSoignant, SocieteComptable, NoMetier
     QString m_mail = "";                //!> le mail
-    QString m_titre = "";               //!> titre, ex: Docteur
-    QString m_fonction = "";            //!> la fonction précise de l'utilisateur
+    QString m_titre = "";               //!< titre, ex: Docteur
+    QString m_fonction = "";            //! la fonction précise de l'utilisateur
     QString m_specialite = "";          //!> la spécialité
     QString m_numCO = "";               //!> le no du conseil de l'ordre
     QString m_portable = "";            //!> le no de téléphone portable
     QString m_web = "";                 //!> le site web
     QString m_memo = "";                //!> memo sur l'utilisateur
     QString m_policeEcran = "";         //!> le choix de police d'écran de l'utilisateur
-    QString m_policeAttribut = "";      //!> le choix d'attribut de la police d'écran
+    QString m_policeAttribut = "";      //! lle choix d'attribut de la police d'écran
     QString m_nomCompteEncaissHonoraires = "";  //!> le compte sur lequel sont encaissés les honoraires
 
     int m_soignant;
@@ -99,7 +99,7 @@ private:
                             //!< 2 : responsable et assistant
                             //!< 3 : assistant
 
-    QDateTime m_dateDerniereConnexion = QDateTime();
+    QDateTime m_dateDerniereConnexion;
 
     QList<int> *m_listidcomptesall = Q_NULLPTR;     //! tous les id des comptes de l'utilisateur  y compris ceux qui sont devenus inactifs
     QList<int> *m_listidcomptes = Q_NULLPTR;        //! tous les id des comptes actifs de l'utilisateur
@@ -170,6 +170,7 @@ public:
                         if (attribut.contains("Black",Qt::CaseInsensitive))
                             policeEcran.setWeight(QFont::Black);
                     }
+                    Utils::CalcFontSize(policeEcran);
                     return policeEcran; }
     QString policeattribut() const  { return m_policeAttribut; }
 
