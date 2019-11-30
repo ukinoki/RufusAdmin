@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("27-11-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("30-11-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -117,19 +117,19 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + Datas::I()->sites->currentsite()->nom() + "</b></font> ");
 
     //recherche de l'idUser du compte AdminDocs
-    QString req = "select iduser from " TBL_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
+    QString req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_LOGIN_USR " = '" NOM_ADMINISTRATEURDOCS "'";
     QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok);
     if (listusr.size()==0)
     {
-        req = "select iduser from " TBL_UTILISATEURS " where UserNom = '" NOM_ADMINISTRATEURDOCS "'";
+        req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_ID_USR " = '" NOM_ADMINISTRATEURDOCS "'";
         QList<QVariantList> listusers = db->StandardSelectSQL(req, m_ok);
         if (listusers.size()>0)
         {
-            db->StandardSQL("update " TBL_UTILISATEURS " set UserLogin = '" NOM_ADMINISTRATEURDOCS "' where UserNom = '" NOM_ADMINISTRATEURDOCS "'");
+            db->StandardSQL("update " TBL_UTILISATEURS " set " CP_LOGIN_USR " = '" NOM_ADMINISTRATEURDOCS "' where " CP_ID_USR " = '" NOM_ADMINISTRATEURDOCS "'");
         }
         else
-            db->StandardSQL("insert into " TBL_UTILISATEURS " (UserNom, UserLogin) values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')");
-        req = "select iduser from " TBL_UTILISATEURS " where UserLogin = '" NOM_ADMINISTRATEURDOCS "'";
+            db->StandardSQL("insert into " TBL_UTILISATEURS " (" CP_ID_USR ", " CP_LOGIN_USR ") values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')");
+        req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_LOGIN_USR " = '" NOM_ADMINISTRATEURDOCS "'";
         listusr = db->StandardSelectSQL(req, m_ok);
         if (m_parametres->mdpadmin() == "")
         {
@@ -1320,7 +1320,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         QString req = "update " TBL_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
         m_parametres->setmdpadmin(nouv);
         db->StandardSQL(req);
-         req = "update " TBL_UTILISATEURS " set userMDP = '" + nouv + "' where idUser = " + QString::number(UserAdmin->id());
+         req = "update " TBL_UTILISATEURS " set " CP_MDP_USR " = '" + nouv + "' where " CP_ID_USR " = " + QString::number(UserAdmin->id());
         db->StandardSQL(req);
         dlg_askMDP->done(0);
         msgbox.exec();
@@ -1348,7 +1348,7 @@ void RufusAdmin::CalcExporteDocs()
 {
     if (db->getMode() == Utils::Distant)
         return;
-    QString totreq = "SELECT idimpression FROM " TBL_DOCSEXTERNES " where jpg is not null or pdf is not null limit 1";
+    QString totreq = "SELECT " CP_ID_DOCSEXTERNES " FROM " TBL_DOCSEXTERNES " where " CP_JPG_DOCSEXTERNES " is not null or " CP_PDF_DOCSEXTERNES " is not null limit 1";
     ui->ExportImagespushButton->setEnabled(db->StandardSelectSQL(totreq, m_ok).size()>0);
 }
 
@@ -1370,7 +1370,7 @@ void RufusAdmin::ExporteDocs()
         Message::I()->SplashMessage(msg, 3000);
         return;
     }
-    int total = db->StandardSelectSQL("SELECT idimpression FROM " TBL_DOCSEXTERNES " where jpg is not null or pdf is not null",ok).size();
+    int total = db->StandardSelectSQL("SELECT " CP_ID_DOCSEXTERNES " FROM " TBL_DOCSEXTERNES " where " CP_JPG_DOCSEXTERNES " is not null or " CP_PDF_DOCSEXTERNES " is not null",ok).size();
     total +=    db->StandardSelectSQL("SELECT " CP_IDFACTURE_FACTURES " FROM " TBL_FACTURES " where " CP_JPG_FACTURES " is not null or " CP_PDF_FACTURES " is not null", ok).size();
     if (total>100)
     {
@@ -1413,7 +1413,7 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES JPG
     //-----------------------------------------------------------------------------------------------------------------------------------------
-    QString req = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, jpg, lienversfichier, typedoc FROM " TBL_DOCSEXTERNES " where jpg is not null";
+    QString req = "SELECT " CP_ID_DOCSEXTERNES ", " CP_IDPAT_DOCSEXTERNES ", " CP_SOUSTYPEDOC_DOCSEXTERNES ", " CP_DATE_DOCSEXTERNES ", " CP_JPG_DOCSEXTERNES ", " CP_LIENFICHIER_DOCSEXTERNES ", " CP_TYPEDOC_DOCSEXTERNES " FROM " TBL_DOCSEXTERNES " where " CP_JPG_DOCSEXTERNES " is not null";
     //qDebug() << req;
     QList<QVariantList> listexportjpg = db->StandardSelectSQL(req, ok );
     if (ok)
@@ -1425,7 +1425,7 @@ void RufusAdmin::ExporteDocs()
                 QString CheminFichier = NomDirStockageImagerie + DIR_IMAGES + listexportjpg.at(i).at(5).toString();
                 if (QFile(CheminFichier).exists())
                 {
-                    db->StandardSQL ("update " TBL_DOCSEXTERNES " set jpg = null where idimpression = " + listexportjpg.at(i).at(0).toString() );
+                    db->StandardSQL ("update " TBL_DOCSEXTERNES " set " CP_JPG_DOCSEXTERNES " = null where " CP_ID_DOCSEXTERNES " = " + listexportjpg.at(i).at(0).toString() );
                     continue;
                 }
             }
@@ -1476,9 +1476,10 @@ void RufusAdmin::ExporteDocs()
             }
             else
                 return;
-            db->StandardSQL("update " TBL_DOCSEXTERNES " set jpg = null,"
-                                                            " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
-                            "' where idimpression = " + listexportjpg.at(i).at(0).toString());
+            db->StandardSQL("update " TBL_DOCSEXTERNES " set"
+                            CP_JPG_DOCSEXTERNES " = null,"
+                            CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
+                            "' where " CP_ID_DOCSEXTERNES " = " + listexportjpg.at(i).at(0).toString());
             faits ++;
             int nsec = debut.secsTo(QTime::currentTime());
             int min = nsec/60;
@@ -1497,7 +1498,7 @@ void RufusAdmin::ExporteDocs()
     //-----------------------------------------------------------------------------------------------------------------------------------------
     //              LES PDF
     //-----------------------------------------------------------------------------------------------------------------------------------------
-    QString reqpdf = "SELECT idimpression, idpat, SousTypeDoc, Dateimpression, pdf, lienversfichier, compression, typedoc FROM " TBL_DOCSEXTERNES " where pdf is not null";
+    QString reqpdf = "SELECT " CP_ID_DOCSEXTERNES ", " CP_IDPAT_DOCSEXTERNES ", " CP_SOUSTYPEDOC_DOCSEXTERNES ", " CP_DATE_DOCSEXTERNES ", " CP_PDF_DOCSEXTERNES ", " CP_LIENFICHIER_DOCSEXTERNES ", " CP_COMPRESSION_DOCSEXTERNES ", " CP_TYPEDOC_DOCSEXTERNES " FROM " TBL_DOCSEXTERNES " where " CP_PDF_DOCSEXTERNES " is not null";
     QList<QVariantList> listexportpdf = db->StandardSelectSQL(reqpdf, ok );
     if (ok)
         for (int i=0; i<listexportpdf.size(); i++)
@@ -1507,7 +1508,7 @@ void RufusAdmin::ExporteDocs()
                 QString CheminFichier = NomDirStockageImagerie + DIR_IMAGES + listexportpdf.at(i).at(5).toString();
                 if (QFile(CheminFichier).exists())
                 {
-                    db->StandardSQL ("update " TBL_DOCSEXTERNES " set pdf = null where idimpression = " + listexportpdf.at(i).at(0).toString());
+                    db->StandardSQL ("update " TBL_DOCSEXTERNES " set " CP_PDF_DOCSEXTERNES " = null where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString());
                     continue;
                 }
             }
@@ -1547,7 +1548,7 @@ void RufusAdmin::ExporteDocs()
                         out << listexportpdf.at(i).at(4).toByteArray() ;
                     }
                 }
-                QString delreq = "delete from  " TBL_DOCSEXTERNES " where idimpression = " + listexportpdf.at(i).at(0).toString();
+                QString delreq = "delete from  " TBL_DOCSEXTERNES " where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString();
                 //qDebug() << delreq;
                 db->StandardSQL (delreq);
                 delete document;
@@ -1564,9 +1565,10 @@ void RufusAdmin::ExporteDocs()
                               | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                               | QFileDevice::ReadUser   | QFileDevice::WriteUser);
             CC.close();
-            db->StandardSQL ("update " TBL_DOCSEXTERNES " set pdf = null, compression = null,"
-                             " lienversfichier = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
-                             " where idimpression = " + listexportpdf.at(i).at(0).toString());
+            db->StandardSQL ("update " TBL_DOCSEXTERNES " set"
+                             CP_PDF_DOCSEXTERNES " = null, compression = null,"
+                             CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
+                             " where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString());
             faits ++;
             int nsec = debut.secsTo(QTime::currentTime());
             int min = nsec/60;
@@ -1640,11 +1642,11 @@ void RufusAdmin::ExporteDocs()
             QList<QVariantList> Listeusr;
             if (listexportjpgfact.at(i).at(4).toInt()==1)          // c'est un échéancier
                 req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " where dep.idUser  = usr." CP_ID_USR
                                                                                                               " and idFacture = " + listexportjpgfact.at(i).at(0).toString();
             else                                                // c'est une facture, l'iduser est dans la table
                 req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " where dep.idUser  = usr." CP_ID_USR
                                                                                                               " and idDep = " + listexportjpgfact.at(i).at(5).toString();
             Listeusr = db->StandardSelectSQL(req, ok);
             if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
@@ -1744,11 +1746,11 @@ void RufusAdmin::ExporteDocs()
             QList<QVariantList> Listeusr;
             if (listexportpdffact.at(i).at(4).toInt()==1)          // c'est un échéancier
                 req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " where dep.idUser  = usr." CP_ID_USR
                                                                                                               " and idFacture = " + listexportpdffact.at(i).at(0).toString();
             else                                                // c'est une facture, l'iduser est dans la table
                 req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr.idUser"
+                                                                                                              " where dep.idUser  = usr." CP_ID_USR
                                                                                                               " and idDep = " + listexportpdffact.at(i).at(5).toString();
             Listeusr = db->StandardSelectSQL(req, ok);
             if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit

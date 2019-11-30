@@ -460,7 +460,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                  * Si on est en accès distant, l'enregistrement se fait dans la table Impressions et le contenu du fichier est copié dans le champ blob de la table de la table
                  * _______________________________________________________________________________________________________________________________________________________
                 */
-                int idimpr = db->selectMaxFromTable("idimpression",  TBL_DOCSEXTERNES, m_ok) + 1;
+                int idimpr = db->selectMaxFromTable(CP_ID_DOCSEXTERNES,  TBL_DOCSEXTERNES, m_ok) + 1;
                 if (!m_ok)
                 {
                     db->unlocktables();
@@ -476,8 +476,8 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
 
                 if (m_acces == Local)
                 {
-                    req = "insert into " TBL_DOCSEXTERNES " (idimpression, idUser,  idpat,  TypeDoc,  SousTypeDoc, Titre, Dateimpression,"
-                                                               " UserEmetteur, lienversfichier, EmisRecu, FormatDoc, idLieu)"
+                    req = "insert into " TBL_DOCSEXTERNES " (" CP_ID_DOCSEXTERNES ", " CP_IDUSER_DOCSEXTERNES ",  " CP_IDPAT_DOCSEXTERNES ",  " CP_TYPEDOC_DOCSEXTERNES " , " CP_SOUSTYPEDOC_DOCSEXTERNES ", " CP_TITRE_DOCSEXTERNES ", " CP_DATE_DOCSEXTERNES ", "
+                                                             CP_IDEMETTEUR_DOCSEXTERNES ", " CP_LIENFICHIER_DOCSEXTERNES ", " CP_EMISORRECU_DOCSEXTERNES ", " CP_FORMATDOC_DOCSEXTERNES ", " CP_IDLIEU_DOCSEXTERNES ")"
                                                                " values("
                             + QString::number(idimpr) + ", "
                             + QString::number(Datas::I()->users->userconnected()->id()) + ", "
@@ -531,7 +531,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                             //qDebug() << "xx = " + QString::number(xx) << "x = " + QString::number(xx-DlgMess->width()-50) << "yy = " + QString::number(yy)  << "y = " + QString::number(yy-DlgMess->height()*(k+1))  << "itr = " << QString::number(k);
                         }
                         else
-                            db->SupprRecordFromTable(idimpr, "idimpression", TBL_DOCSEXTERNES);
+                            db->SupprRecordFromTable(idimpr, CP_ID_DOCSEXTERNES, TBL_DOCSEXTERNES);
                     }
                     else
                     {
@@ -543,18 +543,18 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                 {
                     // on doit passer par les bindvalue pour incorporer le bytearray dans la requête
                     QHash<QString, QVariant> listbinds;
-                    listbinds["idimpression"] =    idimpr;
-                    listbinds["iduser"] =          Datas::I()->users->userconnected()->id();
-                    listbinds["idpat"] =           idPatient;
-                    listbinds["typeDoc"] =         Typedoc;
-                    listbinds["soustypedoc"] =     SousTypeDoc;
-                    listbinds["titre"] =           Titredoc;
-                    listbinds["dateimpression"] =  datestring + " " + QTime::currentTime().toString("HH:mm:ss");
-                    listbinds["useremetteur"] =    Datas::I()->users->userconnected()->id();
-                    listbinds[formatdoc] =         ba;
-                    listbinds["emisrecu"] =        "0";
-                    listbinds["formatdoc"] =       IMAGERIE;
-                    listbinds["idlieu"] =          Datas::I()->sites->idcurrentsite();
+                    listbinds[CP_ID_DOCSEXTERNES]           = idimpr;
+                    listbinds[CP_IDUSER_DOCSEXTERNES]       = Datas::I()->users->userconnected()->id();
+                    listbinds[CP_IDPAT_DOCSEXTERNES]        = idPatient;
+                    listbinds[CP_TYPEDOC_DOCSEXTERNES]      = Typedoc;
+                    listbinds[CP_SOUSTYPEDOC_DOCSEXTERNES]  = SousTypeDoc;
+                    listbinds[CP_TITRE_DOCSEXTERNES]        = Titredoc;
+                    listbinds[CP_DATE_DOCSEXTERNES]         = datestring + " " + QTime::currentTime().toString("HH:mm:ss");
+                    listbinds[CP_IDEMETTEUR_DOCSEXTERNES]   = Datas::I()->users->userconnected()->id();
+                    listbinds[formatdoc]                    = ba;
+                    listbinds[CP_EMISORRECU_DOCSEXTERNES]   = "0";
+                    listbinds[CP_FORMATDOC_DOCSEXTERNES]    = IMAGERIE;
+                    listbinds[CP_IDLIEU_DOCSEXTERNES]       = Datas::I()->sites->idcurrentsite();
 
                     if(db->InsertSQLByBinds(TBL_DOCSEXTERNES, listbinds))
                     {
@@ -587,7 +587,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                             //qDebug() << "xx = " + QString::number(xx) << "x = " + QString::number(xx-DlgMess->width()-50) << "yy = " + QString::number(yy)  << "y = " + QString::number(yy-DlgMess->height()*(k+1))  << "itr = " << QString::number(k);
                         }
                         else
-                            db->SupprRecordFromTable(idimpr, "idimpression", TBL_DOCSEXTERNES);
+                            db->SupprRecordFromTable(idimpr, CP_ID_DOCSEXTERNES, TBL_DOCSEXTERNES);
                     }
                     else
                     {
