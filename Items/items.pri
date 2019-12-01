@@ -7,7 +7,6 @@ SOURCES += $$PWD/cls_acte.cpp \
         $$PWD/cls_correspondant.cpp \
     $$PWD/cls_donneesophtapatient.cpp \
     $$PWD/cls_impression.cpp \
-        $$PWD/cls_item.cpp \
     $$PWD/cls_lignecompte.cpp \
         $$PWD/cls_patient.cpp \
     $$PWD/cls_posteconnecte.cpp \

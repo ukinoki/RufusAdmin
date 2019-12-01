@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("30-11-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -140,8 +140,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     }
 
     // 5 mettre en place le TcpSocket
-    m_IPadress      = Utils::getIpAdress();
-    m_macAdress     = Utils::getMACAdress();
+    m_IPadress      = Utils::IPAdress();
+    m_macAdress     = Utils::MACAdress();
     m_utiliseTCP    = (m_IPadress!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
     if (m_utiliseTCP)
     {
@@ -381,7 +381,7 @@ void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause)
 bool RufusAdmin::AutresPostesConnectes()
 {
     Datas::I()->postesconnectes->initListe();
-    QString id = Utils::getMACAdress() + " - " + QString::number(UserAdmin->id());
+    QString id = Utils::MACAdress() + " - " + QString::number(UserAdmin->id());
     PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getByStringId(id);
     if (m_currentposteconnecte == Q_NULLPTR)
     {
@@ -1912,7 +1912,7 @@ void RufusAdmin::MasqueAppli()
 
 void RufusAdmin::MetAJourLaConnexion()
 {
-    QString macadress =  Utils::getMACAdress() + " - " + NOM_ADMINISTRATEURDOCS;
+    QString macadress =  Utils::MACAdress() + " - " + NOM_ADMINISTRATEURDOCS;
     QString MAJConnexionRequete;
 
     //! le poste remet à jour sa propre connexion
@@ -2505,7 +2505,7 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
         setPosteImportDocs(false);
         // on retire Admin de la table des utilisateurs connectés
         QString req = "delete from " TBL_USERSCONNECTES
-                      " where MACAdressePosteConnecte = '" + Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
+                      " where MACAdressePosteConnecte = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
                       " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
         db->StandardSQL(req);
         if (m_utiliseTCP)
@@ -2558,7 +2558,7 @@ void RufusAdmin::VerifPosteImport()
             ui->PosteImportDocsPrioritairelabel->setText(B);
         }
     }
-    QString macAdr = Utils::getMACAdress() + " - " NOM_ADMINISTRATEURDOCS;
+    QString macAdr = Utils::MACAdress() + " - " NOM_ADMINISTRATEURDOCS;
     if (PostImport != "NULL" && PostImport != macAdr)
         setPosteImportDocs();
 }

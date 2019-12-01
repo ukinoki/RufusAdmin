@@ -35,7 +35,7 @@ void TcpServer::setId(int id)
 {
     Logs::LogSktMessage("void TcpServer::setId(int id)");
     m_idadmin = id;
-    m_listeSockets = Utils::getIpAdress() + TCPMSG_Separator + Utils::getMACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(m_idadmin) + "{}" TCPMSG_ListeSockets;
+    m_listeSockets = Utils::IPAdress() + TCPMSG_Separator + Utils::MACAdress() + TCPMSG_Separator + QHostInfo::localHostName() + TCPMSG_Separator + QString::number(m_idadmin) + "{}" TCPMSG_ListeSockets;
 }
 
 bool TcpServer::start()
@@ -178,8 +178,8 @@ void TcpServer::envoieListeSockets(qintptr descriptor)
 QString TcpServer::ListeSockets()
 {
     Logs::LogSktMessage("void TcpServer::ListeSockets()");
-    m_listeSockets = Utils::getIpAdress();
-    m_listeSockets += TCPMSG_Separator + Utils::getMACAdress();
+    m_listeSockets = Utils::IPAdress();
+    m_listeSockets += TCPMSG_Separator + Utils::MACAdress();
     m_listeSockets += TCPMSG_Separator + QHostInfo::localHostName();
     m_listeSockets += TCPMSG_Separator + QString::number(m_idadmin) + "{}";
     QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
