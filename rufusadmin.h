@@ -155,7 +155,6 @@ private:
     void                        SupprAppareil();
     void                        SupprimerDocsEtFactures();
     void                        setPosteImportDocs(bool a = true);
-    bool                        SetUserAllData(User *usr);
     void                        ReconstruitListeLieuxExercice();
     void                        TrayIconMenu();
     bool                        VerifBase();

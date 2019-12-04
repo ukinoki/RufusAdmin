@@ -4,6 +4,7 @@
 INCLUDEPATH += $$PWD
 SOURCES += $$PWD/upcheckbox.cpp \
         $$PWD/upcombobox.cpp \
+    $$PWD/updelegate.cpp \
         $$PWD/updialog.cpp \
         $$PWD/updoublespinbox.cpp \
         $$PWD/updoublevalidator.cpp \
@@ -26,6 +27,7 @@ SOURCES += $$PWD/upcheckbox.cpp \
 
 HEADERS += $$PWD/upcheckbox.h \
         $$PWD/upcombobox.h \
+    $$PWD/updelegate.h \
         $$PWD/updialog.h \
         $$PWD/updoublespinbox.h \
         $$PWD/updoublevalidator.h \

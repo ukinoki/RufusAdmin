@@ -20,7 +20,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QGroupBox>
 #include <QEvent>
-#include "macros.h"
 
 class UpGroupBox : public QGroupBox
 {

@@ -65,8 +65,7 @@ void Patients::actualiseDonneesOphtaCurrentPatient()
 }
 
 
-/*! charge les données du patient corresondant à l'id
- * \brief Patients::getById
+/*! charge les données du patient corresondant à l'id * \brief Patients::getById
  * \param id l'id du patient recherché
  * \param all =false  -> ne charge que les données d'identité - =true -> charge les données sociales et médicales
  * \return Q_NULLPTR si aucun patient trouvé
@@ -231,7 +230,7 @@ Patient* Patients::CreationPatient(QHash<QString, QVariant> sets)
     Patient *pat = Q_NULLPTR;
     DataBase::I()->locktables(QStringList() << TBL_PATIENTS << TBL_DONNEESSOCIALESPATIENTS << TBL_RENSEIGNEMENTSMEDICAUXPATIENTS );
     sets[CP_DATECREATION_PATIENTS] = DataBase::I()->ServerDateTime().date();
-    sets[CP_IDCREATEUR_PATIENTS]   = DataBase::I()->userConnected()->id();
+    sets[CP_IDCREATEUR_PATIENTS]   = DataBase::I()->idUserConnected();
     bool result = DataBase::I()->InsertSQLByBinds(TBL_PATIENTS, sets);
     if (!result)
     {
@@ -261,7 +260,7 @@ Patient* Patients::CreationPatient(QHash<QString, QVariant> sets)
     }
     QJsonObject  data = QJsonObject{};
     data[CP_IDPAT_PATIENTS] = id;
-    data[CP_IDCREATEUR_PATIENTS] = DataBase::I()->userConnected()->id();
+    data[CP_IDCREATEUR_PATIENTS] = DataBase::I()->idUserConnected();
     data[CP_DATECREATION_PATIENTS] = QDate::currentDate().toString("yyyy-MM-dd");
     QString champ;
     QVariant value;

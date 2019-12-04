@@ -19,7 +19,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "icons.h"
 #include "macros.h"
 
-
 UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
 {
     setAutoDefault(true);

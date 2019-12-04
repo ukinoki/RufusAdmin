@@ -84,7 +84,7 @@ public:
         QString datelog = QDate::currentDate().toString("yyyy-MM-dd");
         QString fileName(dirlog + "/" + datelog + "_" + NomFichier);
         QFile testfile(fileName);
-        if (testfile.open(QIODevice::ReadWrite))
+        if (testfile.open(QIODevice::Append))
         {
             QTextStream out(&testfile);
             QString timelog = QTime::currentTime().toString();

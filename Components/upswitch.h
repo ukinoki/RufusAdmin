@@ -22,7 +22,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QLabel>
 #include <QPixmap>
 #include <QEvent>
-#include "macros.h"
 
 class UpSwitch : public QFrame
 {

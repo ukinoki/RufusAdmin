@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("02-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("04-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1116,30 +1116,6 @@ void RufusAdmin::setPosteImportDocs(bool a)
     db->StandardSQL(req);
     if (a)
         MetAJourLaConnexion();
-}
-
-/*!
- * \brief SetUserAllData(User *usr)
- * Charge les données d'un utilisateur, y compris ses données bancaires
- * cette fonction fait appel aux deux classes cls_user et cls_compte
- * et ne peut pas figurer dans la classe cls_user
- * en raison de référence croisées
- */
-bool RufusAdmin::SetUserAllData(User *usr)
-{
-    if (!usr->isAllLoaded())
-    {
-        QJsonObject data = db->loadUserData(usr->id());
-        if(data.isEmpty())
-        {
-            UpMessageBox::Watch(Q_NULLPTR,tr("Les paramètres de ")
-                                + usr->login() + tr("ne sont pas retrouvés"));
-            return false;
-        }
-        usr->setData( data ); //on charge le reste des données
-    }
-    usr->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(usr->id()));
-    return true;
 }
 
 void RufusAdmin::ChoixButtonFrame()
@@ -3421,7 +3397,7 @@ void RufusAdmin::ResumeTCPSocketStatut()
                 statut += statcp.split(sep).at(2) + " - "
                         + statcp.split(sep).at(0) + " - "
                         + statcp.split(sep).at(1) + " --- "
-                        + Datas::I()->users->getLoginById(statcp.split(sep).at(3).toInt());
+                        + Datas::I()->users->getById(statcp.split(sep).at(3).toInt())->login();
             }
             else
                 statut += tr("inconnu");
@@ -3434,7 +3410,7 @@ void RufusAdmin::ResumeTCPSocketStatut()
                 statut += "\t" + statcp.split(sep).at(2) + " - "
                         + statcp.split(sep).at(0) + " - "
                         + statcp.split(sep).at(1) + " --- "
-                        + Datas::I()->users->getLoginById(statcp.split(sep).at(3).toInt()) + "\n";
+                        + Datas::I()->users->getById(statcp.split(sep).at(3).toInt())->login() + "\n";
             }
             else
                 statut += "\t" + tr("inconnu") + "\n";
@@ -3444,7 +3420,7 @@ void RufusAdmin::ResumeTCPSocketStatut()
     {
         if(post->isdistant())
             m_socketStatut += "\t" + Datas::I()->sites->getById(post->idlieu())->nom() + " ---- "
-                    + Datas::I()->users->getLoginById(post->id()) + "\n";
+                    + Datas::I()->users->getById(post->id())->login() + "\n";
     }
     m_socketStatut = statut;
     emit ModifEdit(m_socketStatut); // déclenche la modification de la fenêtre resumestatut
