@@ -676,9 +676,14 @@ void dlg_gestionusers::EnregistreUser()
     setDataUser(ui->idUseruplineEdit->text().toInt()); // reactualise l'item user correspondant
     RemplirTableWidget();
 
-    if (m_usermode==PREMIERUSER || m_usermode == MODIFUSER)
+    if (m_usermode==PREMIERUSER)
     {
         done(ui->idUseruplineEdit->text().toInt());
+        return;
+    }
+    else if (m_usermode == MODIFUSER)
+    {
+        accept();
         return;
     }
     else if (m_mode == Creer)
