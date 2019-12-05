@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("05-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("06-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -94,7 +94,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         exit(0);
 
     UserAdmin = new User(DataBase::I()->loadAdminData());
-    DataBase::I()->setUserConnected(UserAdmin);
+    DataBase::I()->setidUserConnected(UserAdmin->id());
+    Datas::I()->users->setuserconnected();
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
                    " where idUser = " + QString::number(UserAdmin->id()) +
@@ -1906,7 +1907,7 @@ void RufusAdmin::MetAJourLaConnexion()
         db->StandardSQL(MAJConnexionRequete);
     }
     else
-        Datas::I()->postesconnectes->CreationPosteConnecte(Datas::I()->sites->idcurrentsite());
+        Datas::I()->postesconnectes->CreationPosteConnecte(UserAdmin, Datas::I()->sites->idcurrentsite());
 
 
     //! Deconnecter les users débranchés accidentellement
