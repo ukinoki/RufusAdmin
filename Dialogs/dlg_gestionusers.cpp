@@ -208,9 +208,13 @@ void dlg_gestionusers::Annulation()
 {
     if (m_mode == Creer)
     {
-        db->SupprRecordFromTable(m_userencours->id(), CP_ID_USR, TBL_UTILISATEURS);
-        while (Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()).size() > 0)
-            Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()).first()));
+        int id = m_userencours->id();
+        Datas::I()->users->SupprimeUser(m_userencours);
+        while (Datas::I()->comptes->initListeComptesByIdUser(id).size() > 0)
+        {
+            int idcompteasupprimer = Datas::I()->comptes->initListeComptesByIdUser(id).firstKey();
+            Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(idcompteasupprimer));
+        }
         RemplirTableWidget();
         ui->Principalframe->setEnabled(false);
         wdg_buttonframe->setEnabled(true);
@@ -226,11 +230,7 @@ void dlg_gestionusers::Annulation()
             int idUser = ui->ListUserstableWidget->item(ui->ListUserstableWidget->selectedItems().at(0)->row(),0)->text().toInt();
             AfficheParamUser(idUser);
         }
-        else if (AfficheParamUser(Datas::I()->users->userconnected()->id()))
-        {
-            int row = ui->ListUserstableWidget->findItems(QString::number(Datas::I()->users->userconnected()->id()), Qt::MatchExactly).at(0)->row();
-            ui->ListUserstableWidget->selectRow(row);
-        }
+        else ui->ListUserstableWidget->setCurrentItem(ui->ListUserstableWidget->item(0,1));
         ui->Principalframe->setEnabled(false);
         wdg_buttonframe->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
@@ -673,7 +673,7 @@ void dlg_gestionusers::EnregistreUser()
 
     req = "update " TBL_COMPTES " set partage = ";
     db->StandardSQL(req + (ui->SocieteComptableupRadioButton->isChecked()? "1" : "null") + " where iduser = " +  ui->idUseruplineEdit->text());
-    setDataUser(ui->idUseruplineEdit->text().toInt()); // reactualise l'item user correspondant
+    setDataCurrentUser(ui->idUseruplineEdit->text().toInt()); // reactualise l'item user correspondant
     RemplirTableWidget();
 
     if (m_usermode==PREMIERUSER)
@@ -719,6 +719,7 @@ void dlg_gestionusers::EnregistreUser()
         ui->ListUserstableWidget->setEnabled(true);
         wdg_buttonframe->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(ui->idUseruplineEdit->text(),Qt::MatchExactly).at(0)->foreground() != m_color);
     }
+    Datas::I()->users->initListe();
     ui->OKupSmallButton->setEnabled(false);
 }
 
@@ -771,21 +772,23 @@ void dlg_gestionusers::EnregistreNouvUser()
         return;
     }
     dlg_ask->accept();
-    m_mode                       = Creer;
+    m_mode                          = Creer;
     db->StandardSQL("insert into " TBL_UTILISATEURS " (" CP_LOGIN_USR ", " CP_MDP_USR ") VALUES ('" + Utils::correctquoteSQL(login) + "', '" + Utils::correctquoteSQL(MDP) + "')");
     QString req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_LOGIN_USR " = '" + login + "' and " CP_MDP_USR " = '" + MDP + "'";
     int idUser = db->getFirstRecordFromStandardSelectSQL(req,m_ok).at(0).toInt();
+    Datas::I()->users->initListe();
     RemplirTableWidget();
-    wdg_buttonframe                     ->setEnabled(false);
+    wdg_buttonframe                 ->setEnabled(false);
     ui->ListUserstableWidget        ->setEnabled(false);
     ui->Principalframe              ->setEnabled(true);
     ui->ComptagroupBox              ->setEnabled(true);
-    setDataUser(idUser);
-    ui->OPHupRadioButton              ->setChecked(true);
-    ui->ResponsableupRadioButton      ->setChecked(true);
-    ui->ComptaLiberalupRadioButton    ->setChecked(true);
-    ui->CotationupRadioButton         ->setChecked(true);
-    ui->Secteur1upRadioButton         ->setChecked(true);
+    setDataCurrentUser(idUser);
+    ui->ListUserstableWidget        ->setCurrentItem(ui->ListUserstableWidget->findItems(QString::number(idUser), Qt::MatchExactly).at(0));
+    ui->OPHupRadioButton            ->setChecked(true);
+    ui->ResponsableupRadioButton    ->setChecked(true);
+    ui->ComptaLiberalupRadioButton  ->setChecked(true);
+    ui->CotationupRadioButton       ->setChecked(true);
+    ui->Secteur1upRadioButton       ->setChecked(true);
     RegleAffichage();
 }
 
@@ -1026,7 +1029,7 @@ void dlg_gestionusers::SupprUser()
     UpPushButton OKBouton;
     UpPushButton AnnulBouton;
     QString vamourir = ui->ListUserstableWidget->selectedItems().at(1)->text();
-    if (m_userencours == Datas::I()->users->userconnected())
+    if (m_userencours == Datas::I()->users->Admin())
     {
         msgbox.setText("Tentative de suicide");
         msgbox.setInformativeText("Hum " + vamourir
@@ -1069,9 +1072,11 @@ void dlg_gestionusers::SupprUser()
         if (listusr.size()>0)
             for (int i=0; i<listusr.size(); i++)
                 db->StandardSQL("drop user '" + listusr.at(i).at(0).toString() + "'@'" + listusr.at(i).at(1).toString() + "'");
-        if (m_userencours == Datas::I()->users->userconnected())
+        if (m_userencours == Datas::I()->users->Admin())
         {
             UpMessageBox::Watch(this, tr("Cool ") + vamourir + "...", tr("Votre suicide s'est parfaitement déroulé et le programme va maintenant se fermer"));
+            //Datas::I()->postesconnectes->SupprimePosteConnecte()
+            Datas::I()->users->SupprimeUser(m_userencours);
             exit(0);
         }
         Datas::I()->users->SupprimeUser(m_userencours);
@@ -1147,7 +1152,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     QString req;
     if (db->StandardSelectSQL("select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_ID_USR " = " + QString::number(idUser), m_ok).size() == 0)
         return false;
-    setDataUser(idUser);
+    setDataCurrentUser(idUser);
 
     /* Valeurs de soignant
      * 1 = ophtalmo
@@ -1355,7 +1360,7 @@ bool dlg_gestionusers::ExisteEmployeur(int iduser)
                       " where ((( " CP_SOIGNANTSTATUS_USR " = 1 or  " CP_SOIGNANTSTATUS_USR " = 2 or  " CP_SOIGNANTSTATUS_USR " = 3) and  " CP_ENREGHONORAIRES_USR " = 1) or Soignant = 5)"
                       " and " CP_ID_USR " <> " + QString::number(iduser), m_ok).size()>0);
 }
-void dlg_gestionusers::setDataUser(int id)
+void dlg_gestionusers::setDataCurrentUser(int id)
 {
     m_userencours = Datas::I()->users->getById(id, Item::Update);
     m_userencours->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(id));
@@ -1460,13 +1465,21 @@ void dlg_gestionusers::RemplirTableWidget()
     ui->ListUserstableWidget->verticalHeader()->setVisible(false);
     ui->ListUserstableWidget->setHorizontalHeaderLabels(QStringList()<<""<<"Login");
     ui->ListUserstableWidget->setGridStyle(Qt::NoPen);
-    QList<QVariantList> usrlst = db->StandardSelectSQL("select " CP_ID_USR ", " CP_LOGIN_USR " from " TBL_UTILISATEURS " where " CP_LOGIN_USR " <> '" NOM_ADMINISTRATEURDOCS "'",m_ok);
-    ui->ListUserstableWidget->setRowCount(usrlst.size());
-    for (int i=0; i<usrlst.size(); i++)
+    QList<User*> usrlist;
+    foreach (User* usr, Datas::I()->users->all()->values())
+    {
+        if (usr->login() != NOM_ADMINISTRATEURDOCS)
+            usrlist << usr;
+    }
+    ui->ListUserstableWidget->setRowCount(usrlist.size());
+    int i = 0;
+    foreach (User *usr, usrlist)
     {
         pitem0 = new QTableWidgetItem;
         pitem1 = new QTableWidgetItem;
-        QList<QVariantList> actlst = db->StandardSelectSQL("select count(idActe) from " TBL_ACTES " where " CP_IDUSER_ACTES " = " + usrlst.at(i).at(0).toString() + " or " CP_IDUSERCREATEUR_ACTES " = " + usrlst.at(i).at(0).toString(), m_ok);
+        QList<QVariantList> actlst = db->StandardSelectSQL("select count(" CP_IDACTE_ACTES ") from " TBL_ACTES
+                                                           " where " CP_IDUSER_ACTES " = " + QString::number(usr->id()) +
+                                                           " or " CP_IDUSERCREATEUR_ACTES " = " + QString::number(usr->id()), m_ok);
         if (actlst.size()>0)
         {
             int nbactes = actlst.at(0).at(0).toInt();
@@ -1476,11 +1489,12 @@ void dlg_gestionusers::RemplirTableWidget()
                 pitem1->setForeground(m_color);
             }
         }
-        pitem0->setText(usrlst.at(i).at(0).toString());
-        pitem1->setText(usrlst.at(i).at(1).toString());
+        pitem0->setText(QString::number(usr->id()));
+        pitem1->setText(usr->login());
         ui->ListUserstableWidget->setItem(i,0, pitem0);
         ui->ListUserstableWidget->setItem(i,1, pitem1);
         ui->ListUserstableWidget->setRowHeight(i, int(fm.height()*1.3));
+        ++i;
     }
     connect(ui->ListUserstableWidget, &QTableWidget::currentItemChanged , this, [=](QTableWidgetItem *pitem) {AfficheParamUser(ui->ListUserstableWidget->item(pitem->row(),0)->text().toInt());});
 }

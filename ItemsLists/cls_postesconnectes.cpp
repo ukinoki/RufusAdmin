@@ -61,18 +61,12 @@ PosteConnecte* PostesConnectes::admin(Item::UPDATE upd)
     initListe();
     m_admin = Q_NULLPTR;
     if (DataBase::I()->getMode() != Utils::Distant)
-    {
-        int idAdministrateur = -1;
-        QJsonObject jadmin = DataBase::I()->loadAdminData();
-        if (jadmin.size() > 0)
-            idAdministrateur = jadmin[CP_ID_USR].toInt();
         foreach (PosteConnecte *post, *map_postesconnectes)
-            if(post->id() == idAdministrateur && idAdministrateur > -1 && post->dateheurederniereconnexion().secsTo(DataBase::I()->ServerDateTime()) < 120)
+            if(post->isadmin() && post->dateheurederniereconnexion().secsTo(DataBase::I()->ServerDateTime()) < 120)
             {
                 m_admin = post;
                 break;
             }
-    }
     adminset = true;
     return m_admin;
 }
@@ -99,10 +93,8 @@ void PostesConnectes::SupprimePosteConnecte(PosteConnecte *post)
         DataBase::I()->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where PosePar = " + QString::number(post->id()));
     if (post->isadmin()) {
         adminset = true;
-        if (m_admin != Q_NULLPTR) {
-            delete m_admin;
+        if (m_admin != Q_NULLPTR)
             m_admin = Q_NULLPTR;
-        }
     }
     remove(map_postesconnectes, post);
 }

@@ -151,13 +151,36 @@ void Users::reload(User *usr)
  */
 void Users::initListe()
 {
+    int idcomptable     = User::ROLE_INDETERMINE;
+    int idparent        = User::ROLE_INDETERMINE;
+    int idsuperviseur   = User::ROLE_INDETERMINE;
+    if (userconnected() != Q_NULLPTR)
+    {
+        idcomptable     = userconnected()->idcomptable();
+        idparent        = userconnected()->idparent();
+        idsuperviseur   = userconnected()->idsuperviseur();
+    }
     QList<User*> listusers = DataBase::I()->loadUsers();
     epurelist(map_users, &listusers);
-    map_superviseurs  ->clear();
-    map_liberaux      ->clear();
-    map_parents       ->clear();
-    map_comptables    ->clear();
+    map_superviseurs    ->clear();
+    map_liberaux        ->clear();
+    map_parents         ->clear();
+    map_comptables      ->clear();
     addList(listusers);
+    foreach (User *usr, all()->values())
+    {
+        if (usr->login() == NOM_ADMINISTRATEURDOCS)
+        {
+            m_useradmin = usr;
+            break;
+        }
+    }
+    if (userconnected() != Q_NULLPTR)
+    {
+        userconnected() ->setidparent(idparent);
+        userconnected() ->setidusercomptable(idcomptable);
+        userconnected() ->setidsuperviseur(idsuperviseur);
+    }
 }
 
 /*!
@@ -203,8 +226,5 @@ void Users::SupprimeUser(User *usr)
     delete usr;
 }
 
-void Users::setuserconnected()
-{
-    m_userconnected = getById(DataBase::I()->idUserConnected());
-}
+
 

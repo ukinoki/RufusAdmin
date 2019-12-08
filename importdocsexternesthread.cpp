@@ -480,13 +480,13 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                                                              CP_IDEMETTEUR_DOCSEXTERNES ", " CP_LIENFICHIER_DOCSEXTERNES ", " CP_EMISORRECU_DOCSEXTERNES ", " CP_FORMATDOC_DOCSEXTERNES ", " CP_IDLIEU_DOCSEXTERNES ")"
                                                                " values("
                             + QString::number(idimpr) + ", "
-                            + QString::number(Datas::I()->users->userconnected()->id()) + ", "
+                            + QString::number(Datas::I()->users->Admin()->id()) + ", "
                             + idPatient + ", '"
                             + Typedoc + "', '"
                             + SousTypeDoc + "', '"
                             + Titredoc + "', '"
                             + datestring + " " + QTime::currentTime().toString("HH:mm:ss") + "', "
-                            + QString::number(Datas::I()->users->userconnected()->id()) + ", '"
+                            + QString::number(Datas::I()->users->Admin()->id()) + ", '"
                             + "/" + m_datetransfer + "/" + NomFileDoc + "', "
                             + "0" + ", '"
                             IMAGERIE "', "
@@ -544,13 +544,13 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                     // on doit passer par les bindvalue pour incorporer le bytearray dans la requête
                     QHash<QString, QVariant> listbinds;
                     listbinds[CP_ID_DOCSEXTERNES]           = idimpr;
-                    listbinds[CP_IDUSER_DOCSEXTERNES]       = Datas::I()->users->userconnected()->id();
+                    listbinds[CP_IDUSER_DOCSEXTERNES]       = Datas::I()->users->Admin()->id();
                     listbinds[CP_IDPAT_DOCSEXTERNES]        = idPatient;
                     listbinds[CP_TYPEDOC_DOCSEXTERNES]      = Typedoc;
                     listbinds[CP_SOUSTYPEDOC_DOCSEXTERNES]  = SousTypeDoc;
                     listbinds[CP_TITRE_DOCSEXTERNES]        = Titredoc;
                     listbinds[CP_DATE_DOCSEXTERNES]         = datestring + " " + QTime::currentTime().toString("HH:mm:ss");
-                    listbinds[CP_IDEMETTEUR_DOCSEXTERNES]   = Datas::I()->users->userconnected()->id();
+                    listbinds[CP_IDEMETTEUR_DOCSEXTERNES]   = Datas::I()->users->Admin()->id();
                     listbinds[formatdoc]                    = ba;
                     listbinds[CP_EMISORRECU_DOCSEXTERNES]   = "0";
                     listbinds[CP_FORMATDOC_DOCSEXTERNES]    = IMAGERIE;

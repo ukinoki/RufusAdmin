@@ -26,7 +26,6 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(p
     db                      = DataBase::I();
     m_userencours           = user;
 
-    m_iduser                 = m_userencours->id();
     m_idcompteprardefaut      = m_userencours->idcomptepardefaut();
 
     m_listescomptesusr      = m_userencours->listecomptesbancaires();
@@ -186,7 +185,7 @@ void dlg_gestioncomptes::DesactiveCompte()
         bool ok = true;
         QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idcompte",
                                                                         TBL_LIGNESCOMPTES, ok,
-                                                                        "where iduser = " + QString::number(m_iduser) + " and desactive is null");
+                                                                        "where iduser = " + QString::number(m_userencours->id()) + " and desactive is null");
         ui->DesactiveComptecheckBox ->setEnabled(listcomptes.size()>1);
     }
 }
@@ -295,7 +294,7 @@ void dlg_gestioncomptes::ModifCompte()
     bool ok = true;
     QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idcompte",
                                                                     TBL_COMPTES, ok,
-                                                                    "where iduser = " + QString::number(m_iduser) + " and desactive is null");
+                                                                    "where iduser = " + QString::number(m_userencours->id()) + " and desactive is null");
     if (!ui->DesactiveComptecheckBox->isChecked())
         ui->DesactiveComptecheckBox ->setEnabled(listcomptes.size()>1);
     else
@@ -399,14 +398,17 @@ void dlg_gestioncomptes::ValidCompte()
         Datas::I()->comptes->reloadCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
     }
     else if (m_mode == Nouv)
-        Datas::I()->comptes->CreationCompte(idbanque,                                          //! idBanque
-                                            m_iduser,                                           //! idUser
+    {
+        Compte* cpt  = Datas::I()->comptes->CreationCompte(idbanque,                           //! idBanque
+                                            m_userencours->id(),                               //! idUser
                                             ui->IBANuplineEdit->text(),                        //! IBAN
                                             ui->IntituleCompteuplineEdit->text(),              //! IntituleCompte
                                             ui->NomCompteAbregeuplineEdit->text(),             //! NomCompteAbrege
                                             0,                                                 //! SoldeSurDernierReleve
                                             ui->CompteSocietecheckBox->isChecked(),            //! Partage
                                             ui->DesactiveComptecheckBox->isChecked());         //! Desactive
+        idcompte = cpt->id();
+    }
     m_listescomptesusr->clear();
     m_userencours     ->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()));
     m_listescomptesusr = m_userencours->listecomptesbancaires();
@@ -510,7 +512,7 @@ bool dlg_gestioncomptes::VerifCompte()
     {
         QList<QVariantList> listcpt = db->SelectRecordsFromTable(QStringList() << "idbanque",
                                                                       TBL_COMPTES, ok,
-                                                                      "where idUser = " + QString::number(m_iduser) + " and idbanque = " + QString::number(idbanque));
+                                                                      "where idUser = " + QString::number(m_userencours->id()) + " and idbanque = " + QString::number(idbanque));
         if (listcpt.size()>0)
         {
             UpMessageBox::Watch(this,tr("Vous avez déjà un compte enregistré dans cet organisme bancaire!"));
@@ -518,7 +520,7 @@ bool dlg_gestioncomptes::VerifCompte()
         }
         QList<QVariantList> listnomcpt = db->SelectRecordsFromTable(QStringList() << "nomcompteabrege",
                                                                       TBL_COMPTES, ok,
-                                                                      "where idUser = " + QString::number(m_iduser) + " and nomcompteabrege = '" + Utils::correctquoteSQL(ui->NomCompteAbregeuplineEdit->text()) + "'");
+                                                                      "where idUser = " + QString::number(m_userencours->id()) + " and nomcompteabrege = '" + Utils::correctquoteSQL(ui->NomCompteAbregeuplineEdit->text()) + "'");
         if (listnomcpt.size()>0)
         {
             UpMessageBox::Watch(this,tr(" Vous avez déjà un compte enregistré avec ce nom abrégé!"));
@@ -541,7 +543,7 @@ bool dlg_gestioncomptes::VerifCompte()
     {
         QList<QVariantList> listcpt = db->SelectRecordsFromTable(QStringList() << "idbanque",
                                                                     TBL_COMPTES, ok,
-                                                                    "where idUser = " + QString::number(m_iduser) +
+                                                                    "where idUser = " + QString::number(m_userencours->id()) +
                                                                     " and idbanque = " + QString::number(idbanque) +
                                                                     " and idcompte <> " + ui->idCompteupLineEdit->text());
         if (listcpt.size()>0)
@@ -551,7 +553,7 @@ bool dlg_gestioncomptes::VerifCompte()
         }
         QList<QVariantList> listnomabrg = db->SelectRecordsFromTable(QStringList() << "nomcompteabrege",
                                                                     TBL_COMPTES, ok,
-                                                                    "where idUser = " + QString::number(m_iduser) +
+                                                                    "where idUser = " + QString::number(m_userencours->id()) +
                                                                     " and nomcompteabrege = '" + ui->NomCompteAbregeuplineEdit->text() + "'" +
                                                                     " and idcompte <> " + ui->idCompteupLineEdit->text());
         if (listnomabrg.size()>0)

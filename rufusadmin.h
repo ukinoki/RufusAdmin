@@ -115,7 +115,7 @@ private:
     ImportDocsExternesThread    *m_importdocsexternesthread;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
-    User                        *UserAdmin;
+    User*                       Admin() const { return Datas::I()->users->Admin(); }
 
     void                        AfficheMessageImport(QStringList listmsg, int pause);
     bool                        AutresPostesConnectes();

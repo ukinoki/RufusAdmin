@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("06-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("08-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -93,12 +93,12 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (!VerifBase())
         exit(0);
 
-    UserAdmin = new User(DataBase::I()->loadAdminData());
-    DataBase::I()->setidUserConnected(UserAdmin->id());
-    Datas::I()->users->setuserconnected();
+    Datas::I()->users->initListe();
+    DataBase::I()->setidUserConnected(Admin()->id());
+
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
-                   " where idUser = " + QString::number(UserAdmin->id()) +
+                   " where idUser = " + QString::number(Admin()->id()) +
                    " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
                    " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
@@ -109,7 +109,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         exit(0);
     }
     else
-        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(UserAdmin->id()) + " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()));
+        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(Admin()->id()) + " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()));
 
     Datas::I()->sites->initListe();
     DetermineLieuExercice();
@@ -147,7 +147,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (m_utiliseTCP)
     {
         TCPServer           = TcpServer::I();
-        TCPServer           ->setId(UserAdmin->id());
+        TCPServer           ->setId(Admin()->id());
         connect(TCPServer,  &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         connect(TCPServer,  &TcpServer::deconnexionposte,       this,   &RufusAdmin::DeconnexionPoste);
         TCPServer           ->start();
@@ -162,7 +162,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
                                                         */
     t_timerUserConnecte     = new QTimer(this);     // mise à jour de la connexion à la base de données
     t_timerSupprDocs        = new QTimer(this);     // utilisé par le poste importateur pour vérifier s'il y a des documents à supprimer
-    t_timerVerifDivers      = new QTimer(this);     // vérification du poste importateur des documents et e la version de la base
+    t_timerVerifDivers      = new QTimer(this);     // vérification du poste importateur des documents et de la version de la base
     t_timerSupprDocs        = new QTimer(this);     // verification des documents à supprimer
     t_timerProgressBar      = new QTimer(this);     // progression de la progressbar - quand la progressbar est au maximum, la fiche est cachée
 
@@ -382,7 +382,7 @@ void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause)
 bool RufusAdmin::AutresPostesConnectes()
 {
     Datas::I()->postesconnectes->initListe();
-    QString id = Utils::MACAdress() + " - " + QString::number(UserAdmin->id());
+    QString id = Utils::MACAdress() + " - " + QString::number(Admin()->id());
     PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getByStringId(id);
     if (m_currentposteconnecte == Q_NULLPTR)
     {
@@ -1297,7 +1297,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         QString req = "update " TBL_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
         m_parametres->setmdpadmin(nouv);
         db->StandardSQL(req);
-         req = "update " TBL_UTILISATEURS " set " CP_MDP_USR " = '" + nouv + "' where " CP_ID_USR " = " + QString::number(UserAdmin->id());
+         req = "update " TBL_UTILISATEURS " set " CP_MDP_USR " = '" + nouv + "' where " CP_ID_USR " = " + QString::number(Admin()->id());
         db->StandardSQL(req);
         dlg_askMDP->done(0);
         msgbox.exec();
@@ -1900,14 +1900,14 @@ void RufusAdmin::MetAJourLaConnexion()
     if (listusers.size()>0)
     {
         MAJConnexionRequete = "UPDATE " TBL_USERSCONNECTES " SET " CP_HEUREDERNIERECONNECTION_USRCONNECT " = NOW(), "
-                                                                 CP_IDUSER_USRCONNECT " = " + QString::number(UserAdmin->id()) + ","
+                                                                 CP_IDUSER_USRCONNECT " = " + QString::number(Admin()->id()) + ","
                                                                  CP_NOMPOSTE_USRCONNECT " = '" + QHostInfo::localHostName().left(60) + "'"
                                                                  " where " CP_MACADRESS_USRCONNECT " = '" + macadress + "'"
                                                                  " and " CP_IDLIEU_USRCONNECT " = " + QString::number(Datas::I()->sites->idcurrentsite());
         db->StandardSQL(MAJConnexionRequete);
     }
     else
-        Datas::I()->postesconnectes->CreationPosteConnecte(UserAdmin, Datas::I()->sites->idcurrentsite());
+        Datas::I()->postesconnectes->CreationPosteConnecte(Admin(), Datas::I()->sites->idcurrentsite());
 
 
     //! Deconnecter les users débranchés accidentellement
@@ -1925,10 +1925,11 @@ void RufusAdmin::MetAJourLaConnexion()
         if (tempsecouledepuisactualisation > 90)
         {
             qDebug() << "Suppression d'un poste débranché accidentellement" << "RufusAdmin::MetAJourLaConnexion()";
+            qDebug() << "nom du poste" << post->nomposte();
+            qDebug() << "stringid du poste" << post->stringid();
             qDebug() << "timenow = " << timenow;
             qDebug() << "heure dernière connexion = " << post->dateheurederniereconnexion();
             qDebug() << "temps ecoule depuis actualisation = " << tempsecouledepuisactualisation;
-            qDebug() << "nom du poste)" << post->stringid();
             qDebug() << "user = " << Datas::I()->users->getById(post->id())->login();
             //! l'utilisateur n'a pas remis sa connexion à jour depuis plus de 120 secondes
             //! on déverrouille les dossiers verrouillés par cet utilisateur et on les remet en salle d'attente
@@ -1952,21 +1953,9 @@ void RufusAdmin::MetAJourLaConnexion()
     {
        foreach (PosteConnecte* post, listpostsAEliminer)
        {
-           QString nomposte = post->nomposte();
-           int idposte = post->id();
-           //on retire l'utilisateur de la liste des postes connectés
-           Datas::I()->postesconnectes->SupprimePosteConnecte(post);
-           //on déverrouille les actes verrouillés en comptabilité par cet utilisateur
-           bool usernotconnectedever = true;
-           foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
-               if(post->id() == idposte)
-               {
-                   usernotconnectedever = false;
-                   break;
-               }
-           if (usernotconnectedever)
-               db->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where PosePar = " + QString::number(idposte));
-           UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Le poste ") + nomposte + tr(" a été retiré de la liste des postes connectés actuellement au serveur"), Icons::icSunglasses(), 3000);
+          QString nomposte = (post->isadmin()? tr("administrateur") + " " : "") + post->nomposte();
+          Datas::I()->postesconnectes->SupprimePosteConnecte(post);
+          UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Le poste ") + nomposte + tr(" a été retiré de la liste des postes connectés actuellement au serveur"), Icons::icSunglasses(), 3000);
        }
        TCPServer->envoieListeSockets();
     }

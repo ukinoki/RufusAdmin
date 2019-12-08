@@ -26,7 +26,6 @@ void PosteConnecte::setData(QJsonObject data)
 {
     if( data.isEmpty() )
         return;
-
     Utils::setDataInt(data, CP_IDUSER_USRCONNECT, m_id);
     Utils::setDataString(data, CP_NOMPOSTE_USRCONNECT, m_nomposte);
     Utils::setDataString(data, CP_MACADRESS_USRCONNECT, m_macadress);

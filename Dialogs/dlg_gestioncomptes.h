@@ -45,7 +45,6 @@ private:
     dlg_gestionbanques      *Dlg_Banq;
     bool                    m_visible;
     Mode                    m_mode;
-    int                     m_iduser;
     int                     m_idcompteprardefaut;
     QString                 m_userlogin;
     QTimer                  *t_timer;
