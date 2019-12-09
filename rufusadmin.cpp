@@ -376,6 +376,11 @@ RufusAdmin::~RufusAdmin()
 
 void RufusAdmin::closeEvent(QCloseEvent *event)
 {
+    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+    {
+        event->ignore();
+        return;
+    }
     // on retire le poste de la variable posteimportdocs SQL
     setPosteImportDocs(false);
     // on retire Admin de la table des utilisateurs connectés
@@ -389,6 +394,7 @@ void RufusAdmin::closeEvent(QCloseEvent *event)
         TCPServer->close();
         delete TCPServer;
     }
+    exit(0);
 }
 
 void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause)
@@ -2464,30 +2470,16 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     bool visible = isVisible();
     if (!visible)
         showNormal();
-    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
-    {
-        if (!visible)
-            MasqueAppli();
-        return;
-    }
-
-    if (txt == tr("Quitter RufusAdmin"))
-    {
-        // on retire le poste de la variable posteimportdocs SQL
-        setPosteImportDocs(false);
-        // on retire Admin de la table des utilisateurs connectés
-        QString req = "delete from " TBL_USERSCONNECTES
-                      " where MACAdressePosteConnecte = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
-                      " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
-        db->StandardSQL(req);
-        setPosteImportDocs(false);
-        if (m_utiliseTCP && TCPServer != Q_NULLPTR)
+    if (txt == tr("Ouvir RufusAdmin")) {
+        if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
         {
-            TCPServer->close();
-            delete TCPServer;
+            if (!visible)
+                MasqueAppli();
+            return;
         }
-        exit(0);
     }
+    else if (txt == tr("Quitter RufusAdmin"))
+        close();
     setEnabled(true);
 }
 
