@@ -115,8 +115,10 @@ private:
     ImportDocsExternesThread    *m_importdocsexternesthread;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
-    User*                       Admin() const { return Datas::I()->users->Admin(); }
 
+    void                        closeEvent(QCloseEvent *event);
+
+    User*                       Admin() const { return Datas::I()->users->Admin(); }
     void                        AfficheMessageImport(QStringList listmsg, int pause);
     bool                        AutresPostesConnectes();
     void                        DeconnexionPoste(QString postestringid);
@@ -124,7 +126,6 @@ private:
     bool                        eventFilter(QObject *obj, QEvent *event);
     void                        setMapIcons();
     QMap<QString, QIcon>        MapIcons();
-    void                        closeEvent(QCloseEvent *);
     void                        AskAppareil();
     void                        CalcExporteDocs();
     void                        ChoixButtonFrame();
@@ -303,7 +304,7 @@ private:
 
     // TCPServer, TCPSocket
     bool                m_utiliseTCP;
-    TcpServer           *TCPServer;
+    TcpServer           *TCPServer = Q_NULLPTR;
     quint16             m_portTCPserver;
     QTimer              *t_timerSalDatCorrespMsg;
     QString             m_IPadress, m_macAdress;

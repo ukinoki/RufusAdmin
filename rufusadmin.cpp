@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("08-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("09-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -374,6 +374,23 @@ RufusAdmin::~RufusAdmin()
     delete ui;
 }
 
+void RufusAdmin::closeEvent(QCloseEvent *event)
+{
+    // on retire le poste de la variable posteimportdocs SQL
+    setPosteImportDocs(false);
+    // on retire Admin de la table des utilisateurs connectés
+    QString req = "delete from " TBL_USERSCONNECTES
+                  " where MACAdressePosteConnecte = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
+                  " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
+    db->StandardSQL(req);
+    setPosteImportDocs(false);
+    if (m_utiliseTCP && TCPServer != Q_NULLPTR)
+    {
+        TCPServer->close();
+        delete TCPServer;
+    }
+}
+
 void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause)
 {
     Message::I()->SplashMessage(listmsg, pause);
@@ -454,17 +471,6 @@ void RufusAdmin::ListeAppareils()
     QList<QVariantList> listdocs = db->StandardSelectSQL(req, ok);
     if (listdocs.size()>0)
         m_importdocsexternesthread->RapatrieDocumentsThread(listdocs);
-}
-
-void RufusAdmin::closeEvent(QCloseEvent *)
-{
-    // on retire le poste de la variable posteimportdocs SQL
-    setPosteImportDocs(false);
-    // on retire Admin de la table des utilisateurs connectés
-    QString req = "delete from " TBL_USERSCONNECTES
-                  " where NomPosteConnecte = '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
-                  " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
-    db->StandardSQL(req);
 }
 
 void RufusAdmin::AskAppareil()
@@ -2474,12 +2480,12 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
                       " where MACAdressePosteConnecte = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
                       " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
         db->StandardSQL(req);
-        if (m_utiliseTCP)
+        setPosteImportDocs(false);
+        if (m_utiliseTCP && TCPServer != Q_NULLPTR)
         {
             TCPServer->close();
             delete TCPServer;
         }
-        setPosteImportDocs(false);
         exit(0);
     }
     setEnabled(true);
