@@ -632,13 +632,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define STYLE_UPSWITCH              "UpSwitch {border-radius: 10px; background-color:rgb(50,200,105,145);}"
 
 // la police d'écran par défaut et le facteur de correction des td width html en impression qui varie entre Linux et OSX (???)
-#ifdef Q_OS_MACX
 #define POLICEPARDEFAUT         "Comic Sans MS"
+#define POLICEATTRIBUTPARDEFAUT "Regular"
+#ifdef Q_OS_MACX
 #define POINTPARDEFAUT          13
 #define CORRECTION_td_width     1
 #endif
 #ifdef Q_OS_LINUX
-#define POLICEPARDEFAUT         "Comic Sans MS"
 #define POINTPARDEFAUT          10
 #define CORRECTION_td_width     1.3
 #endif

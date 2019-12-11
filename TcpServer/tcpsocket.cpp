@@ -97,7 +97,8 @@ void TcpSocket::TraiteDonneesRecues()
 void TcpSocket::envoyerMessage(QString msg)
 {
     QByteArray paquet = msg.toUtf8();
-    QString login = Datas::I()->users->getById(idUser())->login();
+    User *usr = Datas::I()->users->getById(idUser());
+    QString login = ( usr != Q_NULLPTR? usr->login() : "" );
     QString msg2("");
     if (msg.contains(TCPMSG_ListeSockets))
         msg2 = TCPMSG_ListeSockets;

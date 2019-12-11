@@ -23,7 +23,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
-    qApp->setApplicationVersion("09-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationName("RufusAdmin");
+    qApp->setApplicationVersion("12-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1240,6 +1241,8 @@ void RufusAdmin::EnregistreEmplacementServeur(int idx)
 {
     db->StandardSQL("update " TBL_PARAMSYSTEME " set idlieupardefaut = " + ui->EmplacementServeurupComboBox->itemData(idx).toString());
     m_parametres->setidlieupardefaut(ui->EmplacementServeurupComboBox->itemData(idx).toInt());
+    Datas::I()->sites->setcurrentsite(Datas::I()->sites->getById(ui->EmplacementServeurupComboBox->itemData(idx).toInt()));
+    ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + Datas::I()->sites->currentsite()->nom() + "</b></font> ");
 }
 
 //!> supprime les fichiers de logs antérieurs à J - anciennete jours

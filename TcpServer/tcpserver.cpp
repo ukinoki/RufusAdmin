@@ -73,7 +73,8 @@ void TcpServer::Deconnexion(qintptr descriptor)
     QString adress ("");
     if (skt->datas().split(TCPMSG_Separator).size()>2)
         adress = skt->datas().split(TCPMSG_Separator).at(2);
-    QString login = Datas::I()->users->getById(skt->idUser())->login();
+    User *usr = Datas::I()->users->getById(skt->idUser());
+    QString login = ( usr != Q_NULLPTR? usr->login() : "" );
     UpSystemTrayIcon::I()->showMessage(tr("Messages"), login + " " +  tr("vient de se déconnecter sur") + " " + adress, Icons::icSunglasses(), 3000);
     map_socketdescriptors   .remove(descriptor);
 
@@ -121,13 +122,16 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
     {
         msg.remove(TCPMSG_idUser);
         SocketFromDescriptor(descriptor)->setIdUser(msg.toInt());
+        Logs::LogSktMessage("void TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_idUser) - iduser = " + msg);
     }
     else if (msg.contains(TCPMSG_DataSocket))         // les datas  du client qui vient de se connecter reçues par le serveur -> composé de adresseIP, adresseMac, LoaclhostName()
     {
         msg.remove(TCPMSG_DataSocket);
         //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
+        Logs::LogSktMessage("void TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_DataSocket) - data = " + msg);
         SocketFromDescriptor(descriptor)->setData(msg);
-        QString login = Datas::I()->users->getById(SocketFromDescriptor(descriptor)->idUser())->login();
+        User *usr = Datas::I()->users->getById(SocketFromDescriptor(descriptor)->idUser());
+        QString login = ( usr != Q_NULLPTR? usr->login() : "" );
         QString adress(tr("une adresse inconnue"));
         if (msg.split(TCPMSG_Separator).size()>2)
             adress = msg.split(TCPMSG_Separator).at(2);
