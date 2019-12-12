@@ -70,9 +70,7 @@ void TcpServer::Deconnexion(qintptr descriptor)
     TcpSocket *skt = SocketFromDescriptor(descriptor);
     if ( skt == Q_NULLPTR)
         return;
-    QString adress ("");
-    if (skt->datas().split(TCPMSG_Separator).size()>2)
-        adress = skt->datas().split(TCPMSG_Separator).at(2);
+    QString adress  = skt->localHostName();
     User *usr = Datas::I()->users->getById(skt->idUser());
     QString login = ( usr != Q_NULLPTR? usr->login() : "" );
     UpSystemTrayIcon::I()->showMessage(tr("Messages"), login + " " +  tr("vient de se déconnecter sur") + " " + adress, Icons::icSunglasses(), 3000);
@@ -139,6 +137,27 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         envoieListeSockets();
         AfficheListeSockets(TCPMSG_DataSocket);
     }
+    else if (msg.contains(TCPMSG_UserDataSocket))         // les datas  du client qui vient de se connecter reçues par le serveur -> composé de iduser, adresseIP, adresseMac, LoaclhostName()
+    {
+        msg.remove(TCPMSG_UserDataSocket);
+        //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
+        Logs::LogSktMessage("void TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_UserDataSocket) - data = " + msg);
+        QString msg2 = msg;
+        QStringList listdata = msg2.split(TCPMSG_Separator);
+        SocketFromDescriptor(descriptor)->setIdUser(listdata.at(0).toInt());
+        User *usr = Datas::I()->users->getById(SocketFromDescriptor(descriptor)->idUser());
+        QString login = ( usr != Q_NULLPTR? usr->login() : "" );
+        QString sep = TCPMSG_Separator;
+        int length = listdata.at(0).size() + sep.size();
+        msg.remove(0, length);
+        SocketFromDescriptor(descriptor)->setData(msg);
+        QString adress(tr("une adresse inconnue"));
+        if (msg.split(TCPMSG_Separator).size()>2)
+            adress = msg.split(TCPMSG_Separator).at(2);
+        UpSystemTrayIcon::I()->showMessage(tr("Messages"), login + " " +  tr("vient de se connecter sur") + " " + adress, Icons::icSunglasses(), 3000);
+        envoieListeSockets();
+        AfficheListeSockets(TCPMSG_UserDataSocket);
+    }
     else if (msg == TCPMSG_EnvoieListSocket)          // un client a demandé la liste mise à jour des sockets
         envoieListeSockets(descriptor);
     else if (msg.contains(TCPMSG_MAJDocsExternes))
@@ -199,18 +218,15 @@ QString TcpServer::ListeSockets()
 TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
 {
     QString msg = "void TcpServer::SocketFromDescriptor(qintptr sktdescriptor) - sktdescriptor " + QString::number(descriptor);
-    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
-    while (itskt.hasNext())
-    {
-        itskt.next();
-        if (itskt.key() == descriptor)
-        {
-            Logs::LogSktMessage(msg + " - trouvé");
-            return itskt.value();
-        }
+    auto itskt = map_socketdescriptors.find(descriptor);
+    if (itskt != map_socketdescriptors.end()) {
+        Logs::LogSktMessage(msg + " - trouvé");
+        return itskt.value();
     }
-    Logs::LogSktMessage(msg + " = QNULLPTR");
-    return Q_NULLPTR;
+    else {
+        Logs::LogSktMessage(msg + " = QNULLPTR");
+        return Q_NULLPTR;
+    }
 }
 
 void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)

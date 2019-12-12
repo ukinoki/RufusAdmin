@@ -566,6 +566,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_Disconnect                           "Deconnexion"                                       /*! fin du message demandant la deconnexion et la fermeture d'un socket */
 #define TCPMSG_TestConnexion                        "TestConnexion"                                     /*! fin du message de test de la connexion */
 #define TCPMSG_OKConnexion                          "OKConnexion"                                       /*! fin du message de confirmation de la connexion */
+#define TCPMSG_UserDataSocket                       "UserDatasSocket"                                   /*! fin du message fournissant iduser, IP et MAC et nom d'un client */
 
 // Constantes de statut salle d'attente  //+++++ATTENTION ces constantes servent dans des requêtes SQL - NE PAS METTRE DE CARACTERES SPECIAUX
 #define ARRIVE                                      "Arrivé"
@@ -635,11 +636,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define POLICEPARDEFAUT         "Comic Sans MS"
 #define POLICEATTRIBUTPARDEFAUT "Regular"
 #ifdef Q_OS_MACX
-#define POINTPARDEFAUT          13
 #define CORRECTION_td_width     1
 #endif
 #ifdef Q_OS_LINUX
-#define POINTPARDEFAUT          10
 #define CORRECTION_td_width     1.3
 #endif
 

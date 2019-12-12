@@ -58,10 +58,10 @@ TcpSocket::~TcpSocket()
 {
 }
 
-void            TcpSocket::setIdUser(int id)                        {m_iduser = id;}
-int             TcpSocket::idUser() const                           {return m_iduser;}
-void            TcpSocket::setData(QString datas)                   {m_datasclient = datas;}
-QString         TcpSocket::datas()                                  {return m_datasclient;}
+void            TcpSocket::setIdUser(int id)                        { m_iduser = id; }
+int             TcpSocket::idUser() const                           { return m_iduser; }
+void            TcpSocket::setData(QString datas)                   { m_datasclient = datas; }
+QString         TcpSocket::datas()                                  { return m_datasclient; }
 QString         TcpSocket::IPAdress()                               { return (m_datasclient.split(TCPMSG_Separator).size() > 0? m_datasclient.split(TCPMSG_Separator).at(0) : "");}
 QString         TcpSocket::MACAdress()                              { return (m_datasclient.split(TCPMSG_Separator).size() > 1? m_datasclient.split(TCPMSG_Separator).at(1) : "");}
 QString         TcpSocket::localHostName()                          { return (m_datasclient.split(TCPMSG_Separator).size() > 2? m_datasclient.split(TCPMSG_Separator).at(2) : "");}
