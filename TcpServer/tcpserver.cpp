@@ -137,26 +137,19 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         envoieListeSockets();
         AfficheListeSockets(TCPMSG_DataSocket);
     }
-    else if (msg.contains(TCPMSG_UserDataSocket))         // les datas  du client qui vient de se connecter reçues par le serveur -> composé de iduser, adresseIP, adresseMac, LoaclhostName()
+    else if (msg.contains(TCPMSG_StringidPoste))         // le stringid du poste qui vient de se connecter
     {
-        msg.remove(TCPMSG_UserDataSocket);
+        msg.remove(TCPMSG_StringidPoste);
+        PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(msg);
+        if (post == Q_NULLPTR)
+            return;
         //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
-        Logs::LogSktMessage("void TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_UserDataSocket) - data = " + msg);
-        QString msg2 = msg;
-        QStringList listdata = msg2.split(TCPMSG_Separator);
-        SocketFromDescriptor(descriptor)->setIdUser(listdata.at(0).toInt());
-        User *usr = Datas::I()->users->getById(SocketFromDescriptor(descriptor)->idUser());
-        QString login = ( usr != Q_NULLPTR? usr->login() : "" );
-        QString sep = TCPMSG_Separator;
-        int length = listdata.at(0).size() + sep.size();
-        msg.remove(0, length);
-        SocketFromDescriptor(descriptor)->setData(msg);
-        QString adress(tr("une adresse inconnue"));
-        if (msg.split(TCPMSG_Separator).size()>2)
-            adress = msg.split(TCPMSG_Separator).at(2);
-        UpSystemTrayIcon::I()->showMessage(tr("Messages"), login + " " +  tr("vient de se connecter sur") + " " + adress, Icons::icSunglasses(), 3000);
+        Logs::LogSktMessage("void TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_StringidPoste) - data = " + msg);
+        SocketFromDescriptor(descriptor)->setIdUser(post->id());
+        SocketFromDescriptor(descriptor)->setData(post->ipadress() + TCPMSG_Separator + post->macadress() + TCPMSG_Separator + post->nomposte());
+        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Datas::I()->users->getById(post->id())->login() + " " +  tr("vient de se connecter sur") + " " + post->nomposte(), Icons::icSunglasses(), 3000);
         envoieListeSockets();
-        AfficheListeSockets(TCPMSG_UserDataSocket);
+        AfficheListeSockets(TCPMSG_StringidPoste);
     }
     else if (msg == TCPMSG_EnvoieListSocket)          // un client a demandé la liste mise à jour des sockets
         envoieListeSockets(descriptor);

@@ -738,7 +738,8 @@ QJsonObject DataBase::loadPosteConnecteData(int iduser, QString macadress)
                   " UserComptable, UserParent, idLieu, HeureDerniereConnexion, idPat, IPAdress"
                   " from " TBL_USERSCONNECTES
                   " where idUser = " + QString::number(iduser) +
-                  " and " CP_MACADRESS_USRCONNECT " = " + macadress;
+                  " and " CP_MACADRESS_USRCONNECT " = '" + macadress + "'";
+    //qDebug() << req;
     QList<QVariantList> postlist = StandardSelectSQL(req, ok);
     if( !ok || postlist.size()==0 )
         return posteData;
