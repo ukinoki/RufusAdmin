@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("13-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("14-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -148,7 +148,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     if (m_utiliseTCP)
     {
         TCPServer           = TcpServer::I();
-        TCPServer           ->setId(Admin()->id());
         connect(TCPServer,  &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         connect(TCPServer,  &TcpServer::deconnexionposte,       this,   &RufusAdmin::DeconnexionPoste);
         TCPServer           ->start();
@@ -436,8 +435,8 @@ void RufusAdmin::DeconnexionPoste(QString postestringid)
         QString nomposte = post->nomposte();
         int iduserposte = post->id();
             //!> suppression du post de la liste des postes connectés
+        ResumeTCPSocketStatut();
         Datas::I()->postesconnectes->SupprimePosteConnecte(post);
-        TCPServer->envoieListeSockets();
         bool mettreajourlasalledattente = false;
             //!> remise en salle d'attente des patients en cours d'examen sur ce poste
         foreach (PatientEnCours* pat, Datas::I()->patientsencours->patientsencours()->values())
@@ -456,7 +455,7 @@ void RufusAdmin::DeconnexionPoste(QString postestringid)
                 TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
             }
         }
-            //!> on déverrouille les actes verrouillés en comptabilité par cet utilisateur s'il n'est plus connecté sur aucun poste
+        //!> on déverrouille les actes verrouillés en comptabilité par cet utilisateur s'il n'est plus connecté sur aucun poste
         bool usernotconnectedever = true;
         foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
             if(post->id() == iduserposte)
@@ -3361,51 +3360,47 @@ void RufusAdmin::ResumeTCPSocketStatut()
 {
     if (!m_utiliseTCP)
         return;
-    QString sep = "{!!}";
     QString statut;
-    QString list = TCPServer->ListeSockets().remove("{}" TCPMSG_ListeSockets);
-    QStringList ListSockets = list.split("{}");
-    QStringList::const_iterator itsocket;
-    for( itsocket = ListSockets.constBegin(); itsocket != ListSockets.constEnd(); ++itsocket )
+    QList<PosteConnecte*> listpost = TCPServer->listePostesConnectes();
+    QList<PosteConnecte*>::const_iterator itpost;
+    for( itpost = listpost.constBegin(); itpost != listpost.constEnd(); ++itpost )
     {
-        QString statcp = *itsocket;
-        statcp.replace(TCPMSG_Separator, sep);
-        //qDebug() << statcp;
-        if (itsocket == ListSockets.constBegin())
+        PosteConnecte *post = const_cast<PosteConnecte*>(*itpost);
+        if (itpost == listpost.constBegin())
         {
             // le 1er item de gListSockets est le serveur
             statut += tr("ServeurTCP") + "\n\t";
-            if (statcp.split(sep).size()>3)
+            if (post != Q_NULLPTR)
             {
-                statut += statcp.split(sep).at(2) + " - "
-                        + statcp.split(sep).at(0) + " - "
-                        + statcp.split(sep).at(1) + " --- "
-                        + Datas::I()->users->getById(statcp.split(sep).at(3).toInt())->login();
+                statut += post->nomposte() + " - "
+                        + post->ipadress() + " - "
+                        + post->macadress() + " --- "
+                        + Datas::I()->users->getById(post->id())->login();
             }
             else
-                statut += tr("inconnu");
+                statut += "\t" + tr("inconnu") + "\n";
             statut += "\n" + tr("Postes connectés") + "\n";
         }
         else
         {
-            if (statcp.split(sep).size()>3)
+            if (post != Q_NULLPTR)
             {
-                statut += "\t" + statcp.split(sep).at(2) + " - "
-                        + statcp.split(sep).at(0) + " - "
-                        + statcp.split(sep).at(1) + " --- "
-                        + Datas::I()->users->getById(statcp.split(sep).at(3).toInt())->login() + "\n";
+                statut += "\t" + post->nomposte() + " - "
+                        + post->ipadress() + " - "
+                        + post->macadress() + " --- "
+                        + Datas::I()->users->getById(post->id())->login() + "\n";
             }
             else
                 statut += "\t" + tr("inconnu") + "\n";
         }
     }
+    m_socketStatut = statut;
     foreach (PosteConnecte *post, *Datas::I()->postesconnectes->postesconnectes())
     {
         if(post->isdistant())
             m_socketStatut += "\t" + Datas::I()->sites->getById(post->idlieu())->nom() + " ---- "
                     + Datas::I()->users->getById(post->id())->login() + "\n";
     }
-    m_socketStatut = statut;
     emit ModifEdit(m_socketStatut); // déclenche la modification de la fenêtre resumestatut
 }
 

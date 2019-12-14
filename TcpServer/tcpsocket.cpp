@@ -35,11 +35,8 @@ TcpSocket::TcpSocket()
 TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QTcpSocket (parent)
 {
     sktdescriptor = ID;
-    m_iduser = -1;
-    m_datasclient = "";
     m_bufferarray.clear();
     m_datasize = 0;
-    a = 0;
 
     if(!setSocketDescriptor(ID))
     {
@@ -58,13 +55,8 @@ TcpSocket::~TcpSocket()
 {
 }
 
-void            TcpSocket::setIdUser(int id)                        { m_iduser = id; }
-int             TcpSocket::idUser() const                           { return m_iduser; }
-void            TcpSocket::setData(QString datas)                   { m_datasclient = datas; }
-QString         TcpSocket::datas()                                  { return m_datasclient; }
-QString         TcpSocket::IPAdress()                               { return (m_datasclient.split(TCPMSG_Separator).size() > 0? m_datasclient.split(TCPMSG_Separator).at(0) : "");}
-QString         TcpSocket::MACAdress()                              { return (m_datasclient.split(TCPMSG_Separator).size() > 1? m_datasclient.split(TCPMSG_Separator).at(1) : "");}
-QString         TcpSocket::localHostName()                          { return (m_datasclient.split(TCPMSG_Separator).size() > 2? m_datasclient.split(TCPMSG_Separator).at(2) : "");}
+PosteConnecte*  TcpSocket::posteconnecte() const                    { return m_post; }
+void            TcpSocket::setposteconnecte(PosteConnecte *post)    { m_post = post; }
 
 void TcpSocket::TraiteDonneesRecues()
 {
@@ -97,7 +89,9 @@ void TcpSocket::TraiteDonneesRecues()
 void TcpSocket::envoyerMessage(QString msg)
 {
     QByteArray paquet = msg.toUtf8();
-    User *usr = Datas::I()->users->getById(idUser());
+    if (posteconnecte() == Q_NULLPTR)
+        return;
+    User *usr = Datas::I()->users->getById(posteconnecte()->id());
     QString login = ( usr != Q_NULLPTR? usr->login() : "" );
     QString msg2("");
     if (msg.contains(TCPMSG_ListeSockets))

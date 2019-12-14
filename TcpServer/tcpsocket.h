@@ -60,26 +60,28 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
             */
 
 /*! LES MESSAGES
- * 1. TCPMSG_IDUSER
-    * envoyé immédiatement après la connexion, composé de iduser puis TCPMSG_IDUSER
- * 2. TCPMSG_DataSocket
-    * envoyé immédiatement après le précédent, composé de adresseIP, adresseMac, LoaclhostName() puis  TCPMSG_IDUSER
- * 3. TCPMSG_MAJSalAttente
+ * 1. TCPMSG_StringidPoste
+    * envoyé immédiatement après la connexion, composé du stringid du poste qui vient de se connnecter puis TCPMSG_StringidPoste
+ * 2. TCPMSG_IDUSER
+    * composé de iduser puis TCPMSG_IDUSER
+ * 3. TCPMSG_DataSocket
+    * composé de adresseIP, adresseMac, LoaclhostName() puis  TCPMSG_IDUSER
+ * 4. TCPMSG_MAJSalAttente
     * utilisé seul, envoyé au serveurTCP pour inviter à faire une MAJ de la salle d'attente
- * 4. TCPMSG_MAJCorrespondants
+ * 5. TCPMSG_MAJCorrespondants
     * utilisé seul, envoyé au serveurTCP pour inviter à faire une MAJ de la liste des correspondants
- * 5. TCPMSG_MAJDocsExternes
+ * 6. TCPMSG_MAJDocsExternes
     * message reçu du serveurTCP, composé de idpatient puis TCPMSG_MAJDocsExternes -> incite à mettre à jour les documents externes du patient idpatient
- * 6. TCPMSG_MsgBAL
+ * 7. TCPMSG_MsgBAL
     * gère la BAL
         * message reçu du serveur      -> composé de nombre de messages puis TCPMSG_MsgBAL -> indique que le nombre de messages vient d'être reçu
         * message envoyé au serveur    -> composé de la liste des idUser destinataires séparés par des virgules puis separateur puis nombre de messages puis TCPMSG_MsgBAL
- * 7. TCPMSG_ListeSockets
+ * 8. TCPMSG_ListeSockets
     * message reçu du serveur, composé des dats de chaque poste connecté, séparés par {}
     * chaque data contient adresseIP, adresseMac, LoaclhostName(), idUser puis  TCPMSG_ListeSockets
- * 8.TCPMSG_MAJPatient
+ * 9.TCPMSG_MAJPatient
     * utilisé seul, envoyé au serveurTCP pour inviter à faire une MAJ d'e la liste des correspondants d'un patient
- * 9.TCPMSG_Separator
+ * 10.TCPMSG_Separator
     * le séparateur des éléments d'un message
  */
 
@@ -101,23 +103,17 @@ public:
     ~TcpSocket();
     qintptr                         sktdescriptor;
     void                            envoyerMessage(QString msg);
-    void                            setIdUser(int id);
-    int                             idUser() const;
-    void                            setData(QString datas);
-    QString                         datas();
-    QString                         IPAdress();
-    QString                         MACAdress();
-    QString                         localHostName();
+    PosteConnecte*                  posteconnecte() const;
+    void                            setposteconnecte(PosteConnecte *posteconnecte);
 
 private:
-    int                             a;
     static TcpSocket                *instance;
     quint16                         m_portTCPserver;
     QByteArray                      m_bufferarray;                                            //!> le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
     qint32                          m_datasize;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
-    int                             m_iduser;                                                 //!> stocke l'id correspondant au user correspondant à la connexion - utilisé pour la messagerie
-    QString                         m_datasclient;                                            /*! stocke l'adresse IP, l'adresse MAC du client et le nom du poste connecté
-                                                                                               * IpAdress() + TCPMSG_Separator + MACAdress + TCPMSG_Separator + localHostName */
+    QString                         m_stringid = "";                                          //!> stocke le stringid du post qui vient de se connecter
+    PosteConnecte                   *m_post = Q_NULLPTR;                                      //!> stocke le Posteconnecte correspondant
+
     void                            Deconnexion();
     void                            erreurSocket(QAbstractSocket::SocketError);
     void                            TraiteDonneesRecues();
