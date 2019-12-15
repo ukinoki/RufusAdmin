@@ -554,7 +554,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_PORT_TCPSERVEUR                         "50885"
 #define TCPMSG_StringidPoste                        "StringidPoste"                                     /*! nom du message fournissant le Stringid du poste qui vient de se connecter */
 #define TCPMSG_DeconnexionPoste                     "DeconnexionPoste"                                  /*! nom du message fournissant le Stringid du poste qui vient de se déconnecter */
-#define TCPMSG_idUser                               "idUser"                                            /*! nom du message fournissant l'idUser */
 #define TCPMSG_MAJCorrespondants                    "MajCorrespondants"                                 /*! fin du message invitant à mettre à jour la liste des correspondants */
 #define TCPMSG_MAJDocsExternes                      "MajDocsExternes"                                   /*! fin du message invitant à mettre à jour la liste des documents externes pour un patient */
 #define TCPMSG_MAJSalAttente                        "MajSalAttente"                                     /*! fin du message invitant à mettre à jour la salle d'attente */
@@ -562,10 +561,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_MAJListeUsers                        "MajListeUsers"                                     /*! fin du message invitant à mettre à jour la liste des utilisateurs */
 #define TCPMSG_MsgBAL                               "MsgRecuDansBAL"                                    /*! fin du message informant de la réception d'un message de messagerie instantanée */
 #define TCPMSG_Separator                            "triumphspeedtriple1050"                            /*! separateur au sein d'un message */
-#define TCPMSG_DataSocket                           "DataSocket"                                        /*! fin du message fournissant IP et MAC d'un client */
 #define TCPMSG_ListeSockets                         "ListeSockets"                                      /*! fin du message informant le client que ce message contient la liste des TcpSockets */
 #define TCPMSG_EnvoieListSocket                     "EnvoieListe"                                       /*! fin du message demandant l'envoi de la liste des sockets à un client */
-#define TCPMSG_Disconnect                           "Deconnexion"                                       /*! fin du message demandant la deconnexion et la fermeture d'un socket */
 #define TCPMSG_TestConnexion                        "TestConnexion"                                     /*! fin du message de test de la connexion */
 #define TCPMSG_OKConnexion                          "OKConnexion"                                       /*! fin du message de confirmation de la connexion */
 
@@ -577,13 +574,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define ENCOURSEXAMEN                               "En cours de consultation avec "
 
 // Les fichiers et répertoires divers
-#define DIR_LIBS2                                "/Applications";
-#define DIR_RESSOURCES                           "/Ressources"
-#define DIR_RUFUSADMIN                           "/Documents/RufusAdmin"
-#define DIR_RUFUS                                "/Documents/Rufus"
-#define DIR_FACTURES                             "/Factures"
-#define DIR_ORIGINAUX                            "/Originaux"
-#define DIR_FACTURESSANSLIEN                     "/FacturesSansLien"
+#define DIR_LIBS2                                   "/Applications"
+#define DIR_RESSOURCES                              "/Ressources"
+#define DIR_RUFUSADMIN                              "/Documents/RufusAdmin"
+#define DIR_RUFUS                                   "/Documents/Rufus"
+#define DIR_FACTURES                                "/Factures"
+#define DIR_ORIGINAUX                               "/Originaux"
+#define DIR_FACTURESSANSLIEN                        "/FacturesSansLien"
 #define DIR_DOSSIERECHANGE                       "/DossierEchange"
 #define DIR_CRDOSSIERS                           "/CRDossiers"
 #define DIR_IMAGERIE                             "/Imagerie"

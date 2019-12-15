@@ -77,10 +77,7 @@ void TcpSocket::TraiteDonneesRecues()
                 //qDebug() << " Data in: " << buffer << " message = " << msg;
                 m_bufferarray.clear();                                     // on remet à 0 buffer et sizedata
                 m_datasize = 0;
-                if (msg.contains(TCPMSG_Disconnect))
-                    Deconnexion();
-                else
-                    emit emitmsg(sktdescriptor, msg);
+                emit receiveTCPmsg(sktdescriptor, msg);
             }
         }
     }

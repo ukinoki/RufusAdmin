@@ -50,7 +50,7 @@ void TcpServer::incomingConnection(qintptr descriptor)
     Logs::LogSktMessage("void TcpServer::incomingConnection(qintptr socketDescriptor) - " + QString::number(descriptor));
     TcpSocket *socket = new TcpSocket(descriptor);
 
-    connect(socket,     &TcpSocket::emitmsg,              this,   &TcpServer::TraiteMessageRecu);
+    connect(socket,     &TcpSocket::receiveTCPmsg,              this,   &TcpServer::TraiteMessageRecu);
     connect(socket,     &TcpSocket::deconnexion,          this,   &TcpServer::Deconnexion);
 
     map_socketdescriptors  .insert(descriptor, socket);
