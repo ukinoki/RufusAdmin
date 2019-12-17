@@ -103,10 +103,9 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         QString nbmsg = msg.split(TCPMSG_Separator).at(1);
         QStringList listid = listdest.split(",");
         QList<int> listdestfin = QList<int>();
-        QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
-        while (itskt.hasNext())
+        foreach (TcpSocket* skt, map_socketdescriptors.values())
         {
-            PosteConnecte * post = itskt.value()->posteconnecte();
+            PosteConnecte * post = skt->posteconnecte();
             if (post == Q_NULLPTR)
                 continue;
             if (listid.contains(QString::number(post->id())) && !listdestfin.contains(post->id())) {
