@@ -103,15 +103,18 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         QString nbmsg = msg.split(TCPMSG_Separator).at(1);
         QStringList listid = listdest.split(",");
         QList<int> listdestfin = QList<int>();
-        foreach (TcpSocket* skt, map_socketdescriptors.values())
+        QMap<qintptr, TcpSocket*>::iterator itskt;
+        for ( itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
         {
-            PosteConnecte * post = skt->posteconnecte();
-            if (post == Q_NULLPTR)
-                continue;
-            if (listid.contains(QString::number(post->id())) && !listdestfin.contains(post->id())) {
-                listdestfin << post->id();
-                envoyerA(post->id(), nbmsg + TCPMSG_MsgBAL);
-            }
+            if (!OKControleIterator(itskt))
+                break;
+            PosteConnecte * post = itskt.value()->posteconnecte();
+            if (post != Q_NULLPTR)
+                if (listid.contains(QString::number(post->id())) && !listdestfin.contains(post->id())) {
+                    listdestfin << post->id();
+                    envoyerA(post->id(), nbmsg + TCPMSG_MsgBAL);
+                }
+            ++ itskt;
         }
         Flags::I()->MAJflagMessages();
     }
@@ -177,12 +180,14 @@ QList<PosteConnecte*> TcpServer::listePostesConnectes()
     PosteConnecte *post = Datas::I()->postesconnectes->admin();
     if (post != Q_NULLPTR)
         listpost << post;
-    foreach (TcpSocket* skt, map_socketdescriptors.values())
+    for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
     {
-        PosteConnecte * post = skt->posteconnecte();
-        if (post == Q_NULLPTR)
-            continue;
-        listpost << post;
+        if (!OKControleIterator(itskt))
+            break;
+        PosteConnecte * post = itskt.value()->posteconnecte();
+        if (post != Q_NULLPTR)
+            listpost << post;
+        ++ itskt;
     }
     return listpost;
 }
@@ -193,20 +198,21 @@ QString TcpServer::listeidPostesConnectes()
     PosteConnecte *post = Datas::I()->postesconnectes->admin();
     if (post != Q_NULLPTR)
         liststringidpost += post->stringid();
-    foreach (TcpSocket* skt, map_socketdescriptors.values())
+    for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
     {
-        PosteConnecte * post = skt->posteconnecte();
-        if (post == Q_NULLPTR)
-            continue;
-        liststringidpost += TCPMSG_Separator + post->stringid();
+        if (!OKControleIterator(itskt))
+            break;
+        PosteConnecte * post = itskt.value()->posteconnecte();
+        if (post != Q_NULLPTR)
+            liststringidpost += TCPMSG_Separator + post->stringid();
+        ++ itskt;
     }
-    liststringidpost += TCPMSG_ListeSockets;
-    return liststringidpost;
+    return liststringidpost + TCPMSG_ListeSockets;
 }
 
 TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
 {
-    QString msg = "void TcpServer::SocketFromDescriptor(qintptr sktdescriptor) - sktdescriptor " + QString::number(descriptor);
+    QString msg = "TcpServer::SocketFromDescriptor(qintptr sktdescriptor) - sktdescriptor = " + QString::number(descriptor);
     auto itskt = map_socketdescriptors.find(descriptor);
     if (itskt != map_socketdescriptors.end()) {
         Logs::LogSktMessage(msg + " - trouvé");
@@ -218,46 +224,68 @@ TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
     }
 }
 
-void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin)
+void TcpServer::envoyerATous(QString msg, qintptr emetteur)
 {
-    Logs::LogSktMessage("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - skt descriptor " + QString::number(emetteurorigin) + " msg " + msg);
-    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
-    while (itskt.hasNext())
+    Logs::LogSktMessage("TcpServer::envoyerATous(QString msg, qintptr emetteur) - emetteur = " + datadescriptor(emetteur) + " - msg = " + msg);
+    for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
     {
-        itskt.next();
-        if (itskt.key() != emetteurorigin)
+        if (!OKControleIterator(itskt))
+            break;
+        if (itskt.key() != emetteur)
         {
-            Logs::LogSktMessage("void TcpServer::envoyerATous(QString msg, qintptr emetteurorigin) - sktdescriptor destinataire " + QString::number(itskt.key()) + " msg " + msg);
+            Logs::LogSktMessage("TcpServer::envoyerATous(QString msg, qintptr emetteur) - destinataire = " + datadescriptor(itskt.key()) + " - msg = " + msg);
             itskt.value()->envoyerMessage(msg);
         }
+        ++ itskt;
     }
 }
 
 void TcpServer::envoyerA(int iduser, QString msg)
 {
-    Logs::LogSktMessage("void TcpServer::envoyerA(int iduser, QString msg)");
-    QMapIterator<qintptr, TcpSocket*> itskt(map_socketdescriptors);
+    Logs::LogSktMessage("void TcpServer::envoyerA(int iduser, QString msg) - iduser = " + QString::number(iduser) + " - msg = " + msg);
     QList<int> listdestfin = QList<int>();
-    foreach (TcpSocket* skt, map_socketdescriptors.values())
+    for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
     {
-        PosteConnecte * post = skt->posteconnecte();
-        if (post == Q_NULLPTR)
-            continue;
-        if (iduser == post->id() && !listdestfin.contains(post->id())) {
-            listdestfin << post->id();
-            itskt.value()->envoyerMessage(msg);
-        }
+        if (!OKControleIterator(itskt))
+            break;
+        PosteConnecte * post = itskt.value()->posteconnecte();
+        if (post != Q_NULLPTR)
+            if (iduser == post->id() && !listdestfin.contains(post->id())) {
+                listdestfin << post->id();
+                itskt.value()->envoyerMessage(msg);
+            }
+        ++ itskt;
     }
 }
 
 void TcpServer::AfficheListeSockets(QString fonction)
 {
     qDebug() << "TcpServer::AfficheListeSockets(QString fonction) - " + fonction;
-    foreach (TcpSocket* skt, map_socketdescriptors.values())
+    for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
     {
-        PosteConnecte * post = skt->posteconnecte();
-        if (post == Q_NULLPTR)
-            continue;
-        qDebug() << post->ipadress() << post->macadress() << post->nomposte() << post->id();
+        if (!OKControleIterator(itskt))
+            break;
+        PosteConnecte * post = itskt.value()->posteconnecte();
+        if (post != Q_NULLPTR)
+            qDebug() << post->ipadress() << post->macadress() << post->nomposte() << post->id();
+        ++ itskt;
     }
+}
+
+QString TcpServer::datadescriptor(qintptr descriptor)
+{
+    TcpSocket * skt = SocketFromDescriptor(descriptor);
+    if (skt == Q_NULLPTR)
+        return "nulldata";
+    PosteConnecte *post = skt->posteconnecte();
+    if (post == Q_NULLPTR)
+        return "nullposte";
+    return QString::number(descriptor) + " - " + Datas::I()->users->getById(post->id())->login() + " / " + post->nomposte();
+}
+
+bool TcpServer::OKControleIterator(QMap<qintptr, TcpSocket *>::iterator &itr)
+{
+    if (itr.value() == Q_NULLPTR)
+        itr = map_socketdescriptors.erase(itr);
+    return (itr != map_socketdescriptors.end());
 }

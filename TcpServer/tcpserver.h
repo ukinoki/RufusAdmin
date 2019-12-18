@@ -41,14 +41,16 @@ public:
     void                    envoieListeSockets(qintptr descriptor = -1);                        /* envoie la liste des sockets sur tous les sockets */
 
 private:
-    static TcpServer*        instance;
+    static TcpServer*               instance;
     TcpServer();
-    QMap<qintptr, TcpSocket*>       map_socketdescriptors;                                  // le map des sockets à partir des socketdescriptor
+    QMap<qintptr, TcpSocket*>       map_socketdescriptors = QMap<qintptr, TcpSocket*>();    // le map des sockets à partir des socketdescriptor
 
     void                            AfficheListeSockets(QString fonction = "");             /* utilisé pour le debugging seulement */
+    bool                            OKControleIterator(QMap<qintptr, TcpSocket*>::iterator &itr);
     TcpSocket*                      SocketFromDescriptor(qintptr descriptor);
     void                            TraiteMessageRecu(qintptr descriptor, QString msg);     /* traitement des messages reçus*/
     void                            Deconnexion(qintptr descriptor);                        /* deconnexion d'un socket */
+    QString                         datadescriptor(qintptr descriptor);                     /* renvoie les datas (poste, user) correspondant au descriptor d'un socket */
 
 signals:
     void                            ModifListeSockets();

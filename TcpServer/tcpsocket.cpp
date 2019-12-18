@@ -125,4 +125,3 @@ void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
         "The remote host closed the connection"
     */
 }
-

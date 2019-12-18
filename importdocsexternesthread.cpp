@@ -89,13 +89,23 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
                 }
                 else if (Appareil == "TOPCON ALADDIN II")
                 {
+                    //41346_MENDELE_ANDREE_01-12-1932_IOL_LAINE SERGE_13_12_2019_16_50.pdf
                     //1051_MIGUEL_JEAN-ROBERT_01-06-1948_Aladdin_06_06_2018_13_16.pdf
                     QStringList listn   = nomdoc.split("_");
                     int n               = listn.size();
-                    QString jour        = listn.at(n-5);
-                    QString mois        = listn.at(n-4);
-                    QString annee       = listn.at(n-3);
-                    datestring          = annee + mois + jour;
+                    datestring = "";
+                    if (n>4)
+                    {
+                        QString jour        = listn.at(n-5);
+                        QString mois        = listn.at(n-4);
+                        QString annee       = listn.at(n-3);
+                        if (QDate(jour.toInt(),mois.toInt(),annee.toInt()).isValid())
+                            datestring      = annee + mois + jour;
+                    }
+                    if (datestring == "") {
+                        QDateTime datefic   = QFileInfo(file_origine).created();
+                        datestring          = datefic.toString("yyyyMMdd");
+                    }
                     Titredoc            = "Biométrie - Aladdin";
                     Typedoc             = "Biométrie";
                     SousTypeDoc         = "Aladdin";

@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("15-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("17-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -381,6 +381,11 @@ void RufusAdmin::closeEvent(QCloseEvent *event)
         event->ignore();
         return;
     }
+    SortieAppli();
+}
+
+int RufusAdmin::SortieAppli()
+{
     // on retire le poste de la variable posteimportdocs SQL
     setPosteImportDocs(false);
     // on retire Admin de la table des utilisateurs connectés
@@ -2464,17 +2469,16 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     bool visible = isVisible();
     if (!visible)
         showNormal();
-    if (txt == tr("Ouvir RufusAdmin")) {
-        if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
-        {
-            if (!visible)
-                MasqueAppli();
-            return;
-        }
+    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+    {
+        if (!visible)
+            MasqueAppli();
+        return;
     }
+    if (txt == tr("Ouvir RufusAdmin"))
+        setEnabled(true);
     else if (txt == tr("Quitter RufusAdmin"))
-        close();
-    setEnabled(true);
+        SortieAppli();
 }
 
 void RufusAdmin::VerifPosteImport()

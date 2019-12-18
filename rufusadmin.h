@@ -153,6 +153,7 @@ private:
     void                        NouvAppareil();
     void                        Remplir_Table();
     void                        RestoreFontAppli();
+    int                         SortieAppli();
     void                        SupprAppareil();
     void                        SupprimerDocsEtFactures();
     void                        setPosteImportDocs(bool a = true);
