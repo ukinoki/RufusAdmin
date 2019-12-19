@@ -16,7 +16,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tcpserver.h"
-#include <QTcpSocket>
 
 TcpServer* TcpServer::instance = Q_NULLPTR;
 
@@ -41,7 +40,7 @@ bool TcpServer::start()
         return false;
     }
     // le serveur a été démarré correctement
-    emit ModifListeSockets();  // déclenche la fonction void RufusAdmin::ResumeTCPSocketStatut() qui recalcule le statut des sockets
+    emit ModifListeSockets(listestringidPostesConnectes());  // déclenche la fonction void RufusAdmin::ResumeTCPSocketStatut() qui recalcule le statut des sockets
     return true;
 }
 
@@ -49,21 +48,21 @@ void TcpServer::incomingConnection(qintptr descriptor)
 {
     Logs::LogSktMessage("void TcpServer::incomingConnection(qintptr socketDescriptor) - " + QString::number(descriptor));
     TcpSocket *socket = new TcpSocket(descriptor);
+    map_socketdescriptors  .insert(descriptor, socket);
 
-    connect(socket,     &TcpSocket::receiveTCPmsg,              this,   &TcpServer::TraiteMessageRecu);
+    connect(socket,     &TcpSocket::receiveTCPmsg,        this,   &TcpServer::TraiteMessageRecu);
     connect(socket,     &TcpSocket::deconnexion,          this,   &TcpServer::Deconnexion);
 
-    map_socketdescriptors  .insert(descriptor, socket);
 }
 
 void TcpServer::Deconnexion(qintptr descriptor)
 {
-    Logs::LogSktMessage("void TcpServer::Deconnexion(qintptr sktdescriptor)- skt descriptor " + QString::number(descriptor));
+    Logs::LogSktMessage("TcpServer::Deconnexion(qintptr sktdescriptor)- skt descriptor " + QString::number(descriptor));
 
     TcpSocket *skt = SocketFromDescriptor(descriptor);
-    if ( skt == Q_NULLPTR)
+    if (skt == Q_NULLPTR)
         return;
-    PosteConnecte * post = skt->posteconnecte();
+    PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
     if (post == Q_NULLPTR)
         return;
     QString adress  = post->nomposte();
@@ -72,22 +71,28 @@ void TcpServer::Deconnexion(qintptr descriptor)
     UpSystemTrayIcon::I()->showMessage(tr("Messages"), login + " " +  tr("vient de se déconnecter sur") + " " + adress, Icons::icSunglasses(), 3000);
 
     map_socketdescriptors   .remove(descriptor);
-    envoyerATous(post->stringid() + TCPMSG_DeconnexionPoste);
+    envoyerATous(post->stringid() + TCPMSG_DeconnexionPoste, descriptor);
+    emit ModifListeSockets(listestringidPostesConnectes());
     emit deconnexionposte(post->stringid());
     skt->deleteLater();
-    Logs::LogSktMessage("void TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion adress " + adress + " - " + login);
+    Logs::LogSktMessage("TcpServer::Deconnexion(qintptr sktdescriptor) - skt retrouvé -> deconnexion\n\t"
+                        "adress " + adress + "\n\t"
+                        "login =  " + login);
 }
 
 void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
 {
-    Logs::LogSktMessage("void TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg) - skt descriptor " + QString::number(descriptor) + " msg " + msg);
+    Logs::LogSktMessage("TcpServer::TraiteMessageRecu(qintptr sktdescriptor, QString msg)\n\t"
+                        "skt descriptor = " + QString::number(descriptor) + "\n\t"
+                        "msg = " + msg);
     //qDebug() << msg;
-    if (SocketFromDescriptor(descriptor) == Q_NULLPTR)
+    TcpSocket *skt = SocketFromDescriptor(descriptor);
+    if (skt == Q_NULLPTR)
         return;
     if (msg.contains(TCPMSG_MsgBAL))
     {
         /*! un message de BAL reçu par le tcpserver a la struture
-                * QString contenant la liste des id de destianataires séparés par des virgules
+                * QString contenant la liste des id de destinataires séparés par des virgules
                 * TCPMSG_Separator
                 * QString le nombre de messages
                 * TCPMSG_Separator
@@ -108,11 +113,12 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         {
             if (!OKControleIterator(itskt))
                 break;
-            PosteConnecte * post = itskt.value()->posteconnecte();
+            TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
+            PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
             if (post != Q_NULLPTR)
                 if (listid.contains(QString::number(post->id())) && !listdestfin.contains(post->id())) {
                     listdestfin << post->id();
-                    envoyerA(post->id(), nbmsg + TCPMSG_MsgBAL);
+                    envoyerMsgBALA(post->id(), nbmsg + TCPMSG_MsgBAL);
                 }
             ++ itskt;
         }
@@ -121,18 +127,15 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
     else if (msg.contains(TCPMSG_StringidPoste))         // le stringid du poste qui vient de se connecter
     {
         msg.remove(TCPMSG_StringidPoste);
-        TcpSocket *skt = SocketFromDescriptor(descriptor);
-        if (skt == Q_NULLPTR)
-            return;
-        PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(msg);
-        if (post == Q_NULLPTR)
-            return;
-        skt->setposteconnecte(post);
+        //qDebug() << "stringid = " << msg;
+        skt->setStringid(msg);
+        PosteConnecte *post = Datas::I()->postesconnectes->getByStringId(msg);
+        QString resume = (post == Q_NULLPTR? tr("un inconnu vient de se connecter je ne sais où") : Datas::I()->users->getById(post->id())->login() + " " +  tr("vient de se connecter sur") + " " + post->nomposte());
         //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
-        Logs::LogSktMessage("void TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_StringidPoste) - data = " + msg);
-        UpSystemTrayIcon::I()->showMessage(tr("Messages"), Datas::I()->users->getById(post->id())->login() + " " +  tr("vient de se connecter sur") + " " + post->nomposte(), Icons::icSunglasses(), 3000);
+        Logs::LogSktMessage("TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_StringidPoste)\n\t"
+                            "data = " + msg);
+        UpSystemTrayIcon::I()->showMessage(tr("Messages"), resume, Icons::icSunglasses(), 3000);
         envoieListeSockets();
-        AfficheListeSockets(TCPMSG_StringidPoste);
     }
     else if (msg == TCPMSG_EnvoieListSocket)          // un client a demandé la liste mise à jour des sockets
         envoieListeSockets(descriptor);
@@ -162,37 +165,20 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
 
 void TcpServer::envoieListeSockets(qintptr descriptor)
 {
-    Logs::LogSktMessage("void TcpServer::envoieListeSockets(qintptr sktdescriptor)");
-    QString listskt = listeidPostesConnectes();
+    QString desc = (descriptor == -1? "tous" : QString::number(descriptor));
+    Logs::LogSktMessage("TcpServer::envoieListeSockets(qintptr sktdescriptor) - destinataire = " + desc);
+    QString listidpost = listestringidPostesConnectes();
     if (descriptor == -1)
-        envoyerATous(listskt);
+        envoyerATous(listidpost);
     else
     {
         if (SocketFromDescriptor(descriptor) != Q_NULLPTR)
-            SocketFromDescriptor(descriptor)->envoyerMessage(listskt);
+            SocketFromDescriptor(descriptor)->envoyerMessage(listidpost);
     }
-    emit ModifListeSockets();
+    emit ModifListeSockets(listidpost);
 }
 
-QList<PosteConnecte*> TcpServer::listePostesConnectes()
-{
-    QList<PosteConnecte*> listpost = QList<PosteConnecte*>();
-    PosteConnecte *post = Datas::I()->postesconnectes->admin();
-    if (post != Q_NULLPTR)
-        listpost << post;
-    for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
-    {
-        if (!OKControleIterator(itskt))
-            break;
-        PosteConnecte * post = itskt.value()->posteconnecte();
-        if (post != Q_NULLPTR)
-            listpost << post;
-        ++ itskt;
-    }
-    return listpost;
-}
-
-QString TcpServer::listeidPostesConnectes()
+QString TcpServer::listestringidPostesConnectes()
 {
     QString liststringidpost = "";
     PosteConnecte *post = Datas::I()->postesconnectes->admin();
@@ -202,12 +188,11 @@ QString TcpServer::listeidPostesConnectes()
     {
         if (!OKControleIterator(itskt))
             break;
-        PosteConnecte * post = itskt.value()->posteconnecte();
-        if (post != Q_NULLPTR)
-            liststringidpost += TCPMSG_Separator + post->stringid();
+        TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
+        liststringidpost += TCPMSG_Separator + skt->stringid();
         ++ itskt;
     }
-    return liststringidpost + TCPMSG_ListeSockets;
+    return liststringidpost + TCPMSG_ListeStringIdPostesConnectes;
 }
 
 TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
@@ -226,29 +211,38 @@ TcpSocket* TcpServer::SocketFromDescriptor(qintptr descriptor)
 
 void TcpServer::envoyerATous(QString msg, qintptr emetteur)
 {
-    Logs::LogSktMessage("TcpServer::envoyerATous(QString msg, qintptr emetteur) - emetteur = " + datadescriptor(emetteur) + " - msg = " + msg);
+    QString aexclure = (emetteur == 0? "personne" : datadescriptor(emetteur));
+    Logs::LogSktMessage("TcpServer::envoyerATous(QString msg, qintptr emetteur)\n\t"
+                        "emetteur a exclure = " + aexclure + "\n\t"
+                        "msg = " + msg);
     for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
     {
         if (!OKControleIterator(itskt))
             break;
-        if (itskt.key() != emetteur)
+        TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
+        if (skt->socketDescriptor() != emetteur)
         {
-            Logs::LogSktMessage("TcpServer::envoyerATous(QString msg, qintptr emetteur) - destinataire = " + datadescriptor(itskt.key()) + " - msg = " + msg);
-            itskt.value()->envoyerMessage(msg);
+            Logs::LogSktMessage("TcpServer::envoyerATous(QString msg, qintptr emetteur)\n\t"
+                                "destinataire = " + datadescriptor(itskt.key()) + "\n\t"
+                                "msg = " + msg);
+            skt->envoyerMessage(msg);
         }
         ++ itskt;
     }
 }
 
-void TcpServer::envoyerA(int iduser, QString msg)
+void TcpServer::envoyerMsgBALA(int iduser, QString msg)
 {
-    Logs::LogSktMessage("void TcpServer::envoyerA(int iduser, QString msg) - iduser = " + QString::number(iduser) + " - msg = " + msg);
+    Logs::LogSktMessage("void TcpServer::envoyerA(int iduser, QString msg)\n\t"
+                        "iduser = " + QString::number(iduser) + " - " + Datas::I()->users->getById(iduser)->login() + "\n\t"
+                        "msg = " + msg);
     QList<int> listdestfin = QList<int>();
     for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
     {
         if (!OKControleIterator(itskt))
             break;
-        PosteConnecte * post = itskt.value()->posteconnecte();
+        TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
+        PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
         if (post != Q_NULLPTR)
             if (iduser == post->id() && !listdestfin.contains(post->id())) {
                 listdestfin << post->id();
@@ -265,7 +259,8 @@ void TcpServer::AfficheListeSockets(QString fonction)
     {
         if (!OKControleIterator(itskt))
             break;
-        PosteConnecte * post = itskt.value()->posteconnecte();
+        TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
+        PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
         if (post != Q_NULLPTR)
             qDebug() << post->ipadress() << post->macadress() << post->nomposte() << post->id();
         ++ itskt;
@@ -274,12 +269,15 @@ void TcpServer::AfficheListeSockets(QString fonction)
 
 QString TcpServer::datadescriptor(qintptr descriptor)
 {
-    TcpSocket * skt = SocketFromDescriptor(descriptor);
+    TcpSocket* skt = SocketFromDescriptor(descriptor);
     if (skt == Q_NULLPTR)
-        return "nulldata";
-    PosteConnecte *post = skt->posteconnecte();
+        return "nulldata - " + QString::number(descriptor);
+    if (skt->stringid() == "")
+        return "nullstringid - " + QString::number(descriptor);
+    //qDebug() << " descriptor = " << descriptor << " - stringid = " << skt->stringid();
+    PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
     if (post == Q_NULLPTR)
-        return "nullposte";
+        return "nullposte - " + QString::number(descriptor);
     return QString::number(descriptor) + " - " + Datas::I()->users->getById(post->id())->login() + " / " + post->nomposte();
 }
 

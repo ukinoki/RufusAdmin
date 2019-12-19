@@ -83,11 +83,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
     * le séparateur des éléments d'un message
  */
 
-/*
- * les règles non écrites
- * pas de classe héritée de thread
- * pas de slot appelé dans un thread depuis l'extérieur autrement que par un signal
- */
 
 class TcpSocket : public QTcpSocket
 {
@@ -101,8 +96,8 @@ public:
     ~TcpSocket();
     qintptr                         sktdescriptor;
     void                            envoyerMessage(QString msg);
-    PosteConnecte*                  posteconnecte() const;
-    void                            setposteconnecte(PosteConnecte *posteconnecte);
+    QString                         stringid() const;
+    void                            setStringid(const QString &stringid);
 
 private:
     static TcpSocket                *instance;
@@ -110,7 +105,6 @@ private:
     QByteArray                      m_bufferarray;                                            //!> le buffer stocke les data jusqu'à ce que tout le bloc soit reçu
     qint32                          m_datasize;                                               //!> le stockage de la taille permet de savoir si le bloc a été reçu
     QString                         m_stringid = "";                                          //!> stocke le stringid du post qui vient de se connecter
-    PosteConnecte                   *m_post = Q_NULLPTR;                                      //!> stocke le Posteconnecte correspondant
 
     void                            Deconnexion();
     void                            erreurSocket(QAbstractSocket::SocketError);

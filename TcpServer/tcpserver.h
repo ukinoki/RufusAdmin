@@ -34,11 +34,10 @@ class TcpServer : public QTcpServer
 public:
     static TcpServer*       I();
     bool                    start();
-    QList<PosteConnecte*>   listePostesConnectes();
-    QString                 listeidPostesConnectes();
-    void                    envoyerA(int iduser, QString msg);                                  /* envoi d'un message sur un QTcpSocket en particulier */
-    void                    envoyerATous(QString msg, qintptr emetteurorigin = 0);              /* envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
-    void                    envoieListeSockets(qintptr descriptor = -1);                        /* envoie la liste des sockets sur tous les sockets */
+    QString                 listestringidPostesConnectes();                                     /*! la liste des stringid des postes connectes, sous forme de QString, les string id sont séparés par TCPMSG_Separator et le QString se termine par TCPMSG_ListeSockets */
+    void                    envoyerMsgBALA(int iduser, QString msg);                            /*! envoi d'un message sur un QTcpSocket en particulier */
+    void                    envoyerATous(QString msg, qintptr emetteurorigin = 0);              /*! envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
+    void                    envoieListeSockets(qintptr descriptor = -1);                        /*! envoie la liste des sockets sur tous les sockets */
 
 private:
     static TcpServer*               instance;
@@ -53,7 +52,7 @@ private:
     QString                         datadescriptor(qintptr descriptor);                     /* renvoie les datas (poste, user) correspondant au descriptor d'un socket */
 
 signals:
-    void                            ModifListeSockets();
+    void                            ModifListeSockets(QString listidpostesconnectes);
     void                            deconnexionposte(QString poststringid);
 
 protected:

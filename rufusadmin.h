@@ -121,7 +121,7 @@ private:
     User*                       Admin() const { return Datas::I()->users->Admin(); }
     void                        AfficheMessageImport(QStringList listmsg, int pause);
     bool                        AutresPostesConnectes();
-    void                        DeconnexionPoste(QString postestringid);
+    void                        DeconnexionPoste(QString stringid);
     void                        DetermineLieuExercice();
     bool                        eventFilter(QObject *obj, QEvent *event);
     void                        setMapIcons();
@@ -311,7 +311,7 @@ private:
     QString             m_IPadress, m_macAdress;
     QString             m_socketStatut;
     QDateTime           m_dateDernierMessage;
-    void                ResumeTCPSocketStatut();
+    void                ResumeTCPSocketStatut(QString listidposteconnectes);
 
     void                VerifModifsFlags();
 signals:

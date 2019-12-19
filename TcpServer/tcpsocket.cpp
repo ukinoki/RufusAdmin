@@ -55,8 +55,8 @@ TcpSocket::~TcpSocket()
 {
 }
 
-PosteConnecte*  TcpSocket::posteconnecte() const                    { return m_post; }
-void            TcpSocket::setposteconnecte(PosteConnecte *post)    { m_post = post; }
+QString TcpSocket::stringid() const                     { return m_stringid;}
+void TcpSocket::setStringid(const QString &stringid)    { m_stringid = stringid; }
 
 void TcpSocket::TraiteDonneesRecues()
 {
@@ -86,20 +86,14 @@ void TcpSocket::TraiteDonneesRecues()
 void TcpSocket::envoyerMessage(QString msg)
 {
     QByteArray paquet = msg.toUtf8();
-    if (posteconnecte() == Q_NULLPTR)
+    PosteConnecte* post = Datas::I()->postesconnectes->getByStringId(stringid());
+    if (post == Q_NULLPTR)
         return;
-    User *usr = Datas::I()->users->getById(posteconnecte()->id());
+    User *usr = Datas::I()->users->getById(post->id());
     QString login = ( usr != Q_NULLPTR? usr->login() : "" );
-    QString msg2("");
-    if (msg.contains(TCPMSG_ListeSockets))
-        msg2 = TCPMSG_ListeSockets;
-    else if (msg.contains(TCPMSG_MAJSalAttente))
-        msg2 = TCPMSG_MAJSalAttente;
-    else if (msg.contains(TCPMSG_MAJCorrespondants))
-        msg2 = TCPMSG_MAJCorrespondants;
-    else if (msg.contains(TCPMSG_MAJDocsExternes))
-        msg2 = TCPMSG_MAJDocsExternes;
-    Logs::LogSktMessage("void TcpSocket::envoyerMessage(QString msg) - msg " + msg + " - " + msg2 + " - destinataire = " + login);
+    Logs::LogSktMessage("TcpSocket::envoyerMessage(QString msg)\n\t"
+                        "msg = " + msg + "\n\t"
+                        "émetteur = " + login);
     //qDebug() << "message = envoyé par le serveur " + msg + " - destinataire = " + socket->peerAddress().toString();
     if(state() == QAbstractSocket::ConnectedState)
     {
@@ -118,7 +112,8 @@ void TcpSocket::Deconnexion()
 void TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur)
 {
     //qDebug() << "le cient ne répond plus - " << erreur << " - " << errorString();
-    Logs::LogSktMessage(QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(erreur));
+    QString err =  QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(erreur);
+    Logs::LogSktMessage("TcpSocket::erreurSocket(QAbstractSocket::SocketError erreur) - " + err);
     /*
         le cient ne répond plus
         QAbstractSocket::RemoteHostClosedError

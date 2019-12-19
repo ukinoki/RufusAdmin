@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("17-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("18-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -149,7 +149,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     {
         TCPServer           = TcpServer::I();
         connect(TCPServer,  &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
-        connect(TCPServer,  &TcpServer::deconnexionposte,       this,   &RufusAdmin::DeconnexionPoste);
+        connect(TCPServer,  &TcpServer::deconnexionposte,       this,   &RufusAdmin::DeconnexionPoste);         // élimine les instances du poste déconnecté dans la liste des postes et dans la bdd
         TCPServer           ->start();
     }
     flags->remiseAZeroFlags();
@@ -431,16 +431,15 @@ bool RufusAdmin::AutresPostesConnectes()
     return false;
 }
 
-void RufusAdmin::DeconnexionPoste(QString postestringid)
+void RufusAdmin::DeconnexionPoste(QString stringid)
 {
     //qDebug() << postestringid;
-    PosteConnecte *post = Datas::I()->postesconnectes->getByStringId(postestringid);
+    PosteConnecte *post = Datas::I()->postesconnectes->getByStringId(stringid);
     if (post != Q_NULLPTR)
     {
         QString nomposte = post->nomposte();
         int iduserposte = post->id();
             //!> suppression du post de la liste des postes connectés
-        ResumeTCPSocketStatut();
         Datas::I()->postesconnectes->SupprimePosteConnecte(post);
         bool mettreajourlasalledattente = false;
             //!> remise en salle d'attente des patients en cours d'examen sur ce poste
@@ -3360,42 +3359,42 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     return true;
 }
 
-void RufusAdmin::ResumeTCPSocketStatut()
+void RufusAdmin::ResumeTCPSocketStatut(QString listidposteconnectes)
 {
     if (!m_utiliseTCP)
         return;
     QString statut;
-    QList<PosteConnecte*> listpost = TCPServer->listePostesConnectes();
-    QList<PosteConnecte*>::const_iterator itpost;
-    for( itpost = listpost.constBegin(); itpost != listpost.constEnd(); ++itpost )
+    listidposteconnectes.remove(TCPMSG_ListeStringIdPostesConnectes);
+    QStringList listid = listidposteconnectes.split(TCPMSG_Separator);
+    for (auto it = listid.begin(); it != listid.end(); ++it)
     {
-        PosteConnecte *post = const_cast<PosteConnecte*>(*itpost);
-        if (itpost == listpost.constBegin())
+        PosteConnecte *post = Datas::I()->postesconnectes->getByStringId(*it);
+        if (it == listid.begin())
         {
             // le 1er item de gListSockets est le serveur
             statut += tr("ServeurTCP") + "\n\t";
-            if (post != Q_NULLPTR)
+            if (post != Q_NULLPTR) //!>* chaque item contient adresseIP, adresseMac, LoaclhostName(), idUser puis  TCPMSG_ListeSockets
             {
-                statut += post->nomposte() + " - "
-                        + post->ipadress() + " - "
-                        + post->macadress() + " --- "
+                statut += post->ipadress() + " - "
+                        + post->macadress() + " - "
+                        + post->nomposte() + " --- "
                         + Datas::I()->users->getById(post->id())->login();
             }
             else
-                statut += "\t" + tr("inconnu") + "\n";
+                statut += tr("inconnu");
             statut += "\n" + tr("Postes connectés") + "\n";
         }
         else
         {
             if (post != Q_NULLPTR)
             {
-                statut += "\t" + post->nomposte() + " - "
-                        + post->ipadress() + " - "
-                        + post->macadress() + " --- "
+                statut += "\t" + post->ipadress() + " - "
+                        + post->macadress() + " - "
+                        + post->nomposte() + " --- "
                         + Datas::I()->users->getById(post->id())->login() + "\n";
             }
             else
-                statut += "\t" + tr("inconnu") + "\n";
+                statut += "\t" + tr("inconnu");
         }
     }
     m_socketStatut = statut;
@@ -3496,7 +3495,7 @@ void RufusAdmin::VerifModifsFlags()
         }
         if (m_utiliseTCP)
             for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
-                TCPServer->envoyerA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);
+                TCPServer->envoyerMsgBALA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);
     }
 }
 

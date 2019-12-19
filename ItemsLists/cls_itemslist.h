@@ -180,6 +180,7 @@ bool add(QMap<QString, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
 }
 
 
+public:
 /*!
  * \brief ItemsList::remove
  * Cette fonction va retirer un item d'un QMap
@@ -227,9 +228,10 @@ void remove(QMap<QString, T*> *m_map, const T* item)
     delete item;
 }
 
+protected:
 /*!
      * \brief ItemsList::Supprime
-     * Cette fonction va supprimer un item passé en paramètre dans un QMap
+     * Cette fonction va supprimer un item passé en paramètre dans un QMap et retirer son enregistrement correpondant dans la base de données
      * \param m_map le QMap dans lequel on veut supprimer l'item
      * \param item l'item que l'on veut supprimer
      * \return true si l'item est supprimé
