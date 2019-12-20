@@ -62,6 +62,8 @@ void TcpServer::Deconnexion(qintptr descriptor)
     TcpSocket *skt = SocketFromDescriptor(descriptor);
     if (skt == Q_NULLPTR)
         return;
+    if (skt->stringid() == "")
+        return;
     PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
     if (post == Q_NULLPTR)
         return;
@@ -114,12 +116,15 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
             if (!OKControleIterator(itskt))
                 break;
             TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
-            PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
-            if (post != Q_NULLPTR)
-                if (listid.contains(QString::number(post->id())) && !listdestfin.contains(post->id())) {
-                    listdestfin << post->id();
-                    envoyerMsgBALA(post->id(), nbmsg + TCPMSG_MsgBAL);
-                }
+            if (skt->stringid() != "")
+            {
+                PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
+                if (post != Q_NULLPTR)
+                    if (listid.contains(QString::number(post->id())) && !listdestfin.contains(post->id())) {
+                        listdestfin << post->id();
+                        envoyerBALMsgA(post->id(), nbmsg + TCPMSG_MsgBAL);
+                    }
+            }
             ++ itskt;
         }
         Flags::I()->MAJflagMessages();
@@ -159,6 +164,11 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
     {
         envoyerATous(msg, descriptor);
     }
+    else if (msg.contains(TCPMSG_AskListeStringId))
+    {
+        QString listidpost = listestringidPostesConnectes() + TCPMSG_AskListeStringId;
+        skt->envoyerMessage(listidpost);
+    }
     else
         envoyerATous(msg, descriptor);
 }
@@ -189,7 +199,8 @@ QString TcpServer::listestringidPostesConnectes()
         if (!OKControleIterator(itskt))
             break;
         TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
-        liststringidpost += TCPMSG_Separator + skt->stringid();
+        if (skt->stringid() != "")
+            liststringidpost += TCPMSG_Separator + skt->stringid();
         ++ itskt;
     }
     return liststringidpost + TCPMSG_ListeStringIdPostesConnectes;
@@ -231,7 +242,7 @@ void TcpServer::envoyerATous(QString msg, qintptr emetteur)
     }
 }
 
-void TcpServer::envoyerMsgBALA(int iduser, QString msg)
+void TcpServer::envoyerBALMsgA(int iduser, QString msg)
 {
     Logs::LogSktMessage("void TcpServer::envoyerA(int iduser, QString msg)\n\t"
                         "iduser = " + QString::number(iduser) + " - " + Datas::I()->users->getById(iduser)->login() + "\n\t"
@@ -242,12 +253,15 @@ void TcpServer::envoyerMsgBALA(int iduser, QString msg)
         if (!OKControleIterator(itskt))
             break;
         TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
-        PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
-        if (post != Q_NULLPTR)
-            if (iduser == post->id() && !listdestfin.contains(post->id())) {
-                listdestfin << post->id();
-                itskt.value()->envoyerMessage(msg);
-            }
+        if (skt->stringid() != "")
+        {
+            PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
+            if (post != Q_NULLPTR)
+                if (iduser == post->id() && !listdestfin.contains(post->id())) {
+                    listdestfin << post->id();
+                    itskt.value()->envoyerMessage(msg);
+                }
+        }
         ++ itskt;
     }
 }
@@ -260,9 +274,12 @@ void TcpServer::AfficheListeSockets(QString fonction)
         if (!OKControleIterator(itskt))
             break;
         TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
-        PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
-        if (post != Q_NULLPTR)
-            qDebug() << post->ipadress() << post->macadress() << post->nomposte() << post->id();
+        if (skt->stringid() != "")
+        {
+            PosteConnecte * post = Datas::I()->postesconnectes->getByStringId(skt->stringid());
+            if (post != Q_NULLPTR)
+                qDebug() << post->ipadress() << post->macadress() << post->nomposte() << post->id();
+        }
         ++ itskt;
     }
 }
