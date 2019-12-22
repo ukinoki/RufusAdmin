@@ -128,7 +128,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         if (listusers.size()>0)
             db->StandardSQL("update " TBL_UTILISATEURS " set " CP_LOGIN_USR " = '" NOM_ADMINISTRATEUR "' where " CP_NOM_USR " = '" NOM_ADMINISTRATEUR "'");
         else
-            db->StandardSQL("insert into " TBL_UTILISATEURS " (" CP_LOGIN_USR ", " CP_NOM_USR ") values ('" NOM_ADMINISTRATEUR "','" NOM_ADMINISTRATEUR "')");
+            db->StandardSQL("insert into " TBL_UTILISATEURS " (" CP_LOGIN_USR ", " CP_NOM_USR ", " CP_MDP_USR ") values ('" NOM_ADMINISTRATEUR "','" NOM_ADMINISTRATEUR ", '" MDP_ADMINISTRATEUR "')");
     }
 
     // 5 mettre en place le TcpSocket
@@ -797,16 +797,13 @@ void RufusAdmin::ConnexionBase()
     QString error = "";
     QString Base, server;
 
-    QString Login = LOGIN_SQL;
-    QString Password = MDP_SQL;
-
     db->initFromFirstConnexion(Utils::getBaseFromMode(Utils::Poste), "localhost", 3306, false);    //! à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
-    error = db->connectToDataBase(DB_CONSULTS, Login, Password);
+    error = db->connectToDataBase(DB_CONSULTS);
 
     if( error.size() )
     {
         UpMessageBox::Watch(this, tr("Erreur sur le serveur MySQL"),
-                            tr("Impossible de se connecter au serveur avec le login ") + Login
+                            tr("Impossible de se connecter au serveur avec le login ") + LOGIN_SQL
                             + tr(" et ce mot de passe") + "\n"
                             + tr("Revoyez le réglage des paramètres de connexion dans le fichier rufus.ini.") + "\n"
                             + error);
@@ -816,27 +813,26 @@ void RufusAdmin::ConnexionBase()
     QString Client;
     Client = db->getServer();
 
-    db->StandardSQL("set global sql_mode = 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES';");
-    db->StandardSQL("SET GLOBAL event_scheduler = 1 ;");
     db->StandardSQL("SET GLOBAL max_allowed_packet=" MAX_ALLOWED_PACKET "*1024*1024 ;");
 
-    QString req = "show grants for '" + Login + (db->getMode() == Utils::Distant? "SSL" : "")  + "'@'" + Client + "'";
+    QString ssl = (db->getMode() == Utils::Distant? "SSL" : "");
+    QString req = "show grants for '" LOGIN_SQL + ssl + "'@'" + Client + "'";
     bool ok;
     QVariantList grantsdata = db->getFirstRecordFromStandardSelectSQL(req,ok);
 
     if (!ok || grantsdata.size()==0)
     {
         UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                            tr("Impossible de retrouver les droits de l'utilisateur ") + NOM_ADMINISTRATEUR);
+                            tr("Impossible de retrouver les droits de l'utilisateur ") + LOGIN_SQL);
         exit(0);
     }
     QString reponse = grantsdata.at(0).toString();
     if (reponse.left(9) != "GRANT ALL")
     {
         UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                            tr("L'utilisateur ") + NOM_ADMINISTRATEUR + tr(" existe mais ne dispose pas "
-                                                                               "de toutes les autorisations pour modifier ou créer des données sur le serveur.\n"
-                                                                               "Choisissez un autre utilisateur ou modifiez les droits de cet utilisateur au niveau du serveur.\n"));
+                            tr("L'utilisateur ") + LOGIN_SQL + tr(" existe mais ne dispose pas "
+                                                                  "de toutes les autorisations pour modifier ou créer des données sur le serveur.\n"
+                                                                  "Choisissez un autre utilisateur ou modifiez les droits de cet utilisateur au niveau du serveur.\n"));
         exit(0);
     }
 }
