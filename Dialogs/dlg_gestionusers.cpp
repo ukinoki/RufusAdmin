@@ -370,19 +370,6 @@ void dlg_gestionusers::EnregistreNouvMDP()
         msgbox.setInformativeText(tr("Le nouveau mot de passe a été enregistré avec succès"));
         // Enregitrer le nouveau MDP de la base
         db->StandardSQL("update " TBL_UTILISATEURS " set " CP_MDP_USR " = '" + nouv + "' where " CP_ID_USR " = " + ui->idUseruplineEdit->text());
-        // Enregitrer le nouveau MDP de connexion à MySQL
-        db->StandardSQL("set password = '" + nouv + "'");
-        QString AdressIP;
-        foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
-            if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
-                 AdressIP = address.toString();
-        }
-        QString Domaine;
-        QStringList listIP = AdressIP.split(".");
-        for (int i=0;i<listIP.size()-1;i++)
-            Domaine += listIP.at(i) + ".";
-        db->StandardSQL("set password for '" + m_userencours->login() + "'@'" + Domaine + "%' = '" + nouv + "'");
-        db->StandardSQL("set password for '" + m_userencours->login() + "SSL'@'%' = '" + nouv + "'");
         ui->MDPuplineEdit->setText(nouv);
         m_userencours->setpassword(nouv);
         gAskMDP->done(0);
@@ -738,7 +725,7 @@ void dlg_gestionusers::EnregistreNouvUser()
         msg = tr("Vous avez oublié d'indiquer le login");
         Loginline->setFocus();
     }
-    if (Loginline->text() == NOM_ADMINISTRATEURDOCS)
+    if (Loginline->text() == NOM_ADMINISTRATEUR)
     {
         msg = tr("Ce login est réservé");
         Loginline->setFocus();
@@ -1469,7 +1456,7 @@ void dlg_gestionusers::RemplirTableWidget()
     QList<User*> usrlist;
     foreach (User* usr, Datas::I()->users->all()->values())
     {
-        if (usr->login() != NOM_ADMINISTRATEURDOCS)
+        if (usr->login() != NOM_ADMINISTRATEUR)
             usrlist << usr;
     }
     ui->ListUserstableWidget->setRowCount(usrlist.size());

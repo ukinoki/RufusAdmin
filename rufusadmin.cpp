@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("19-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("22-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -100,13 +100,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
                    " where idUser = " + QString::number(Admin()->id()) +
-                   " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEURDOCS "'"
+                   " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEUR "'"
                    " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
     QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, m_ok);
     if (listusr2.size()>0)
     {
-        UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + listusr2.at(0).at(0).toString().remove(" - " NOM_ADMINISTRATEURDOCS), tr("Sortie du programme"));
+        UpMessageBox::Watch(this, tr("Programme déjà en cours d'éxécution sur le poste ") + listusr2.at(0).at(0).toString().remove(" - " NOM_ADMINISTRATEUR), tr("Sortie du programme"));
         exit(0);
     }
     else
@@ -119,26 +119,16 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + Datas::I()->sites->currentsite()->nom() + "</b></font> ");
 
     //recherche de l'idUser du compte AdminDocs
-    QString req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_LOGIN_USR " = '" NOM_ADMINISTRATEURDOCS "'";
+    QString req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_LOGIN_USR " = '" NOM_ADMINISTRATEUR "'";
     QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok);
     if (listusr.size()==0)
     {
-        req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_ID_USR " = '" NOM_ADMINISTRATEURDOCS "'";
+        req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_NOM_USR " = '" NOM_ADMINISTRATEUR "'";
         QList<QVariantList> listusers = db->StandardSelectSQL(req, m_ok);
         if (listusers.size()>0)
-        {
-            db->StandardSQL("update " TBL_UTILISATEURS " set " CP_LOGIN_USR " = '" NOM_ADMINISTRATEURDOCS "' where " CP_ID_USR " = '" NOM_ADMINISTRATEURDOCS "'");
-        }
+            db->StandardSQL("update " TBL_UTILISATEURS " set " CP_LOGIN_USR " = '" NOM_ADMINISTRATEUR "' where " CP_NOM_USR " = '" NOM_ADMINISTRATEUR "'");
         else
-            db->StandardSQL("insert into " TBL_UTILISATEURS " (" CP_ID_USR ", " CP_LOGIN_USR ") values ('" NOM_ADMINISTRATEURDOCS "','" NOM_ADMINISTRATEURDOCS "')");
-        req = "select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_LOGIN_USR " = '" NOM_ADMINISTRATEURDOCS "'";
-        listusr = db->StandardSelectSQL(req, m_ok);
-        if (m_parametres->mdpadmin() == "")
-        {
-            QString mdp = db->getDataBase().password();
-            db->StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + mdp + "'");
-            db->parametres()->setmdpadmin(mdp);
-        }
+            db->StandardSQL("insert into " TBL_UTILISATEURS " (" CP_LOGIN_USR ", " CP_NOM_USR ") values ('" NOM_ADMINISTRATEUR "','" NOM_ADMINISTRATEUR "')");
     }
 
     // 5 mettre en place le TcpSocket
@@ -390,7 +380,7 @@ int RufusAdmin::SortieAppli()
     setPosteImportDocs(false);
     // on retire Admin de la table des utilisateurs connectés
     QString req = "delete from " TBL_USERSCONNECTES
-                  " where MACAdressePosteConnecte = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEURDOCS  "'"
+                  " where MACAdressePosteConnecte = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEUR  "'"
                   " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
     db->StandardSQL(req);
     setPosteImportDocs(false);
@@ -807,8 +797,8 @@ void RufusAdmin::ConnexionBase()
     QString error = "";
     QString Base, server;
 
-    QString Login = NOM_ADMINISTRATEURDOCS;
-    QString Password = NOM_MDPADMINISTRATEUR;
+    QString Login = LOGIN_SQL;
+    QString Password = MDP_SQL;
 
     db->initFromFirstConnexion(Utils::getBaseFromMode(Utils::Poste), "localhost", 3306, false);    //! à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
     error = db->connectToDataBase(DB_CONSULTS, Login, Password);
@@ -837,14 +827,14 @@ void RufusAdmin::ConnexionBase()
     if (!ok || grantsdata.size()==0)
     {
         UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                            tr("Impossible de retrouver les droits de l'utilisateur ") + NOM_ADMINISTRATEURDOCS);
+                            tr("Impossible de retrouver les droits de l'utilisateur ") + NOM_ADMINISTRATEUR);
         exit(0);
     }
     QString reponse = grantsdata.at(0).toString();
     if (reponse.left(9) != "GRANT ALL")
     {
         UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                            tr("L'utilisateur ") + NOM_ADMINISTRATEURDOCS + tr(" existe mais ne dispose pas "
+                            tr("L'utilisateur ") + NOM_ADMINISTRATEUR + tr(" existe mais ne dispose pas "
                                                                                "de toutes les autorisations pour modifier ou créer des données sur le serveur.\n"
                                                                                "Choisissez un autre utilisateur ou modifiez les droits de cet utilisateur au niveau du serveur.\n"));
         exit(0);
@@ -1114,7 +1104,7 @@ void RufusAdmin::setPosteImportDocs(bool a)
     db->StandardSQL(req);
 
     if (a)
-        IpAdress = QHostInfo::localHostName() + " - " NOM_ADMINISTRATEURDOCS;
+        IpAdress = QHostInfo::localHostName() + " - " NOM_ADMINISTRATEUR;
     req = "CREATE PROCEDURE " NOM_POSTEIMPORTDOCS "()\n\
           BEGIN\n\
           SELECT '" + IpAdress + "';\n\
@@ -1278,7 +1268,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
             msgbox.exec();
             return;
         }
-        if (anc != db->getMDPAdmin())
+        if (anc != m_parametres->mdpadmin())
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas le bon\n"));
@@ -1304,11 +1294,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         }
         msgbox.setText(tr("Modifications enregistrées"));
         msgbox.setInformativeText(tr("Le nouveau mot de passe a été enregistré avec succès"));
-        QString req = "update " TBL_PARAMSYSTEME " set MDPAdmin = '" + nouv + "'";
-        m_parametres->setmdpadmin(nouv);
-        db->StandardSQL(req);
-         req = "update " TBL_UTILISATEURS " set " CP_MDP_USR " = '" + nouv + "' where " CP_ID_USR " = " + QString::number(Admin()->id());
-        db->StandardSQL(req);
+        db->setmdpadmin(nouv);
         dlg_askMDP->done(0);
         msgbox.exec();
     }
@@ -1899,7 +1885,7 @@ void RufusAdmin::MasqueAppli()
 
 void RufusAdmin::MetAJourLaConnexion()
 {
-    QString macadress =  Utils::MACAdress() + " - " + NOM_ADMINISTRATEURDOCS;
+    QString macadress =  Utils::MACAdress() + " - " + NOM_ADMINISTRATEUR;
     QString MAJConnexionRequete;
 
     //! le poste remet à jour sa propre connexion
@@ -2504,12 +2490,12 @@ void RufusAdmin::VerifPosteImport()
             A = PostImport;
             A = "<font color=\"green\"><b>" + A.remove(".local") + "</b></font>";
             QString B;
-            if (A.contains(" - " NOM_ADMINISTRATEURDOCS))
+            if (A.contains(" - " NOM_ADMINISTRATEUR))
                 B = tr("Administrateur");
             else
                 B = (A.contains(" - prioritaire")? tr("prioritaire") : tr("non prioritaire"));
             A.remove(" - prioritaire");
-            A.remove(" - " NOM_ADMINISTRATEURDOCS);
+            A.remove(" - " NOM_ADMINISTRATEUR);
             ui->PosteImportDocslabel->setText(A);
 
             if (B == tr("non prioritaire"))
@@ -2519,7 +2505,7 @@ void RufusAdmin::VerifPosteImport()
             ui->PosteImportDocsPrioritairelabel->setText(B);
         }
     }
-    QString macAdr = Utils::MACAdress() + " - " NOM_ADMINISTRATEURDOCS;
+    QString macAdr = Utils::MACAdress() + " - " NOM_ADMINISTRATEUR;
     if (PostImport != "NULL" && PostImport != macAdr)
         setPosteImportDocs();
 }
@@ -2533,8 +2519,7 @@ void RufusAdmin::VerifVersionBase()
                 tr("Vous utilisez une version de RufusAdmin prévue\npour être utilisée avec la version de la base Rufus n°") + QString::number(VERSION_BASE)+ "\n" +
                 tr("La version de la base Rufus en cours d'utilisation est la n° ") + QString::number(version) + "\n" +
                 tr("Faites une mise à jour de Rufus et Rufus Admin pour qu'ils utilisent les dernières versions de la base") + "\n\n-> " +
-                tr("Sortie du programme"));
-        exit(0);
+                tr("Dans le cas contraire, des dysfonctionnements peuvent survenir"));
     }
 }
 
@@ -3065,9 +3050,9 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
     scriptbackup += "RUFUSADMININI=\"" + QDir::homePath() + FILE_INI + "\"";
     //# Identifiants MySQL
     scriptbackup += "\n";
-    scriptbackup += "MYSQL_USER=\"dumprufus\"";
+    scriptbackup += "MYSQL_USER=\"" NOM_DUMPUSER "\"";
     scriptbackup += "\n";
-    scriptbackup += "MYSQL_PASSWORD=\"" + db->getDataBase().password() + "\"";
+    scriptbackup += "MYSQL_PASSWORD=\"" MDP_DUMPUSER "\"";
     //# Commandes MySQL
     QDir Dir(QCoreApplication::applicationDirPath());
     Dir.cdUp();
@@ -3183,7 +3168,7 @@ $MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File3"
     for (int i=0; i<ListNomFiles.size(); i++)
     if (QFile(ListNomFiles.at(i)).exists())
     {
-        scriptrestore += "$MYSQL -u " + db->getDataBase().userName() +  " -p" +  db->getDataBase().password() + " -h localhost -P " + QString::number(db->getDataBase().port()) + " < " + ListNomFiles.at(i);
+        scriptrestore += "$MYSQL -u " LOGIN_SQL  " -p" MDP_SQL " -h localhost -P " + QString::number(db->getDataBase().port()) + " < " + ListNomFiles.at(i);
         scriptrestore += "\n";
     }
     if (QFile::exists(QDir::homePath() + SCRIPTRESTOREFILE))
