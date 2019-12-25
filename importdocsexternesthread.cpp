@@ -22,7 +22,7 @@ ImportDocsExternesThread::ImportDocsExternesThread()
     thread              = new QThread;
     moveToThread(thread);
     db                  = DataBase::I();
-    m_acces             = (db->getMode() != Utils::Distant? Local : Distant);
+    m_acces             = (db->ModeAccesDataBase() != Utils::Distant? Local : Distant);
     m_encours           = false;
     m_nomfichierini     = QDir::homePath() + FILE_INI;
     m_settings          = new QSettings(m_nomfichierini, QSettings::IniFormat);

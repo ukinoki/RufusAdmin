@@ -38,7 +38,7 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     m_loginledit        = "LoginupLineEdit";
     m_MDPledit          = "MDPupLineEdit";
     m_confirmMDPledit   = "ConfirmMDPupLineEdit";
-    m_color                  = QBrush(QColor(Qt::magenta));
+    m_color             = QBrush(QColor(Qt::magenta));
 
     AjouteLayButtons(UpDialog::ButtonClose);
 
