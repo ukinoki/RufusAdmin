@@ -726,7 +726,8 @@ void dlg_gestionusers::EnregistreNouvUser()
         Loginline->setFocus();
     }
     QString nomadmin = NOM_ADMINISTRATEUR;
-    if (Loginline->text().toUpper() == nomadmin.toUpper())
+    QString loginsql = LOGIN_SQL;
+    if (Loginline->text().toUpper() == nomadmin.toUpper() || Loginline->text().toUpper() == loginsql.toUpper())
     {
         msg = tr("Ce login est réservé");
         Loginline->setFocus();
@@ -740,7 +741,7 @@ void dlg_gestionusers::EnregistreNouvUser()
     if (!Utils::rgx_AlphaNumeric_5_15.exactMatch(MDPline->text()))
     {
         msg = tr("Le mot de passe n'est pas conforme.") + "\n" +
-              tr("Au moins 5 caractères - uniquement des chifres ou des lettres - max. 5 caractères.");
+              tr("Au moins 5 caractères - uniquement des chifres ou des lettres - max. 15 caractères.");
         MDPline->setFocus();
     }
     if (MDPline->text() != ConfirmMDPline->text())
