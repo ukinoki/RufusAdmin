@@ -188,7 +188,7 @@ public:
  * \param item l'item que l'on veut retirer
 */
 template <typename T>
-void remove(QMap<int, T*> *m_map, const T* item)
+static void remove(QMap<int, T*> *m_map, const T* item)
 {
     if (item == Q_NULLPTR)
         return;
@@ -208,7 +208,7 @@ void remove(QMap<int, T*> *m_map, const T* item)
     delete item;
 }
 template <typename T>
-void remove(QMap<QString, T*> *m_map, const T* item)
+static void remove(QMap<QString, T*> *m_map, const T* item)
 {
     if (item == Q_NULLPTR)
         return;

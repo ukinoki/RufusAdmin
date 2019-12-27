@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("25-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("27-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -796,8 +796,8 @@ void RufusAdmin::ConnexionBase()
     db = DataBase::I();
     QString error = "";
     QString Base, server;
-
-    db->initParametres(Utils::Poste, "localhost", 3306, false);    //! à mettre avant le connectToDataBase() sinon une restaurationp plante parce qu'elle n'a pas les renseignements
+    db->setModeacces(Utils::Poste);
+    db->initParametresConnexionSQL("localhost", 3306);
     error = db->connectToDataBase(DB_CONSULTS);
 
     if( error.size() )
@@ -2591,7 +2591,7 @@ bool RufusAdmin::VerifBase()
                 {
                     result = 1;
                     UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
-                    db->initParametres();
+                    db->initParametresSysteme();
                 }
                 else
                 {
@@ -3162,7 +3162,7 @@ $MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File3"
     for (int i=0; i<ListNomFiles.size(); i++)
     if (QFile(ListNomFiles.at(i)).exists())
     {
-        scriptrestore += "$MYSQL -u " LOGIN_SQL  " -p" MDP_SQL " -h localhost -P " + QString::number(db->getDataBase().port()) + " < " + ListNomFiles.at(i);
+        scriptrestore += "$MYSQL -u " LOGIN_SQL  " -p" MDP_SQL " -h localhost -P " + QString::number(db->port()) + " < " + ListNomFiles.at(i);
         scriptrestore += "\n";
     }
     if (QFile::exists(QDir::homePath() + SCRIPTRESTOREFILE))
