@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("28-12-2019/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("29-12-2019/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -255,7 +255,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Remplir_Table();
     if (db->ModeAccesDataBase() == Utils::Poste)
     {
-        QString NomDirStockageImagerie = m_parametres->dirimagerie();
+        QString NomDirStockageImagerie = m_parametres->dirimagerieserveur();
         m_settings->setValue("DossierImagerie",NomDirStockageImagerie);
         setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + Datas::I()->sites->currentsite()->nom());
     }
@@ -2125,7 +2125,7 @@ void RufusAdmin::RestaureBase()
     }
 
     /*! 3 - détermination de l'emplacement de destination des fichiers d'imagerie */
-    QString NomDirStockageImagerie = m_parametres->dirimagerie();
+    QString NomDirStockageImagerie = m_parametres->dirimagerieserveur();
     if (!QDir(NomDirStockageImagerie).exists())
     {
         bool exist = QDir().exists(QDir::homePath() + DIR_RUFUS DIR_IMAGERIE);
@@ -2735,7 +2735,7 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
         QString Msg = (tr("Sauvegarde des factures\n")
                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille des fichiers"));
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
-        const QString task = "cp -R " + m_parametres->dirimagerie() + DIR_FACTURES + " " + dirdestination;
+        const QString task = "cp -R " + m_parametres->dirimagerieserveur() + DIR_FACTURES + " " + dirdestination;
         const QString msgOK = tr("Fichiers factures sauvegardés!");
         m_controller.disconnect(SIGNAL(result(const int &)));
         connect(&m_controller,
@@ -2761,7 +2761,7 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
         QString Msg = (tr("Sauvegarde des fichiers d'imagerie\n")
                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille des fichiers"));
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
-        const QString task = "cp -R " + m_parametres->dirimagerie() + DIR_IMAGES + " " + dirdestination;
+        const QString task = "cp -R " + m_parametres->dirimagerieserveur() + DIR_IMAGES + " " + dirdestination;
         const QString msgOK = tr("Fichiers d'imagerie sauvegardés!");
         m_controller.disconnect(SIGNAL(result(const int &)));
         connect(&m_controller,
@@ -2787,7 +2787,7 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
         QString Msg = (tr("Sauvegarde des videos\n")
                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille des fichiers"));
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
-        const QString task = "cp -R " + m_parametres->dirimagerie() + DIR_VIDEOS + " " + dirdestination;
+        const QString task = "cp -R " + m_parametres->dirimagerieserveur() + DIR_VIDEOS + " " + dirdestination;
         const QString msgOK = tr("Fichiers videos sauvegardés!");
         m_controller.disconnect(SIGNAL(result(const int &)));
         connect(&m_controller,
@@ -3022,21 +3022,21 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
     scriptbackup += "\n";
     scriptbackup += "DIR_RESSOURCES=\"" + QDir::homePath() + DIR_RUFUS DIR_RESSOURCES + "\"";
     scriptbackup += "\n";
-    if (QDir(m_parametres->dirimagerie()).exists())
+    if (QDir(m_parametres->dirimagerieserveur()).exists())
     {
         if (AvecImages)
         {
-            scriptbackup += "DIR_IMAGES=\"" + m_parametres->dirimagerie() + DIR_IMAGES + "\"";
+            scriptbackup += "DIR_IMAGES=\"" + m_parametres->dirimagerieserveur() + DIR_IMAGES + "\"";
             scriptbackup += "\n";
         }
         if (AvecFactures)
         {
-            scriptbackup += "DIR_FACTURES=\"" + m_parametres->dirimagerie() + DIR_FACTURES + "\"";
+            scriptbackup += "DIR_FACTURES=\"" + m_parametres->dirimagerieserveur() + DIR_FACTURES + "\"";
             scriptbackup += "\n";
         }
         if (AvecVideos)
         {
-            scriptbackup += "DIR_VIDEOS=\"" + m_parametres->dirimagerie() + DIR_VIDEOS + "\"";
+            scriptbackup += "DIR_VIDEOS=\"" + m_parametres->dirimagerieserveur() + DIR_VIDEOS + "\"";
             scriptbackup += "\n";
         }
     }
@@ -3094,7 +3094,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
     scriptbackup += "\n";
     scriptbackup += "cp -R $DIR_RESSOURCES $BACKUP_DIR/$DATE/Ressources";
     scriptbackup += "\n";
-    if (QDir(m_parametres->dirimagerie()).exists())
+    if (QDir(m_parametres->dirimagerieserveur()).exists())
     {
         //! copie les fichiers image
         if (AvecImages)
@@ -3254,7 +3254,7 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
     bool OKVideos   = false;
     bool OKFactures = false;
 
-    AskBupRestore(BackupOp, m_parametres->dirimagerie(), dirdestination);
+    AskBupRestore(BackupOp, m_parametres->dirimagerieserveur(), dirdestination);
     if (dlg_buprestore->exec()==0)
         return false;
     QList<UpCheckBox*> listchk = dlg_buprestore->findChildren<UpCheckBox*>();
@@ -3282,11 +3282,11 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         Message::I()->ClosePriorityMessage(handle);
         radm->ConnectTimerInactive();
     };
-    if (QDir(m_parametres->dirimagerie()).exists())
+    if (QDir(m_parametres->dirimagerieserveur()).exists())
     {
-        Utils::cleanfolder(m_parametres->dirimagerie() + DIR_IMAGES);
-        Utils::cleanfolder(m_parametres->dirimagerie() + DIR_FACTURES);
-        Utils::cleanfolder(m_parametres->dirimagerie() + DIR_VIDEOS);
+        Utils::cleanfolder(m_parametres->dirimagerieserveur() + DIR_IMAGES);
+        Utils::cleanfolder(m_parametres->dirimagerieserveur() + DIR_FACTURES);
+        Utils::cleanfolder(m_parametres->dirimagerieserveur() + DIR_VIDEOS);
     }
     else
     {
