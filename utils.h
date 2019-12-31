@@ -71,7 +71,6 @@ public:
     static QRegExp const rgx_IPV4_mask;
 
     static QRegExp const rgx_mail;
-    static QRegExp const rgx_mailexactmatch;
     static QRegExp const rgx_NNI;
 
     static QRegExp const rgx_adresse;
@@ -89,11 +88,10 @@ public:
     static void Pause(int msec = 1000);
 
     //! html
-    static void convertHTML(QString &text);
+    static bool convertHTML(QString &text);
     static void convertPlainText(QString &text);
     static void nettoieHTML(QString &text, bool supprimeLesLignesVidesDuMilieu = false);
-    static void retirelignevidehtml(QString &txthtml);
-    static void supprimeAncre(QString &text, QString ancredebut, QString ancrefin = "");
+    static bool retirelignevidefinhtml(QString &txthtml);
 
     //! QString
     static QSize                    CalcSize(QString txt, QFont fm = qApp->font());
