@@ -36,7 +36,7 @@ class UpTextEdit : public QTextEdit
 public:
     explicit    UpTextEdit(QWidget *parent = Q_NULLPTR);
     explicit    UpTextEdit(QString txt, QWidget *parent = Q_NULLPTR);
-    void        setiD(int m_id);
+    void        setiD(int id);
     int         iD() const;
     void        setIdUser(int m_id);
     int         idUser() const;
@@ -46,15 +46,23 @@ public:
     QString     valeurapres() const;
     void        setchamp(QString champcorrespondant);
     QString     champ() const;
+    void        setImmediateToolTip(QString);
     void        settable(QString tablecorrespondant);
     QString     table() const;
     void        setText(const QString &text);
     QString     appendHtml(QString appendtext,  bool supprimeLesLignesVidesDuMilieu = true, bool rajouteunelignealafin = true);
 
+    bool        acceptimagemimedatas() const;
+    void        setAcceptImageMimeDatas(bool acceptimagemimedatas);
+
 private:
-    void        mouseDoubleClickEvent( QMouseEvent * event ) Q_DECL_OVERRIDE;
     bool        eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
+    void        mouseDoubleClickEvent( QMouseEvent * event ) Q_DECL_OVERRIDE;
+    void        insertFromMimeData( const QMimeData *source ) Q_DECL_OVERRIDE;
+    bool        canInsertFromMimeData( const QMimeData *source ) const Q_DECL_OVERRIDE;
     QString     m_valeuravant, m_valeurapres, m_champ, m_table;
+    QString     m_tooltipmsg;
+    bool        m_acceptimagemimedatas = false;         //! Le textedit accepte de copier-coller des images
     int         m_id, m_iduser;
     void        ChoixMenuContextuel(QString choix);
 

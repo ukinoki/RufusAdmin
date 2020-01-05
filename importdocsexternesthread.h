@@ -254,7 +254,7 @@ private:
     QString         m_nomfichierini;
     QSettings       *m_settings;
     QString         pathdossierdocuments(QString Appareil) const;
-    bool            DefinitDossiers();
+    bool            DefinitDossiersImagerie();
     bool            m_ok;
     DataBase        *db;
     QThread         *thread;

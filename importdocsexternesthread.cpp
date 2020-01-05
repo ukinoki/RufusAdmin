@@ -41,7 +41,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QList<QVariantList > list
     m_encours = true;
     m_listmsg.clear();
     m_datetransfer            = QDate::currentDate().toString("yyyy-MM-dd");
-    if (!DefinitDossiers())
+    if (!DefinitDossiersImagerie())
     {
         m_encours = false;
         return;
@@ -634,7 +634,15 @@ void ImportDocsExternesThread::EchecImport(QString txt)
     }
 }
 
-bool ImportDocsExternesThread::DefinitDossiers()
+/*! \brief bool ImportDocsExternesThread::DefinitDossiersImagerie()
+ * Définit l'emplacement des dossiers utilisés
+ * \param m_pathdirstockageimagerie =   l'emplacement baseURL où seront stockés les fichiers d'imagerie (directement sur le serveur en mode monoposte ou réseau local - sur un dossier du client en mode sitant
+ *`\param m_pathdirstockageprovisoire = l'emplacement où les appareils d'imagerie vont écrire les fichiers qu'ils émettent en attendant leur intégration dans la BDD
+ * \param m_pathdirOKtransfer =         le resolved URL de l'emplacement de stockage définitif des fichiers
+ * \param m_pathdirechectransfer =      le resolved URL de l'emplacement où sont transférés les fichiers qui n'ont pas pu être intégrés dans la BDD
+ * \param m_pathdiroriginOKtransfer =   le resolved URL de l'emplacement de stockage des copies des fichiers image d'origine
+ */
+bool ImportDocsExternesThread::DefinitDossiersImagerie()
 {
     QString Base = (m_acces==Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
     m_pathdirstockageimagerie  = m_settings->value(Base + "DossierImagerie").toString();
