@@ -102,6 +102,7 @@ private:
     void                    FermeFiche();
     void                    GestionComptes();
     void                    GestionLieux();
+    void                    Inactifs();
     void                    ModifMDP();
     void                    RegleAffichage();
     void                    RemplirTableWidget();
