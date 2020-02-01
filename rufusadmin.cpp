@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("27-01-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("01-02-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -91,11 +91,40 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     ConnexionBase();
     m_parametres        = db->parametres();
+    Datas::I()->users->initListe();
     if (!VerifBase())
         exit(0);
 
-    Datas::I()->users->initListe();
     DataBase::I()->setidUserConnected(Admin()->id());
+
+    QInputDialog quest;
+    quest.setCancelButtonText("Annuler");
+    quest.setLabelText(tr("Saisissez le mot de passe Administrateur"));
+    quest.setInputMode(QInputDialog::TextInput);
+    quest.setTextEchoMode(QLineEdit::Password);
+    QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
+    for (int i=0;i<list.size();i++)
+        list.at(0)->setAlignment(Qt::AlignCenter);
+    QList<QLabel*> listlab = quest.findChildren<QLabel*>();
+    for (int i=0;i<listlab.size();i++)
+        listlab.at(0)->setAlignment(Qt::AlignCenter);
+    quest.setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+    if (quest.exec() > 0)
+    {
+        if (Utils::calcSHA1(quest.textValue()) != Admin()->password())
+        {
+            if (quest.textValue() != Admin()->password())
+            {
+                UpMessageBox::Watch(Q_NULLPTR, QObject::tr("Mot de passe invalide!"));
+                exit(0);
+            }
+            else
+            {
+                QString pwd = Utils::calcSHA1(Admin()->password());
+                db->setmdpadmin(pwd);
+            }
+        }
+    }
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
@@ -366,7 +395,7 @@ RufusAdmin::~RufusAdmin()
 
 void RufusAdmin::closeEvent(QCloseEvent *event)
 {
-    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
     {
         event->ignore();
         return;
@@ -812,27 +841,6 @@ void RufusAdmin::ConnexionBase()
     QString Client;
 
     db->StandardSQL("SET GLOBAL max_allowed_packet=" MAX_ALLOWED_PACKET "*1024*1024 ;");
-
-    QString ssl = (db->ModeAccesDataBase() == Utils::Distant? "SSL" : "");
-    QString req = "show grants for '" LOGIN_SQL + ssl + "'@'%'";
-    bool ok;
-    QVariantList grantsdata = db->getFirstRecordFromStandardSelectSQL(req,ok);
-
-    if (!ok || grantsdata.size()==0)
-    {
-        UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                            tr("Impossible de retrouver les droits de l'utilisateur ") + LOGIN_SQL);
-        exit(0);
-    }
-    QString reponse = grantsdata.at(0).toString();
-    if (reponse.left(9) != "GRANT ALL")
-    {
-        UpMessageBox::Watch(this,tr("Erreur sur le serveur"),
-                            tr("L'utilisateur ") + LOGIN_SQL + tr(" existe mais ne dispose pas "
-                                                                  "de toutes les autorisations pour modifier ou créer des données sur le serveur.\n"
-                                                                  "Choisissez un autre utilisateur ou modifiez les droits de cet utilisateur au niveau du serveur.\n"));
-        exit(0);
-    }
 }
 
 /*-----------------------------------------------------------------------------------------------------------------
@@ -1262,7 +1270,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
             msgbox.exec();
             return;
         }
-        if (anc != m_parametres->mdpadmin())
+        if (Utils::calcSHA1(anc) != m_parametres->mdpadmin())
         {
             QSound::play(NOM_ALARME);
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas le bon\n"));
@@ -1288,7 +1296,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         }
         msgbox.setText(tr("Modifications enregistrées"));
         msgbox.setInformativeText(tr("Le nouveau mot de passe a été enregistré avec succès"));
-        db->setmdpadmin(nouv);
+        db->setmdpadmin(Utils::calcSHA1(nouv));
         dlg_askMDP->done(0);
         msgbox.exec();
     }
@@ -2165,6 +2173,7 @@ void RufusAdmin::RestaureBase()
     AskBupRestore(RestoreOp, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKRessces, OKImages, OKVideos, OKFactures);
     if (dlg_buprestore->exec()>0)
     {
+        bool okrestorebase = false;
         foreach (UpCheckBox *chk, dlg_buprestore->findChildren<UpCheckBox*>())
         {
             /*! 4a - restauration de la base de données */
@@ -2194,7 +2203,7 @@ void RufusAdmin::RestaureBase()
                         msg += tr("Base non restaurée");
                         break;
                     }
-                    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+                    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
                     {
                         msg += tr("Base non restaurée");
                         break;
@@ -2243,7 +2252,9 @@ void RufusAdmin::RestaureBase()
                             a = dumpProcess.exitCode();
                         if (a != 0)
                             msg += tr("Erreur de restauration de la base");
-                        else msg += tr("Restauration de la base OK") + "\n";
+                        else
+                            msg += tr("Restauration de la base OK") + "\n";
+                        okrestorebase = (a == 0);
                     }
                 }
             }
@@ -2371,6 +2382,11 @@ void RufusAdmin::RestaureBase()
         delete dlg_buprestore;
         //qDebug() << msg;
         UpMessageBox::Watch(this,tr("restauration terminée"),msg);
+        if (okrestorebase)
+        {
+            UpMessageBox::Watch(this,tr("Fermeture du programme"));
+            exit(0);
+        }
     }
     ConnectTimers();
 }
@@ -2427,6 +2443,25 @@ void RufusAdmin::SupprimerDocsEtFactures()
     }
 }
 
+void RufusAdmin::ChoixMenuSystemTray(QString txt)
+{
+    //! il faut montrer la fiche d'abord sinon la fermeture du QInputDialog de VerifMDP()
+    //! provoque la fermeture du programme quoiqu'il arrive (???)
+    bool visible = isVisible();
+    if (!visible)
+        showNormal();
+    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+    {
+        if (!visible)
+            MasqueAppli();
+        return;
+    }
+    if (txt == tr("Ouvir RufusAdmin"))
+        setEnabled(true);
+    else if (txt == tr("Quitter RufusAdmin"))
+        SortieAppli();
+}
+
 void RufusAdmin::TrayIconMenu()
 {
     trayIconMenu->clear();
@@ -2439,25 +2474,6 @@ void RufusAdmin::TrayIconMenu()
     QString txt = tr("Quitter RufusAdmin");
     QAction *pAction_QuitAppli = trayIconMenu->addAction(txt);
     connect (pAction_QuitAppli, &QAction::triggered, [=] {ChoixMenuSystemTray(txt);});
-}
-
-void RufusAdmin::ChoixMenuSystemTray(QString txt)
-{
-    //! il faut montrer la fiche d'abord sinon la fermeture du QInputDialog de VerifMDP()
-    //! provoque la fermeture du programme quoiqu'il arrive (???)
-    bool visible = isVisible();
-    if (!visible)
-        showNormal();
-    if (!VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
-    {
-        if (!visible)
-            MasqueAppli();
-        return;
-    }
-    if (txt == tr("Ouvir RufusAdmin"))
-        setEnabled(true);
-    else if (txt == tr("Quitter RufusAdmin"))
-        SortieAppli();
 }
 
 void RufusAdmin::VerifPosteImport()
@@ -2558,15 +2574,22 @@ bool RufusAdmin::VerifBase()
                                           "\net une sauvegarde de la base actuelle est fortement conseillée"));
                 msgbox.setIcon(UpMessageBox::Warning);
                 UpSmallButton *OKBouton = new UpSmallButton();
-                UpSmallButton *AnnulBouton = new UpSmallButton();
-                OKBouton->setText(tr("OK, je vais sauvegarder la base d'abord"));
-                AnnulBouton->setText(tr("Pousuivre, la sauvegarde a été faite"));
-                msgbox.addButton(OKBouton, UpSmallButton::CANCELBUTTON);
-                msgbox.addButton(AnnulBouton, UpSmallButton::STARTBUTTON);
+                UpSmallButton *BackupBouton = new UpSmallButton();
+                UpSmallButton *ExitBouton = new UpSmallButton();
+                OKBouton->setText(tr("Pousuivre, la sauvegarde a été faite"));
+                BackupBouton->setText(tr("OK, je vais sauvegarder la base d'abord"));
+                ExitBouton->setText(tr("Annuler et fermer"));
+                msgbox.addButton(ExitBouton, UpSmallButton::CLOSEBUTTON);
+                msgbox.addButton(BackupBouton, UpSmallButton::CANCELBUTTON);
+                msgbox.addButton(OKBouton, UpSmallButton::STARTBUTTON);
                 msgbox.exec();
-                if (msgbox.clickedButton() != AnnulBouton)
+                if (msgbox.clickedButton() == BackupBouton)
+                {
                     if (!ImmediateBackup())
                         return false;
+                }
+                else if (msgbox.clickedButton() == ExitBouton)
+                    return false;
                 BupDone = true;
             }
             Message::I()->SplashMessage(tr("Mise à jour de la base vers la version ") + "<font color=\"red\"><b>" + QString::number(Version) + "</b></font>", 1000);
@@ -2633,36 +2656,6 @@ bool RufusAdmin::VerifBase()
         }
     }
     return true;
-}
-
-/*---------------------------------------------------------------------------------------------------------------------
-    -- VÉRIFICATION DE MDP --------------------------------------------------------------------------------------------
-    -----------------------------------------------------------------------------------------------------------------*/
-bool RufusAdmin::VerifMDP(QString MDP, QString Msg)
-{
-    DisconnectTimerInactive();
-    QInputDialog quest;
-    quest.setCancelButtonText("Annuler");
-    quest.setLabelText(Msg);
-    quest.setInputMode(QInputDialog::TextInput);
-    quest.setTextEchoMode(QLineEdit::Password);
-    QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
-    for (int i=0;i<list.size();i++)
-        list.at(0)->setAlignment(Qt::AlignCenter);
-    QList<QLabel*> listlab = quest.findChildren<QLabel*>();
-    for (int i=0;i<listlab.size();i++)
-        listlab.at(0)->setAlignment(Qt::AlignCenter);
-    quest.setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-    int a = quest.exec();
-    ConnectTimerInactive();
-    if (a > 0)
-    {
-        if (quest.textValue() == MDP)
-            return true;
-        else
-            UpMessageBox::Watch(this,tr("Mot de passe invalide!"));
-    }
-    return false;
 }
 
 void RufusAdmin::ModifDirBackup()

@@ -160,7 +160,6 @@ private:
     void                        ReconstruitListeLieuxExercice();
     void                        TrayIconMenu();
     bool                        VerifBase();
-    bool                        VerifMDP(QString MDP, QString Msg);
     void                        VerifPosteImport();
     void                        VerifVersionBase();
 

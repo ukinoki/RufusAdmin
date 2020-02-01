@@ -546,6 +546,12 @@ QString Utils::getBaseFromMode(ModeAcces mode )
     return "BDD_LOCAL";
 }
 
+QString Utils::calcSHA1(QString mdp)
+{
+    QByteArray ba = QCryptographicHash::hash(mdp.toUtf8(), QCryptographicHash::Sha1);
+    return QString(ba.toHex());
+}
+
 /*---------------------------------------------------------------------------------------------------------------------
     -- VÉRIFICATION DE MDP --------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------*/
@@ -567,7 +573,9 @@ bool Utils::VerifMDP(QString MDP, QString Msg, bool mdpverified)
     quest.setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     if (quest.exec() > 0)
     {
-        if (quest.textValue() == MDP)
+        if (calcSHA1(quest.textValue()) == MDP)
+            return true;
+        else if (quest.textValue() == MDP)
             return true;
         else
             UpMessageBox::Watch(Q_NULLPTR, QObject::tr("Mot de passe invalide!"));
@@ -938,6 +946,18 @@ void Utils::setDataLogic(QJsonObject data, QString key, Logic &prop)
     else
         prop = Null;
 }
+
+void Utils::EnChantier(bool avecMsg)
+{
+    UpMessageBox msgbox;
+    msgbox.setIconPixmap(Icons::pxWorkInProgress());
+    UpSmallButton OKBouton;
+    if (avecMsg)
+    msgbox.setInformativeText(tr("Le code qui suit n'est pas achevé et entraînera\nassez rapidement un plantage du programme\navec un risque élevé de corruption des données"));
+    msgbox.addButton(&OKBouton, UpSmallButton::STARTBUTTON);
+    msgbox.exec();
+}
+
 
 //! convertit un côté en QString : droit = "D", Gauche = "G", Les 2 = "2"
 Utils::Cote Utils::ConvertCote(QString cote)
