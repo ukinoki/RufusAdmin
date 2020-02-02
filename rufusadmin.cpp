@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("01-02-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-02-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -90,10 +90,10 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     setMapIcons();
 
     ConnexionBase();
-    m_parametres        = db->parametres();
-    Datas::I()->users->initListe();
+    m_parametres            = db->parametres();
     if (!VerifBase())
         exit(0);
+    Datas::I()->users       ->initListe();
 
     DataBase::I()->setidUserConnected(Admin()->id());
 
@@ -125,6 +125,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
             }
         }
     }
+    else
+        exit(0);
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
@@ -428,17 +430,12 @@ void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause)
 
 bool RufusAdmin::AutresPostesConnectes()
 {
+    if (Datas::I()->users->all()->isEmpty())
+        Datas::I()->users       ->initShortListe();
     Datas::I()->postesconnectes->initListe();
     QString id = Utils::MACAdress() + " - " + QString::number(Admin()->id());
-    PosteConnecte *m_currentposteconnecte = Datas::I()->postesconnectes->getByStringId(id);
-    if (m_currentposteconnecte == Q_NULLPTR)
-    {
-        UpMessageBox::Information(this, tr("Problème avec ce poste!"),
-                                  tr("Le poste RufusAdmin n'est pas connecté"));
-        return true;
-    }
     foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
-        if (post->stringid() != m_currentposteconnecte->stringid())
+        if (post->stringid() != id)
         {
             UpMessageBox::Information(this, tr("Autres postes connectés!"),
                                       tr("Vous ne pouvez pas effectuer d'opération de sauvegarde/restauration sur la base de données"

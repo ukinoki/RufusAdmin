@@ -55,6 +55,7 @@ public:
     void        reload(User* usr);
     bool        recalcStatut(User* usr);
     void        initListe();
+    void        initShortListe();
     void        remplaceUserListes(User *usr);
     void        SupprimeUser(User *usr);
     User*       userconnected()     { return getById(DataBase::I()->idUserConnected()); }

@@ -212,6 +212,32 @@ void Users::initListe()
 }
 
 /*!
+ * \brief Users::initListe
+ * Charge l'ensemble des utilisateurs avec des renseignements succincts
+ * et les ajoute à la classe Users
+ */
+void Users::initShortListe()
+{
+    QList<User*> listusers = DataBase::I()->loadUsersShortListe();
+    epurelist(map_all, &listusers);
+    map_actifs          ->clear();
+    map_inactifs        ->clear();
+    map_superviseurs    ->clear();
+    map_liberaux        ->clear();
+    map_parents         ->clear();
+    map_comptables      ->clear();
+    addList(listusers);
+    foreach (User *usr, actifs()->values())
+    {
+        if (usr->login() == NOM_ADMINISTRATEUR)
+        {
+            m_useradmin = usr;
+            break;
+        }
+    }
+}
+
+/*!
  * \brief Users::remplaceUserListes
  * Remplace dans chaque liste un User par un autre user avec le même id
  * utilisé p.e. quand on a un nouveau currentuser pour remplacer l'ancien dans les listes
