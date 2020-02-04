@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("02-02-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("04-02-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -430,6 +430,7 @@ void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause)
 
 bool RufusAdmin::AutresPostesConnectes()
 {
+    /*! avant la mise à jour 61, on ne peut pas utiliser Datas::I()->users->initListe() parce que le champ DateCreationMDP de la table utilisateurs n'existe pas */
     if (Datas::I()->users->all()->isEmpty())
         Datas::I()->users       ->initShortListe();
     Datas::I()->postesconnectes->initListe();
@@ -664,8 +665,8 @@ void RufusAdmin::AskBupRestore(BkupRestore op, QString pathorigin, QString pathd
             layFctures->addWidget(labelmges);
             UpCheckBox *Fctureschk  = new UpCheckBox();
             Fctureschk->setText("Factures");
-            Fctureschk->setEnabled(OKimages || op == BackupOp);
-            Fctureschk->setChecked(OKimages || op == BackupOp);
+            Fctureschk->setEnabled(OKfactures || op == BackupOp);
+            Fctureschk->setChecked(OKfactures || op == BackupOp);
             Fctureschk->setAccessibleDescription("factures");
             layFctures->addWidget(Fctureschk);
             layFctures->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding));
