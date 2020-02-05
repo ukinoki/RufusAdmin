@@ -227,7 +227,7 @@ public:
     void setidparent(int idusr)                   { m_idUserParent = idusr; }
 
     int idcomptable() const                       { return m_idUserComptable; }
-    void setidusercomptable(int idusr)            { m_idUserComptable = idusr; }
+    void setidcomptable(int idusr)                { m_idUserComptable = idusr; }
 };
 
 #endif // CLS_USER_H
