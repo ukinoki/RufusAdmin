@@ -169,12 +169,12 @@ Acte* Actes::CreationActe(Patient *pat, User* usr, int idcentre, int idlieu)
     act = new Acte();
     act->setid(idacte);
     act->setidpatient(pat->id());
-    act->setiduserSuperviseur(usr->idsuperviseur());
+    act->setidsuperviseur(usr->idsuperviseur());
     act->setdate(QDate::currentDate());
     act->setheure(QTime::currentTime());
-    act->setidusercreateur(usr->id());
-    act->setidusercomptable(usr->idcomptable());
-    act->setiduserparent(usr->idparent());
+    act->setidcreateur(usr->id());
+    act->setidcomptable(usr->idcomptable());
+    act->setidparent(usr->idparent());
     act->seteffectueparremplacant(rempla == "1");
     act->setnumcentre(idcentre);
     act->setidlieu(idlieu);
