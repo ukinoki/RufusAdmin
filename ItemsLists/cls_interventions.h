@@ -25,13 +25,13 @@ class Interventions : public ItemsList
 {
 private:
     QMap<int, Intervention*> *map_interventions = Q_NULLPTR;    //!< la liste des interventions
-    int m_idpat = 0;                                            //!< l'id du patient concerné par la map
+    int m_iduser = 0;                                            //!< l'id du patient concerné par la map
 
 public:
     explicit Interventions(QObject *parent = Q_NULLPTR);
 
     QMap<int, Intervention*> *interventions() const;
-    int idpatient() const { return m_idpat ; }
+    int iduser() const { return m_iduser ; }
 
     Intervention* getById(int id);
     void initListebyUserId(int id);
@@ -39,6 +39,42 @@ public:
     //!> actions sur les enregistrements
     void                SupprimeIntervention(Intervention *intervention);
     Intervention*       CreationIntervention(QHash<QString, QVariant> sets);
+};
+
+class IOLS : public ItemsList
+{
+private:
+    QMap<int, IOL*> *map_IOLs = Q_NULLPTR;    //!< la liste des IOLS
+
+public:
+    explicit IOLS(QObject *parent = Q_NULLPTR);
+
+    QMap<int, IOL*> *IOLs() const;
+
+    IOL*    getById(int id);
+    void    initListe();
+
+    //!> actions sur les enregistrements
+    void    SupprimeIOL(IOL *iol);
+    IOL*    CreationIOL(QHash<QString, QVariant> sets);
+};
+
+class TypeInterventions : public ItemsList
+{
+private:
+    QMap<int, TypeIntervention*> *map_typeinterventions = Q_NULLPTR;    //!< la liste des TypeInterventions
+
+public:
+    explicit TypeInterventions(QObject *parent = Q_NULLPTR);
+
+    QMap<int, TypeIntervention*> *typeinterventions() const;
+
+    TypeIntervention*   getById(int id);
+    void                initListe();
+
+    //!> actions sur les enregistrements
+    void                SupprimeTypeIntervention(TypeIntervention *typeintervention);
+    TypeIntervention*   CreationTypeIntervention(QHash<QString, QVariant> sets);
 };
 
 #endif // INTERVENTIONS_H
