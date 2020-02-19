@@ -138,6 +138,7 @@ Acte* Actes::CreationActe(Patient *pat, User* usr, int idcentre, int idlieu)
         return Q_NULLPTR;
     Acte *act = Q_NULLPTR;
     QString rempla = (usr->modeenregistrementhonoraires() == User::Retrocession? "1" : "null");
+    QString comptable = (usr->idcomptable() > 0? QString::number(usr->idcomptable()) : "null");
     QString creerrequete =
             "INSERT INTO " TBL_ACTES
             " (idPat, idUser, ActeDate, ActeHeure, CreePar, UserComptable, UserParent, SuperViseurRemplacant, NumCentre, idLieu)"
@@ -147,7 +148,7 @@ Acte* Actes::CreationActe(Patient *pat, User* usr, int idcentre, int idlieu)
             "NOW(), "
             "NOW(), " +
             QString::number(usr->id()) + ", " +
-            QString::number(usr->idcomptable()) + ", " +
+            comptable + ", " +
             QString::number(usr->idparent()) + ", " +
             rempla + ", " +
             QString::number(idcentre) + ", " +

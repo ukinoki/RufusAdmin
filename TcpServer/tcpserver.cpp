@@ -244,7 +244,15 @@ void TcpServer::envoyerATous(QString msg, qintptr emetteur)
 
 void TcpServer::envoyerBALMsgA(int iduser, QString msg)
 {
-    Logs::LogSktMessage("void TcpServer::envoyerA(int iduser, QString msg)\n\t"
+    User * usr = Datas::I()->users->getById(iduser);
+    if (usr == Q_NULLPTR)
+    {
+        Logs::ERROR("void TcpServer::envoyerBALMsgA(int iduser, QString msg)\n\t"
+                            "iduser = " + QString::number(iduser) + " - user non retrouvé" + "\n\t"
+                            "msg = " + msg);
+        return;
+    }
+    Logs::LogSktMessage("void TcpServer::envoyerBALMsgA(int iduser, QString msg)\n\t"
                         "iduser = " + QString::number(iduser) + " - " + Datas::I()->users->getById(iduser)->login() + "\n\t"
                         "msg = " + msg);
     QList<int> listdestfin = QList<int>();

@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("14-02-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("19-02-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -3443,14 +3443,14 @@ void RufusAdmin::VerifModifsFlags()
         m_flagmessages = flag;
 
         QString req =
-                "select mess.idMessage, iddestinataire, creele from "
-                TBL_MESSAGES " mess left outer join " TBL_MESSAGESJOINTURES " joint on mess.idmessage = joint.idmessage \n"
-                " where Creele > '" + m_dateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
-                + "' and asupprimer is null"
-                + " order by creele";
+                "select mess." CP_ID_MSG ", " CP_IDDESTINATAIRE_JOINTURESMSG ", " CP_DATECREATION_MSG " from "
+                TBL_MESSAGES " mess left outer join " TBL_MESSAGESJOINTURES " joint on mess." CP_ID_MSG " = joint." CP_IDMSG_JOINTURESMSG " \n"
+                " where " CP_DATECREATION_MSG " > '" + m_dateDernierMessage.toString("yyyy-MM-dd HH:mm:ss")
+                + "' and " CP_ASUPPRIMER_MSG " is null"
+                + " order by " CP_DATECREATION_MSG;                         //! tous les nouveaux messages depuis la date du dernier message
         QList<QVariantList> listmsg = db->StandardSelectSQL(req, m_ok);
         int TotalNvxMessages = listmsg.size();
-        QHash<int,int> mapmessages;
+        QHash<int,int> mapmessages;                                         //! la map des messages - key = iddestinataire, value = nombre de messages
         if (TotalNvxMessages>0)
         {
             for (int i=0; i<TotalNvxMessages; i++)

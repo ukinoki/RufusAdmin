@@ -38,7 +38,7 @@ class Acte : public Item
 private:
 
     int m_idPatient;            //!< id du Patient correspondant à l'acte
-    int m_idSuperviseur;        //!< id du User supervisuer de l'acte
+    int m_idSuperviseur;        //!< id du User superviseur de l'acte
     int m_idCreatedBy;          //!< id du User qui a créé l'acte
     int m_idParent;             //!< id du User remplacé si le user est remplaçant ( = iduser si pas remplacé)
     int m_idComptable;          //!< id du User qui comptabilise l'acte
