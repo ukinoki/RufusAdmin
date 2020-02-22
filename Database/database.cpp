@@ -168,7 +168,7 @@ int DataBase::selectMaxFromTable(QString nomchamp, QString nomtable, bool &ok, Q
     QString req = "select max(" + nomchamp + ") from " + nomtable;
     QVariantList data = getFirstRecordFromStandardSelectSQL(req, ok, errormsg);
     if(!ok || data.size()==0)
-        return 0;
+        return -1;
     return data.at(0).toInt();
 }
 
