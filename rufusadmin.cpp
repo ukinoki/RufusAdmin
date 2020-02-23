@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("22-02-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("23-02-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -78,9 +78,9 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     setWindowIcon(ic_Sunglasses);
 
     ui->FermepushButton->setUpButtonStyle(UpSmallButton::CLOSEBUTTON);
-    m_nomfichierini         = QDir::homePath() + FILE_INI;
+    m_nomfichierini         = QDir::homePath() + DIR_RUFUSADMIN FILE_INI;
     m_settings              = new QSettings(m_nomfichierini, QSettings::IniFormat);
-    m_nomfichieriniRufus    = QDir::homePath() + FILE_INIRUFUS;
+    m_nomfichieriniRufus    = QDir::homePath() + DIR_RUFUSADMIN FILE_INI;
     m_nouvMDP               = "nouv";
     m_ancMDP                = "anc";
     m_confirmMDP            = "confirm";
@@ -2242,7 +2242,7 @@ void RufusAdmin::RestaureBase()
                                + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
                         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         DefinitScriptRestore(listnomsfilestorestore);
-                        QString task = "sh " + QDir::homePath() + SCRIPTRESTOREFILE;
+                        QString task = "sh " + QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE;
                         QProcess dumpProcess(parent());
                         dumpProcess.start(task);
                         dumpProcess.waitForFinished(1000000000);
@@ -2889,7 +2889,7 @@ void RufusAdmin::ParamAutoBackup()
                             "\t\t<key>ProgramArguments</key>\n"
                             "\t\t<array>\n"
                                 "\t\t\t<string>bash</string>\n"
-                                "\t\t\t<string>" + QDir::homePath() + SCRIPTBACKUPFILE + "</string>\n"
+                                "\t\t\t<string>" + QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE + "</string>\n"
                             "\t\t</array>\n"
                             "\t\t<key>StartCalendarInterval</key>\n"
                             + jourprg +
@@ -3113,9 +3113,9 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
     }
     // copie Rufus.ini
     scriptbackup +=  "cp $RUFUSADMININI $BACKUP_DIR/$DATE/RufusAdmin.ini";
-    if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
-        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
-    QFile fbackup(QDir::homePath() + SCRIPTBACKUPFILE);
+    if (QFile::exists(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE))
+        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
+    QFile fbackup(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
     if (fbackup.open(QIODevice::ReadWrite))
     {
         QTextStream out(&fbackup);
@@ -3156,9 +3156,9 @@ $MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File3"
         scriptrestore += "$MYSQL -u " LOGIN_SQL  " -p" MDP_SQL " -h localhost -P " + QString::number(db->port()) + " < " + ListNomFiles.at(i);
         scriptrestore += "\n";
     }
-    if (QFile::exists(QDir::homePath() + SCRIPTRESTOREFILE))
-        QFile::remove(QDir::homePath() + SCRIPTRESTOREFILE);
-    QFile fbackup(QDir::homePath() + SCRIPTRESTOREFILE);
+    if (QFile::exists(QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE))
+        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE);
+    QFile fbackup(QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE);
     if (fbackup.open(QIODevice::ReadWrite))
     {
         QTextStream out(&fbackup);
@@ -3183,8 +3183,8 @@ void RufusAdmin::EffaceBDDDataBackup()
 
 void RufusAdmin::EffaceProgrammationBackup()
 {
-    if (QFile::exists(QDir::homePath() + SCRIPTBACKUPFILE))
-        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
+    if (QFile::exists(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE))
+        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
     t_timerbackup.disconnect(SIGNAL(timeout()));
     t_timerbackup.stop();
     /*! la suite n'est plus utilisée depuis OsX Catalina parce que OsX Catalina n'accepte plus les launchagents
@@ -3293,12 +3293,12 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
 
     if (OKBase)
     {
-        QFile::remove(QDir::homePath() + SCRIPTBACKUPFILE);
+        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
         DefinitScriptBackup(pathdirdestination, OKImages, OKVideos, OKFactures);
         QString Msg = (tr("Sauvegarde de la base de données\n")
                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
-        const QString task = "sh " + QDir::homePath() + SCRIPTBACKUPFILE;
+        const QString task = "sh " + QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE;
         const QString msgOK = tr("Base de données sauvegardée!");
         m_controller.disconnect(SIGNAL(result(const int &)));
         connect(&m_controller, &Controller::result, this, [=](int a) {
@@ -3310,6 +3310,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
             if (OKVideos)
                 Utils::cleanfolder(pathdirdestination + DIR_VIDEOS);
             result(handledlg, this);
+            QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
             return true;
         });
         m_controller.execute(task);
