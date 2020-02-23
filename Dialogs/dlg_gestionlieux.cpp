@@ -18,7 +18,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "dlg_gestionlieux.h"
 
 dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
-    : UpDialog(QDir::homePath() + DIR_RUFUSADMIN FILE_INI, "PositionsFiches/PositionLieux", parent)
+    : UpDialog(PATHTOFILE_INI, "PositionsFiches/PositionLieux", parent)
 {
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     db              = DataBase::I();

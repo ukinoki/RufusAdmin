@@ -606,42 +606,37 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TCPMSG_OKConnexion                          "OKConnexion"                                       /*! fin du message de confirmation de la connexion */
 
 // Constantes de statut salle d'attente  //+++++ATTENTION ces constantes servent dans des requêtes SQL - NE PAS METTRE DE CARACTERES SPECIAUX
-#define ARRIVE                                      "Arrivé"
-#define ENCOURS                                     "En cours"
-#define ENATTENTENOUVELEXAMEN                       "En attente de nouvel examen par "
-#define RETOURACCUEIL                               "Retour accueil"
-#define ENCOURSEXAMEN                               "En cours de consultation avec "
+#define ARRIVE                                  tr("Arrivé")
+#define ENCOURS                                 tr("En cours")
+#define ENATTENTENOUVELEXAMEN                   tr("En attente de nouvel examen par ")
+#define RETOURACCUEIL                           tr("Retour accueil")
+#define ENCOURSEXAMEN                           tr("En cours de consultation avec ")
 
 // Les fichiers et répertoires divers
-#define DIR_LIBS2                                   "/Applications"
-#define DIR_RESSOURCES                              "/Ressources"
-#define DIR_RUFUSADMIN                              "/Documents/RufusAdmin"
-#define DIR_RUFUS                                   "/Documents/Rufus"
-#define DIR_FACTURES                                "/Factures"
-#define DIR_ORIGINAUX                               "/Originaux"
-#define DIR_FACTURESSANSLIEN                        "/FacturesSansLien"
-#define DIR_DOSSIERECHANGE                          "/DossierEchange"
-#define DIR_CRDOSSIERS                              "/CRDossiers"
-#define DIR_IMAGERIE                                "/Imagerie"
-#define DIR_IMAGES                                  "/Images"
-#define DIR_VIDEOS                                  "/Videos"
-#define DIR_PROV                                    "/Prov"
-#define DIR_LOGS                                    "/Logs"
-#define DIR_ECHECSTRANSFERTS                        "/EchecsTransferts"
+#define DIR_LIBS2                               "/Applications"
+#define PATHTODIR_RUFUSADMIN                    QDir::homePath() + DIR_RUFUSADMIN
+#define PATHTODIR_RUFUS                         QDir::homePath() + DIR_RUFUS
+#define DIR_RUFUSADMIN                          "/Documents/RufusAdmin"
+#define DIR_RUFUS                               "/Documents/Rufus"
+#define DIR_RESSOURCES                          "/Ressources"
+#define DIR_FACTURES                            "/Factures"
+#define DIR_ORIGINAUX                           "/Originaux"
+#define DIR_FACTURESSANSLIEN                    "/FacturesSansLien"
+#define DIR_DOSSIERECHANGE                      "/DossierEchange"
+#define DIR_CRDOSSIERS                          "/CRDossiers"
+#define DIR_IMAGERIE                            "/Imagerie"
+#define DIR_IMAGES                              "/Images"
+#define DIR_VIDEOS                              "/Videos"
+#define DIR_PROV                                "/Prov"
+#define DIR_LOGS                                "/Logs"
+#define DIR_ECHECSTRANSFERTS                    "/EchecsTransferts"
 
-#define FILE_ENTETEORDO                             "/Entete_Ordonnance.txt"
-#define FILE_CORPSORDO                              "/Corps_Ordonnance.txt"
-#define FILE_ENTETEORDOALD                          "/Entete_OrdoALD.txt"
-#define FILE_CORPSORDOALD                           "/Corps_OrdoALD.txt"
-#define FILE_PIEDPAGE                               "/Pied_Ordonnance.txt"
-#define FILE_PIEDORDOLUNETTES                       "/Pied_Ordonnance_Lunettes.txt"
-#define FILE_PDF                                    "/Ressources/pdf.pdf"
-#define FILE_TEST                                   "/test.txt"
-#define FILE_INI                                    "/RufusAdmin.ini"
-#define FILE_INIRUFUS                               "/Rufus.ini"
-#define SCRIPTBACKUPFILE                            "/RufusScriptBackup.sh"
-#define SCRIPTRESTOREFILE                           "/RufusScriptRestore.sh"
-#define SCRIPT_MACOS_PLIST_FILE                     "/Library/LaunchAgents/rufus.bup.plist"
+#define FILE_INI                                "/Rufus.ini"
+
+#define PATHTOFILE_INI                          PATHTODIR_RUFUSADMIN FILE_INI
+#define PATHTOFILE_SCRIPTBACKUP                 PATHTODIR_RUFUSADMIN "/RufusScriptBackup.sh"
+#define PATHTOFILE_SCRIPTRESTORE                PATHTODIR_RUFUSADMIN "/RufusScriptRestore.sh"
+#define PATHTOFILE_SCRIPT_MACOS_PLIST           "/Library/LaunchAgents/rufus.bup.plist"
 
 // Variables mysql
 #define MAX_ALLOWED_PACKET                          "16"

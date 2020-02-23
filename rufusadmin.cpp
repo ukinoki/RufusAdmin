@@ -78,13 +78,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     setWindowIcon(ic_Sunglasses);
 
     ui->FermepushButton->setUpButtonStyle(UpSmallButton::CLOSEBUTTON);
-    m_nomfichierini         = QDir::homePath() + DIR_RUFUSADMIN FILE_INI;
+    m_nomfichierini         = PATHTOFILE_INI;
     m_settings              = new QSettings(m_nomfichierini, QSettings::IniFormat);
-    m_nomfichieriniRufus    = QDir::homePath() + DIR_RUFUSADMIN FILE_INI;
+    m_nomfichieriniRufus    = PATHTOFILE_INI;
     m_nouvMDP               = "nouv";
     m_ancMDP                = "anc";
     m_confirmMDP            = "confirm";
-    Utils::mkpath(QDir::homePath() + DIR_RUFUS);
+    Utils::mkpath(PATHTODIR_RUFUS);
 
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
     setMapIcons();
@@ -371,11 +371,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         ParamAutoBackup();
     /*! la suite sert à décharger le launchagent du programme de backup sous MacOs, plus utilisé depuis Catalina */
 #ifdef Q_OS_MACX
-    if (QFile::exists(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE))
+    if (QFile::exists(PATHTOFILE_SCRIPT_MACOS_PLIST))
     {
-        QFile::remove(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE);
+        QFile::remove(PATHTOFILE_SCRIPT_MACOS_PLIST);
         // décharge du launchd
-        QString unload  = "bash -c \"/bin/launchctl unload \"" + QDir::homePath() + SCRIPT_MACOS_PLIST_FILE "\"\"";
+        QString unload  = "bash -c \"/bin/launchctl unload \"" PATHTOFILE_SCRIPT_MACOS_PLIST "\"\"";
         QProcess dumpProcess(this);
         dumpProcess.start(unload);
         dumpProcess.waitForFinished();
@@ -1140,7 +1140,7 @@ void RufusAdmin::ChoixDossierStockageApp()
         exam = examdata.at(1).toString();
     QString dir = getDossierDocuments(exam);
     if (dir == "")
-        dir = QDir::homePath() + DIR_RUFUS;
+        dir = PATHTODIR_RUFUS;
     QFileDialog dialog(this, "", dir);
     dialog.setFileMode(QFileDialog::Directory);
     dialog.setViewMode(QFileDialog::List);
@@ -1174,7 +1174,7 @@ void RufusAdmin::ModifDirImagerie()
 {
     QString dir = ui->StockageupLineEdit->text();
     if (dir == "")
-        dir = QDir::homePath() + DIR_RUFUS;
+        dir = PATHTODIR_RUFUS;
     QFileDialog dialog(this, "", dir);
     dialog.setFileMode(QFileDialog::Directory);
     dialog.setViewMode(QFileDialog::List);
@@ -1182,9 +1182,9 @@ void RufusAdmin::ModifDirImagerie()
     {
         QDir dockdir = dialog.directory();
         if (db->ModeAccesDataBase() == Utils::Poste)
-            if (!dockdir.match(QDir::homePath() + DIR_RUFUS "/*", dockdir.path()))
+            if (!dockdir.match(PATHTODIR_RUFUS "/*", dockdir.path()))
             {
-                UpMessageBox::Watch(this, tr("Vous devez choisir un sous-dossier du dossier Rufus"), QDir::homePath() + DIR_RUFUS);
+                UpMessageBox::Watch(this, tr("Vous devez choisir un sous-dossier du dossier Rufus"), PATHTODIR_RUFUS);
                 return;
             }
         ui->StockageupLineEdit->setText(dockdir.path());
@@ -1233,14 +1233,14 @@ void RufusAdmin::EnregistreEmplacementServeur(int idx)
 //!> supprime les fichiers de logs antérieurs à J - anciennete jours
 void RufusAdmin::EpureLogs(int anciennete)
 {
-    QDir dirlogs = QDir(QDir::homePath() + DIR_RUFUSADMIN DIR_LOGS);
+    QDir dirlogs = QDir(PATHTODIR_RUFUSADMIN DIR_LOGS);
     QStringList listfiles = dirlogs.entryList();
     for (int i=0; i<listfiles.size(); ++i)
     {
         QFile file(listfiles.at(i));
         QDate datefile = QDate::fromString(file.fileName().left(10), "yyyy-MM-dd");
         if (datefile < QDate::currentDate().addDays(-anciennete))
-            QFile::remove(QDir::homePath() + DIR_RUFUSADMIN DIR_LOGS + "/" + file.fileName());
+            QFile::remove(PATHTODIR_RUFUSADMIN DIR_LOGS + "/" + file.fileName());
     }
 }
 
@@ -2065,7 +2065,7 @@ void RufusAdmin::RestaureBase()
                               "la sauvegarde commencera automatiquement.\n"
                               "Ce processus est long et peut durer plusieurs minutes.\n"
                               "(environ 1' pour 2 Go)\n"));
-    QString dir = QDir::homePath() + DIR_RUFUS;
+    QString dir = PATHTODIR_RUFUS;
     QFileDialog dialog(Q_NULLPTR,tr("Restaurer à partir du dossier") , dir);
     dialog.setViewMode(QFileDialog::List);
     dialog.setFileMode(QFileDialog::DirectoryOnly);
@@ -2111,7 +2111,7 @@ void RufusAdmin::RestaureBase()
     if (QDir(dirtorestore.absolutePath() + DIR_RESSOURCES).exists())
         if (QDir(dirtorestore.absolutePath() + DIR_RESSOURCES).entryList(QDir::Files | QDir::NoDotAndDotDot).size()>0)
             OKRessces = true;
-    if (QFile(dirtorestore.absolutePath() + "/Rufus.ini").exists())
+    if (QFile(dirtorestore.absolutePath() + FILE_INI).exists())
         OKini = true;
     QDir rootimgvid = dirtorestore;
     if (rootimgvid.cdUp())
@@ -2134,13 +2134,13 @@ void RufusAdmin::RestaureBase()
     QString NomDirStockageImagerie = m_parametres->dirimagerieserveur();
     if (!QDir(NomDirStockageImagerie).exists())
     {
-        bool exist = QDir().exists(QDir::homePath() + DIR_RUFUS DIR_IMAGERIE);
+        bool exist = QDir().exists(PATHTODIR_RUFUS DIR_IMAGERIE);
         QString existdir = (exist? "" : "\n" + tr("Créez-le au besoin"));
         UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage d'imagerie"),
                             tr("Indiquez un dossier valide dans la boîte de dialogue qui suit") + "\n" +
-                            tr("Utilisez de préférence le dossier ") + QDir::homePath() + DIR_RUFUS DIR_IMAGERIE +
+                            tr("Utilisez de préférence le dossier ") + PATHTODIR_RUFUS DIR_IMAGERIE +
                             existdir);
-        QFileDialog dialogimg(Q_NULLPTR,tr("Stocker les images dans le dossier") , QDir::homePath() + DIR_RUFUS + (exist? DIR_IMAGERIE : ""));
+        QFileDialog dialogimg(Q_NULLPTR,tr("Stocker les images dans le dossier") , PATHTODIR_RUFUS + (exist? DIR_IMAGERIE : ""));
         dialogimg.setViewMode(QFileDialog::List);
         dialogimg.setFileMode(QFileDialog::DirectoryOnly);
         bool b = (dialogimg.exec()>0);
@@ -2242,7 +2242,7 @@ void RufusAdmin::RestaureBase()
                                + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
                         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         DefinitScriptRestore(listnomsfilestorestore);
-                        QString task = "sh " + QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE;
+                        QString task = "sh " + PATHTOFILE_SCRIPTRESTORE;
                         QProcess dumpProcess(parent());
                         dumpProcess.start(task);
                         dumpProcess.waitForFinished(1000000000);
@@ -2280,13 +2280,13 @@ void RufusAdmin::RestaureBase()
                 if (chk->isChecked())
                 {
                     QDir DirRssces(QDir(dirtorestore.absolutePath() + DIR_RESSOURCES));
-                    Utils::mkpath(QDir::homePath() + DIR_RUFUS DIR_RESSOURCES);
+                    Utils::mkpath(PATHTODIR_RUFUS DIR_RESSOURCES);
                     QStringList listnomfic = DirRssces.entryList();
                     for (int i=0; i<listnomfic.size(); i++)
                     {
                         QFile ficACopier(DirRssces.absolutePath() + "/" + listnomfic.at(i));
                         QString nomficACopier = QFileInfo(listnomfic.at(i)).fileName();
-                        ficACopier.copy(QDir::homePath() + DIR_RUFUS DIR_RESSOURCES + "/" + nomficACopier);
+                        ficACopier.copy(PATHTODIR_RUFUS DIR_RESSOURCES + "/" + nomficACopier);
                     }
                     msg += tr("Fichiers de ressources d'impression restaurés\n");
                     UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers de ressources d'impression restaurés"), Icons::icSunglasses(), 3000);
@@ -2889,15 +2889,15 @@ void RufusAdmin::ParamAutoBackup()
                             "\t\t<key>ProgramArguments</key>\n"
                             "\t\t<array>\n"
                                 "\t\t\t<string>bash</string>\n"
-                                "\t\t\t<string>" + QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE + "</string>\n"
+                                "\t\t\t<string>" + DIR_RUFUSADMIN SCRIPTBACKUPFILE + "</string>\n"
                             "\t\t</array>\n"
                             "\t\t<key>StartCalendarInterval</key>\n"
                             + jourprg +
                         "\t</dict>\n"
                     "</plist>\n";
-    if (QFile::exists(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE))
-        QFile::remove(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE);
-    QFile fplist(QDir::homePath() + SCRIPT_MACOS_PLIST_FILE);
+    if (QFile::exists(SCRIPT_MACOS_PLIST_FILE))
+        QFile::remove(SCRIPT_MACOS_PLIST_FILE);
+    QFile fplist(SCRIPT_MACOS_PLIST_FILE);
     if (fplist.open(QIODevice::ReadWrite))
     {
         QTextStream out(&fplist);
@@ -3011,7 +3011,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
     scriptbackup += "BACKUP_DIR=\"" + pathdirdestination + "\"";
     //# Dossier de  ressources
     scriptbackup += "\n";
-    scriptbackup += "DIR_RESSOURCES=\"" + QDir::homePath() + DIR_RUFUS DIR_RESSOURCES + "\"";
+    scriptbackup += "DIR_RESSOURCES=\"" + PATHTODIR_RUFUS DIR_RESSOURCES + "\"";
     scriptbackup += "\n";
     if (QDir(m_parametres->dirimagerieserveur()).exists())
     {
@@ -3032,7 +3032,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
         }
     }
     //# Rufus.ini
-    scriptbackup += "RUFUSADMININI=\"" + QDir::homePath() + FILE_INI + "\"";
+    scriptbackup += "RUFUSADMININI=\"" + PATHTOFILE_INI + "\"";
     //# Identifiants MySQL
     scriptbackup += "\n";
     scriptbackup += "MYSQL_USER=\"" LOGIN_SQL "\"";
@@ -3113,9 +3113,9 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
     }
     // copie Rufus.ini
     scriptbackup +=  "cp $RUFUSADMININI $BACKUP_DIR/$DATE/RufusAdmin.ini";
-    if (QFile::exists(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE))
-        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
-    QFile fbackup(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
+    if (QFile::exists(PATHTOFILE_SCRIPTBACKUP))
+        QFile::remove(PATHTOFILE_SCRIPTBACKUP);
+    QFile fbackup(PATHTOFILE_SCRIPTBACKUP);
     if (fbackup.open(QIODevice::ReadWrite))
     {
         QTextStream out(&fbackup);
@@ -3156,9 +3156,9 @@ $MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File3"
         scriptrestore += "$MYSQL -u " LOGIN_SQL  " -p" MDP_SQL " -h localhost -P " + QString::number(db->port()) + " < " + ListNomFiles.at(i);
         scriptrestore += "\n";
     }
-    if (QFile::exists(QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE))
-        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE);
-    QFile fbackup(QDir::homePath() + DIR_RUFUSADMIN SCRIPTRESTOREFILE);
+    if (QFile::exists(PATHTOFILE_SCRIPTRESTORE))
+        QFile::remove(PATHTOFILE_SCRIPTRESTORE);
+    QFile fbackup(PATHTOFILE_SCRIPTRESTORE);
     if (fbackup.open(QIODevice::ReadWrite))
     {
         QTextStream out(&fbackup);
@@ -3183,13 +3183,13 @@ void RufusAdmin::EffaceBDDDataBackup()
 
 void RufusAdmin::EffaceProgrammationBackup()
 {
-    if (QFile::exists(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE))
-        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
+    if (QFile::exists(PATHTOFILE_SCRIPTBACKUP))
+        QFile::remove(PATHTOFILE_SCRIPTBACKUP);
     t_timerbackup.disconnect(SIGNAL(timeout()));
     t_timerbackup.stop();
     /*! la suite n'est plus utilisée depuis OsX Catalina parce que OsX Catalina n'accepte plus les launchagents
 #ifdef Q_OS_MACX
-    QString file = QDir::homePath() + SCRIPT_MACOS_PLIST_FILE;                          // file = "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist"
+    QString file = SCRIPT_MACOS_PLIST_FILE;                          // file = "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist"
     if (!QFile::exists(file))
         return;
     QString unload  = "bash -c \"/bin/launchctl unload \"" + file + "\"\"";             // unload = bash -c "/bin/launchctl unload "/Users/xxxx/Library/LaunchAgents/rufus.bup.plist""
@@ -3293,12 +3293,12 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
 
     if (OKBase)
     {
-        QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
+        QFile::remove(PATHTOFILE_SCRIPTBACKUP);
         DefinitScriptBackup(pathdirdestination, OKImages, OKVideos, OKFactures);
         QString Msg = (tr("Sauvegarde de la base de données\n")
                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
-        const QString task = "sh " + QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE;
+        const QString task = "sh " + PATHTOFILE_SCRIPTBACKUP;
         const QString msgOK = tr("Base de données sauvegardée!");
         m_controller.disconnect(SIGNAL(result(const int &)));
         connect(&m_controller, &Controller::result, this, [=](int a) {
@@ -3310,7 +3310,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
             if (OKVideos)
                 Utils::cleanfolder(pathdirdestination + DIR_VIDEOS);
             result(handledlg, this);
-            QFile::remove(QDir::homePath() + DIR_RUFUSADMIN SCRIPTBACKUPFILE);
+            QFile::remove(PATHTOFILE_SCRIPTBACKUP);
             return true;
         });
         m_controller.execute(task);
