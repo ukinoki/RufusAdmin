@@ -24,7 +24,7 @@ ImportDocsExternesThread::ImportDocsExternesThread()
     db                  = DataBase::I();
     m_acces             = (db->ModeAccesDataBase() != Utils::Distant? Local : Distant);
     m_encours           = false;
-    m_nomfichierini     = PATHTOFILE_INI;
+    m_nomfichierini     = PATH_ADMINFILE_INI;
     m_settings          = new QSettings(m_nomfichierini, QSettings::IniFormat);
     thread              ->start();
 }
@@ -655,7 +655,7 @@ bool ImportDocsExternesThread::DefinitDossiersImagerie()
         emit emitmsg(listmsg, 6000);
         return false;
     }
-    m_pathdirstockageprovisoire = m_pathdirstockageimagerie + DIR_PROV;
+    m_pathdirstockageprovisoire = m_pathdirstockageimagerie + NOM_DIR_PROV;
     QDir DirStockProv;
     if (!Utils::mkpath(m_pathdirstockageprovisoire))
     {
@@ -665,7 +665,7 @@ bool ImportDocsExternesThread::DefinitDossiersImagerie()
         emit emitmsg(listmsg, 3000);
         return false;
     }
-    m_pathdirOKtransfer = m_pathdirstockageimagerie + DIR_IMAGES + "/" + m_datetransfer;
+    m_pathdirOKtransfer = m_pathdirstockageimagerie + NOM_DIR_IMAGES + "/" + m_datetransfer;
     if (!Utils::mkpath(m_pathdirOKtransfer))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + m_pathdirOKtransfer + "</b></font>" + tr(" invalide");
@@ -674,7 +674,7 @@ bool ImportDocsExternesThread::DefinitDossiersImagerie()
         emit emitmsg(listmsg, 3000);
         return false;
     }
-    m_pathdirEchectransfer   = m_pathdirstockageimagerie + DIR_ECHECSTRANSFERTS;
+    m_pathdirEchectransfer   = m_pathdirstockageimagerie + NOM_DIR_ECHECSTRANSFERTS;
     if (!Utils::mkpath(m_pathdirEchectransfer))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + m_pathdirEchectransfer + "</b></font>" + tr(" invalide");
@@ -686,7 +686,7 @@ bool ImportDocsExternesThread::DefinitDossiersImagerie()
     
     if (m_acces == Local)
     {
-        m_pathdirOKtransferorigin    = m_pathdirstockageimagerie + DIR_ORIGINAUX DIR_IMAGES + "/" + m_datetransfer;
+        m_pathdirOKtransferorigin    = m_pathdirstockageimagerie + NOM_DIR_ORIGINAUX NOM_DIR_IMAGES + "/" + m_datetransfer;
         if (!Utils::mkpath(m_pathdirOKtransferorigin))
         {
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + m_pathdirOKtransferorigin + "</b></font>" + tr(" invalide");

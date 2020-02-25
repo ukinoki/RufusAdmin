@@ -613,30 +613,47 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define ENCOURSEXAMEN                           tr("En cours de consultation avec ")
 
 // Les fichiers et répertoires divers
-#define DIR_LIBS2                               "/Applications"
-#define PATHTODIR_RUFUSADMIN                    QDir::homePath() + DIR_RUFUSADMIN
-#define PATHTODIR_RUFUS                         QDir::homePath() + DIR_RUFUS
-#define DIR_RUFUSADMIN                          "/Documents/RufusAdmin"
-#define DIR_RUFUS                               "/Documents/Rufus"
-#define DIR_RESSOURCES                          "/Ressources"
-#define DIR_FACTURES                            "/Factures"
-#define DIR_ORIGINAUX                           "/Originaux"
-#define DIR_FACTURESSANSLIEN                    "/FacturesSansLien"
-#define DIR_DOSSIERECHANGE                      "/DossierEchange"
-#define DIR_CRDOSSIERS                          "/CRDossiers"
-#define DIR_IMAGERIE                            "/Imagerie"
-#define DIR_IMAGES                              "/Images"
-#define DIR_VIDEOS                              "/Videos"
-#define DIR_PROV                                "/Prov"
-#define DIR_LOGS                                "/Logs"
-#define DIR_ECHECSTRANSFERTS                    "/EchecsTransferts"
+#define NOM_DIR_RUFUSADMIN                      "/Documents/RufusAdmin"
+#define NOM_DIR_RUFUS                           "/Documents/Rufus"
+#define NOM_DIR_RESSOURCES                      "/Ressources"
+#define NOM_DIR_FACTURES                        "/Factures"
+#define NOM_DIR_ORIGINAUX                       "/Originaux"
+#define NOM_DIR_FACTURESSANSLIEN                "/FacturesSansLien"
+#define NOM_DIR_DOSSIERECHANGE                  "/DossierEchange"
+#define NOM_DIR_CRDOSSIERS                      "/CRDossiers"
+#define NOM_DIR_IMAGERIE                        "/Imagerie"
+#define NOM_DIR_IMAGES                          "/Images"
+#define NOM_DIR_VIDEOS                          "/Videos"
+#define NOM_DIR_PROV                            "/Prov"
+#define NOM_DIR_LOGS                            "/Logs"
+#define NOM_DIR_ECHECSTRANSFERTS                "/EchecsTransferts"
 
-#define FILE_INI                                "/Rufus.ini"
+#define NOM_RUFUSFILE_INI                       "/Rufus.ini"
+#define NOM_ADMINFILE_INI                       "/RufusAdmin.ini"
+#define NOM_FILE_SCRIPTBACKUP                   "/RufusScriptBackup.sh"
+#define NOM_FILE_SCRIPTRESTORE                  "/RufusScriptRestore.sh"
+#define NOM_FILE_SCRIPT_MACOS_PLIST             "/rufus.bup.plist"
 
-#define PATHTOFILE_INI                          PATHTODIR_RUFUSADMIN FILE_INI
-#define PATHTOFILE_SCRIPTBACKUP                 PATHTODIR_RUFUSADMIN "/RufusScriptBackup.sh"
-#define PATHTOFILE_SCRIPTRESTORE                PATHTODIR_RUFUSADMIN "/RufusScriptRestore.sh"
-#define PATHTOFILE_SCRIPT_MACOS_PLIST           "/Library/LaunchAgents/rufus.bup.plist"
+#define PATH_DIR_RUFUSADMIN                     QDir::homePath() + NOM_DIR_RUFUSADMIN
+#define PATH_DIR_RUFUS                          QDir::homePath() + NOM_DIR_RUFUS
+#define PATH_DIR_IMAGERIE                       PATH_DIR_RUFUS NOM_DIR_IMAGERIE
+#define PATH_DIR_RESSOURCES                     PATH_DIR_RUFUS NOM_DIR_RESSOURCES
+
+#define PATH_DIR_IMAGES                         PATH_DIR_IMAGERIE NOM_DIR_IMAGES
+#define PATH_DIR_FACTURES                       PATH_DIR_IMAGERIE NOM_DIR_FACTURES
+#define PATH_DIR_ORIGINAUX                      PATH_DIR_IMAGERIE NOM_DIR_ORIGINAUX
+#define PATH_DIR_FACTURESSANSLIEN               PATH_DIR_IMAGERIE NOM_DIR_FACTURESSANSLIEN
+#define PATH_DIR_DOSSIERECHANGE                 PATH_DIR_IMAGERIE NOM_DIR_DOSSIERECHANGE
+#define PATH_DIR_VIDEOS                         PATH_DIR_IMAGERIE NOM_DIR_VIDEOS
+#define PATH_DIR_PROV                           PATH_DIR_IMAGERIE NOM_DIR_PROV
+#define PATH_DIR_ECHECSTRANSFERTS               PATH_DIR_IMAGERIE NOM_DIR_ECHECSTRANSFERTS
+#define PATH_DIR_LOGS                           PATH_DIR_RUFUSADMIN NOM_DIR_LOGS
+
+#define PATH_ADMINFILE_INI                      PATH_DIR_RUFUSADMIN NOM_ADMINFILE_INI
+#define PATH_RUFUSFILE_INI                      PATH_DIR_RUFUS NOM_RUFUSFILE_INI
+#define PATH_FILE_SCRIPTBACKUP                  PATH_DIR_RUFUSADMIN NOM_FILE_SCRIPTBACKUP
+#define PATH_FILE_SCRIPTRESTORE                 PATH_DIR_RUFUSADMIN NOM_FILE_SCRIPTRESTORE
+#define PATH_FILE_SCRIPT_MACOS_PLIST            "/Library/LaunchAgents" NOM_FILE_SCRIPT_MACOS_PLIST
 
 // Variables mysql
 #define MAX_ALLOWED_PACKET                          "16"

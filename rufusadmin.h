@@ -99,8 +99,6 @@ private:
     QIcon                       ic_RufusAdmin;
     QMenu                       *trayIconMenu;
     QMap<QString,QIcon>         map_icons;
-    QString                     m_nomfichierini;
-    QString                     m_nomfichieriniRufus;
     QString                     m_nouvMDP, m_ancMDP, m_confirmMDP;
     QString                     m_domaine;
     QStringList                 m_listeAppareils;
