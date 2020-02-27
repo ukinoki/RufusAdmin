@@ -40,7 +40,7 @@ private:
     Ui::dlg_gestioncomptes  *ui;
     DataBase                *db;
     User                    *m_userencours;
-    QList<int>              *m_listescomptesusr;
+    QList<int>              m_listescomptesusr;
     Compte                  *m_compteencours;
     dlg_gestionbanques      *Dlg_Banq;
     bool                    m_visible;

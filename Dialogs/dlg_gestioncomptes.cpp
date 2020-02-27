@@ -418,7 +418,7 @@ void dlg_gestioncomptes::ValidCompte()
                                             ui->DesactiveComptecheckBox->isChecked());         //! Desactive
         idcompte = cpt->id();
     }
-    m_listescomptesusr->clear();
+    m_listescomptesusr.clear();
     m_userencours     ->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()));
     m_listescomptesusr = m_userencours->listecomptesbancaires();
     m_compteencours = Datas::I()->comptes->getById(idcompte);
@@ -460,14 +460,14 @@ void dlg_gestioncomptes::RemplirTableView(int idcompte)
     ui->ComptesuptableWidget->horizontalHeader()->setIconSize(QSize(25,25));
     ui->ComptesuptableWidget->setGridStyle(Qt::DotLine);
 
-    m_listescomptesusr->clear();
+    m_listescomptesusr.clear();
     m_listescomptesusr = m_userencours->listecomptesbancaires(true);
-    if (m_listescomptesusr->size()>0)
+    if (m_listescomptesusr.size()>0)
     {
         ui->Compteframe->setVisible(true);
-        ui->ComptesuptableWidget->setRowCount(m_listescomptesusr->size());
+        ui->ComptesuptableWidget->setRowCount(m_listescomptesusr.size());
         int i=0;
-        foreach (int idcpt, *m_listescomptesusr)
+        foreach (int idcpt, m_listescomptesusr)
         {
             Compte *cpt = Datas::I()->comptes->getById(idcpt);
             if (cpt != Q_NULLPTR)

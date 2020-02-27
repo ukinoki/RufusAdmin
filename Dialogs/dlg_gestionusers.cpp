@@ -19,7 +19,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "ui_dlg_gestionusers.h"
 
 dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, QWidget *parent) :
-    UpDialog(PATH_ADMINFILE_INI, "PositionsFiches/PositionGestionUsers", parent),
+    UpDialog(PATH_FILE_INI, "PositionsFiches/PositionGestionUsers", parent),
     ui(new Ui::dlg_gestionusers)
 {
     ui->setupUi(this);
@@ -1051,7 +1051,7 @@ void dlg_gestionusers::SupprUser()
     msgbox.exec();
     if (msgbox.clickedpushbutton()==&AnnulBouton)
     {
-        foreach (int idcpt, *m_userencours->listecomptesbancaires(false))
+        foreach (int idcpt, m_userencours->listecomptesbancaires(false))
         {
             QString icpt = QString::number(idcpt);
             if (db->StandardSelectSQL("select idrecette from " TBL_RECETTES " where comptevirement = " + icpt, m_ok).size()==0)

@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("25-02-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("27-02-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -78,7 +78,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     setWindowIcon(ic_Sunglasses);
 
     ui->FermepushButton->setUpButtonStyle(UpSmallButton::CLOSEBUTTON);
-    m_settings              = new QSettings(PATH_ADMINFILE_INI, QSettings::IniFormat);
+    m_settings              = new QSettings(PATH_FILE_INI, QSettings::IniFormat);
     m_nouvMDP               = "nouv";
     m_ancMDP                = "anc";
     m_confirmMDP            = "confirm";
@@ -2265,11 +2265,11 @@ void RufusAdmin::RestaureBase()
                 if (chk->isChecked())
                 {
                     QString fileini = dirtorestore.absolutePath() + NOM_ADMINFILE_INI;
-                    QFile FichierIni(PATH_ADMINFILE_INI);
+                    QFile FichierIni(PATH_FILE_INI);
                     if (FichierIni.exists())
                         FichierIni.remove();
                     QFile rufusini(fileini);
-                    rufusini.copy(PATH_ADMINFILE_INI);
+                    rufusini.copy(PATH_FILE_INI);
                     msg += tr("Fichier de paramétrage Rufus.ini restauré\n");
                     UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichier de paramétrage Rufus.ini restauré"), Icons::icSunglasses(), 3000);
                 }
@@ -3031,7 +3031,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
         }
     }
     //# Rufus.ini
-    scriptbackup += "RUFUSADMININI=\"" + PATH_ADMINFILE_INI + "\"";
+    scriptbackup += "RUFUSADMININI=\"" + PATH_FILE_INI + "\"";
     //# Identifiants MySQL
     scriptbackup += "\n";
     scriptbackup += "MYSQL_USER=\"" LOGIN_SQL "\"";
