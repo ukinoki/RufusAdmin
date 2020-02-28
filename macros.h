@@ -225,27 +225,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDLIEU_DOCSEXTERNES                          "idLieu"
 #define CP_IMPORTANCE_DOCSEXTERNES                      "Importance"
 
-                            //! Table Rufus.ProgrammesOperatoires
-#define CP_ID_LIGNPRGOPERATOIRE                         "idLigneProgramme"
-#define CP_HEURE_LIGNPRGOPERATOIRE                      "ProgHeure"
-#define CP_IDSESSION_LIGNPRGOPERATOIRE                  "idSession"
-#define CP_IDPATIENT_LIGNPRGOPERATOIRE                  "idPat"
-#define CP_TYPEANESTH_LIGNPRGOPERATOIRE                 "TypeAnesthesie"
-#define CP_TYPEINTERVENTION_LIGNPRGOPERATOIRE           "TypeIntervention"
-#define CP_COTE_LIGNPRGOPERATOIRE                       "Cote"
-#define CP_IDIOL_LIGNPRGOPERATOIRE                      "idIOL"
-#define CP_PWRIOL_LIGNPRGOPERATOIRE                     "PwIOL"
-#define CP_CYLIOL_LIGNPRGOPERATOIRE                     "CylIOL"
-#define CP_OBSERV_LIGNPRGOPERATOIRE                     "Observation"
-
-                            //! Table Ophtalmologie.SessionsOperatoires
-#define CP_ID_SESSIONOPERATOIRE                         "idLigneProgramme"
-#define CP_DATE_SESSIONOPERATOIRE                       "ProgDate"
-#define CP_IDUSER_SESSIONOPERATOIRE                     "idUser"
-#define CP_IDAIDE_SESSIONOPERATOIRE                     "idAide"
-#define CP_IDLIEU_SESSIONOPERATOIRE                     "idLieu"
-
-                            //! Table Rufus.ParametresSysteme
+                             //! Table Rufus.ParametresSysteme
 #define CP_MDPADMIN_PARAMSYSTEME                        "MDPAdmin"
 #define CP_NUMCENTRE_PARAMSYSTEME                       "NumCentre"
 #define CP_IDLIEUPARDEFAUT_PARAMSYSTEME                 "idLieuParDefaut"
@@ -451,10 +431,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
                             //! Table Ophtalmologie.ProgrammesOperatoires
 #define CP_ID_LIGNPRGOPERATOIRE                         "idLigneProgramme"
-#define CP_DATE_LIGNPRGOPERATOIRE                       "ProgDate"
-#define CP_IDUSER_LIGNPRGOPERATOIRE                     "idUser"
+#define CP_HEURE_LIGNPRGOPERATOIRE                      "ProgHeure"
+#define CP_IDSESSION_LIGNPRGOPERATOIRE                  "idSession"
 #define CP_IDPATIENT_LIGNPRGOPERATOIRE                  "idPat"
-#define CP_IDLIEU_LIGNPRGOPERATOIRE                     "idLieu"
 #define CP_TYPEANESTH_LIGNPRGOPERATOIRE                 "TypeAnesthesie"
 #define CP_TYPEINTERVENTION_LIGNPRGOPERATOIRE           "TypeIntervention"
 #define CP_COTE_LIGNPRGOPERATOIRE                       "Cote"
@@ -462,6 +441,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_PWRIOL_LIGNPRGOPERATOIRE                     "PwIOL"
 #define CP_CYLIOL_LIGNPRGOPERATOIRE                     "CylIOL"
 #define CP_OBSERV_LIGNPRGOPERATOIRE                     "Observation"
+
+                            //! Table Ophtalmologie.SessionsOperatoires
+#define CP_ID_SESSIONOPERATOIRE                         "idSession"
+#define CP_DATE_SESSIONOPERATOIRE                       "DateSession"
+#define CP_IDUSER_SESSIONOPERATOIRE                     "idUser"
+#define CP_IDAIDE_SESSIONOPERATOIRE                     "idAide"
+#define CP_IDLIEU_SESSIONOPERATOIRE                     "idLieu"
 
                             //! Table Ophtalmologie.IOLs
 #define CP_ID_IOLS                                      "idIOL"
@@ -472,7 +458,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_ID_TYPINTERVENTION                           "idTypeIntervention"
 #define CP_TYPEINTERVENTION_TYPINTERVENTION             "TypeIntervention"
 #define CP_CODECCAM_TYPINTERVENTION                     "CodeIntervention"
-
 
                             //! Table Ophtalmologie.Refractions
 #define CP_ID_REFRACTIONS                              "idRefraction"
