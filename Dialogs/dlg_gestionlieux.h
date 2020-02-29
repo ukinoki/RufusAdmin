@@ -18,6 +18,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DLG_GESTIONLIEUX_H
 #define DLG_GESTIONLIEUX_H
 
+#include <QColorDialog>
 #include <QHeaderView>
 #include <QTableView>
 #include "database.h"
@@ -36,10 +37,13 @@ public:
     ~dlg_GestionLieux();
 
 private:
+    enum Mode               {Modif, Nouv, Suppr}; Q_ENUM(Mode)
     DataBase                *db;
     QTableView              *wdg_bigtable;
     UpDialog                *dlg_lieu;
     UpLabel                 *wdg_adressuplbl;
+    UpPushButton            *wdg_couleurpushbutt;
+    UpPushButton            *wdg_nouvcouleurpushbutt;
     UpLineEdit              *wdg_nomlineedit;
     UpLineEdit              *wdg_adress1lineedit;
     UpLineEdit              *wdg_adress2lineedit;
@@ -48,6 +52,7 @@ private:
     UpLineEdit              *wdg_villelineedit;
     UpLineEdit              *wdg_tellineedit;
     UpLineEdit              *wdg_faxlineedit;
+    QString                 str_nouvcolor;
 
     QStandardItemModel      *m_tabmodel;
     WidgetButtonFrame       *wdg_buttonframe;
@@ -60,9 +65,10 @@ private:
     void                    enregNouvLieu();
     void                    enregModifLieu();
     Site*                   getSiteFromIndex(QModelIndex idx);
+    void                    ModifCouleur();
     void                    ModifLieu();
     void                    SupprLieu();
-    void                    ModifLieuxDialog();
+    void                    ModifLieuxDialog(Mode mode);
     void                    ReconstruitModel();
     bool                    ValidationFiche();
 };

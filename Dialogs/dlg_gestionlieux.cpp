@@ -28,8 +28,10 @@ dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
     wdg_bigtable = new QTableView(this);
     wdg_adressuplbl = new UpLabel();
     wdg_adressuplbl->setFixedWidth(240);
-    if (Datas::I()->sites->sites()->size() == 0)
-        Datas::I()->sites->initListe();
+    wdg_couleurpushbutt = new UpPushButton();
+    wdg_couleurpushbutt->setFixedHeight(35);
+    wdg_couleurpushbutt->setText(tr("modifier la couleur du texte"));
+    Datas::I()->sites->initListe();
     ReconstruitModel();
     wdg_buttonframe = new WidgetButtonFrame(wdg_bigtable);
     wdg_buttonframe->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
@@ -40,12 +42,14 @@ dlg_GestionLieux::dlg_GestionLieux(QWidget *parent)
     QHBoxLayout *hlay   = new QHBoxLayout();
     vlay    ->addWidget(wdg_adressuplbl);
     vlay    ->addSpacerItem(new QSpacerItem(5,5,QSizePolicy::Expanding,QSizePolicy::Expanding));
+    vlay    ->addWidget(wdg_couleurpushbutt);
     hlay    ->addWidget(wdg_buttonframe->widgButtonParent());
     hlay    ->addLayout(vlay);
     dlglayout()     ->insertLayout(0,hlay);
     dlglayout()     ->setSizeConstraint(QLayout::SetFixedSize);
 
-    connect(wdg_buttonframe,    &WidgetButtonFrame::choix,  this,   &dlg_GestionLieux::ChoixButtonFrame);
+    connect(wdg_buttonframe,        &WidgetButtonFrame::choix,  this,   &dlg_GestionLieux::ChoixButtonFrame);
+    connect(wdg_couleurpushbutt,    &QPushButton::clicked,      this,   &dlg_GestionLieux::ModifCouleur);
 }
 
 dlg_GestionLieux::~dlg_GestionLieux()
@@ -98,6 +102,7 @@ void dlg_GestionLieux::AfficheDetails(QModelIndex idx, QModelIndex)
         data += "Tel: " + sit->fax();
     }
     wdg_adressuplbl->setText(data);
+    wdg_adressuplbl->setStyleSheet("color:#" + (sit->couleur() != ""? sit->couleur() : "000000b"));
     QString ttip = "";
     int nlieux = db->StandardSelectSQL("select iduser from " TBL_JOINTURESLIEUX " where idlieu = " + QString::number(sit->id()), m_ok).size();
     if (nlieux == 0)
@@ -141,8 +146,7 @@ void dlg_GestionLieux::ChoixButtonFrame()
 
 void dlg_GestionLieux::CreerLieu()
 {
-    ModifLieuxDialog();
-    connect(dlg_lieu->OKButton, &QPushButton::clicked, this, &dlg_GestionLieux::enregNouvLieu);
+    ModifLieuxDialog(Nouv);
     dlg_lieu->exec();
     delete  dlg_lieu;
 }
@@ -151,7 +155,8 @@ void dlg_GestionLieux::enregNouvLieu()
 {
     if (ValidationFiche())
     {
-        QString req = "insert into " TBL_LIEUXEXERCICE "(NomLieu, LieuAdresse1, LieuAdresse2, LieuAdresse3, LieuCodePostal, LieuVille, LieuTelephone, LieuFax)  values("
+        QString req = "insert into " TBL_LIEUXEXERCICE "(" CP_NOM_SITE ", " CP_ADRESSE1_SITE ", " CP_ADRESSE2_SITE ", " CP_ADRESSE3_SITE ", "
+                CP_CODEPOSTAL_SITE ", " CP_VILLE_SITE ", " CP_TELEPHONE_SITE ", " CP_FAX_SITE ", " CP_COULEUR_SITE ")  values("
                         "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_nomlineedit->text())) + "', "
                         "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_adress1lineedit->text())) + "', "
                         "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_adress2lineedit->text())) + "', "
@@ -159,7 +164,8 @@ void dlg_GestionLieux::enregNouvLieu()
                         ""  + Utils::correctquoteSQL(Utils::capitilize(wdg_CPlineedit->text())) + ", "
                         "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_villelineedit->text())) + "', "
                         "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_tellineedit->text())) + "', "
-                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_faxlineedit->text())) + "')";
+                        "'" + Utils::correctquoteSQL(Utils::capitilize(wdg_faxlineedit->text())) + "', "
+                        "'" + str_nouvcolor + "')";
         //qDebug() << req;
         db->StandardSQL(req);
         Datas::I()->sites->initListe();
@@ -170,8 +176,64 @@ void dlg_GestionLieux::enregNouvLieu()
     }
 }
 
-void dlg_GestionLieux::ModifLieuxDialog()
+void dlg_GestionLieux::ModifCouleur()
 {
+    if (wdg_bigtable->selectionModel()->selectedIndexes().size()==0)
+        return;
+    Site *sit = getSiteFromIndex(wdg_bigtable->selectionModel()->selectedIndexes().at(0));
+    QString couleurenreg = sit->couleur();
+    QColor colordep = QColor("#FF" + couleurenreg);
+    QColorDialog *dlg = new QColorDialog(colordep, this);
+    dlg->exec();
+
+    QColor colorfin = dlg->selectedColor();
+    delete dlg;
+    if (!colorfin.isValid())
+        return;
+    QString couleur = colorfin.name();
+    QString fontcolor = "color:" + couleur;
+    wdg_adressuplbl->setStyleSheet(fontcolor);
+    couleur = couleur.replace("#","");
+    ItemsList::update(sit, CP_COULEUR_SITE, couleur);
+}
+
+void dlg_GestionLieux::ModifLieuxDialog(Mode mode)
+{
+    auto modifcouleur = [&]
+        {
+            if (wdg_bigtable->selectionModel()->selectedIndexes().size()==0)
+                return;
+            Site *sit = getSiteFromIndex(wdg_bigtable->selectionModel()->selectedIndexes().at(0));
+            QString couleurenreg = sit->couleur();
+            QColor colordep = QColor("#FF" + couleurenreg);
+            QColorDialog *dlg = new QColorDialog(colordep, this);
+            dlg->exec();
+
+            QColor colorfin = dlg->selectedColor();
+            delete dlg;
+            if (!colorfin.isValid())
+                return;
+            QString couleur = colorfin.name();
+            QString fontcolor = "color:" + couleur;
+            wdg_adressuplbl->setStyleSheet(fontcolor);
+            str_nouvcolor = couleur.replace("#","");
+            dlg_lieu->OKButton->setEnabled(true);
+        };
+    auto nouvcouleur = [&]
+        {
+            QColor colordep = QColor("#FFFFFFFF");
+            QColorDialog *dlg = new QColorDialog(colordep, this);
+            dlg->exec();
+            QColor colorfin = dlg->selectedColor();
+            delete dlg;
+            if (!colorfin.isValid())
+                return;
+            QString couleur = colorfin.name();
+            QString fontcolor = "color:" + couleur;
+            str_nouvcolor = couleur.replace("#","");
+            dlg_lieu->OKButton->setEnabled(true);
+        };
+
     dlg_lieu = new UpDialog(this);
     dlg_lieu->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     dlg_lieu->setWindowTitle(tr("Enregistrer un nouveau lieu"));
@@ -188,6 +250,8 @@ void dlg_GestionLieux::ModifLieuxDialog()
     UpLabel *lblville = new UpLabel(dlg_lieu, tr("Ville"));
     UpLabel *lbltel = new UpLabel(dlg_lieu, tr("Telephone"));
     UpLabel *lblfax = new UpLabel(dlg_lieu, tr("Fax"));
+    wdg_nouvcouleurpushbutt = new UpPushButton();
+    wdg_nouvcouleurpushbutt->setFixedHeight(35);
 
     int h = 22;
     lblnom  ->setFixedHeight(h);
@@ -264,12 +328,25 @@ void dlg_GestionLieux::ModifLieuxDialog()
     laycom->addLayout(layledit);
 
     lay     ->insertLayout(0,laycom);
+    lay     ->insertWidget(1, wdg_nouvcouleurpushbutt);
     lay     ->setSizeConstraint(QLayout::SetFixedSize);
+    if (mode == Modif)
+    {
+        wdg_nouvcouleurpushbutt->setText(tr("modifier la couleur du texte"));
+        connect(wdg_nouvcouleurpushbutt,    &QPushButton::clicked, modifcouleur);
+        connect(dlg_lieu->OKButton,     &QPushButton::clicked, this, &dlg_GestionLieux::enregModifLieu);
+    }
+    else if (mode == Nouv)
+    {
+        wdg_nouvcouleurpushbutt->setText(tr("choisir la couleur du texte"));
+        connect(wdg_nouvcouleurpushbutt,    &QPushButton::clicked, nouvcouleur);
+        connect(dlg_lieu->OKButton,     &QPushButton::clicked, this, &dlg_GestionLieux::enregNouvLieu);
+    }
 }
 
 void dlg_GestionLieux::ModifLieu()
 {
-    ModifLieuxDialog();
+    ModifLieuxDialog(Modif);
     Site * sit = getSiteFromIndex(m_tabmodel->index(wdg_bigtable->currentIndex().row(),0));
     if (sit == Q_NULLPTR)
         return;
@@ -281,26 +358,28 @@ void dlg_GestionLieux::ModifLieu()
     wdg_villelineedit  ->setText(sit->ville());
     wdg_tellineedit    ->setText(sit->telephone());
     wdg_faxlineedit    ->setText(sit->fax());
-    connect(dlg_lieu->OKButton, &QPushButton::clicked, this, &dlg_GestionLieux::enregModifLieu);
     dlg_lieu->exec();
     delete  dlg_lieu;
 }
 
 void dlg_GestionLieux::enregModifLieu()
 {
-
+    if (wdg_bigtable->selectionModel()->selectedIndexes().size()==0)
+        return;
+    Site *sit = getSiteFromIndex(wdg_bigtable->selectionModel()->selectedIndexes().at(0));
     if (ValidationFiche())
     {
         QString req = "update " TBL_LIEUXEXERCICE " set "
-                        "NomLieu = '"       + Utils::correctquoteSQL(Utils::capitilize(wdg_nomlineedit->text())) + "', "
-                        "LieuAdresse1 = '"  + Utils::correctquoteSQL(Utils::capitilize(wdg_adress1lineedit->text())) + "', "
-                        "LieuAdresse2 = '"  + Utils::correctquoteSQL(Utils::capitilize(wdg_adress2lineedit->text())) + "', "
-                        "LieuAdresse3 = '"  + Utils::correctquoteSQL(Utils::capitilize(wdg_adress3lineedit->text())) + "', "
-                        "LieuCodePostal = " + Utils::correctquoteSQL(Utils::capitilize(wdg_CPlineedit->text())) + ", "
-                        "LieuVille = '"     + Utils::correctquoteSQL(Utils::capitilize(wdg_villelineedit->text())) + "', "
-                        "LieuTelephone = '" + Utils::correctquoteSQL(Utils::capitilize(wdg_tellineedit->text())) + "', "
-                        "LieuFax = '"       + Utils::correctquoteSQL(Utils::capitilize(wdg_faxlineedit->text())) + "' " +
-                        "where idLieu = "   + QString::number(m_idlieuamodifier);
+                CP_NOM_SITE " = '"       + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_nomlineedit->text())) + "', "
+                CP_ADRESSE1_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress1lineedit->text())) + "', "
+                CP_ADRESSE2_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress2lineedit->text())) + "', "
+                CP_ADRESSE3_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress3lineedit->text())) + "', "
+                CP_CODEPOSTAL_SITE " = " + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_CPlineedit->text())) + ", "
+                CP_VILLE_SITE " = '"     + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_villelineedit->text())) + "', "
+                CP_TELEPHONE_SITE " = '" + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_tellineedit->text())) + "', "
+                CP_FAX_SITE " = '"       + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_faxlineedit->text())) + "' " +
+                CP_COULEUR_SITE " = '"   + str_nouvcolor + "' " +
+                "where " CP_ID_SITE " = " + QString::number(sit->id());
         //qDebug() << req;
         db->StandardSQL(req);
         Datas::I()->sites->initListe();
