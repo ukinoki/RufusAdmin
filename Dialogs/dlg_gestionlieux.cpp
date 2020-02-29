@@ -370,14 +370,14 @@ void dlg_GestionLieux::enregModifLieu()
     if (ValidationFiche())
     {
         QString req = "update " TBL_LIEUXEXERCICE " set "
-                CP_NOM_SITE " = '"       + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_nomlineedit->text())) + "', "
-                CP_ADRESSE1_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress1lineedit->text())) + "', "
-                CP_ADRESSE2_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress2lineedit->text())) + "', "
-                CP_ADRESSE3_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress3lineedit->text())) + "', "
-                CP_CODEPOSTAL_SITE " = " + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_CPlineedit->text())) + ", "
-                CP_VILLE_SITE " = '"     + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_villelineedit->text())) + "', "
-                CP_TELEPHONE_SITE " = '" + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_tellineedit->text())) + "', "
-                CP_FAX_SITE " = '"       + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_faxlineedit->text())) + "' " +
+                CP_NOM_SITE " = '"       + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_nomlineedit->text()))       + "', "
+                CP_ADRESSE1_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress1lineedit->text()))   + "', "
+                CP_ADRESSE2_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress2lineedit->text()))   + "', "
+                CP_ADRESSE3_SITE " = '"  + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_adress3lineedit->text()))   + "', "
+                CP_CODEPOSTAL_SITE " = " + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_CPlineedit->text()))        + ", "
+                CP_VILLE_SITE " = '"     + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_villelineedit->text()))     + "', "
+                CP_TELEPHONE_SITE " = '" + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_tellineedit->text()))       + "', "
+                CP_FAX_SITE " = '"       + Utils::correctquoteSQL(Utils::trimcapitilize(wdg_faxlineedit->text()))       + "', "
                 CP_COULEUR_SITE " = '"   + str_nouvcolor + "' " +
                 "where " CP_ID_SITE " = " + QString::number(sit->id());
         //qDebug() << req;
