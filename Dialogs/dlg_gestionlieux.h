@@ -56,7 +56,6 @@ private:
 
     QStandardItemModel      *m_tabmodel;
     WidgetButtonFrame       *wdg_buttonframe;
-    int                     m_idlieuamodifier;
     int                     m_idlieuserveur;
     bool                    m_ok;
     void                    AfficheDetails(QModelIndex, QModelIndex);
