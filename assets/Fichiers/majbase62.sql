@@ -111,7 +111,7 @@ BEGIN
         IF tot=0
         THEN
             ALTER TABLE `rufus`.`Manufacturers`
-            ADD COLUMN `ManFax` VARCHAR(45) NULL DEFAULT NULL AFTER `ManTelephone`;
+            ADD COLUMN `ManFax` VARCHAR(17) NULL DEFAULT NULL AFTER `ManTelephone`;
         END IF;
     DROP TABLE IF EXISTS `SessionsOperatoires`;
     CREATE TABLE `Ophtalmologie`.`SessionsOperatoires` (
