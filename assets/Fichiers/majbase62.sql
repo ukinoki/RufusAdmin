@@ -71,11 +71,47 @@ BEGIN
     SELECT COUNT(*) INTO tot FROM
         (SELECT COLUMN_KEY
         FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'TypesInterventions' AND COLUMN_NAME = 'DureeIntervention') as chp;
+        IF tot=0
+        THEN
+            ALTER TABLE `Ophtalmologie`.`TypesInterventions`
+            ADD COLUMN `DureeIntervention` TIME NULL DEFAULT NULL AFTER `CodeIntervention`;
+        END IF;
+    SELECT COUNT(*) INTO tot FROM
+        (SELECT COLUMN_KEY
+        FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_NAME = 'LieuxExercice' AND COLUMN_NAME = 'LieuCouleur') as chp;
         IF tot=0
         THEN
             ALTER TABLE `rufus`.`LieuxExercice`
             ADD COLUMN `LieuCouleur` VARCHAR(6) NULL AFTER `LieuFax`;
+        END IF;
+    SELECT COUNT(*) INTO tot FROM
+        (SELECT COLUMN_KEY
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'Manufacturers' AND COLUMN_NAME = 'CorStatut') as chp;
+        IF tot=0
+        THEN
+            ALTER TABLE `rufus`.`Manufacturers`
+            ADD COLUMN `CorStatut` VARCHAR(45) NULL DEFAULT NULL AFTER `CorPrenom`;
+        END IF;
+    SELECT COUNT(*) INTO tot FROM
+        (SELECT COLUMN_KEY
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'Manufacturers' AND COLUMN_NAME = 'CorMail') as chp;
+        IF tot=0
+        THEN
+            ALTER TABLE `rufus`.`Manufacturers`
+            ADD COLUMN `CorMail` VARCHAR(45) NULL DEFAULT NULL AFTER `CorStatut`;
+        END IF;
+    SELECT COUNT(*) INTO tot FROM
+        (SELECT COLUMN_KEY
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'Manufacturers' AND COLUMN_NAME = 'ManFax') as chp;
+        IF tot=0
+        THEN
+            ALTER TABLE `rufus`.`Manufacturers`
+            ADD COLUMN `ManFax` VARCHAR(45) NULL DEFAULT NULL AFTER `ManTelephone`;
         END IF;
     DROP TABLE IF EXISTS `SessionsOperatoires`;
     CREATE TABLE `Ophtalmologie`.`SessionsOperatoires` (
