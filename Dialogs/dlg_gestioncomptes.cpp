@@ -394,7 +394,7 @@ void dlg_gestioncomptes::ValidCompte()
     if (m_mode == Modif)
     {
         idcompte = ui->idCompteupLineEdit->text().toInt();
-        QHash<QString, QString> listsets;
+        QHash<QString, QVariant> listsets;
         listsets.insert("IBAN"                  , ui->IBANuplineEdit->text());
         listsets.insert("IntituleCompte"        , ui->IntituleCompteuplineEdit->text());
         listsets.insert("NomCompteABrege"       , ui->NomCompteAbregeuplineEdit->text());

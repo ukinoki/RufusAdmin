@@ -194,7 +194,7 @@ void User::setlistecomptesbancaires(QMap<int, bool> mapidcomptes)
     {
         m_listidcomptesall << idcpt;
         if (!mapidcomptes.value(idcpt))
-            m_listidcomptes << idcpt;
+            m_listidcomptes.append(idcpt);
     }
 }
 

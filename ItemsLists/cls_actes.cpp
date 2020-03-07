@@ -161,7 +161,7 @@ Acte* Actes::CreationActe(Patient *pat, User* usr, int idcentre, int idlieu)
         return Q_NULLPTR;
     }
     int idacte = DataBase::I()->selectMaxFromTable(CP_IDACTE_ACTES, TBL_ACTES, m_ok, tr("Impossible de retrouver l'acte qui vient d'être créé"));
-    if ( !m_ok )
+    if (!m_ok)
     {
         DataBase::I()->unlocktables();
         return Q_NULLPTR;

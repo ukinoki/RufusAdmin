@@ -304,7 +304,7 @@ void dlg_gestionbanques::ValideModifBanque()
                     UpMessageBox::Watch(this,msg);
                     return;
                 }
-        QHash<QString, QString> listsets;
+        QHash<QString, QVariant> listsets;
         listsets.insert("nombanque",      nombanque);
         listsets.insert("idbanqueabrege", ui->NomAbregeupLineEdit->text());
         DataBase:: I()->UpdateTable(TBL_BANQUES,
