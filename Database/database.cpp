@@ -220,7 +220,7 @@ bool DataBase::UpdateTable(QString nomtable,
     while (itset.hasNext())
     {
         itset.next();
-        req += " " + itset.key() + " = " + (itset.value().toString().toLower()=="null"? "null," : "'" + Utils::correctquoteSQL(itset.value().toString()) + "',");
+        req += " " + itset.key() + " = " + (itset.value().toString().toLower()=="null" || itset.value() == QVariant() || itset.value().toString() == ""? "null," : "'" + Utils::correctquoteSQL(itset.value().toString()) + "',");
     }
     req = req.left(req.size()-1); //retire la virgule de la fin
     req += " " + where;
@@ -240,7 +240,7 @@ bool DataBase::InsertIntoTable(QString nomtable,
     {
         itset.next();
         champs  += itset.key() + ",";
-        valeurs += (itset.value().toLower()=="null"? "null," : "'" + Utils::correctquoteSQL(itset.value()) + "',");
+        valeurs += (itset.value().toLower()=="null" || itset.value() == QVariant()? "null," : "'" + Utils::correctquoteSQL(itset.value()) + "',");
     }
     champs = champs.left(champs.size()-1) + ") values (";
     valeurs = valeurs.left(valeurs.size()-1) + ")";
@@ -250,7 +250,7 @@ bool DataBase::InsertIntoTable(QString nomtable,
 
 bool DataBase::InsertSQLByBinds(QString nomtable,
                                 QHash<QString, QVariant> sets,
-                                QString errormsg)
+                                QString errormsg)                               /*! ++++++ si on veut entrer une valeur null la bindvalue doit être mise à QVariant() - "null" ne marche pas */
 {
     QSqlQuery query = QSqlQuery(m_db);
     QString champs, champs2;
@@ -335,10 +335,11 @@ QVariantList DataBase::getFirstRecordFromStandardSelectSQL(QString req , bool &O
      bool ok = true;
      QVariantList recorddata = db->getFirstRecordFromStandardSelectSQL("Select idImpression from " TBL_IMPRESSIONS " where idpat = " + QString::number(gidPatient), ok);
      if (!ok)                                // erreur;
-     if (recorddata.size()==0)                 // réponse vide
+     if (recorddata.size()==0)               // réponse vide
     */
+    //qDebug() << req;
     QList<QVariantList> listreponses = StandardSelectSQL(req , OK, errormsg);
-    if(listreponses.size()>0)
+    if (listreponses.size()>0)
         return listreponses.at(0);
     else
         return QVariantList();
@@ -2510,13 +2511,14 @@ QJsonObject DataBase::loadSessionOpData(QVariantList sessiondata)           //! 
     data[CP_IDUSER_SESSIONOPERATOIRE]               = sessiondata.at(2).toInt();
     data[CP_IDAIDE_SESSIONOPERATOIRE]               = sessiondata.at(3).toInt();
     data[CP_IDLIEU_SESSIONOPERATOIRE]               = sessiondata.at(4).toInt();
+    data[CP_INCIDENT_SESSIONOPERATOIRE]             = sessiondata.at(5).toInt();
     return data;
 }
 
 QList<SessionOperatoire*> DataBase::loadSessionsOpByUserId(int id)                  //! charge toutes les sessions opératoires d'un user
 {
     QList<SessionOperatoire*> list = QList<SessionOperatoire*> ();
-    QString req =   "SELECT " CP_ID_SESSIONOPERATOIRE ", " CP_DATE_SESSIONOPERATOIRE ", " CP_IDUSER_SESSIONOPERATOIRE ", " CP_IDAIDE_SESSIONOPERATOIRE ", " CP_IDLIEU_SESSIONOPERATOIRE // 0-1-2-3-4
+    QString req =   "SELECT " CP_ID_SESSIONOPERATOIRE ", " CP_DATE_SESSIONOPERATOIRE ", " CP_IDUSER_SESSIONOPERATOIRE ", " CP_IDAIDE_SESSIONOPERATOIRE ", " CP_IDLIEU_SESSIONOPERATOIRE ", " CP_INCIDENT_SESSIONOPERATOIRE  // 0-1-2-3-4
                     " FROM " TBL_SESSIONSOPERATOIRES
                     " WHERE " CP_IDUSER_SESSIONOPERATOIRE " = " + QString::number(id) +
                     " order by " CP_DATE_SESSIONOPERATOIRE " asc";
@@ -2537,7 +2539,7 @@ QList<SessionOperatoire*> DataBase::loadSessionsOpByUserId(int id)              
 SessionOperatoire* DataBase::loadSessionOpById(int idsession)                   //! charge une Intervention définie par son id - utilisé pour renouveler les données en cas de modification
 {
     SessionOperatoire *session = Q_NULLPTR;
-    QString req =   "SELECT " CP_ID_SESSIONOPERATOIRE ", " CP_DATE_SESSIONOPERATOIRE ", " CP_IDUSER_SESSIONOPERATOIRE ", " CP_IDAIDE_SESSIONOPERATOIRE ", " CP_IDLIEU_SESSIONOPERATOIRE ", "  // 0-1-2-3-4
+    QString req =   "SELECT " CP_ID_SESSIONOPERATOIRE ", " CP_DATE_SESSIONOPERATOIRE ", " CP_IDUSER_SESSIONOPERATOIRE ", " CP_IDAIDE_SESSIONOPERATOIRE ", " CP_IDLIEU_SESSIONOPERATOIRE ", " CP_INCIDENT_SESSIONOPERATOIRE // 0-1-2-3-4
                     " FROM " TBL_SESSIONSOPERATOIRES
                     " WHERE " CP_ID_SESSIONOPERATOIRE " = " + QString::number(idsession) ;
     QVariantList sessiondata = getFirstRecordFromStandardSelectSQL(req,ok);
@@ -2566,6 +2568,8 @@ QJsonObject DataBase::loadInterventionData(QVariantList interventiondata)       
     data[CP_PWRIOL_LIGNPRGOPERATOIRE]               = interventiondata.at(8).toDouble();
     data[CP_CYLIOL_LIGNPRGOPERATOIRE]               = interventiondata.at(9).toDouble();
     data[CP_OBSERV_LIGNPRGOPERATOIRE]               = interventiondata.at(10).toString();
+    data[CP_IDACTE_LIGNPRGOPERATOIRE]               = interventiondata.at(11).toInt();
+    data[CP_INCIDENT_LIGNPRGOPERATOIRE]             = interventiondata.at(12).toString();
     return data;
 }
 
@@ -2574,12 +2578,12 @@ QList<Intervention*> DataBase::loadInterventionsBySessionId(int id)             
     QList<Intervention*> list = QList<Intervention*> ();
     QString req =   "SELECT " CP_ID_LIGNPRGOPERATOIRE ", " CP_HEURE_LIGNPRGOPERATOIRE ", " CP_IDPATIENT_LIGNPRGOPERATOIRE ", " CP_IDSESSION_LIGNPRGOPERATOIRE ", " CP_TYPEANESTH_LIGNPRGOPERATOIRE ", "  // 0-1-2-3-4
                               CP_IDTYPEINTERVENTION_LIGNPRGOPERATOIRE ", " CP_COTE_LIGNPRGOPERATOIRE ", " CP_IDIOL_LIGNPRGOPERATOIRE ", " CP_PWRIOL_LIGNPRGOPERATOIRE ", " CP_CYLIOL_LIGNPRGOPERATOIRE ", " // 5-6-7-8-9
-                              CP_OBSERV_LIGNPRGOPERATOIRE // 10
+                              CP_OBSERV_LIGNPRGOPERATOIRE ", " CP_IDACTE_LIGNPRGOPERATOIRE ", " CP_INCIDENT_LIGNPRGOPERATOIRE // 10-11-12
                     " FROM " TBL_LIGNESPRGOPERATOIRES
                     " WHERE " CP_IDSESSION_LIGNPRGOPERATOIRE " = " + QString::number(id) +
                     " order by " CP_HEURE_LIGNPRGOPERATOIRE " asc";
-    //qDebug() << req;
     QList<QVariantList> interventionlist = StandardSelectSQL(req,ok);
+    //qDebug() << req;
     if(!ok || interventionlist.size()==0)
         return list;
     for (int i=0; i<interventionlist.size(); ++i)
@@ -2597,10 +2601,30 @@ Intervention* DataBase::loadInterventionById(int idintervention)                
     Intervention *intervention = Q_NULLPTR;
     QString req =   "SELECT " CP_ID_LIGNPRGOPERATOIRE ", " CP_HEURE_LIGNPRGOPERATOIRE ", " CP_IDPATIENT_LIGNPRGOPERATOIRE ", " CP_IDSESSION_LIGNPRGOPERATOIRE ", " CP_TYPEANESTH_LIGNPRGOPERATOIRE ", "  // 0-1-2-3-4
                               CP_IDTYPEINTERVENTION_LIGNPRGOPERATOIRE ", " CP_COTE_LIGNPRGOPERATOIRE ", " CP_IDIOL_LIGNPRGOPERATOIRE ", " CP_PWRIOL_LIGNPRGOPERATOIRE ", " CP_CYLIOL_LIGNPRGOPERATOIRE ", " // 5-6-7-8-9
-                              CP_OBSERV_LIGNPRGOPERATOIRE // 10
+                              CP_OBSERV_LIGNPRGOPERATOIRE ", " CP_IDACTE_LIGNPRGOPERATOIRE ", " CP_INCIDENT_LIGNPRGOPERATOIRE // 10-11-12
                     " FROM " TBL_LIGNESPRGOPERATOIRES ;
                     " WHERE " CP_ID_LIGNPRGOPERATOIRE " = " + QString::number(idintervention) ;
     QVariantList interventiondata = getFirstRecordFromStandardSelectSQL(req,ok);
+    //qDebug() << req;
+    if(!ok || interventiondata.size()==0)
+        return intervention;
+    QJsonObject data = loadInterventionData(interventiondata);
+    intervention = new Intervention(data);
+    return intervention;
+}
+
+Intervention* DataBase::loadInterventionByDateIdPatient(QDate date, int idpatient)  //! charge une Intervention définie par sa date et l'iddu patietnt
+{
+    Intervention *intervention = Q_NULLPTR;
+    QString req =   "SELECT " CP_ID_LIGNPRGOPERATOIRE ", " CP_HEURE_LIGNPRGOPERATOIRE ", " CP_IDPATIENT_LIGNPRGOPERATOIRE ", lign." CP_IDSESSION_LIGNPRGOPERATOIRE ", " CP_TYPEANESTH_LIGNPRGOPERATOIRE ", "  // 0-1-2-3-4
+                              CP_IDTYPEINTERVENTION_LIGNPRGOPERATOIRE ", " CP_COTE_LIGNPRGOPERATOIRE ", " CP_IDIOL_LIGNPRGOPERATOIRE ", " CP_PWRIOL_LIGNPRGOPERATOIRE ", " CP_CYLIOL_LIGNPRGOPERATOIRE ", " // 5-6-7-8-9
+                              CP_OBSERV_LIGNPRGOPERATOIRE ", " CP_IDACTE_LIGNPRGOPERATOIRE ", lign." CP_INCIDENT_LIGNPRGOPERATOIRE ", " CP_DATE_SESSIONOPERATOIRE // 10-11-12
+                    " FROM " TBL_LIGNESPRGOPERATOIRES " lign, " TBL_SESSIONSOPERATOIRES " sess "
+                    " WHERE lign." CP_IDSESSION_LIGNPRGOPERATOIRE " = sess." CP_ID_SESSIONOPERATOIRE
+                    " AND " CP_IDPATIENT_LIGNPRGOPERATOIRE " = " + QString::number(idpatient) +
+                    " AND " CP_DATE_SESSIONOPERATOIRE " = '" + date.toString("yyyy-MM-dd") + "'" ;
+    QVariantList interventiondata = getFirstRecordFromStandardSelectSQL(req,ok);
+    //qDebug() << req;
     if(!ok || interventiondata.size()==0)
         return intervention;
     QJsonObject data = loadInterventionData(interventiondata);
@@ -2612,7 +2636,7 @@ Intervention* DataBase::loadInterventionById(int idintervention)                
  * IOLs
 */
 
-QJsonObject DataBase::loadIOLData(QVariantList ioldata)         //! attribue la liste des datas à un IOL
+QJsonObject DataBase::loadIOLData(QVariantList ioldata)                     //! attribue la liste des datas à un IOL
 {
     QJsonObject data{};
     data[CP_ID_IOLS]                = ioldata.at(0).toInt();
@@ -2622,7 +2646,26 @@ QJsonObject DataBase::loadIOLData(QVariantList ioldata)         //! attribue la 
     return data;
 }
 
-QList<IOL*> DataBase::loadIOLsByManufacturerId(int id)                       //! charge tous les IOLS
+QList<IOL*> DataBase::loadIOLs()                                            //! charge tous les IOLS
+{
+    QList<IOL*> list = QList<IOL*> ();
+    QString req =   "SELECT " CP_ID_IOLS ", " CP_IDMANUFACTURER_IOLS ", " CP_MODELNAME_IOLS ", " CP_INACTIF_IOLS // 0-1-2
+                    " FROM " TBL_IOLS
+                    " order by " CP_IDMANUFACTURER_IOLS;
+    QList<QVariantList> iollist = StandardSelectSQL(req,ok);
+    if(!ok || iollist.size()==0)
+        return list;
+    for (int i=0; i<iollist.size(); ++i)
+    {
+        QJsonObject data = loadIOLData(iollist.at(i));
+        IOL *iol = new IOL(data);
+        if (iol != Q_NULLPTR)
+            list << iol;
+    }
+    return list;
+}
+
+QList<IOL*> DataBase::loadIOLsByManufacturerId(int id)                       //! charge tous les IOLS d'un fabricant
 {
     QList<IOL*> list = QList<IOL*> ();
     QString req =   "SELECT " CP_ID_IOLS ", " CP_IDMANUFACTURER_IOLS ", " CP_MODELNAME_IOLS ", " CP_INACTIF_IOLS // 0-1-2
@@ -2738,6 +2781,7 @@ QList<Manufacturer*> DataBase::loadManufacturers()                       //! cha
                               CP_CORTELEPHONE_MANUFACTURER ", " CP_INACTIF_MANUFACTURER
                     " FROM " TBL_MANUFACTURERS " order by " CP_NOM_MANUFACTURER;
     QList<QVariantList> Manufacturerlist = StandardSelectSQL(req,ok);
+    //qDebug() << req;
     if(!ok || Manufacturerlist.size()==0)
         return list;
     for (int i=0; i<Manufacturerlist.size(); ++i)
@@ -2757,7 +2801,7 @@ Manufacturer* DataBase::loadManufacturerById(int idManufacturer)                
                               CP_CODEPOSTAL_MANUFACTURER ", " CP_VILLE_MANUFACTURER ", " CP_TELEPHONE_MANUFACTURER ", " CP_FAX_MANUFACTURER ", " CP_PORTABLE_MANUFACTURER ", " CP_WEBSITE_MANUFACTURER ", "
                               CP_MAIL_MANUFACTURER ", " CP_CORNOM_MANUFACTURER ", " CP_CORPRENOM_MANUFACTURER ", " CP_CORSTATUT_MANUFACTURER ", " CP_CORMAIL_MANUFACTURER ", "
                               CP_CORTELEPHONE_MANUFACTURER ", " CP_INACTIF_MANUFACTURER
-                    " FROM " TBL_MANUFACTURERS " order by " CP_NOM_MANUFACTURER;
+                    " FROM " TBL_MANUFACTURERS " order by " CP_NOM_MANUFACTURER
                     " WHERE " CP_ID_MANUFACTURER " = " + QString::number(idManufacturer) ;
     QVariantList Manufacturerdata = getFirstRecordFromStandardSelectSQL(req,ok);
     if(!ok || Manufacturerdata.size()==0)

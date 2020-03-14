@@ -348,19 +348,21 @@ public:
      * Interventions
     */
 private:
-    QJsonObject             loadInterventionData(QVariantList refdata);           //! attribue le liste des datas à une Intervention
+    QJsonObject             loadInterventionData(QVariantList refdata);                 //! attribue le liste des datas à une Intervention
 public:
-    QList<Intervention*>    loadInterventionsBySessionId(int id);                    //! charge toutes les Interventions d'un patient
-    Intervention*           loadInterventionById(int idintervention);             //! charge une Intervention définie par son id - utilisé pour renouveler les données en cas de modification
+    QList<Intervention*>    loadInterventionsBySessionId(int id);                       //! charge toutes les Interventions d'un patient
+    Intervention*           loadInterventionById(int idintervention);                   //! charge une Intervention définie par son id - utilisé pour renouveler les données en cas de modification
+    Intervention*           loadInterventionByDateIdPatient(QDate date, int idpatient); //! charge une Intervention définie par sa sate et l'id du patient
 
     /*
      * IOLs
     */
 private:
-    QJsonObject             loadIOLData(QVariantList refdata);                    //! attribue la liste des datas à un IOL
+    QJsonObject             loadIOLData(QVariantList refdata);                      //! attribue la liste des datas à un IOL
 public:
-    QList<IOL*>             loadIOLsByManufacturerId(int id);                     //! charge tous les IOLS d'un fabricant
-    IOL*                    loadIOLById(int idintervention);                      //! charge les datas d'un IOL défini par son id - utilisé pour renouveler les données en cas de modification
+    QList<IOL*>             loadIOLs();                                             //! charge tous les IOLs
+    QList<IOL*>             loadIOLsByManufacturerId(int id);                       //! charge tous les IOLs d'un fabricant
+    IOL*                    loadIOLById(int idintervention);                        //! charge les datas d'un IOL défini par son id - utilisé pour renouveler les données en cas de modification
 
     /*
      * TypeInterventions

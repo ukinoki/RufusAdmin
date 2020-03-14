@@ -30,6 +30,7 @@ void Intervention::setData(QJsonObject data)
 
     Utils::setDataInt(data, CP_ID_LIGNPRGOPERATOIRE, m_id);
     Utils::setDataInt(data, CP_IDSESSION_LIGNPRGOPERATOIRE, m_idsession);
+    Utils::setDataInt(data, CP_IDACTE_LIGNPRGOPERATOIRE, m_idacte);
     Utils::setDataInt(data, CP_IDPATIENT_LIGNPRGOPERATOIRE, m_idpatient);
     Utils::setDataTime(data, CP_HEURE_LIGNPRGOPERATOIRE, m_heure);
     m_anesth = ConvertModeAnesthesie(data[CP_TYPEANESTH_LIGNPRGOPERATOIRE].toString());
@@ -39,6 +40,7 @@ void Intervention::setData(QJsonObject data)
     Utils::setDataDouble(data, CP_PWRIOL_LIGNPRGOPERATOIRE, m_pwrIOL);
     Utils::setDataDouble(data, CP_CYLIOL_LIGNPRGOPERATOIRE, m_cylIOL);
     Utils::setDataString(data, CP_OBSERV_LIGNPRGOPERATOIRE, m_observation);
+    Utils::setDataString(data, CP_INCIDENT_LIGNPRGOPERATOIRE, m_incident);
     m_data = data;
 }
 
@@ -67,6 +69,7 @@ void Intervention::resetdatas()
     data[CP_ID_LIGNPRGOPERATOIRE]                   = 0;
     data[CP_HEURE_LIGNPRGOPERATOIRE]                = "";
     data[CP_IDSESSION_LIGNPRGOPERATOIRE]            = 0;
+    data[CP_IDACTE_LIGNPRGOPERATOIRE]               = 0;
     data[CP_IDPATIENT_LIGNPRGOPERATOIRE]            = 0;
     data[CP_TYPEANESTH_LIGNPRGOPERATOIRE]           = "";
     data[CP_IDTYPEINTERVENTION_LIGNPRGOPERATOIRE]   = 0;
@@ -75,6 +78,7 @@ void Intervention::resetdatas()
     data[CP_PWRIOL_LIGNPRGOPERATOIRE]               = 0;
     data[CP_CYLIOL_LIGNPRGOPERATOIRE]               = 0;
     data[CP_OBSERV_LIGNPRGOPERATOIRE]               = "";
+    data[CP_INCIDENT_LIGNPRGOPERATOIRE]             = "";
     setData(data);
 }
 
@@ -88,6 +92,10 @@ void IOL::setData(QJsonObject data)
 {
     if( data.isEmpty() )
         return;
+//    qDebug() << "data[CP_ID_IOLS]" << data[CP_ID_IOLS];
+//    qDebug() << "data[CP_IDMANUFACTURER_IOLS]" << data[CP_IDMANUFACTURER_IOLS];
+//    qDebug() << "data[CP_MODELNAME_IOLS]" << data[CP_MODELNAME_IOLS];
+//    qDebug() << "data[CP_INACTIF_IOLS]" << data[CP_INACTIF_IOLS];
     Utils::setDataInt(data, CP_ID_IOLS, m_id);
     Utils::setDataInt(data, CP_IDMANUFACTURER_IOLS, m_idmanufacturer);
     Utils::setDataString(data, CP_MODELNAME_IOLS, m_modele);
