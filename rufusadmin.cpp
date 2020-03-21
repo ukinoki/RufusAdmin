@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("18-03-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("21-03-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -331,7 +331,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         ui->SamediradioButton   ->setChecked(m_parametres->daysbkup().testFlag(Utils::Samedi));
         ui->DimancheradioButton ->setChecked(m_parametres->daysbkup().testFlag(Utils::Dimanche));
         connect(ui->DirBackuppushButton,        &QPushButton::clicked,      this,   &RufusAdmin::ModifDirBackup);
-        foreach(QRadioButton *butt, ui->JourSauvegardegroupBox->findChildren<QRadioButton*>())
+        foreach(QRadioButton *butt, ui->JourSauvegardeframe->findChildren<QRadioButton*>())
             connect(butt,                       &QPushButton::clicked,      this,   &RufusAdmin::ModifDateBackup);
         connect(ui->HeureBackuptimeEdit,        &QTimeEdit::timeChanged,    this,   &RufusAdmin::ModifHeureBackup);
         connect(ui->EffacePrgSauvupPushButton,  &QPushButton::clicked,      this,   &RufusAdmin::EffaceBDDDataBackup);
@@ -1612,13 +1612,13 @@ void RufusAdmin::ExporteDocs()
             // on recherche le user à l'origine de cette facture
             QList<QVariantList> Listeusr;
             if (listexportjpgfact.at(i).at(4).toInt()==1)          // c'est un échéancier
-                req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr." CP_ID_USR
-                                                                                                              " and idFacture = " + listexportjpgfact.at(i).at(0).toString();
+                req = "select dep." CP_IDUSER_DEPENSES ", " CP_LOGIN_USR " from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
+                                                                                                              " where dep." CP_IDUSER_DEPENSES " = usr." CP_ID_USR
+                                                                                                              " and " CP_IDFACTURE_DEPENSES " = " + listexportjpgfact.at(i).at(0).toString();
             else                                                // c'est une facture, l'iduser est dans la table
-                req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr." CP_ID_USR
-                                                                                                              " and idDep = " + listexportjpgfact.at(i).at(5).toString();
+                req = "select dep." CP_IDUSER_DEPENSES ", " CP_LOGIN_USR " from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
+                                                                                                              " where dep." CP_IDUSER_DEPENSES " = usr." CP_ID_USR
+                                                                                                              " and " CP_ID_DEPENSES " = " + listexportjpgfact.at(i).at(5).toString();
             Listeusr = db->StandardSelectSQL(req, ok);
             if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
             {
@@ -1716,13 +1716,13 @@ void RufusAdmin::ExporteDocs()
             // on recherche le user à l'origine de cette facture
             QList<QVariantList> Listeusr;
             if (listexportpdffact.at(i).at(4).toInt()==1)          // c'est un échéancier
-                req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr." CP_ID_USR
-                                                                                                              " and idFacture = " + listexportpdffact.at(i).at(0).toString();
+                req = "select dep." CP_IDUSER_DEPENSES ", " CP_LOGIN_USR " from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
+                                                                                                              " where dep." CP_IDUSER_DEPENSES " = usr." CP_ID_USR
+                                                                                                              " and " CP_IDFACTURE_DEPENSES " = " + listexportpdffact.at(i).at(0).toString();
             else                                                // c'est une facture, l'iduser est dans la table
-                req = "select dep.idUser, UserLogin from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
-                                                                                                              " where dep.idUser  = usr." CP_ID_USR
-                                                                                                              " and idDep = " + listexportpdffact.at(i).at(5).toString();
+                req = "select dep." CP_IDUSER_DEPENSES ", " CP_LOGIN_USR " from " TBL_DEPENSES " dep, " TBL_UTILISATEURS " usr"
+                                                                                                              " where dep." CP_IDUSER_DEPENSES " = usr." CP_ID_USR
+                                                                                                              " and " CP_ID_DEPENSES " = " + listexportpdffact.at(i).at(5).toString();
             Listeusr = db->StandardSelectSQL(req, ok);
             if (Listeusr.size()==0) // il n'y a aucune depense enregistrée pour cette facture, on la détruit
             {
@@ -3168,7 +3168,7 @@ $MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File3"
 
 void RufusAdmin::EffaceBDDDataBackup()
 {
-    QList<QRadioButton*> listbutton2 = ui->JourSauvegardegroupBox->findChildren<QRadioButton*>();
+    QList<QRadioButton*> listbutton2 = ui->JourSauvegardeframe->findChildren<QRadioButton*>();
     for (int i=0; i<listbutton2.size(); i++)
        listbutton2.at(i)->setChecked(false);
     ui->DirBackupuplineEdit->setText("");

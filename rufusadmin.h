@@ -41,7 +41,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
                 . une ligne est crée dans le fichier 0journaltransferts_datedujour.txt dans le dossier NomdelAppareil_echecstransferts pour enregistrer l'opération
  * 3. Alimenter la table Images.EcahngeImages dans laquelle seront intégrés chaque image correspondant au dossier patient ouvert.
       Cette table est alimentée à la demande avec les images de ce patient au fur et à mesure que le programme les demande
-      La table est vidée avant chaque procédure de sauvegatde
+      La table est vidée avant chaque procédure de sauvegarde
  * 4. ëtre le serveur TCP du réseau local
 */
 
@@ -50,6 +50,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
 #include <QFileDialog>
+#include <QGroupBox>
 #include <QHostInfo>
 #include <QMainWindow>
 #include <QStorageInfo>

@@ -174,17 +174,17 @@
             </widget>
            </item>
            <item row="2" column="2" colspan="4">
-            <widget class="QGroupBox" name="JourSauvegardegroupBox">
+            <widget class="QFrame" name="JourSauvegardeframe">
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>45</height>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>45</height>
+               <height>40</height>
               </size>
              </property>
              <property name="focusPolicy">
@@ -193,10 +193,22 @@
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
              </property>
-             <property name="title">
-              <string/>
-             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
                <widget class="UpRadioButton" name="LundiradioButton">
                 <property name="focusPolicy">
