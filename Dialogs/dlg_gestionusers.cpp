@@ -832,7 +832,7 @@ void dlg_gestionusers::GestionComptes()
     bool verifcpta  = ui->CompteComptawidget->isVisible();
     QString cptcpta = ui->CompteComptacomboBox->currentText();
 
-    Dlg_GestComptes = new dlg_gestioncomptes(m_userencours, this);
+    dlg_gestioncomptes *Dlg_GestComptes = new dlg_gestioncomptes(m_userencours, this);
     Dlg_GestComptes ->setWindowTitle(tr("Comptes bancaires de ") + m_userencours->login());
     Dlg_GestComptes ->exec();
     if (verifempl)
@@ -1445,9 +1445,15 @@ void dlg_gestionusers::Inactifs()
 void dlg_gestionusers::setDataCurrentUser(int id)
 {
     m_userencours = Datas::I()->users->getById(id, Item::Update);
+    if (!m_userencours)
+        return;
     m_userencours->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(id));
     if (m_userencours->isSalarie())
-        m_userencours->setidcompteencaissementhonoraires(Datas::I()->users->getById(m_userencours->idemployeur())->idcompteencaissementhonoraires());
+    {
+        User * usercpt = Datas::I()->users->getById(m_userencours->idemployeur());
+        if (usercpt)
+            m_userencours->setidcompteencaissementhonoraires(usercpt->idcompteencaissementhonoraires());
+    }
 }
 
 void dlg_gestionusers::ReconstruitListeLieuxExercice()

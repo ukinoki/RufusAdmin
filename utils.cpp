@@ -493,6 +493,33 @@ QString Utils::IPAdress()
     return IPadress;
 }
 
+QString Utils::calcIP(QString IP, bool aveczero)
+{
+    QMap<QString,QString> map = QMap<QString,QString>();
+    if (!rgx_IPV4.exactMatch(IP))
+        return IP;
+
+    QString IPaveczero (""), IPsanszero ("");
+    QStringList listIP = IP.split(".");
+    for (int i=0;i<listIP.size();i++)
+    {
+        IPsanszero += QString::number(listIP.at(i).toInt());
+        QString AvecZero;
+        AvecZero += QString::number(listIP.at(i).toInt());
+        if (listIP.at(i).toInt()<100)
+            AvecZero = "0" + AvecZero;
+        if (listIP.at(i).toInt()<10)
+            AvecZero = "0" + AvecZero;
+        IPaveczero += AvecZero;
+        if (i<listIP.size()-1)
+        {
+            IPaveczero += ".";
+            IPsanszero += ".";
+        }
+    }
+    return (aveczero? IPaveczero : IPsanszero);
+}
+
 QString Utils::MACAdress()
 {
     QString IPadress = IPAdress();
@@ -928,11 +955,6 @@ void Utils::setDataDate(QJsonObject data, QString key, QDate &prop)
 {
     if( data.contains(key) )
         prop = QDate::fromString(data[key].toString(),"yyyy-MM-dd");
-}
-void Utils::setDataByteArray(QJsonObject data, QString key, QByteArray &prop)
-{
-    if( data.contains(key) )
-        prop = data[key].toVariant().toByteArray();
 }
 void Utils::setDataVariant(QJsonObject data, QString key, QVariant &prop)
 {

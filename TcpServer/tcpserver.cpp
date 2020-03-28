@@ -135,7 +135,8 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         //qDebug() << "stringid = " << msg;
         skt->setStringid(msg);
         PosteConnecte *post = Datas::I()->postesconnectes->getByStringId(msg);
-        QString resume = (post == Q_NULLPTR? tr("un inconnu vient de se connecter je ne sais où") : Datas::I()->users->getById(post->id())->login() + " " +  tr("vient de se connecter sur") + " " + post->nomposte());
+        User *usr = Datas::I()->users->getById(post->id());
+        QString resume = (post == Q_NULLPTR? tr("un inconnu vient de se connecter je ne sais où") : (usr? usr->login() : "xxx") + " " +  tr("vient de se connecter sur") + " " + post->nomposte());
         //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
         Logs::LogSktMessage("TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_StringidPoste)\n\t"
                             "data = " + msg);

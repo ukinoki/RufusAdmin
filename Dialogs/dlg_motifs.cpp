@@ -119,6 +119,8 @@ void dlg_motifs::ActualiseDetails()
         return;
     int row = ui->MotifsupTableWidget->selectedRanges().at(0).topRow();
     Motif *mtf = getMotifFromRow(row);
+    if (!mtf)
+        return;
 
     ui->MotifupLineEdit->setText(mtf->motif());
     ui->RaccourciupLineEdit->setText(mtf->raccourci());

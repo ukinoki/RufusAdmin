@@ -87,9 +87,6 @@ public:
 
 private:
     Ui::RufusAdmin              *ui;
-    dlg_gestionbanques          *Dlg_Banq;
-    dlg_gestionusers            *Dlg_GestUsr;
-    dlg_motifs                  *Dlg_motifs;
     Controller                  m_controller;
     Flags                       *flags;
     bool                        m_ok;

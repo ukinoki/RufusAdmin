@@ -17,8 +17,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "uppushbutton.h"
 #include <QApplication>
-#include "macros.h"
 #include "icons.h"
+#include "macros.h"
 
 UpPushButton::UpPushButton(QWidget *parent) : QPushButton(parent)
 {
@@ -58,6 +58,16 @@ bool UpPushButton::eventFilter(QObject *obj, QEvent *event)
         }
     }
     return QWidget::eventFilter(obj, event);
+}
+
+int UpPushButton::data() const
+{
+    return m_data;
+}
+
+void UpPushButton::setData(int data)
+{
+    m_data = data;
 }
 
 void UpPushButton::setImmediateToolTip(QString Msg)

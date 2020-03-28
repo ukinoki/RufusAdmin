@@ -19,6 +19,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define UTILS_H
 #include <QCryptographicHash>
 #include <QDir>
+#include <QJsonDocument>
 #include <QRegExp>
 #include <QHostAddress>
 #include <QNetworkInterface>
@@ -58,7 +59,7 @@ public:
         /*! pour certaines données bool, on a 3 valeurs possibles, true, false et null
          * en fait, on pourrait même faire une 4ème valeur correspondant à "ne sait pas" -> ne sait pas si la valeur est true, false ou null
          */
-    enum ModeAcces { Poste, ReseauLocal, Distant };
+    enum ModeAcces { Poste = 0x1, ReseauLocal = 0x2, Distant = 0x4};     Q_ENUM(ModeAcces)
     enum Cote {Droit, Gauche, Les2, NoLoSo};
     enum Period {Debut, Fin};
 
@@ -105,6 +106,7 @@ public:
     static int                      MaxInt()    {return std::numeric_limits<int>::max();}
     static QByteArray               IntToArray(int source);
     static QString                  IPAdress();
+    static QString                  calcIP(QString IP, bool aveczero = false);
     static QString                  MACAdress();
     static QString                  getMacForIP(QString ipAddress);
 
@@ -161,16 +163,15 @@ public:
     static void setDataDateTime(QJsonObject data, QString key, QDateTime &prop);
     static void setDataDate(QJsonObject data, QString key, QDate &prop);
     static void setDataTime(QJsonObject data, QString key, QTime &prop);
-    static void setDataByteArray(QJsonObject data, QString key, QByteArray &prop);
     static void setDataVariant(QJsonObject data, QString key, QVariant &prop);
     static void setDataLogic(QJsonObject data, QString key, Logic &prop);
+
 
     //! arrondit un int au multiple de 5 le plus proche
     static int roundToNearestFive(int number)   { return static_cast<int>(number / 5. + .5) * 5; }
 
     //! affiche la fiche enchantier
     static void EnChantier(bool avecMsg = false);
-
 
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Utils::Days)

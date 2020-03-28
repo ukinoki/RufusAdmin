@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("21-03-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("28-03-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1809,7 +1809,7 @@ void RufusAdmin::ExporteDocs()
 void RufusAdmin::GestionBanques()
 {
     DisconnectTimerInactive();
-    Dlg_Banq = new dlg_gestionbanques(this);
+    dlg_gestionbanques *Dlg_Banq = new dlg_gestionbanques(this);
     Dlg_Banq->exec();
     ConnectTimerInactive();
 }
@@ -1826,7 +1826,7 @@ void RufusAdmin::GestionLieux()
 void RufusAdmin::GestionMotifs()
 {
     DisconnectTimerInactive();
-    Dlg_motifs = new dlg_motifs(this);
+    dlg_motifs *Dlg_motifs = new dlg_motifs(this);
     Dlg_motifs->setWindowTitle(tr("Motifs de consultations"));
     Dlg_motifs->exec();
     delete Dlg_motifs;
@@ -1836,7 +1836,7 @@ void RufusAdmin::GestionMotifs()
 void RufusAdmin::GestionUsers()
 {
     DisconnectTimerInactive();
-    Dlg_GestUsr = new dlg_gestionusers(ui->EmplacementServeurupComboBox->currentData().toInt(), dlg_gestionusers::ADMIN, true, this);
+    dlg_gestionusers *Dlg_GestUsr = new dlg_gestionusers(ui->EmplacementServeurupComboBox->currentData().toInt(), dlg_gestionusers::ADMIN, true, this);
     Dlg_GestUsr->setWindowTitle(tr("Gestion des utilisateurs"));
     if(Dlg_GestUsr->exec()>0)
     {
@@ -3343,37 +3343,38 @@ void RufusAdmin::ResumeTCPSocketStatut(QString listidposteconnectes)
         {
             // le 1er item de gListSockets est le serveur
             statut += tr("ServeurTCP") + "\n\t";
-            if (post != Q_NULLPTR) //!>* chaque item contient adresseIP, adresseMac, LoaclhostName(), idUser puis  TCPMSG_ListeSockets
+            if (post) //!>* chaque item contient adresseIP, adresseMac, LoaclhostName(), idUser puis  TCPMSG_ListeSockets
             {
                 statut += post->ipadress() + " - "
                         + post->macadress() + " - "
                         + post->nomposte() + " --- "
-                        + Datas::I()->users->getById(post->id())->login();
+                        + (Datas::I()->users->getById(post->id())? Datas::I()->users->getById(post->id())->login() : "") + "\n";
             }
             else
-                statut += tr("inconnu");
-            statut += "\n" + tr("Postes connectés") + "\n";
+                statut += tr("inconnu") + "\n";
+            statut += tr("Postes connectés") + "\n";
         }
         else
         {
-            if (post != Q_NULLPTR)
+            if (post)
             {
                 statut += "\t" + post->ipadress() + " - "
                         + post->macadress() + " - "
                         + post->nomposte() + " --- "
-                        + Datas::I()->users->getById(post->id())->login() + "\n";
+                        + (Datas::I()->users->getById(post->id())? Datas::I()->users->getById(post->id())->login() : "") + "\n";
             }
             else
-                statut += "\t" + tr("inconnu");
+                statut += "\t" + tr("inconnu") + "\n";
         }
     }
     m_socketStatut = statut;
     foreach (PosteConnecte *post, *Datas::I()->postesconnectes->postesconnectes())
     {
-        if(post->isdistant())
-            m_socketStatut += "\t" + Datas::I()->sites->getById(post->idlieu())->nom() + " ---- "
-                    + Datas::I()->users->getById(post->id())->login() + "\n";
-    }
+        if (post)
+            if(post->isdistant())
+                m_socketStatut += "\t" + (Datas::I()->sites->getById(post->idlieu())? Datas::I()->sites->getById(post->idlieu())->nom() : "") + " ---- "
+                        + (Datas::I()->users->getById(post->id())? Datas::I()->users->getById(post->id())->login() : "") + "\n";
+            }
     emit ModifEdit(m_socketStatut); // déclenche la modification de la fenêtre resumestatut
 }
 

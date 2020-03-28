@@ -119,7 +119,10 @@ void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem
 {
     int idCompte    = ui->ComptesuptableWidget->item(pitem->row(),0)->text().toInt();
     m_compteencours = Datas::I()->comptes ->getById(idCompte);
-        ui->BanqueupcomboBox            ->setCurrentText(Datas::I()->banques->getById(m_compteencours->id())->nomabrege());
+    if (!m_compteencours)
+        return;
+    Banque *bq = Datas::I()->banques->getById(m_compteencours->id());
+        ui->BanqueupcomboBox            ->setCurrentText(bq? bq->nomabrege() : "");
         ui->IBANuplineEdit              ->setText(m_compteencours->iban());
         ui->IntituleCompteuplineEdit    ->setText(m_compteencours->intitulecompte());
         ui->NomCompteAbregeuplineEdit   ->setText(m_compteencours->nomabrege());
@@ -175,7 +178,7 @@ void dlg_gestioncomptes::AnnulModif()
 
 void dlg_gestioncomptes::Banques()
 {
-    Dlg_Banq = new dlg_gestionbanques();
+    dlg_gestionbanques *Dlg_Banq = new dlg_gestionbanques();
     if (Dlg_Banq->exec()>0)
         MetAJourListeBanques();
 }
@@ -354,7 +357,8 @@ void dlg_gestioncomptes::SupprCompte()
     msgbox.setIcon(UpMessageBox::Warning);
     msgbox.addButton(&NoBouton, UpSmallButton::CANCELBUTTON);
     msgbox.addButton(&OKBouton, UpSmallButton::SUPPRBUTTON);
-    msgbox.setInformativeText(tr("Supprimer le compte ") + Datas::I()->banques->getById(m_compteencours->id())->nomabrege() + " - " + m_compteencours->intitulecompte() + "?");
+    Banque *bq = Datas::I()->banques->getById(m_compteencours->id());
+    msgbox.setInformativeText(tr("Supprimer le compte ") + (bq? bq->nomabrege() : "") + " - " + m_compteencours->intitulecompte() + "?");
     msgbox.exec();
     if (msgbox.clickedButton() != &OKBouton)
         return;
