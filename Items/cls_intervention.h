@@ -181,11 +181,18 @@ private: //Données de l'intervention
     double m_haigisa0       = 0;                //! constante Haigis a0
     double m_haigisa1       = 0;                //! constante Haigis a1
     double m_haigisa2       = 0;                //! constante Haigis a2
+    double m_holladay       = 0;                //! constante Holladay
     double m_acd            = 0;                //! ACD
     double m_diainjecteur   = 0;                //! diamètre minimal de l'injecteur
+    double m_diaall         = 0;                //! diamètre hors tout
+    double m_diaoptique     = 0;                //! diamètre optique
     QByteArray m_imgiol     = QByteArray();     //! le cliché de l'IOL
+    QString m_imageformat     = "";               //! le type de cliché, jpg ou pdf
     QString m_materiau      = "";               //! le matériau de l'IOL
     QString m_remarque      = "";               //! remarque à propos de l'IOL
+    bool m_precharge        = false;            //! préchargé
+    bool m_jaune            = false;            //! jaune ou clair
+    bool m_multifocal       = false;            //! multifocal
     QMap<QString, QVariant> m_map = QMap<QString, QVariant>{};
 
 public:
@@ -202,12 +209,20 @@ public:
     double haigisa0() const                     { return m_haigisa0; }
     double haigisa1() const                     { return m_haigisa1; }
     double haigisa2() const                     { return m_haigisa2; }
+    double holladay() const                     { return m_holladay; }
     double acd() const                          { return m_acd; }
     double diainjecteur() const                 { return m_diainjecteur; }
+    double diaall() const                       { return m_diaall; }
+    double diaoptique() const                   { return m_diaoptique; }
     QByteArray imgiol() const                   { return m_imgiol; }
+    QString imageformat() const                 { return m_imageformat; }
     QString materiau() const                    { return m_materiau; }
     QString remarque() const                    { return m_remarque; }
     bool isactif() const                        { return !m_inactif; }
+    bool isprecharge() const                    { return m_precharge; }
+    bool isjaune() const                        { return m_jaune; }
+    bool ismultifocal() const                   { return m_multifocal; }
+    QString tooltip() const;
 
 
     void setidmanufacturer(int &id)             { m_idmanufacturer = id;            m_map[CP_IDMANUFACTURER_IOLS] = id; }
@@ -224,11 +239,17 @@ public:
     void setHaigisa0(double haigisa0)           { m_haigisa0 = haigisa0;            m_map[CP_HAIGISA0_IOLS] = haigisa0; }
     void setHaigisa1(double haigisa1)           { m_haigisa1 = haigisa1;            m_map[CP_HAIGISA1_IOLS] = haigisa1; }
     void setHaigisa2(double haigisa2)           { m_haigisa2 = haigisa2;            m_map[CP_HAIGISA2_IOLS] = haigisa2; }
+    void setHolladay(double holladay)           { m_holladay = holladay;            m_map[CP_HOLL1_IOLS] = holladay; }
     void setAcd(double acd)                     { m_acd = acd;                      m_map[CP_ACD_IOLS] = acd; }
     void setDiainjecteur(double diainjecteur)   { m_diainjecteur = diainjecteur;    m_map[CP_DIAINJECTEUR_IOLS] = diainjecteur; }
+    void setDiaall(double diaall)               { m_diaall = diaall;                m_map[CP_DIAALL_IOLS] = diaall; }
+    void setDiaoptique(double diaoptique)       { m_diaoptique = diaoptique;        m_map[CP_DIAOPT_IOLS] = diaoptique; }
     void setImgiol(const QByteArray &imgiol)    { m_imgiol = imgiol;                m_map[CP_IMG_IOLS] = imgiol; }
+    void setTypeImage(const QString &typeimage) { m_imageformat = typeimage;        m_map[CP_TYPIMG_IOLS] = typeimage; }
     void setMateriau(const QString &materiau)   { m_materiau = materiau;            m_map[CP_MATERIAU_IOLS] = materiau; }
     void setRemarque(const QString &remarque)   { m_remarque = remarque;            m_map[CP_REMARQUE_IOLS] = remarque; }
+    void setprecharge(bool &precharge)          { m_precharge = precharge;          m_map[CP_PRECHARGE_IOLS] = precharge; }
+    void setjaune(bool &jaune)                  { m_jaune = jaune;                  m_map[CP_JAUNE_IOLS] = jaune; }
 
     void resetdatas();
     bool isnull() const                         { return m_id == 0; }

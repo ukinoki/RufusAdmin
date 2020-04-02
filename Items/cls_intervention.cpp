@@ -92,9 +92,9 @@ void IOL::setData(QMap<QString, QVariant> map)
 {
     if( map.isEmpty() )
         return;
-//    qDebug() << "map[CP_ID_IOLS]" << map[CP_ID_IOLS];
-//    qDebug() << "map[CP_IDMANUFACTURER_IOLS]" << map[CP_IDMANUFACTURER_IOLS];
 //    qDebug() << "map[CP_MODELNAME_IOLS]" << map[CP_MODELNAME_IOLS];
+//    qDebug() << "map[CP_ACD_IOLS]" << map[CP_ACD_IOLS];
+//    qDebug() << "map[CP_IDMANUFACTURER_IOLS]" << map[CP_IDMANUFACTURER_IOLS];
 //    qDebug() << "map[CP_INACTIF_IOLS]" << map[CP_INACTIF_IOLS];
     m_id                = map[CP_ID_IOLS].toInt();
     m_idmanufacturer    = map[CP_IDMANUFACTURER_IOLS].toInt();
@@ -112,12 +112,36 @@ void IOL::setData(QMap<QString, QVariant> map)
     m_haigisa0          = map[CP_HAIGISA0_IOLS].toDouble();
     m_haigisa1          = map[CP_HAIGISA1_IOLS].toDouble();
     m_haigisa2          = map[CP_HAIGISA2_IOLS].toDouble();
-    m_acd               = map[CP_HOLL1_IOLS].toDouble();
+    m_holladay          = map[CP_HOLL1_IOLS].toDouble();
     m_diainjecteur      = map[CP_DIAINJECTEUR_IOLS].toDouble();
+    m_diaall            = map[CP_DIAALL_IOLS].toDouble();
+    m_diaoptique        = map[CP_DIAOPT_IOLS].toDouble();
     m_imgiol            = map[CP_IMG_IOLS].toByteArray();
+    m_imageformat         = map[CP_TYPIMG_IOLS].toString();
     m_materiau          = map[CP_MATERIAU_IOLS].toString();
     m_remarque          = map[CP_REMARQUE_IOLS].toString();
+    m_precharge         = map[CP_PRECHARGE_IOLS].toBool();
+    m_multifocal        = map[CP_MULTIFOCAL_IOLS].toBool();
+    m_jaune             = map[CP_JAUNE_IOLS].toBool();
     m_map = map;
+}
+
+QString IOL::tooltip() const
+{
+    QString ttip = modele();
+    if (csteAopt() != 0.0)
+        ttip += "\ncsteA opt. " + QString::number(csteAopt(), 'f', 1);
+    if (csteAEcho() != 0.0)
+        ttip += "\ncsteA echo " + QString::number(csteAEcho(), 'f', 1);
+    if (acd() != 0.0)
+        ttip += "\nACD " + QString::number(acd(), 'f', 2);
+    if (haigisa0() != 0.0 && haigisa1() != 0.0 && haigisa2() != 0.0)
+        ttip += "\n Haigis a: " + QString::number(haigisa0(), 'f', 4) + " - b: "  + QString::number(haigisa1(), 'f', 4) + " - c: "  + QString::number(haigisa2(), 'f', 4);
+    if (materiau() != "")
+        ttip += "\n" + tr("materiau") + " " + materiau();
+    if (remarque() != "")
+        ttip += "\n" + tr("remarque") + " " + remarque();
+    return ttip;
 }
 
 void IOL::resetdatas()
@@ -141,9 +165,15 @@ void IOL::resetdatas()
     map[CP_HAIGISA2_IOLS]           = 0;
     map[CP_HOLL1_IOLS]              = 0;
     map[CP_DIAINJECTEUR_IOLS]       = 0;
+    map[CP_DIAALL_IOLS]             = 0;
+    map[CP_DIAOPT_IOLS]             = 0;
     map[CP_IMG_IOLS]                = QVariant();
+    map[CP_TYPIMG_IOLS]             = "";
     map[CP_MATERIAU_IOLS]           = "";
     map[CP_REMARQUE_IOLS]           = "";
+    map[CP_PRECHARGE_IOLS]          = false;
+    map[CP_JAUNE_IOLS]              = false;
+    map[CP_MULTIFOCAL_IOLS]         = false;
     setData(map);
 }
 
