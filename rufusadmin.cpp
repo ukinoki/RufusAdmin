@@ -1447,7 +1447,7 @@ void RufusAdmin::ExporteDocs()
             }
             else
                 return;
-            db->StandardSQL("update " TBL_DOCSEXTERNES " set"
+            db->StandardSQL("update " TBL_DOCSEXTERNES " set "
                             CP_JPG_DOCSEXTERNES " = null,"
                             CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
                             "' where " CP_ID_DOCSEXTERNES " = " + listexportjpg.at(i).at(0).toString());
@@ -1536,7 +1536,7 @@ void RufusAdmin::ExporteDocs()
                               | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                               | QFileDevice::ReadUser   | QFileDevice::WriteUser);
             CC.close();
-            db->StandardSQL ("update " TBL_DOCSEXTERNES " set"
+            db->StandardSQL ("update " TBL_DOCSEXTERNES " set "
                              CP_PDF_DOCSEXTERNES " = null, compression = null,"
                              CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
                              " where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString());
