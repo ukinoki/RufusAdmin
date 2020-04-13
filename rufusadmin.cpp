@@ -2594,22 +2594,21 @@ bool RufusAdmin::VerifBase()
             QFile DumpFile(Nomfic);
             if (DumpFile.exists())
             {
-                QString NomDumpFile = QDir::homePath() + "/Documents/Rufus/Ressources/majbase" + QString::number(Version) + ".sql";
+                QString NomDumpFile = PATH_DIR_RESSOURCES "/majbase" + QString::number(Version) + ".sql";
                 QFile::remove(NomDumpFile);
                 DumpFile.copy(NomDumpFile);
-                QFile base(NomDumpFile);
-                QStringList listinstruct = Utils::DecomposeScriptSQL(NomDumpFile);
-                bool a = true;
-                foreach(const QString &s, listinstruct)
+                int a = 99;
+                DefinitScriptRestore(QStringList() << NomDumpFile);
+                QString task = "sh " + PATH_FILE_SCRIPTRESTORE;
+                QProcess dumpProcess(parent());
+                dumpProcess.start(task);
+                dumpProcess.waitForFinished();
+                if (dumpProcess.exitStatus() == QProcess::NormalExit)
+                    a = dumpProcess.exitCode();
+                QFile::remove(PATH_FILE_SCRIPTRESTORE);
+                QFile::remove(NomDumpFile);
+                if (a == 0)
                 {
-                    if (!db->StandardSQL(s))
-                        a = false;
-                }
-                int result=0;
-                base.remove();
-                if (a)
-                {
-                    result = 1;
                     UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
                     db->initParametresSysteme();
                 }
@@ -2617,38 +2616,8 @@ bool RufusAdmin::VerifBase()
                 {
                     QSound::play(NOM_ALARME);
                     UpMessageBox::Watch(Q_NULLPTR,tr("Echec de la mise à jour vers la version ") + QString::number(Version) + "\n" + tr("Le programme de mise à jour n'a pas pu effectuer la tâche!"));
-                }
-                if (result!=1)
                     return false;
-            }
-            if (Version == 53)
-            {
-                /*! dans les anciennes versions du programme antérieures à la 53, pour des raisons d'économie d'espace disque,
-                 * la création d'un dossier n'entraînait pas systématiquement
-                 * la création d'une ligne corresondante dans la table renseignementsmedicauxpatients
-                 * à partir de la version 53, cette ligne est créée systématiquement pour ne pas avoir à en vérifier sa présence
-                 * à chaque fois qu'on veut enregistrer un renseignement
-                 * A partir de la version 53, cette ligne est systématiquement créée lors de la création d'un dossier
-                 * il n'y a donc plus à faire cette vérification
-                 * cette MAJ crée une ligne pour tous les dossiers n'ayant pas la correspondance dans la table renseignementsmedicauxpatients
-                 */
-                QList<QVariantList> listid =
-                        db->StandardSelectSQL("SELECT idpat FROM " TBL_PATIENTS " pat"
-                                              " where  pat.idpat not in (select rmp.idpat from " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " rmp)", m_ok);
-                if (listid.size()>0)
-                {
-                    for (int i=0; i<listid.size(); i++)
-                    {
-                        QString req =   "INSERT INTO " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS
-                                " (idPat) VALUES (" + listid.at(i).at(0).toString() + ")";
-                        db->StandardSQL(req);
-                    }
-                    UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version), QString::number(listid.size()) + tr(" enregistrements modifiés"));
                 }
-                else
-                    UpMessageBox::Watch(Q_NULLPTR,tr("Mise à jour effectuée de la base vers la version ") + QString::number(Version));
-                db->StandardSQL("UPDATE " TBL_PARAMSYSTEME " SET VersionBase = 53");
-                m_parametres->setversionbase(53);
             }
         }
     }
