@@ -26,7 +26,7 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(p
     db                      = DataBase::I();
     m_userencours           = user;
 
-    m_idcompteprardefaut      = m_userencours->idcomptepardefaut();
+    m_idcomptepardefaut      = m_userencours->idcomptepardefaut();
 
     m_listescomptesusr      = m_userencours->listecomptesbancaires();
     m_compteencours         = Datas::I()->comptes->getById(m_userencours->idcomptepardefaut());
@@ -65,7 +65,7 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(p
 
     MetAJourListeBanques();
 
-    RemplirTableView(m_idcompteprardefaut);
+    RemplirTableView(m_idcomptepardefaut);
     ui->Compteframe             ->setEnabled(false);
     ui->OKModifupSmallButton    ->setVisible(false);
     ui->AnnulModifupSmallButton ->setVisible(false);
@@ -351,6 +351,8 @@ void dlg_gestioncomptes::SupprCompte()
     /* si on est à ce point, c'est qu'aucune écriture n'a été saisie sur ce compte
      * si le compte n'est pas partagé, on le supprime et on supprime son lien dans comptesJiointures
     */
+    if(!m_compteencours)
+        return;
     UpMessageBox msgbox;
     UpSmallButton OKBouton(tr("Supprimer le compte"));
     UpSmallButton NoBouton(tr("Annuler"));
@@ -358,6 +360,8 @@ void dlg_gestioncomptes::SupprCompte()
     msgbox.addButton(&NoBouton, UpSmallButton::CANCELBUTTON);
     msgbox.addButton(&OKBouton, UpSmallButton::SUPPRBUTTON);
     Banque *bq = Datas::I()->banques->getById(m_compteencours->id());
+    if (!bq)
+        return;
     msgbox.setInformativeText(tr("Supprimer le compte ") + (bq? bq->nomabrege() : "") + " - " + m_compteencours->intitulecompte() + "?");
     msgbox.exec();
     if (msgbox.clickedButton() != &OKBouton)

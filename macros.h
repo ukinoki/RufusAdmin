@@ -19,7 +19,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define MACROS_H
 
 // Les versions de la base et des ressources
-#define VERSION_BASE                                65  // version de la base de données
+#define VERSION_BASE                                66  // version de la base de données
 #define VERSION_RESSOURCES                          34  // version des fichiers de ressources
 
 // Les bases
@@ -65,6 +65,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TBL_APPAREILSCONNECTESCENTRE          "rufus.appareilsconnectescentre"
 #define TBL_APPAREILSREFRACTION               "rufus.AppareilsRefraction"
 #define TBL_CCAM                              "rufus.ccam"
+#define TBL_COMMERCIALS                       "rufus.Commercials"
 #define TBL_CORRESPONDANTS                    "rufus.correspondants"
 #define TBL_COTATIONS                         "rufus.cotations"
 #define TBL_DOSSIERSIMPRESSIONS               "rufus.Metadocuments"
@@ -215,13 +216,18 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_PORTABLE_MANUFACTURER                        "ManPortable"
 #define CP_WEBSITE_MANUFACTURER                         "ManWebsite"
 #define CP_MAIL_MANUFACTURER                            "ManMail"
-#define CP_CORNOM_MANUFACTURER                          "CorNom"
-#define CP_CORPRENOM_MANUFACTURER                       "CorPrenom"
-#define CP_CORSTATUT_MANUFACTURER                       "CorStatut"
-#define CP_CORMAIL_MANUFACTURER                         "CorMail"
-#define CP_CORTELEPHONE_MANUFACTURER                    "CorTelephone"
 #define CP_INACTIF_MANUFACTURER                         "ManInactif"
 #define CP_DISTRIBUEPAR_MANUFACTURER                    "DistribuePar"
+#define CP_IDRUFUS_MANUFACTURER                         "idRufus"
+
+                            //! Table Rufus.Commercials
+#define CP_ID_COM                                       "idCommercial"
+#define CP_NOM_COM                                      "Nom"
+#define CP_PRENOM_COM                                   "Prenom"
+#define CP_STATUT_COM                                   "Statut"
+#define CP_MAIL_COM                                     "Mail"
+#define CP_TELEPHONE_COM                                "Telephone"
+#define CP_IDMANUFACTURER_COM                           "idManufacturer"
 
                             //! Table Rufus.Metadocuments
 #define CP_ID_DOSSIERIMPRESSIONS                        "idMetaDocument"
@@ -533,7 +539,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_HAIGISA2_IOLS                                "Haigisa2"
 #define CP_HOLL1_IOLS                                   "Holladay1sf"
 #define CP_DIAINJECTEUR_IOLS                            "DiametreInjecteur"
-#define CP_IMG_IOLS                                     "Image"
+#define CP_ARRAYIMG_IOLS                                "Image"
 #define CP_TYPIMG_IOLS                                  "TypeImage"
 #define CP_MATERIAU_IOLS                                "Materiau"
 #define CP_REMARQUE_IOLS                                "Remarque"
@@ -662,6 +668,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define VIDEO                                       "Video"
 #define FACTURE                                     "Facture"
 #define ECHEANCIER                                  "Echéancier"
+
+                                //! les types d'IOLS
+#define IOL_CP                                      "Chambre postérieure"
+#define IOL_CA                                      "Chambre antérieure"
+#define IOL_ADDON                                   "Add-on"
+#define IOL_IRIEN                                   "Support irien"
+#define IOL_CAREFRACTIF                             "Refractif CA"
+#define IOL_AUTRE                                   "Autre"
 
 #define NOM_APPLI                                   "Rufus"
 

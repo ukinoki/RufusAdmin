@@ -62,25 +62,6 @@ public:
     SessionOperatoire*  CreationSessionOperatoire(QHash<QString, QVariant> sets);
 };
 
-class IOLs : public ItemsList
-{
-private:
-    QMap<int, IOL*> *map_all = Q_NULLPTR;       //!< la liste de tous les IOLs, y compris ceux qui nes ont plus fabriqués
-
-public:
-    explicit IOLs(QObject *parent = Q_NULLPTR);
-
-    QMap<int, IOL*> *iols() const;
-
-    IOL*    getById(int id);
-    void    initListeByManufacturerId(int id);  //! la liste de tous les IOLs d'un fabricant
-    void    initListe();                        //! la liste de tous les IOLs
-
-    //!> actions sur les enregistrements
-    void    SupprimeIOL(IOL *iol);
-    IOL*    CreationIOL(QHash<QString, QVariant> sets);
-};
-
 class TypesInterventions : public ItemsList
 {
 private:

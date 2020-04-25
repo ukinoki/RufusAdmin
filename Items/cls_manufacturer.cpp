@@ -38,11 +38,6 @@ void Manufacturer::setData(QJsonObject data)
     Utils::setDataString(data, CP_PORTABLE_MANUFACTURER, m_portable);
     Utils::setDataString(data, CP_WEBSITE_MANUFACTURER, m_website);
     Utils::setDataString(data, CP_MAIL_MANUFACTURER, m_mail);
-    Utils::setDataString(data, CP_CORNOM_MANUFACTURER, m_cornom);
-    Utils::setDataString(data, CP_CORPRENOM_MANUFACTURER, m_corprenom);
-    Utils::setDataString(data, CP_CORSTATUT_MANUFACTURER, m_corstatut);
-    Utils::setDataString(data, CP_CORMAIL_MANUFACTURER, m_cormail);
-    Utils::setDataString(data, CP_CORTELEPHONE_MANUFACTURER, m_cortelephone);
     Utils::setDataBool(data, CP_INACTIF_MANUFACTURER, m_inactif);
     Utils::setDataInt(data, CP_DISTRIBUEPAR_MANUFACTURER, m_distributeur);
 
@@ -65,11 +60,6 @@ void Manufacturer::resetdatas()
     data[CP_PORTABLE_MANUFACTURER] = "";
     data[CP_WEBSITE_MANUFACTURER] = "";
     data[CP_MAIL_MANUFACTURER] = "";
-    data[CP_CORNOM_MANUFACTURER] = "";
-    data[CP_CORPRENOM_MANUFACTURER] = "";
-    data[CP_CORSTATUT_MANUFACTURER] = "";
-    data[CP_CORMAIL_MANUFACTURER] = "";
-    data[CP_CORTELEPHONE_MANUFACTURER] = "";
     data[CP_INACTIF_MANUFACTURER] = false;
     data[CP_DISTRIBUEPAR_MANUFACTURER] = 0;
     setData(data);
@@ -86,22 +76,71 @@ QString Manufacturer::fax() const           { return m_fax; }
 QString Manufacturer::portable() const      { return m_portable; }
 QString Manufacturer::website() const       { return m_website; }
 QString Manufacturer::mail() const          { return m_mail; }
-QString Manufacturer::cornom() const        { return m_cornom; }
-QString Manufacturer::corprenom() const     { return m_corprenom; }
-QString Manufacturer::corstatut() const     { return m_corstatut; }
-QString Manufacturer::cormail() const       { return m_cormail; }
-QString Manufacturer::cortelephone() const  { return m_cortelephone; }
 bool Manufacturer::isactif() const          { return !m_inactif; }
 int Manufacturer::iddistributeur() const    { return m_distributeur; }
+int Manufacturer::idrufus() const           { return m_idrufus; }
+
 
 QString Manufacturer::tooltip() const
 {
     QString ttip = "";
-    if (telephone() != "")
-        ttip += tr("Telephone:") + " " + telephone();
-    if (cornom() != "")
-        ttip += "\n" + cornom().toUpper() + " " + corprenom() + " " + cortelephone();
+    if (m_telephone != "")
+        ttip += tr("Telephone:") + " " + m_telephone;
     return ttip;
+}
+
+QString Manufacturer::coordonnees() const
+{
+    QString cord = m_nom.toUpper();
+    if (m_adresse1 != "" || m_adresse2 != "" || m_adresse3 != "")
+    {
+        cord += "\n";
+        QString adr = "";
+        if (m_adresse1 != "")
+        {
+            adr += m_adresse1;
+            if (m_adresse2 != "" || m_adresse3 != "")
+                adr += " - ";
+        }
+        if (m_adresse2 != "")
+        {
+            adr += m_adresse2;
+            if (m_adresse3 != "")
+                adr += " - ";
+        }
+        if (m_adresse3 != "")
+            adr += " - " + m_adresse3;
+        cord += adr;
+    }
+    if (m_codepostal!= "" || m_ville != "")
+    {
+        cord += "\n";
+        QString cpville = "";
+        if (m_codepostal != "")
+        {
+            cpville += m_codepostal;
+            if (m_ville != "")
+                cpville += " - ";
+        }
+        if (m_ville != "")
+            cpville += m_ville.toUpper();
+        cord += cpville;
+    }
+    if (m_telephone != ""|| m_fax != "")
+    {
+        cord += "\n";
+        QString telfax = "";
+        if (m_telephone != "")
+        {
+            telfax += tr("Tel:") + " " + m_telephone;
+            if (m_fax != "")
+                telfax += " - ";
+        }
+        if (m_fax != "")
+            telfax += tr("Fax:") + " " + m_fax;
+        cord += telfax;
+    }
+    return cord;
 }
 
 void Manufacturer::setnom(const QString &nom)                   { m_nom = nom; m_data[CP_NOM_MANUFACTURER] = nom; }
@@ -115,13 +154,10 @@ void Manufacturer::setfax(const QString &fax)                   { m_fax = fax; m
 void Manufacturer::setportable(const QString &portable)         { m_portable = portable; m_data[CP_PORTABLE_MANUFACTURER] = portable; }
 void Manufacturer::setwebsite(const QString &website)           { m_website = website; m_data[CP_WEBSITE_MANUFACTURER] = website; }
 void Manufacturer::setmail(const QString &mail)                 { m_mail = mail; m_data[CP_MAIL_MANUFACTURER] = mail; }
-void Manufacturer::setcornom(const QString &cornom)             { m_cornom = cornom; m_data[CP_CORNOM_MANUFACTURER] = cornom; }
-void Manufacturer::setcorprenom(const QString &corprenom)       { m_corprenom = corprenom; m_data[CP_CORPRENOM_MANUFACTURER] = corprenom; }
-void Manufacturer::setcorstatut(const QString &corstatut)       { m_corstatut = corstatut; m_data[CP_CORSTATUT_MANUFACTURER] = corstatut; }
-void Manufacturer::setcormail(const QString &cormail)           { m_cormail = cormail; m_data[CP_CORMAIL_MANUFACTURER] = cormail; }
-void Manufacturer::setcortelephone(const QString &cortelephone) { m_cortelephone = cortelephone; m_data[CP_CORTELEPHONE_MANUFACTURER] = cortelephone; }
 void Manufacturer::setactif(const bool &actif)                  { m_inactif = !actif; m_data[CP_INACTIF_MANUFACTURER] = !actif; }
 void Manufacturer::setiddistributeur(int id)                    { m_distributeur = id; m_data[CP_DISTRIBUEPAR_MANUFACTURER] = id; }
+void Manufacturer::setidrufus(int id)                           { m_idrufus = id; m_data[CP_IDRUFUS_MANUFACTURER] = id; }
+
 
 QString Manufacturer::adresseComplete() const
 {

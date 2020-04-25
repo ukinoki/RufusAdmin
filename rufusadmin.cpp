@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I();
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("15-04-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("25-04-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -880,22 +880,7 @@ void RufusAdmin::DetermineLieuExercice()
             UpRadioButton *pradiobutt = new UpRadioButton(boxlieux);
             pradiobutt->setText(etab->nom());
             pradiobutt->setitem(etab);
-            QString data("");
-            if( etab->nom().size() )
-                data += etab->nom();
-            if( etab->adresse1().size() )
-                data += (data.size() ? "\n" : "") + etab->adresse1();
-            if( etab->adresse2().size() )
-                data += (data.size() ? "\n" : "") + etab->adresse2();
-            if( etab->adresse3().size() )
-                data += (data.size() ? "\n" : "") + etab->adresse3();
-            if( etab->codePostal() )
-                data += (data.size() ? "\n" : "") + QString::number(etab->codePostal());
-            if( etab->ville().size() )
-                data += (data.size() ? "\n" : "") + etab->ville();
-            if( etab->telephone().size() )
-                data += (data != ""? "\nTel: " : "Tel: ") + etab->telephone();
-            pradiobutt->setImmediateToolTip(data);
+            pradiobutt->setImmediateToolTip(etab->coordonnees());
             pradiobutt->setChecked(isFirst);
             vbox      ->addWidget(pradiobutt);
             isFirst = false;
@@ -1924,7 +1909,7 @@ void RufusAdmin::MetAJourLaConnexion()
             qDebug() << "timenow = " << timenow;
             qDebug() << "heure dernière connexion = " << post->dateheurederniereconnexion();
             qDebug() << "temps ecoule depuis actualisation = " << tempsecouledepuisactualisation;
-            qDebug() << "user = " << Datas::I()->users->getById(post->id())->login();
+            qDebug() << "user = " << (Datas::I()->users->getById(post->id())? Datas::I()->users->getById(post->id())->login() : tr("inconnu"));
             //! l'utilisateur n'a pas remis sa connexion à jour depuis plus de 120 secondes
             //! on déverrouille les dossiers verrouillés par cet utilisateur et on les remet en salle d'attente
             QString blabla              = ENCOURSEXAMEN;
@@ -2592,12 +2577,12 @@ bool RufusAdmin::VerifBase()
             Message::I()->SplashMessage(tr("Mise à jour de la base vers la version ") + "<font color=\"red\"><b>" + QString::number(Version) + "</b></font>", 1000);
             QString Nomfic = "://majbase" + QString::number(Version) + ".sql";
             QFile DumpFile(Nomfic);
+            int a = 99;
             if (DumpFile.exists())
             {
                 QString NomDumpFile = PATH_DIR_RESSOURCES "/majbase" + QString::number(Version) + ".sql";
                 QFile::remove(NomDumpFile);
                 DumpFile.copy(NomDumpFile);
-                int a = 99;
                 DefinitScriptRestore(QStringList() << NomDumpFile);
                 QString task = "sh " + PATH_FILE_SCRIPTRESTORE;
                 QProcess dumpProcess(parent());
@@ -2618,6 +2603,30 @@ bool RufusAdmin::VerifBase()
                     UpMessageBox::Watch(Q_NULLPTR,tr("Echec de la mise à jour vers la version ") + QString::number(Version) + "\n" + tr("Le programme de mise à jour n'a pas pu effectuer la tâche!"));
                     return false;
                 }
+            }
+            if (Version == 66 && a == 0)
+            {
+                QString req = " select " CP_ID_MANUFACTURER ", CorNom, CorPrenom, CorStatut, CorMail, CorTelephone from " TBL_MANUFACTURERS
+                                " where CorNom is not null and CorNom <> ''";
+                bool ok;
+                QList<QVariantList> listcom = DataBase::I()->StandardSelectSQL(req,ok);
+                if (ok && listcom.size()>0)
+                    for (int i= 0; i<listcom.size(); ++i)
+                    {
+                        req = "insert into " TBL_COMMERCIALS "(" CP_NOM_COM ", " CP_PRENOM_COM ", " CP_STATUT_COM ", " CP_MAIL_COM ", " CP_TELEPHONE_COM ", " CP_IDMANUFACTURER_COM ")"
+                              " VALUES ( '" + listcom.at(i).at(1).toString() + "', '"  + listcom.at(i).at(2).toString() + "', '"
+                                + listcom.at(i).at(3).toString() + "', '"  + listcom.at(i).at(4).toString()
+                                + "', '"  + listcom.at(i).at(5).toString() + "', '"  + listcom.at(i).at(0).toString() + "')";
+                        DataBase::I()->StandardSQL(req);
+                    }
+                req = "update " TBL_MANUFACTURERS " set CorNom = null, CorPrenom = null, CorStatut = null, CorMail = null, CorTelephone = null";
+                DataBase::I()->StandardSQL(req);
+//                DataBase::I()->StandardSQL("ALTER TABLE `rufus`.`Manufacturers` "
+//                "DROP COLUMN `CorTelephone`,"
+//                "DROP COLUMN `CorMail`,"
+//                "DROP COLUMN `CorStatut`,"
+//                "DROP COLUMN `CorPrenom`,"
+//                "DROP COLUMN `CorNom`;");
             }
         }
     }

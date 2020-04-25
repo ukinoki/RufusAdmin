@@ -44,7 +44,7 @@ private:
     Compte                  *m_compteencours;
     bool                    m_visible;
     Mode                    m_mode;
-    int                     m_idcompteprardefaut;
+    int                     m_idcomptepardefaut;
     QString                 m_userlogin;
     QTimer                  *t_timer;
     void                    closeEvent(QCloseEvent *);

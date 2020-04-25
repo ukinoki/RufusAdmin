@@ -649,12 +649,12 @@ double Utils::mmToInches(double mm )  { return mm * 0.039370147; }
 
 QString Utils::PrefixePlus(double Dioptr)                          // convertit en QString signé + ou - les valeurs de dioptries issues des appareils de mesure
 {
-    if  (Dioptr == 0.0)
-        return "";
-    return (Dioptr > 0 ? "+" : "") + QLocale().toString(Dioptr,'f',2);
+//    if  (Dioptr == 0.0)
+//        return "0" + QString(QLocale().decimalPoint()) + "00";
+    return (Dioptr > 0.0 ? "+" : "") + QLocale().toString(Dioptr,'f',2);
 }
 
-/*!
+/*! ++++ PLUS UTILISE - trop sensible aux choix de jeu de caractère et marche mal avec les blobs
  * \brief Procedures::DecomposeScriptSQL(QString nomficscript)
  * Cette fonction va décomposer un script SQL en une suite d'instructions SQL utilisables par Qt
  * \param l'emplacement du fichier à traiter
@@ -745,6 +745,11 @@ QString Utils::ConvertitModePaiement(QString mode)
     else if (mode == "G")  mode = QObject::tr("Acte gratuit");
     else if (mode == "I")  mode = QObject::tr("Impayé");
     return mode;
+}
+
+void Utils::CalcBlobValueSQL(QVariant &newvalue)
+{
+    newvalue = ((newvalue == QVariant() || newvalue.toString() == "")? "null" : QVariant(newvalue));
 }
 
 void Utils::CalcStringValueSQL(QVariant &newvalue)
@@ -956,10 +961,10 @@ void Utils::setDataDate(QJsonObject data, QString key, QDate &prop)
     if( data.contains(key) )
         prop = QDate::fromString(data[key].toString(),"yyyy-MM-dd");
 }
-void Utils::setDataVariant(QJsonObject data, QString key, QVariant &prop)
+void Utils::setDataByteArray(QJsonObject data, QString key, QByteArray &prop)
 {
-    if( data.contains(key) )
-        prop = data[key].toVariant();
+  if( data.contains(key) )
+        prop = QByteArray::fromBase64(data[key].toString().toLatin1());
 }
 void Utils::setDataLogic(QJsonObject data, QString key, Logic &prop)
 {
@@ -1017,3 +1022,54 @@ QString Utils::TraduitCote(Cote cote)
     default: return "";
     }
 }
+
+QList<QImage> Utils::calcImagefromPdf(QByteArray ba)
+{
+    QList<QImage> listimg = QList<QImage>();
+    Poppler::Document* document = Poppler::Document::loadFromData(ba);
+    if (!document || document->isLocked()) {
+        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de charger le document"));
+        delete document;
+        return listimg;
+    }
+    if (document == Q_NULLPTR) {
+        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de charger le document"));
+        delete document;
+        return listimg;
+    }
+    document->setRenderHint(Poppler::Document::TextAntialiasing);
+    for (int i=0; i< document->numPages(); ++i)
+    {
+        Poppler::Page* pdfPage = document->page(i);
+        if (pdfPage == Q_NULLPTR) {
+            UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de retrouver les pages du document"));
+            delete document;
+            return listimg;
+        }
+        QImage image = pdfPage->renderToImage(300,300);
+        if (image.isNull()) {
+            UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de retrouver les pages du document"));
+            delete document;
+            return listimg;
+        }
+        listimg << image;
+    }
+    delete document;
+    return listimg;
+}
+
+QJsonValue Utils::jsonValFromImage(const QImage &img)
+{
+  QBuffer buffer;
+  buffer.open(QIODevice::WriteOnly);
+  img.save(&buffer, "JPG");
+  QByteArray const encoded = buffer.data().toBase64();
+  return {QLatin1String(encoded)};
+}
+
+QImage Utils::imagemapFrom(const QJsonValue &val)
+{
+    QByteArray const encoded = val.toString().toLatin1();
+    return QImage::fromData(QByteArray::fromBase64(encoded), "JPG");
+}
+

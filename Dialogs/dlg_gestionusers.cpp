@@ -824,6 +824,8 @@ void dlg_gestionusers::FermeFiche()
 // ----------------------------------------------------------------------------------
 void dlg_gestionusers::GestionComptes()
 {
+    if (!m_userencours)
+        return;
     bool modif      = false;
     bool verifempl  = ui->Employeurwidget->isVisible();
     QString empl    = ui->EmployeurcomboBox->currentText();
@@ -831,7 +833,6 @@ void dlg_gestionusers::GestionComptes()
     QString cptact  = ui->CompteActescomboBox->currentText();
     bool verifcpta  = ui->CompteComptawidget->isVisible();
     QString cptcpta = ui->CompteComptacomboBox->currentText();
-
     dlg_gestioncomptes *Dlg_GestComptes = new dlg_gestioncomptes(m_userencours, this);
     Dlg_GestComptes ->setWindowTitle(tr("Comptes bancaires de ") + m_userencours->login());
     Dlg_GestComptes ->exec();

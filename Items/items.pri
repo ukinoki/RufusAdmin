@@ -3,11 +3,13 @@
 #--------------------
 INCLUDEPATH += $$PWD
 SOURCES += $$PWD/cls_acte.cpp \
+    $$PWD/cls_commercial.cpp \
     $$PWD/cls_compte.cpp \
     $$PWD/cls_correspondant.cpp \
     $$PWD/cls_donneesophtapatient.cpp \
     $$PWD/cls_impression.cpp \
     $$PWD/cls_intervention.cpp \
+    $$PWD/cls_iol.cpp \
     $$PWD/cls_lignecompte.cpp \
     $$PWD/cls_manufacturer.cpp \
     $$PWD/cls_patient.cpp \
@@ -31,11 +33,13 @@ SOURCES += $$PWD/cls_acte.cpp \
     $$PWD/cls_lignepaiement.cpp
 
 HEADERS += $$PWD/cls_acte.h \
+    $$PWD/cls_commercial.h \
     $$PWD/cls_compte.h \
     $$PWD/cls_correspondant.h \
     $$PWD/cls_donneesophtapatient.h \
     $$PWD/cls_impression.h \
     $$PWD/cls_intervention.h \
+    $$PWD/cls_iol.h \
     $$PWD/cls_item.h \
     $$PWD/cls_lignecompte.h \
     $$PWD/cls_manufacturer.h \
