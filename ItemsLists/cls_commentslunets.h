@@ -15,28 +15,28 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MANUFACTURERS_H
-#define MANUFACTURERS_H
+#ifndef COMMENTSLUNETS_H
+#define COMMENTSLUNETS_H
 
-#include "cls_manufacturer.h"
+#include "cls_commentlunet.h"
 #include "cls_itemslist.h"
 
-class Manufacturers : public ItemsList
+class CommentsLunets : public ItemsList
 {
 private:
-    QMap<int, Manufacturer*> *map_all = Q_NULLPTR;      //!< la liste de tous les manufacturers
+    QMap<int, CommentLunet*> *map_comments = Q_NULLPTR;    //!< la liste des comments
 
 public:
-    explicit Manufacturers(QObject *parent = Q_NULLPTR);
+    explicit CommentsLunets(QObject *parent = Q_NULLPTR);
 
-    QMap<int, Manufacturer*> *manufacturers() const;
+    QMap<int, CommentLunet*> *commentaires() const;
 
-    Manufacturer* getById(int id, bool reload = false);
-    void initListe();
+    CommentLunet* getById(int id, bool reload = false);
+    void initListeByListUsers(QList<int> listid);
 
     //!> actions sur les enregistrements
-    void                SupprimeManufacturer(Manufacturer *Manufacturer);
-    Manufacturer*       CreationManufacturer(QHash<QString, QVariant> sets);
+    void                SupprimeCommentLunet(CommentLunet *comment);
+    CommentLunet*       CreationCommentLunet(QHash<QString, QVariant> sets);
 };
 
-#endif // MANUFACTURERS_H
+#endif // COMMENTSLUNETS_H

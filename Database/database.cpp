@@ -85,22 +85,30 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
     m_db.setHostName( m_server );
     m_db.setPort( m_port );
     bool useSSL = (m_modeacces == Utils::Distant);
-    QString dirkey = "/etc/mysql";
+    QString connectSSLoptions = "";
     if (useSSL)
     {
+        QString dirkey = "/etc/mysql";
         QSettings *m_settings = new QSettings(PATH_FILE_INI, QSettings::IniFormat);
         if (m_settings->value(Utils::getBaseFromMode(Utils::Distant) + "/DossierClesSSL").toString() != "")
             dirkey = m_settings->value(Utils::getBaseFromMode(Utils::Distant) + "/DossierClesSSL").toString();
         else
             m_settings->setValue(Utils::getBaseFromMode(Utils::Distant) + "/DossierClesSSL",dirkey);
+        QDir dirtorestore(dirkey);
+        //qDebug() << dirtorestore.absolutePath();
+        QStringList listfichiers = dirtorestore.entryList(QStringList() << "*.pem");
+        for (int t=0; t<listfichiers.size(); t++)
+        {
+            QString nomfich  = listfichiers.at(t);
+            if (nomfich == "client-key.pem")
+                connectSSLoptions += "SSL_KEY=" + dirkey + "/client-key.pem;";
+            if (nomfich == "client-cert.pem")
+                connectSSLoptions += "SSL_CERT=" + dirkey + "/client-cert.pem;";
+            if (nomfich == "ca-cert.pem")
+                connectSSLoptions += "SSL_CA=" + dirkey + "/ca-cert.pem;";
+        }
     }
-    QString connectOptions = (useSSL?
-                              "SSL_KEY=" + dirkey + "/client-key.pem;"
-                              "SSL_CERT=" + dirkey + "/client-cert.pem;"
-                              "SSL_CA=" + dirkey + "/ca-cert.pem;"
-                              "MYSQL_OPT_RECONNECT=1"
-                                 :
-                              "MYSQL_OPT_RECONNECT=1");
+    QString connectOptions = connectSSLoptions + "MYSQL_OPT_RECONNECT=1";
     m_db.setConnectOptions(connectOptions);
 
     m_db.setUserName(login + (useSSL ? "SSL" : ""));
@@ -2534,6 +2542,64 @@ Refraction* DataBase::loadRefractionById(int idref)                   //! charge
 }
 
 /*
+ * Commentaires lunettes
+*/
+
+QJsonObject DataBase::loadCommentLunetData(QVariantList comdata)           //! attribue la liste des datas à un commentaire lunette
+{
+    QJsonObject data{};
+    data[CP_ID_COMLUN]                  = comdata.at(0).toInt();
+    data[CP_TEXT_COMLUN]                = comdata.at(1).toString();
+    data[CP_RESUME_COMLUN]              = comdata.at(2).toString();
+    data[CP_IDUSER_COMLUN]              = comdata.at(3).toInt();
+    data[CP_PARDEFAUT_COMLUN]           = (comdata.at(4).toInt() == 1);
+    data[CP_PUBLIC_COMLUN]              = (comdata.at(5).toInt() == 1);
+    return data;
+}
+
+CommentLunet* DataBase::loadCommentLunetById(int id)                 //! charge un commentaire lunette
+{
+    bool ok;
+    CommentLunet* com = Q_NULLPTR;
+    QString req = "SELECT " CP_ID_COMLUN ", " CP_TEXT_COMLUN ", " CP_RESUME_COMLUN ", " CP_IDUSER_COMLUN ", " CP_PARDEFAUT_COMLUN ", " CP_PUBLIC_COMLUN " FROM " TBL_COMMENTAIRESLUNETTES
+            " WHERE " CP_ID_COMLUN " = " + QString::number(id)
+            + " order by " CP_RESUME_COMLUN;
+    QVariantList comdata = getFirstRecordFromStandardSelectSQL(req,ok);
+    if(!ok || comdata.size()==0)
+        return com;
+    QJsonObject data = loadCommentLunetData(comdata);
+    com = new CommentLunet(data);
+    return com;
+}
+
+QList<CommentLunet*> DataBase::loadCommentsLunetsByListidUser(QList<int> listid)        //! charge les commentaires utilisés par un groupe d'utilisateurs
+{
+    QList<CommentLunet*> listcom = QList<CommentLunet*>();
+    if (listid.size() == 0)
+        return listcom;
+    QString req = "SELECT " CP_ID_COMLUN ", " CP_TEXT_COMLUN ", " CP_RESUME_COMLUN ", " CP_IDUSER_COMLUN ", " CP_PARDEFAUT_COMLUN ", " CP_PUBLIC_COMLUN " FROM " TBL_COMMENTAIRESLUNETTES
+            " WHERE " CP_IDUSER_COMLUN " = " + QString::number(listid.at(0));
+    if (listid.size()>1)
+    {
+        for (int i=1; i<listid.size(); ++i)
+            req += " OR " CP_IDUSER_COMLUN " = " + QString::number(listid.at(i));
+        req += " order by " CP_RESUME_COMLUN;
+    }
+    //qDebug() << req;
+    QList<QVariantList> listdata = StandardSelectSQL(req,ok);
+    if(!ok || listdata.size()==0)
+        return listcom;
+    for (int i=0; i<listdata.size(); ++i)
+    {
+        QJsonObject data = loadCommentLunetData(listdata.at(i));
+        CommentLunet *com = new CommentLunet(data);
+        if (com)
+            listcom << com;
+    }
+    return listcom;
+}
+
+/*
  * Sessions opératoires
 */
 
@@ -2895,8 +2961,8 @@ Manufacturer* DataBase::loadManufacturerById(int idManufacturer)                
     QString req =   "SELECT " CP_ID_MANUFACTURER ", " CP_NOM_MANUFACTURER ", " CP_ADRESSE1_MANUFACTURER ", " CP_ADRESSE2_MANUFACTURER ", " CP_ADRESSE3_MANUFACTURER ", "
                               CP_CODEPOSTAL_MANUFACTURER ", " CP_VILLE_MANUFACTURER ", " CP_TELEPHONE_MANUFACTURER ", " CP_FAX_MANUFACTURER ", " CP_PORTABLE_MANUFACTURER ", " CP_WEBSITE_MANUFACTURER ", "
                               CP_MAIL_MANUFACTURER ", " CP_INACTIF_MANUFACTURER ", " CP_DISTRIBUEPAR_MANUFACTURER ", " CP_IDRUFUS_MANUFACTURER
-                    " FROM " TBL_MANUFACTURERS " order by " CP_NOM_MANUFACTURER
-                    " WHERE " CP_ID_MANUFACTURER " = " + QString::number(idManufacturer) ;
+                    " FROM " TBL_MANUFACTURERS
+                    " WHERE " CP_ID_MANUFACTURER " = " + QString::number(idManufacturer);
     QVariantList Manufacturerdata = getFirstRecordFromStandardSelectSQL(req,ok);
     if(!ok || Manufacturerdata.size()==0)
         return Man;
@@ -2948,8 +3014,7 @@ Commercial* DataBase::loadCommercialById(int idcommercial)                   //!
     QString req =   "SELECT " CP_ID_COM ", " CP_NOM_COM ", " CP_PRENOM_COM ", " CP_STATUT_COM ", " CP_MAIL_COM ", "
                               CP_TELEPHONE_COM ", " CP_IDMANUFACTURER_COM
                     " FROM " TBL_COMMERCIALS
-                    " WHERE " CP_ID_COM " = " + QString::number(idcommercial) +
-                    " order by " CP_NOM_COM ", " CP_PRENOM_COM;
+                    " WHERE " CP_ID_COM " = " + QString::number(idcommercial);
     QVariantList Commercialdata = getFirstRecordFromStandardSelectSQL(req,ok);
     if(!ok || Commercialdata.size()==0)
         return Com;
@@ -2964,8 +3029,8 @@ QList<Commercial *> DataBase::loadCommercialsByIdManufacturer(int idmanufacturer
     QString req =   "SELECT " CP_ID_COM ", " CP_NOM_COM ", " CP_PRENOM_COM ", " CP_STATUT_COM ", " CP_MAIL_COM ", "
                               CP_TELEPHONE_COM ", " CP_IDMANUFACTURER_COM
                     " FROM " TBL_COMMERCIALS
-                    " WHERE " CP_IDMANUFACTURER_COM " = " + QString::number(idmanufacturer)
-                    +  " order by " CP_NOM_COM ", " CP_PRENOM_COM;
+                    " WHERE " CP_IDMANUFACTURER_COM " = " + QString::number(idmanufacturer) +
+                    " order by " CP_NOM_COM ", " CP_PRENOM_COM;
     QList<QVariantList> commerciallist = StandardSelectSQL(req,ok);
     //qDebug() << req;
     if(!ok || commerciallist.size()==0)

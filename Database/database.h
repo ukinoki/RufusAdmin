@@ -37,6 +37,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_acte.h"
 #include "cls_archivebanque.h"
 #include "cls_banque.h"
+#include "cls_commentlunet.h"
 #include "cls_commercial.h"
 #include "cls_correspondant.h"
 #include "cls_cotation.h"
@@ -338,6 +339,15 @@ private:
 public:
     QList<Refraction*>      loadRefractionsByPatId(int id);                     //! charge toutes les refractions d'un patient
     Refraction*             loadRefractionById(int idref);                      //! charge une refraction définie par son id - utilisé pour renouveler les données en cas de modification
+
+    /*
+     * Commentaires lunettes
+    */
+private:
+    QJsonObject             loadCommentLunetData(QVariantList refdata);         //! attribue le liste des datas à un commentaire lunette
+public:
+    QList<CommentLunet*>    loadCommentsLunetsByListidUser(QList<int> listid);  //! charge tous les commentaires lunettes
+    CommentLunet*           loadCommentLunetById(int idref);                    //! charge un commentaire défini par son id - utilisé pour renouveler les données en cas de modification
 
     /*
      * Sessions

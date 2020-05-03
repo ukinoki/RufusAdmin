@@ -27,6 +27,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
     Intervention *interv        = Q_NULLPTR;
     Tiers *tiers                = Q_NULLPTR;
     Commercial *com             = Q_NULLPTR;
+    CommentLunet *comment       = Q_NULLPTR;
 
     bool loop = false;
     while (!loop)
@@ -174,6 +175,13 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
         if (com != Q_NULLPTR)
         {
             table = TBL_COMMERCIALS;
+            loop = true;
+            break;
+        }
+        comment = dynamic_cast<CommentLunet*>(item);
+        if (com != Q_NULLPTR)
+        {
+            table = TBL_COMMENTAIRESLUNETTES;
             loop = true;
             break;
         }
@@ -1124,6 +1132,38 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
         {
             com->setidmanufactureur(newvalue.toInt());
             Utils::CalcintValueSQL(newvalue);
+        }
+    }
+    else if (table == TBL_COMMENTAIRESLUNETTES)
+    {
+        ok = true;
+        clause = CP_ID_COMLUN " = " + QString::number(item->id());
+        if (field == CP_TEXT_COMLUN)
+        {
+            comment->settexte(newvalue.toString());
+            Utils::CalcStringValueSQL(newvalue);
+        }
+        else if (field == CP_RESUME_COMLUN)
+        {
+            comment->setresume(newvalue.toString());
+            Utils::CalcStringValueSQL(newvalue);
+        }
+        else if (field == CP_IDUSER_COMLUN)
+        {
+            comment->setiduser(newvalue.toInt());
+            Utils::CalcStringValueSQL(newvalue);
+        }
+        else if (field == CP_PARDEFAUT_COMLUN)
+        {
+            bool a = newvalue.toBool();
+            comment->setdefaut(a);
+            newvalue = (a? "1" : "null");
+        }
+        else if (field == CP_PUBLIC_COMLUN)
+        {
+            bool a = newvalue.toBool();
+            comment->setpublic(a);
+            newvalue = (a? "1" : "null");
         }
     }
 

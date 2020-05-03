@@ -338,6 +338,13 @@ static bool Supprime(QMap<int, T*> *m_map, T* item)
             loop = true;
             break;
         }
+        if (dynamic_cast<CommentLunet*>(item) != Q_NULLPTR)
+        {
+            table = TBL_COMMENTAIRESLUNETTES;
+            idname = CP_ID_COMLUN;
+            loop = true;
+            break;
+        }
         loop = true;
     }
     if (table == "")

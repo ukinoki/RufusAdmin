@@ -602,6 +602,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_VERRETEINTE_REFRACTIONS                     "VerreTeinte"
 #define CP_PD_REFRACTIONS                              "PD"
 
+                            //! Table Ophtalmologie.commentaireslunettes
+#define CP_ID_COMLUN                                    "idCommentLunet"
+#define CP_TEXT_COMLUN                                  "TextComment"
+#define CP_RESUME_COMLUN                                "ResumeComment"
+#define CP_PARDEFAUT_COMLUN                             "ParDefautComment"
+#define CP_IDUSER_COMLUN                                "idUser"
+#define CP_PUBLIC_COMLUN                                "ComPublic"
+
                             //! Table Ophtalmologie.tonometries
 #define CP_ID_TONO                                      "idTono"
 #define CP_IDPAT_TONO                                   "idPat"

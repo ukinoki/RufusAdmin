@@ -19,7 +19,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define UPDELEGATE_H
 
 #include <QStyledItemDelegate>
-#include <QItemDelegate>
 #include "uplabel.h"
 #include "uplineedit.h"
 #include "utils.h"
@@ -48,20 +47,27 @@ public:
 
     QWidget*    createEditor    (QWidget* parent, const QStyleOptionViewItem&, const QModelIndex &index) const  Q_DECL_OVERRIDE;
     void        setEditorData   (QWidget* editor,   const QModelIndex& index) const Q_DECL_OVERRIDE;
+    void        setModelData(QWidget *editor, QAbstractItemModel *model,
+                            const QModelIndex &index) const override;
+    void        updateEditorGeometry(QWidget *editor,
+                                    const QStyleOptionViewItem &option, const QModelIndex &index) const override;
     bool        editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)  Q_DECL_OVERRIDE;
+private:
+    void        commitEditor();
 
 signals:
     void        focusitem(int a);
     void        editingFinished();
+    void        textEdited();
 };
 
-class TreeViewDelegate : public QItemDelegate
+class TreeViewDelegate : public QStyledItemDelegate
 {
 private:
-    int m_iHeight;
+    int m_height;
 public:
-    TreeViewDelegate(QObject *poParent = Q_NULLPTR, int iHeight = -1) : QItemDelegate(poParent), m_iHeight(iHeight) {}
-    void setHeight(int iHeight) { m_iHeight = iHeight; }
+    TreeViewDelegate(QObject *parent = Q_NULLPTR, int height = -1) : QStyledItemDelegate(parent), m_height(height) {}
+    void setHeight(int height) { m_height = height; }
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 };
 
