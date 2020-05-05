@@ -48,6 +48,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_iol.h"
 #include "cls_lignepaiement.h"
 #include "cls_manufacturer.h"
+#include "cls_motcle.h"
 #include "cls_motif.h"
 #include "cls_paiementtiers.h"
 #include "cls_patient.h"
@@ -407,6 +408,15 @@ public:
     Commercial*             loadCommercialById(int idCommercial);                   //! charge un commercial défini par son id - utilisé pour renouveler les données en cas de modification
     QList<Commercial*>      loadCommercialsByIdManufacturer(int idmanufacturer);     //! charge tous les commerciaux d'un fabricant
 
+    /*
+     * MotsClés
+    */
+private:
+    QJsonObject             loadMotCleData(QVariantList Motcledata);                //! attribue le liste des datas à un motcle
+public:
+    QList<MotCle*>          loadMotsCles();                                         //! charge tous les mots clés
+    MotCle*                 loadMotCleById(int idMotcle);                           //! charge un motclé défini par son id - utilisé pour renouveler les données en cas de modification
+    QList<int>              loadListIdMotsClesByPat(int idpat);                     //! chagre les id des mots clés utilisés par un patient
 };
 
 #endif // DataBase_H

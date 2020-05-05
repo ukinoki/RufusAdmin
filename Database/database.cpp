@@ -3044,3 +3044,63 @@ QList<Commercial *> DataBase::loadCommercialsByIdManufacturer(int idmanufacturer
     }
     return list;
 }
+
+/*
+ * Manufacturers
+*/
+
+QJsonObject DataBase::loadMotCleData(QVariantList Motcledata)         //! attribue la liste des datas à un mot clé
+{
+    QJsonObject data{};
+    data[CP_ID_MOTCLE]      = Motcledata.at(0).toInt();
+    data[CP_TEXT_MOTCLE]    = Motcledata.at(1).toString();
+    return data;
+}
+
+QList<MotCle*> DataBase::loadMotsCles()                       //! charge tous les mots clés
+{
+    QList<MotCle*> list = QList<MotCle*> ();
+    QString req =   "SELECT " CP_ID_MOTCLE ", " CP_TEXT_MOTCLE
+                    " FROM " TBL_MOTSCLES " order by " CP_TEXT_MOTCLE;
+    QList<QVariantList> MotClelist = StandardSelectSQL(req,ok);
+    //qDebug() << req;
+    if(!ok || MotClelist.size()==0)
+        return list;
+    for (int i=0; i<MotClelist.size(); ++i)
+    {
+        QJsonObject data = loadMotCleData(MotClelist.at(i));
+        MotCle *Motcle = new MotCle(data);
+        if (Motcle)
+            list << Motcle;
+    }
+    return list;
+}
+
+MotCle* DataBase::loadMotCleById(int idMotcle)                   //! charge un mot clé défini par son id - utilisé pour renouveler les données en cas de modification
+{
+    MotCle *Motcle = Q_NULLPTR;
+    QString req =   "SELECT " CP_ID_MOTCLE ", " CP_TEXT_MOTCLE
+                    " FROM " TBL_MOTSCLES
+                    " WHERE " CP_ID_MOTCLE " = " + QString::number(idMotcle);
+    QVariantList MotCledata = getFirstRecordFromStandardSelectSQL(req,ok);
+    if(!ok || MotCledata.size()==0)
+        return Motcle;
+    QJsonObject data = loadMotCleData(MotCledata);
+    Motcle = new MotCle(data);
+    return Motcle;
+}
+
+QList<int> DataBase::loadListIdMotsClesByPat(int idpat)                              //! chagre les id des mots clés utilisés par un patient
+{
+    QList<int> listid = QList<int> ();
+    QString req =   "SELECT " CP_IDMOTCLE_JOINTURESMOTSCLES
+                    " FROM " TBL_MOTSCLESJOINTURES
+                    " WHERE " CP_IDPATIENT_JOINTURESMOTSCLES " = " + QString::number(idpat);
+    QList<QVariantList> idslist = StandardSelectSQL(req,ok);
+    //qDebug() << req;
+    if(!ok || idslist.size()==0)
+        return listid;
+    for (int i=0; i<idslist.size(); ++i)
+        listid << idslist.at(i).at(0).toInt();
+    return listid;
+}

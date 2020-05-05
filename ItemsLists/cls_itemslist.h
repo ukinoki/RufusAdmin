@@ -345,6 +345,13 @@ static bool Supprime(QMap<int, T*> *m_map, T* item)
             loop = true;
             break;
         }
+        if (dynamic_cast<MotCle*>(item) != Q_NULLPTR)
+        {
+            table = TBL_MOTSCLES;
+            idname = CP_ID_MOTCLE;
+            loop = true;
+            break;
+        }
         loop = true;
     }
     if (table == "")

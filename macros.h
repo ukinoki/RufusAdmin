@@ -269,6 +269,15 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDLIEU_DOCSEXTERNES                          "idLieu"
 #define CP_IMPORTANCE_DOCSEXTERNES                      "Importance"
 
+                            //! Table rufus.MotsCles
+#define CP_ID_MOTCLE                                    "idMotCle"
+#define CP_TEXT_MOTCLE                                  "MotCle"
+
+                            //! Table rufus.MotsClesJointures
+#define CP_ID_JOINTURESMOTSCLES                         "idJointure"
+#define CP_IDPATIENT_JOINTURESMOTSCLES                  "idPat"
+#define CP_IDMOTCLE_JOINTURESMOTSCLES                   "idMotCle"
+
                              //! Table Rufus.ParametresSysteme
 #define CP_MDPADMIN_PARAMSYSTEME                        "MDPAdmin"
 #define CP_NUMCENTRE_PARAMSYSTEME                       "NumCentre"
