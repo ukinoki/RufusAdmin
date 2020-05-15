@@ -43,7 +43,7 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     AjouteLayButtons(UpDialog::ButtonClose);
 
     wdg_buttonframe = new WidgetButtonFrame(ui->ListUserstableWidget);
-    wdg_buttonframe->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::ModifButton | WidgetButtonFrame::MoinsButton);
+    wdg_buttonframe->AddButtons(WidgetButtonFrame::Plus | WidgetButtonFrame::Modifier | WidgetButtonFrame::Moins);
 
     QVBoxLayout *usrLayout = new QVBoxLayout;
     usrLayout        ->addWidget(wdg_buttonframe->widgButtonParent());
@@ -878,7 +878,7 @@ void dlg_gestionusers::GestionLieux()
     m_MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), m_MDPverified );
     if (!m_MDPverified)
             return;
-    dlg_GestionLieux *gestLieux = new dlg_GestionLieux();
+    dlg_listelieux *gestLieux = new dlg_listelieux();
     gestLieux->exec();
     ReconstruitListeLieuxExercice();
     delete gestLieux;

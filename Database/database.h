@@ -220,12 +220,20 @@ public:
     /*
      * Impressions
     */
-    QList<Impression*>        loadImpressions();                        //! charge tous les documents imprimables de la  table courriers
+private:
+    QJsonObject                 loadImpressionData(QVariantList Impressiondata);    //! attribue la liste des datas à une impression
+public:
+    QList<Impression*>          loadImpressions();                                  //! charge tous les documents imprimables de la  table courriers
+    Impression*                 loadImpressionById(int id);                         //! charge un document d'imprssion par son id
 
     /*
      * Dossiers d'impressions
     */
-    QList<DossierImpression*>    loadDossiersImpressions();             //! charge tous les dossiers de documents imprimables de la  table courriers
+private:
+    QJsonObject                 loadDossierImpressionData(QVariantList dossierdata);    //! attribue la liste des datas à un dossier de documents imprimables
+public:
+    QList<DossierImpression*>   loadDossiersImpressions();                              //! charge tous les dossiers de documents imprimables de la  table courriers
+    DossierImpression*          loadDossierImpressionById(int id);                      //! charge un dossier de documents imprimables à partir de son id
 
     /*
      * Compta
@@ -270,10 +278,11 @@ public:
      * Sites
     */
 private:
-    QList<Site*>            loadSites(QString req);                     //! charge les sites de travail à partir de la requete req
+    QJsonObject             loadSiteData(QVariantList sitdata);
 public:
+    QList<Site*>            loadSites();                                //! charge tous les sites de travail
+    Site*                   loadSiteById(int id);                       //! charge un sites de travail à partir son id
     QList<int>              loadidSitesByUser(int idUser);              //! élabore la requête qui charge tous les sites de travail utilisés par un user
-    QList<Site*>            loadSitesAll();                             //! élabore la requête qui charge tous les sites de travail sans exception
 
 public:
     /*

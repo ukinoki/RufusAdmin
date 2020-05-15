@@ -24,7 +24,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTableWidgetItem>
 
 #include "dlg_gestioncomptes.h"
-#include "dlg_gestionlieux.h"
+#include "dlg_listelieux.h"
 #include "upheaderview.h"
 
 /* sert à gérer les comptes utilisateurs

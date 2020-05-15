@@ -1122,6 +1122,21 @@ QJsonObject DataBase::loadDocExterneData(int idDoc)
 /*
  * Impressions
 */
+QJsonObject DataBase::loadImpressionData(QVariantList impressionlist)
+{
+    QJsonObject data{};
+    data[CP_ID_IMPRESSIONS]            = impressionlist.at(0).toInt();
+    data[CP_TEXTE_IMPRESSIONS]         = impressionlist.at(1).toString();
+    data[CP_RESUME_IMPRESSIONS]        = impressionlist.at(2).toString();
+    data[CP_CONCLUSION_IMPRESSIONS]    = impressionlist.at(3).toString();
+    data[CP_IDUSER_IMPRESSIONS]        = impressionlist.at(4).toInt();
+    data[CP_DOCPUBLIC_IMPRESSIONS]     = (impressionlist.at(5).toInt()==1);
+    data[CP_PRESCRIPTION_IMPRESSIONS]  = (impressionlist.at(6).toInt()==1);
+    data[CP_EDITABLE_IMPRESSIONS ]     = (impressionlist.at(7).toInt()==1);
+    data[CP_MEDICAL_IMPRESSIONS]       = (impressionlist.at(8).toInt()==1);
+    return data;
+}
+
 QList<Impression*> DataBase::loadImpressions()
 {
     QList<Impression*> impressions;
@@ -1134,16 +1149,7 @@ QList<Impression*> DataBase::loadImpressions()
         return impressions;
     for (int i=0; i<doclist.size(); ++i)
     {
-        QJsonObject jData{};
-        jData[CP_ID_IMPRESSIONS]            = doclist.at(i).at(0).toInt();
-        jData[CP_TEXTE_IMPRESSIONS]         = doclist.at(i).at(1).toString();
-        jData[CP_RESUME_IMPRESSIONS]        = doclist.at(i).at(2).toString();
-        jData[CP_CONCLUSION_IMPRESSIONS]    = doclist.at(i).at(3).toString();
-        jData[CP_IDUSER_IMPRESSIONS]        = doclist.at(i).at(4).toInt();
-        jData[CP_DOCPUBLIC_IMPRESSIONS]     = (doclist.at(i).at(5).toInt()==1);
-        jData[CP_PRESCRIPTION_IMPRESSIONS]  = (doclist.at(i).at(6).toInt()==1);
-        jData[CP_EDITABLE_IMPRESSIONS ]     = (doclist.at(i).at(7).toInt()==1);
-        jData[CP_MEDICAL_IMPRESSIONS]       = (doclist.at(i).at(8).toInt()==1);
+        QJsonObject jData = loadImpressionData(doclist.at(i));
         Impression *doc = new Impression(jData);
         if (doc != Q_NULLPTR)
             impressions << doc;
@@ -1151,9 +1157,34 @@ QList<Impression*> DataBase::loadImpressions()
     return impressions;
 }
 
+Impression* DataBase::loadImpressionById(int id)
+{
+    Impression* impression = Q_NULLPTR;
+    QString req = "Select " CP_ID_IMPRESSIONS ", " CP_TEXTE_IMPRESSIONS ", " CP_RESUME_IMPRESSIONS ", " CP_CONCLUSION_IMPRESSIONS ", " CP_IDUSER_IMPRESSIONS ","
+                  CP_DOCPUBLIC_IMPRESSIONS ", " CP_PRESCRIPTION_IMPRESSIONS ", " CP_EDITABLE_IMPRESSIONS ", " CP_MEDICAL_IMPRESSIONS " from " TBL_IMPRESSIONS
+                  " WHERE " CP_ID_IMPRESSIONS " = " + QString::number(id);
+    QVariantList doclist = getFirstRecordFromStandardSelectSQL(req,ok);
+    if(!ok || doclist.size()==0)
+        return impression;
+    QJsonObject jData = loadImpressionData(doclist);
+    impression = new Impression(jData);
+    return impression;
+}
+
 /*
  * Dossiers impression
 */
+QJsonObject DataBase::loadDossierImpressionData(QVariantList dossierdata)
+{
+    QJsonObject data{};
+    data[CP_ID_DOSSIERIMPRESSIONS]     = dossierdata.at(1).toInt();
+    data[CP_TEXTE_DOSSIERIMPRESSIONS]  = dossierdata.at(4).toString();
+    data[CP_RESUME_DOSSIERIMPRESSIONS] = dossierdata.at(0).toString();
+    data[CP_IDUSER_DOSSIERIMPRESSIONS] = dossierdata.at(2).toInt();
+    data[CP_PUBLIC_DOSSIERIMPRESSIONS] = (dossierdata.at(3).toInt()==1);
+    return data;
+}
+
 QList<DossierImpression*> DataBase::loadDossiersImpressions()
 {
     QList<DossierImpression*> dossiers;
@@ -1176,17 +1207,27 @@ QList<DossierImpression*> DataBase::loadDossiersImpressions()
         return dossiers;
     for (int i=0; i<doclist.size(); ++i)
     {
-        QJsonObject jData{};
-        jData[CP_ID_DOSSIERIMPRESSIONS]     = doclist.at(i).at(1).toInt();
-        jData[CP_TEXTE_DOSSIERIMPRESSIONS]  = doclist.at(i).at(4).toString();
-        jData[CP_RESUME_DOSSIERIMPRESSIONS] = doclist.at(i).at(0).toString();
-        jData[CP_IDUSER_DOSSIERIMPRESSIONS] = doclist.at(i).at(2).toInt();
-        jData[CP_PUBLIC_DOSSIERIMPRESSIONS] = (doclist.at(i).at(3).toInt()==1);
+        QJsonObject jData = loadDossierImpressionData(doclist.at(i));
         DossierImpression *metadoc = new DossierImpression(jData);
         if (metadoc != Q_NULLPTR)
             dossiers << metadoc;
     }
     return dossiers;
+}
+
+DossierImpression* DataBase::loadDossierImpressionById(int id)
+{
+    DossierImpression* dossier = Q_NULLPTR;
+    QString     req =  "SELECT " CP_RESUME_DOSSIERIMPRESSIONS " , " CP_ID_DOSSIERIMPRESSIONS " , " CP_IDUSER_DOSSIERIMPRESSIONS ", " CP_PUBLIC_DOSSIERIMPRESSIONS ", " CP_TEXTE_DOSSIERIMPRESSIONS
+                       " FROM "  TBL_DOSSIERSIMPRESSIONS
+                       " WHERE " CP_ID_DOSSIERIMPRESSIONS " = " + QString::number(id);
+//    qDebug() << req;
+    QVariantList doclist = getFirstRecordFromStandardSelectSQL(req,ok);
+    if(!ok || doclist.size()==0)
+        return dossier;
+    QJsonObject jData = loadDossierImpressionData(doclist);
+    dossier = new DossierImpression(jData);
+    return dossier;
 }
 
 
@@ -1867,49 +1908,22 @@ QList<Motif*> DataBase::loadMotifs()
 /*
  * Sites
 */
-QList<Site*> DataBase::loadSitesAll()
+QJsonObject DataBase::loadSiteData(QVariantList sitdata)         //! attribue la liste des datas à un mot clé
 {
-    int iduser = 1;
-    QString req = "select lieux." CP_ID_SITE ", " CP_NOM_SITE ", " CP_ADRESSE1_SITE ", " CP_ADRESSE2_SITE ", " CP_ADRESSE3_SITE ", "
-                  CP_CODEPOSTAL_SITE ", " CP_VILLE_SITE ", " CP_TELEPHONE_SITE ", " CP_FAX_SITE ", " CP_COULEUR_SITE ", iduser"
-                  " from " TBL_LIEUXEXERCICE " lieux left join " TBL_JOINTURESLIEUX " joint"
-                  " on joint." CP_IDLIEU_JOINTSITE " = lieux." CP_ID_SITE
-                  " where " CP_IDUSER_JOINTSITE " = " + QString::number(iduser) +
-                  " union"
-                  " (select lieux." CP_ID_SITE ", " CP_NOM_SITE ", " CP_ADRESSE1_SITE ", " CP_ADRESSE2_SITE ", " CP_ADRESSE3_SITE ", "
-                  CP_CODEPOSTAL_SITE ", " CP_VILLE_SITE ", " CP_TELEPHONE_SITE ", " CP_FAX_SITE ", " CP_COULEUR_SITE ", null as iduser"
-                  " from " TBL_LIEUXEXERCICE " lieux left join " TBL_JOINTURESLIEUX " joint"
-                  " on joint." CP_IDLIEU_JOINTSITE " = lieux." CP_ID_SITE
-                  " where " CP_IDUSER_JOINTSITE " <> " + QString::number(iduser) + " and " CP_IDUSER_JOINTSITE " is not null"
-                  " and lieux." CP_ID_SITE " not in"
-                  " (select lieux." CP_ID_SITE
-                  " from " TBL_LIEUXEXERCICE " lieux left join " TBL_JOINTURESLIEUX " joint"
-                  " on joint." CP_IDLIEU_JOINTSITE " = lieux." CP_ID_SITE
-                  " where " CP_IDUSER_JOINTSITE " = " + QString::number(iduser) + ")";
-                  " union"
-                  " (select lieux." CP_ID_SITE ", " CP_NOM_SITE ", " CP_ADRESSE1_SITE ", " CP_ADRESSE2_SITE ", " CP_ADRESSE3_SITE ", "
-                  CP_CODEPOSTAL_SITE ", " CP_VILLE_SITE ", " CP_TELEPHONE_SITE ", " CP_FAX_SITE ", " CP_COULEUR_SITE ", null as iduser"
-                  " from " TBL_LIEUXEXERCICE " lieux left join " TBL_JOINTURESLIEUX " joint"
-                  " on joint." CP_IDLIEU_JOINTSITE " = lieux." CP_ID_SITE
-                  " where " CP_IDUSER_JOINTSITE " is not null"
-                  " and lieux." CP_ID_SITE " not in"
-                  " (select lieux." CP_ID_SITE
-                  " from " TBL_LIEUXEXERCICE " lieux left join " TBL_JOINTURESLIEUX " joint"
-                  " on joint." CP_IDLIEU_JOINTSITE " = lieux." CP_ID_SITE
-                  " where " CP_IDUSER_JOINTSITE " = " + QString::number(iduser) + ")";
-    /*!< cette requête sert à recenser tous les lieux de travail avec le champ iduser positionné
-     *  à l'id du user en cours s'il est utilisé par l'user en cours,
-     *  à -1 s'il est utilisé par d'autres utilisateurs mais pas le user en cours
-     *  et à null s'il n'est utilisé par personne
-     * il doit y avoir moyen de faire plus simple mais je ne sais pas comment
-     */
-    //qDebug() << req;
-
-    req = "select " CP_ID_SITE ", " CP_NOM_SITE ", " CP_ADRESSE1_SITE ", " CP_ADRESSE2_SITE ", " CP_ADRESSE3_SITE ", "
-          CP_CODEPOSTAL_SITE ", " CP_VILLE_SITE ", " CP_TELEPHONE_SITE ", " CP_FAX_SITE ", " CP_COULEUR_SITE
-          " from " TBL_LIEUXEXERCICE;
-    return loadSites( req );
+    QJsonObject data{};
+    data[CP_ID_SITE]           = sitdata.at(0).toInt();
+    data[CP_NOM_SITE]          = sitdata.at(1).toString();
+    data[CP_ADRESSE1_SITE]     = sitdata.at(2).toString();
+    data[CP_ADRESSE2_SITE]     = sitdata.at(3).toString();
+    data[CP_ADRESSE3_SITE]     = sitdata.at(4).toString();
+    data[CP_CODEPOSTAL_SITE]   = sitdata.at(5).toInt();
+    data[CP_VILLE_SITE]        = sitdata.at(6).toString();
+    data[CP_TELEPHONE_SITE]    = sitdata.at(7).toString();
+    data[CP_FAX_SITE]          = sitdata.at(8).toString();
+    data[CP_COULEUR_SITE]      = sitdata.at(9).toString();
+    return data;
 }
+
 QList<int> DataBase::loadidSitesByUser(int idUser)
 {
     QList<int> listid = QList<int>();
@@ -1921,30 +1935,39 @@ QList<int> DataBase::loadidSitesByUser(int idUser)
     return listid;
 }
 
-QList<Site*> DataBase::loadSites(QString req)
+QList<Site*> DataBase::loadSites()
 {
-    QList<Site*> etabs;
+    QList<Site*> list;
+    QString req = "select " CP_ID_SITE ", " CP_NOM_SITE ", " CP_ADRESSE1_SITE ", " CP_ADRESSE2_SITE ", " CP_ADRESSE3_SITE ", "
+          CP_CODEPOSTAL_SITE ", " CP_VILLE_SITE ", " CP_TELEPHONE_SITE ", " CP_FAX_SITE ", " CP_COULEUR_SITE
+          " from " TBL_LIEUXEXERCICE;
     QList<QVariantList> sitlist = StandardSelectSQL(req,ok);
     if(!ok || sitlist.size()==0)
-        return etabs;
+        return list;
     for (int i=0; i<sitlist.size(); ++i)
     {
-        QJsonObject jEtab{};
-        jEtab[CP_ID_SITE]           = sitlist.at(i).at(0).toInt();
-        jEtab[CP_NOM_SITE]          = sitlist.at(i).at(1).toString();
-        jEtab[CP_ADRESSE1_SITE]     = sitlist.at(i).at(2).toString();
-        jEtab[CP_ADRESSE2_SITE]     = sitlist.at(i).at(3).toString();
-        jEtab[CP_ADRESSE3_SITE]     = sitlist.at(i).at(4).toString();
-        jEtab[CP_CODEPOSTAL_SITE]   = sitlist.at(i).at(5).toInt();
-        jEtab[CP_VILLE_SITE]        = sitlist.at(i).at(6).toString();
-        jEtab[CP_TELEPHONE_SITE]    = sitlist.at(i).at(7).toString();
-        jEtab[CP_FAX_SITE]          = sitlist.at(i).at(8).toString();
-        jEtab[CP_COULEUR_SITE]      = sitlist.at(i).at(9).toString();
-        Site *etab = new Site(jEtab);
-        if (etab != Q_NULLPTR)
-            etabs << etab;
+        QJsonObject data = loadSiteData(sitlist.at(i));
+        Site *sit = new Site(data);
+        if (sit)
+            list << sit;
     }
-    return etabs;
+    return list;
+}
+
+Site* DataBase::loadSiteById(int id)
+{
+    Site* sit = Q_NULLPTR;
+    QString req = "select " CP_ID_SITE ", " CP_NOM_SITE ", " CP_ADRESSE1_SITE ", " CP_ADRESSE2_SITE ", " CP_ADRESSE3_SITE ", "
+            CP_CODEPOSTAL_SITE ", " CP_VILLE_SITE ", " CP_TELEPHONE_SITE ", " CP_FAX_SITE ", " CP_COULEUR_SITE
+            " from " TBL_LIEUXEXERCICE
+            " where " CP_ID_SITE " = " + QString::number(id);
+    qDebug() << req;
+    QVariantList sitdata =  getFirstRecordFromStandardSelectSQL(req,ok);
+    if(!ok || sitdata.size()==0)
+        return sit;
+    QJsonObject data = loadSiteData(sitdata);
+    sit = new Site(data);
+    return sit;
 }
 
 /*

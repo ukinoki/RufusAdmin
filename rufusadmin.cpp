@@ -25,7 +25,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("05-05-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("15-05-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -232,7 +232,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
 
     wdg_buttonframe = new WidgetButtonFrame(ui->AppareilsConnectesupTableWidget);
-    wdg_buttonframe->AddButtons(WidgetButtonFrame::PlusButton | WidgetButtonFrame::MoinsButton);
+    wdg_buttonframe->AddButtons(WidgetButtonFrame::Plus | WidgetButtonFrame::Moins);
     connect(wdg_buttonframe, &WidgetButtonFrame::choix, this, &RufusAdmin::ChoixButtonFrame);
 
     // Mise en forme de la table AppareilsConnectes
@@ -1803,7 +1803,7 @@ void RufusAdmin::GestionBanques()
 void RufusAdmin::GestionLieux()
 {
     DisconnectTimerInactive();
-    dlg_GestionLieux *gestLieux = new dlg_GestionLieux(this);
+    dlg_listelieux *gestLieux = new dlg_listelieux(this);
     gestLieux->exec();
     ReconstruitListeLieuxExercice();
     ConnectTimerInactive();

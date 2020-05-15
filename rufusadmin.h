@@ -59,7 +59,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <poppler-qt5.h>
 #include "dlg_gestionbanques.h"
 #include "dlg_gestionusers.h"
-#include "dlg_gestionlieux.h"
+#include "dlg_listelieux.h"
 #include "dlg_message.h"
 #include "dlg_motifs.h"
 #include "importdocsexternesthread.h"

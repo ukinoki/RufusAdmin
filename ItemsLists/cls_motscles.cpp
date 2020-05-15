@@ -61,6 +61,18 @@ void MotsCles::initListe()
     addList(map_motscles, &listMotsCles, Item::Update);
 }
 
+QCompleter* MotsCles::completer()
+{
+    QStandardItemModel *model = new QStandardItemModel();
+    foreach (MotCle *mc, map_motscles->values())
+        model->appendRow(new QStandardItem(mc->motcle()));
+    model->sort(0);
+    m_completer->setModel(model);
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+    m_completer->setCompletionMode(QCompleter::InlineCompletion);
+    return m_completer;
+}
+
 void MotsCles::SupprimeMotCle(MotCle* motcle)
 {
     Supprime(map_motscles, motcle);
@@ -76,13 +88,13 @@ MotCle* MotsCles::CreationMotCle(QHash<QString, QVariant> sets)
     if (result)
     {
         ++ idmotcle;
-        sets[CP_ID_COMLUN] = idmotcle;
-        result = DataBase::I()->InsertSQLByBinds(TBL_COMMENTAIRESLUNETTES, sets);
+        sets[CP_ID_MOTCLE] = idmotcle;
+        result = DataBase::I()->InsertSQLByBinds(TBL_MOTSCLES, sets);
     }
     DataBase::I()->unlocktables();
     if (!result)
     {
-        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible d'enregistrer ce motcleaire dans la base!"));
+        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible d'enregistrer ce mot-clé dans la base!"));
         return motcle;
     }
     QJsonObject  data = QJsonObject{};
@@ -107,7 +119,7 @@ bool MotsCles::isThisMCusedForOtherPatients(MotCle* mc, int idpat)
     bool ok;
     QList<QVariantList> listid = QList<QVariantList>();
     QString req = "select " CP_IDPATIENT_JOINTURESMOTSCLES " from " TBL_MOTSCLESJOINTURES " where " CP_IDPATIENT_JOINTURESMOTSCLES " <> " + QString::number(idpat) + " and " CP_IDMOTCLE_JOINTURESMOTSCLES " = " + QString::number(mc->id());
-    qDebug() << req;
+    //qDebug() << req;
     listid = DataBase::I()->StandardSelectSQL(req, ok);
     return (listid.size()>0);
 }
