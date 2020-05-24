@@ -95,20 +95,20 @@ private:
     int                         m_flagmessages;
     int                         m_dureeVeille;
     QIcon                       ic_RufusAdmin;
-    QMenu                       *trayIconMenu;
+    QMenu                       *trayIconMenu = Q_NULLPTR;
     QMap<QString,QIcon>         map_icons;
     QString                     m_nouvMDP, m_ancMDP, m_confirmMDP;
     QString                     m_domaine;
     QStringList                 m_listeAppareils;
     QIcon                       ic_Backup, ic_Copy, ic_Erase, ic_Sunglasses, ic_SortirDossier, ic_OK, ic_Annul,
                                  ic_Euro,  ic_EuroCount,  ic_FermeAppuye,  ic_FermeRelache,  ic_Help,  ic_Null;
-    QSettings                   *m_settings;
+    QSettings                   *m_settings = Q_NULLPTR;
     ParametresSysteme           *m_parametres;
     DataBase                    *db;
     QSystemTrayIcon             *ictray_RufusAdminTrayIcon;
     QTimer                      *t_timerUserConnecte, *t_timerVerifDivers, *t_timerSupprDocs, *t_timerDocsAExporter, *t_timerProgressBar;
     QTimer                      t_timer;
-    ImportDocsExternesThread    *m_importdocsexternesthread;
+    ImportDocsExternesThread    *m_importdocsexternesthread = Q_NULLPTR;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
 
