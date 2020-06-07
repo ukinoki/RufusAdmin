@@ -269,20 +269,20 @@ void dlg_gestioncomptes::CompteFactice()
         int al = 0;
         QString iban = "FR";
         srand(static_cast<uint>(time(Q_NULLPTR)));
-        al = arc4random() % 100;
+        al = rand() % 100;
         while (al<10)
-            al = arc4random() % 100;
+            al = rand() % 100;
         iban += QString::number(al) + " ";
         for(int i=0; i<5; i++)
         {
-            al = arc4random() % 10000;
+            al = rand() % 10000;
             while (al<1000)
-                al = arc4random() % 10000;
+                al = rand() % 10000;
             iban += QString::number(al) + " ";
         }
-        al = arc4random() % 1000;
+        al = rand() % 1000;
         while (al<100)
-            al = arc4random() % 1000;
+            al = rand() % 1000;
         iban += QString::number(al);
         ui->NomCompteAbregeuplineEdit   ->setText("PaPRS"+QString::number(al));
         ui->IBANuplineEdit              ->setText(iban);
