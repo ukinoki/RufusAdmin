@@ -733,8 +733,9 @@ void dlg_gestionusers::EnregistreNouvUser()
             Loginline->selectAll();
             a = false;
         }
-        foreach (User* usr, Datas::I()->users->actifs()->values())
+        for (auto it = Datas::I()->users->actifs()->constBegin(); it != Datas::I()->users->actifs()->constEnd(); ++it)
         {
+            User* usr = const_cast<User*>(it.value());
             if (usr->login().toUpper() == login.toUpper())
             {
                 msg = tr("Ce login est déjà utilisé");
@@ -807,7 +808,7 @@ void dlg_gestionusers::FermeFiche()
         {
             if (VerifFiche())
             {
-                emit ui->OKupSmallButton->click();
+                ui->OKupSmallButton->click();
                 reject();
             }
             else
@@ -1148,7 +1149,6 @@ void dlg_gestionusers::CalcListitemsEmployeurcomboBox(int iduser)
 
 bool  dlg_gestionusers::AfficheParamUser(int idUser)
 {
-    QString req;
     if (db->StandardSelectSQL("select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_ID_USR " = " + QString::number(idUser), m_ok).size() == 0)
         return false;
     setDataCurrentUser(idUser);
@@ -1435,7 +1435,7 @@ void dlg_gestionusers::Inactifs()
     dlg_listinactifs->setSizeGripEnabled(false);
     dlg_listinactifs->setWindowTitle(tr("Utilisateurs inactifs"));
 
-    connect(dlg_listinactifs->OKButton, &QPushButton::clicked, dlg_listinactifs, [&] {  calclistusers(m_model);
+    connect(dlg_listinactifs->OKButton, &QPushButton::clicked, dlg_listinactifs, [=] {  calclistusers(m_model);
                                                                                         dlg_listinactifs->close();
                                                                                         RemplirTableWidget(); });
 
@@ -1561,8 +1561,9 @@ void dlg_gestionusers::RemplirTableWidget()
     ui->ListUserstableWidget->setHorizontalHeaderLabels(QStringList()<<""<<"Login");
     ui->ListUserstableWidget->setGridStyle(Qt::NoPen);
     QList<User*> usrlist;
-    foreach (User* usr, Datas::I()->users->actifs()->values())
+    for (auto it = Datas::I()->users->actifs()->constBegin(); it != Datas::I()->users->actifs()->constEnd(); ++it)
     {
+        User* usr = const_cast<User*>(it.value());
         if (usr->login() != NOM_ADMINISTRATEUR)
             usrlist << usr;
     }

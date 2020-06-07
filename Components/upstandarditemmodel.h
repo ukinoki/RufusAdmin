@@ -15,30 +15,17 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CLS_MOTIFS_H
-#define CLS_MOTIFS_H
+#ifndef UPSTANDARTITEMMODEL_H
+#define UPSTANDARTITEMMODEL_H
 
-#include "cls_motif.h"
-#include "cls_itemslist.h"
+#include <QStandardItemModel>
+#include "upstandarditem.h"
 
-class Motifs : public ItemsList
+class UpStandardItemModel : public QStandardItemModel
 {
-private:
-    QMap<int, Motif*> *map_all; //!< la liste des Motifs
-
 public:
-    explicit Motifs(QObject *parent = Q_NULLPTR);
-
-    QMap<int, Motif *> *motifs() const;
-
-    Motif* getById(int id);
-    Motif* getMotifFromRaccourci(QString txt);
-    void initListe();
-
-    //!> actions sur les enregistrements
-    void        SupprimeMotif(Motif *motif);
-    Motif*      CreationMotif(QString Motif, QString Raccourci, QString Couleur, int Duree, bool ParDefaut, bool Utiliser, int NoOrdre);
-
+    UpStandardItemModel(QObject *parent = Q_NULLPTR);
+    int getRowFromItem(Item* itm);
 };
 
-#endif // CLS_MOTIFS_H
+#endif // UPSTANDARTITEMMODEL_H

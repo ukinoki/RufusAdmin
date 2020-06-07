@@ -3,6 +3,7 @@
 #--------------------
 INCLUDEPATH += $$PWD
 SOURCES += $$PWD/upcheckbox.cpp \
+    $$PWD/rangeslider.cpp \
         $$PWD/upcombobox.cpp \
     $$PWD/updelegate.cpp \
         $$PWD/updialog.cpp \
@@ -16,6 +17,7 @@ SOURCES += $$PWD/upcheckbox.cpp \
         $$PWD/upradiobutton.cpp \
         $$PWD/upsmallbutton.cpp \
         $$PWD/upspinbox.cpp \
+    $$PWD/upstandarditemmodel.cpp \
         $$PWD/upswitch.cpp \
     $$PWD/upsystemtrayicon.cpp \
         $$PWD/uptablewidget.cpp \
@@ -26,6 +28,7 @@ SOURCES += $$PWD/upcheckbox.cpp \
     $$PWD/uptableview.cpp
 
 HEADERS += $$PWD/upcheckbox.h \
+    $$PWD/rangeslider.h \
         $$PWD/upcombobox.h \
     $$PWD/updelegate.h \
         $$PWD/updialog.h \
@@ -39,6 +42,7 @@ HEADERS += $$PWD/upcheckbox.h \
         $$PWD/upradiobutton.h \
         $$PWD/upsmallbutton.h \
         $$PWD/upspinbox.h \
+    $$PWD/upstandarditemmodel.h \
         $$PWD/upswitch.h \
     $$PWD/upsystemtrayicon.h \
         $$PWD/uptablewidget.h \

@@ -16,7 +16,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upgroupbox.h"
-#include "macros.h"
 
 UpGroupBox::UpGroupBox(QWidget *parent) : QGroupBox(parent)
 {

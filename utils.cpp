@@ -280,7 +280,7 @@ bool Utils::retirelignevidefinhtml(QString &txthtml)
         int debut = txthtml.lastIndexOf("<p");
         int fin   = txthtml.lastIndexOf("</p>");
         int longARetirer = fin - debut + 4;
-        if (txthtml.mid(debut,longARetirer).contains("-qt-paragraph-type:empty;"))
+        if (txthtml.midRef(debut,longARetirer).contains("-qt-paragraph-type:empty;"))
         {
             txthtml.remove(debut,longARetirer);
             ligneretiree = true;
@@ -332,7 +332,7 @@ bool Utils::CompressFileJPG(QString nomfile, QString Dirprov, QDate datetransfer
     if (!mkpath(CheminEchecTransfrDir))
     {
         QString msg = QObject::tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + QObject::tr(" invalide");
-        Message::I()->SplashMessage(msg, 3000);
+        ShowMessage::I()->SplashMessage(msg, 3000);
         return false;
     }
     /* on vérifie si le dossier provisoire existe sur le poste et on le crée au besoin*/
@@ -340,7 +340,7 @@ bool Utils::CompressFileJPG(QString nomfile, QString Dirprov, QDate datetransfer
     if (!mkpath(DirStockProvPath))
     {
         QString msg = QObject::tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + DirStockProvPath + "</b></font>" + QObject::tr(" invalide");
-        Message::I()->SplashMessage(msg, 3000);
+        ShowMessage::I()->SplashMessage(msg, 3000);
         return false;
     }
 
@@ -504,7 +504,6 @@ QString Utils::IPAdress()
 
 QString Utils::calcIP(QString IP, bool aveczero)
 {
-    QMap<QString,QString> map = QMap<QString,QString>();
     if (!rgx_IPV4.exactMatch(IP))
         return IP;
 
@@ -533,15 +532,14 @@ QString Utils::MACAdress()
 {
     QString IPadress = IPAdress();
     QString MACAddress = "";
-       QString localNetmask;
-       foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
-           foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
-               if (entry.ip().toString() == IPadress) {
-                   MACAddress = networkInterface.hardwareAddress();
-                   break;
-               }
-           }
-       }
+    foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
+        foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
+            if (entry.ip().toString() == IPadress) {
+                MACAddress = networkInterface.hardwareAddress();
+                break;
+            }
+        }
+    }
     return MACAddress;
 }
 

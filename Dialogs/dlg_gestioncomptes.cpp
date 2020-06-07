@@ -269,20 +269,20 @@ void dlg_gestioncomptes::CompteFactice()
         int al = 0;
         QString iban = "FR";
         srand(static_cast<uint>(time(Q_NULLPTR)));
-        al = rand() % 100;
+        al = arc4random() % 100;
         while (al<10)
-            al = rand() % 100;
+            al = arc4random() % 100;
         iban += QString::number(al) + " ";
         for(int i=0; i<5; i++)
         {
-            al = rand() % 10000;
+            al = arc4random() % 10000;
             while (al<1000)
-                al = rand() % 10000;
+                al = arc4random() % 10000;
             iban += QString::number(al) + " ";
         }
-        al = rand() % 1000;
+        al = arc4random() % 1000;
         while (al<100)
-            al = rand() % 1000;
+            al = arc4random() % 1000;
         iban += QString::number(al);
         ui->NomCompteAbregeuplineEdit   ->setText("PaPRS"+QString::number(al));
         ui->IBANuplineEdit              ->setText(iban);
@@ -389,7 +389,6 @@ void dlg_gestioncomptes::Fermer()
 void dlg_gestioncomptes::ValidCompte()
 {
     int idcompte=0;
-    QString req;
     if (!VerifCompte())
         return;
     ui->Compteframe->setEnabled(false);
@@ -412,7 +411,7 @@ void dlg_gestioncomptes::ValidCompte()
         db->UpdateTable(TBL_COMPTES,
                         listsets,
                         "where idCompte = "          + ui->idCompteupLineEdit->text());
-        Datas::I()->comptes->reloadCompte(Datas::I()->comptes->getById(ui->idCompteupLineEdit->text().toInt()));
+        m_compteencours = Datas::I()->comptes->getById(idcompte, true);
     }
     else if (m_mode == Nouv)
     {
@@ -425,11 +424,11 @@ void dlg_gestioncomptes::ValidCompte()
                                             ui->CompteSocietecheckBox->isChecked(),            //! Partage
                                             ui->DesactiveComptecheckBox->isChecked());         //! Desactive
         idcompte = cpt->id();
+        m_compteencours = Datas::I()->comptes->getById(idcompte);
     }
     m_listescomptesusr.clear();
     m_userencours     ->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(m_userencours->id()));
     m_listescomptesusr = m_userencours->listecomptesbancaires();
-    m_compteencours = Datas::I()->comptes->getById(idcompte);
 
     RemplirTableView();
     ui->OKModifupSmallButton->setVisible(false);
@@ -490,7 +489,7 @@ void dlg_gestioncomptes::RemplirTableView(int idcompte)
                 i++;
             }
         }
-        connect(ui->ComptesuptableWidget, &QTableWidget::currentItemChanged, [=] {AfficheCompte(ui->ComptesuptableWidget->currentItem(),Q_NULLPTR);});
+        connect(ui->ComptesuptableWidget, &QTableWidget::currentItemChanged, this, [=] {AfficheCompte(ui->ComptesuptableWidget->currentItem(),Q_NULLPTR);});
         if (idcompte<1)
             ui->ComptesuptableWidget->setCurrentItem(ui->ComptesuptableWidget->item(0,1));
         else
@@ -503,7 +502,6 @@ void dlg_gestioncomptes::RemplirTableView(int idcompte)
 bool dlg_gestioncomptes::VerifCompte()
 {
     QString msg = "";
-    QString req;
     if (ui->BanqueupcomboBox->currentText() == "")
         msg = tr("la banque");
     else if (ui->IntituleCompteuplineEdit->text() == "")

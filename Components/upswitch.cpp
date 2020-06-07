@@ -16,7 +16,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upswitch.h"
-#include "macros.h"
 #include "icons.h"
 
 UpSwitch::UpSwitch(QWidget *parent) : QFrame(parent)

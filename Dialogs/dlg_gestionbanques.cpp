@@ -224,7 +224,6 @@ void dlg_gestionbanques::ValideModifBanque()
 {
     QString msg = "";
     QString nombanque = Utils::capitilize(ui->NomBanqueupLineEdit->text());
-    QString req;
     if (ui->NomBanqueupLineEdit->text() == "")
         msg = tr("le nom de la banque");
     else if (ui->NomAbregeupLineEdit->text() == "")
@@ -237,8 +236,9 @@ void dlg_gestionbanques::ValideModifBanque()
 
     if (m_mode == Nouv)
     {
-        foreach (Banque* bq, Datas::I()->banques->banques()->values())
+        for (auto it = Datas::I()->banques->banques()->constBegin(); it != Datas::I()->banques->banques()->constEnd(); ++it)
         {
+            Banque* bq = const_cast<Banque*>(it.value());
             if (bq->nom().toUpper() == ui->NomBanqueupLineEdit->text().toUpper())
             {
                 UpMessageBox::Watch(this,tr("Cette banque est déjà enregistrée!"));

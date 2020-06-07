@@ -319,7 +319,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     if (db->ModeAccesDataBase() == Utils::Poste)
     {
-         QString DirBkup = m_parametres->dirbkup();
         if (QDir(m_parametres->dirbkup()).exists())
             ui->DirBackupuplineEdit->setText(m_parametres->dirbkup());
         if (m_parametres->heurebkup().isValid())
@@ -424,7 +423,7 @@ int RufusAdmin::SortieAppli()
 
 void RufusAdmin::AfficheMessageImport(QStringList listmsg, int pause)
 {
-    Message::I()->SplashMessage(listmsg, pause);
+    ShowMessage::I()->SplashMessage(listmsg, pause);
 }
 
 bool RufusAdmin::AutresPostesConnectes()
@@ -821,7 +820,6 @@ void RufusAdmin::ConnexionBase()
 {
     db = DataBase::I();
     QString error = "";
-    QString Base, server;
     db->setModeacces(Utils::Poste);
     db->initParametresConnexionSQL("localhost", 3306);
     error = db->connectToDataBase(DB_CONSULTS);
@@ -834,9 +832,6 @@ void RufusAdmin::ConnexionBase()
                             + error);
         exit(0);
     }
-
-    QString Client;
-
     db->StandardSQL("SET GLOBAL max_allowed_packet=" MAX_ALLOWED_PACKET "*1024*1024 ;");
 }
 
@@ -1317,14 +1312,14 @@ void RufusAdmin::ExporteDocs()
     {
         QString msg = tr("Le dossier de sauvegarde d'imagerie") + " <font color=\"red\"><b>" + NomDirStockageImagerie + "</b></font>" + tr(" n'existe pas");
         msg += "<br />" + tr("Renseignez un dossier valide dans") + " <font color=\"green\"><b>" + tr("Emplacement de stockage des documents archivés") + "</b></font>";
-        Message::I()->SplashMessage(msg, 6000);
+        ShowMessage::I()->SplashMessage(msg, 6000);
         return;
     }
     QString CheminEchecTransfrDir   = NomDirStockageImagerie + NOM_DIR_ECHECSTRANSFERTS;
     if (!Utils::mkpath(CheminEchecTransfrDir))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminEchecTransfrDir + "</b></font>" + tr(" invalide");
-        Message::I()->SplashMessage(msg, 3000);
+        ShowMessage::I()->SplashMessage(msg, 3000);
         return;
     }
     int total = db->StandardSelectSQL("SELECT " CP_ID_DOCSEXTERNES " FROM " TBL_DOCSEXTERNES " where " CP_JPG_DOCSEXTERNES " is not null or " CP_PDF_DOCSEXTERNES " is not null",ok).size();
@@ -1359,11 +1354,10 @@ void RufusAdmin::ExporteDocs()
     QStringList listmsg;
     QString duree;
     QString CheminOKTransfrDir      = NomDirStockageImagerie + NOM_DIR_IMAGES;
-    QDir DirTrsferOK;
     if (!Utils::mkpath(CheminOKTransfrDir))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-        Message::I()->SplashMessage(msg, 3000);
+        ShowMessage::I()->SplashMessage(msg, 3000);
         return;
     }
 
@@ -1393,7 +1387,7 @@ void RufusAdmin::ExporteDocs()
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
                 QStringList listmsg;
                 listmsg << msg;
-                Message::I()->SplashMessage(listmsg, 3000);
+                ShowMessage::I()->SplashMessage(listmsg, 3000);
                 return;
             }
             QString NomFileDoc = listexportjpg.at(i).at(1).toString() + "_" + listexportjpg.at(i).at(6).toString() + "-"
@@ -1474,7 +1468,7 @@ void RufusAdmin::ExporteDocs()
             if (!Utils::mkpath(CheminOKTransfrDir))
             {
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                Message::I()->SplashMessage(msg, 3000);
+                ShowMessage::I()->SplashMessage(msg, 3000);
                 return;
             }
             QString NomFileDoc = listexportpdf.at(i).at(1).toString() + "_" + listexportpdf.at(i).at(7).toString() + "-"
@@ -1559,7 +1553,7 @@ void RufusAdmin::ExporteDocs()
     if (!Utils::mkpath(CheminOKTransfrDir))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-        Message::I()->SplashMessage(msg, 3000);
+        ShowMessage::I()->SplashMessage(msg, 3000);
         return;
     }
 
@@ -1619,7 +1613,7 @@ void RufusAdmin::ExporteDocs()
             if (!Utils::mkpath(CheminOKTransfrDir))
             {
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                Message::I()->SplashMessage(msg, 3000);
+                ShowMessage::I()->SplashMessage(msg, 3000);
                 return;
             }
 
@@ -1723,7 +1717,7 @@ void RufusAdmin::ExporteDocs()
             if (!Utils::mkpath(CheminOKTransfrDir))
             {
                 QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-                Message::I()->SplashMessage(msg, 3000);
+                ShowMessage::I()->SplashMessage(msg, 3000);
                 return;
             }
             QString CheminOKTransfrDoc      = CheminOKTransfrDir + "/" + NomFileDoc + "." PDF;
@@ -2191,7 +2185,6 @@ void RufusAdmin::RestaureBase()
                         break;
                     }
                     bool echecfile = true;
-                    QString NomDumpFile;
                     QStringList filters;
                     filters << "*.sql";
                     QStringList listfichiers = dirtorestore.entryList(filters);
@@ -2401,7 +2394,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
     if (!Utils::mkpath(CheminOKTransfrDir))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-        Message::I()->SplashMessage(msg, 3000);
+        ShowMessage::I()->SplashMessage(msg, 3000);
         return;
     }
     req = "select LienFichier from " TBL_FACTURESASUPPRIMER;
@@ -2415,7 +2408,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
         if (!Utils::mkpath(CheminOKTransfrDir))
         {
             QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + CheminOKTransfrDir + "</b></font>" + tr(" invalide");
-            Message::I()->SplashMessage(msg, 3000);
+            ShowMessage::I()->SplashMessage(msg, 3000);
             continue;
         }
         QFile(NomDirStockageImagerie + NOM_DIR_FACTURES + lienfichier).copy(NomDirStockageImagerie + NOM_DIR_FACTURESSANSLIEN + lienfichier);
@@ -2452,11 +2445,11 @@ void RufusAdmin::TrayIconMenu()
     {
         QString txt = tr("Ouvir RufusAdmin");
         QAction *pAction_VoirAppli = trayIconMenu->addAction(txt);
-        connect (pAction_VoirAppli, &QAction::triggered, [=] {ChoixMenuSystemTray(txt);});
+        connect (pAction_VoirAppli, &QAction::triggered, this, [=] {ChoixMenuSystemTray(txt);});
     }
     QString txt = tr("Quitter RufusAdmin");
     QAction *pAction_QuitAppli = trayIconMenu->addAction(txt);
-    connect (pAction_QuitAppli, &QAction::triggered, [=] {ChoixMenuSystemTray(txt);});
+    connect (pAction_QuitAppli, &QAction::triggered, this, [=] {ChoixMenuSystemTray(txt);});
 }
 
 void RufusAdmin::VerifPosteImport()
@@ -2575,7 +2568,7 @@ bool RufusAdmin::VerifBase()
                     return false;
                 BupDone = true;
             }
-            Message::I()->SplashMessage(tr("Mise à jour de la base vers la version ") + "<font color=\"red\"><b>" + QString::number(Version) + "</b></font>", 1000);
+            ShowMessage::I()->SplashMessage(tr("Mise à jour de la base vers la version ") + "<font color=\"red\"><b>" + QString::number(Version) + "</b></font>", 1000);
             QString Nomfic = "://majbase" + QString::number(Version) + ".sql";
             QFile DumpFile(Nomfic);
             int a = 99;
@@ -2696,7 +2689,7 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
 {
     auto result = [] (qintptr handle, RufusAdmin *radm)
     {
-        Message::I()->ClosePriorityMessage(handle);
+        ShowMessage::I()->ClosePriorityMessage(handle);
         radm->ConnectTimerInactive();
     };
     QString msgEchec = tr("Incident pendant la sauvegarde");
@@ -3248,7 +3241,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
 {
     auto result = [] (qintptr handle, RufusAdmin *radm)
     {
-        Message::I()->ClosePriorityMessage(handle);
+        ShowMessage::I()->ClosePriorityMessage(handle);
         radm->ConnectTimerInactive();
     };
     if (QDir(m_parametres->dirimagerieserveur()).exists())
@@ -3266,7 +3259,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
 
     QString msgEchec = tr("Incident pendant la sauvegarde");
     qintptr handledlg = 0;
-    Message::I()->PriorityMessage(tr("Sauvegarde en cours"),handledlg);
+    ShowMessage::I()->PriorityMessage(tr("Sauvegarde en cours"),handledlg);
     DisconnectTimerInactive();
 
     if (OKBase)
@@ -3435,7 +3428,7 @@ void RufusAdmin::VerifModifsFlags()
         {
             for (int i=0; i<TotalNvxMessages; i++)
             {
-                QHash<int,int>::const_iterator itm = mapmessages.find(listmsg.at(i).at(1).toInt());
+                QHash<int,int>::const_iterator itm = mapmessages.constFind(listmsg.at(i).at(1).toInt());
                 if (itm != mapmessages.constEnd())
                     mapmessages[itm.key()] = itm.value()+1;
                 else

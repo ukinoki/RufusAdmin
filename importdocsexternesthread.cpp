@@ -670,7 +670,6 @@ bool ImportDocsExternesThread::DefinitDossiersImagerie()
         return false;
     }
     m_pathdirstockageprovisoire = m_pathdirstockageimagerie + NOM_DIR_PROV;
-    QDir DirStockProv;
     if (!Utils::mkpath(m_pathdirstockageprovisoire))
     {
         QString msg = tr("Dossier de sauvegarde ") + "<font color=\"red\"><b>" + m_pathdirstockageprovisoire + "</b></font>" + tr(" invalide");
