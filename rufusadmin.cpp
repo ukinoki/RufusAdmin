@@ -25,7 +25,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("07-06-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("08-06-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -433,7 +433,9 @@ bool RufusAdmin::AutresPostesConnectes()
         Datas::I()->users       ->initShortListe();
     Datas::I()->postesconnectes->initListe();
     QString id = Utils::MACAdress() + " - " + QString::number(Admin()->id());
-    foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
+    for (auto it = Datas::I()->postesconnectes->postesconnectes()->constBegin(); it != Datas::I()->postesconnectes->postesconnectes()->constEnd(); ++it)
+    {
+        PosteConnecte *post = const_cast<PosteConnecte*>(it.value());
         if (post->stringid() != id)
         {
             UpMessageBox::Information(this, tr("Autres postes connectés!"),
@@ -443,6 +445,7 @@ bool RufusAdmin::AutresPostesConnectes()
             show();
             return true;
         }
+    }
     return false;
 }
 
@@ -458,8 +461,9 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
         Datas::I()->postesconnectes->SupprimePosteConnecte(post);
         bool mettreajourlasalledattente = false;
             //!> remise en salle d'attente des patients en cours d'examen sur ce poste
-        foreach (PatientEnCours* pat, Datas::I()->patientsencours->patientsencours()->values())
+        for (auto it = Datas::I()->patientsencours->patientsencours()->constBegin(); it != Datas::I()->patientsencours->patientsencours()->constEnd(); ++it)
         {
+            PatientEnCours *pat = const_cast<PatientEnCours*>(it.value());
             if (pat != Q_NULLPTR)
                 if (pat->iduserencoursexam() == iduserposte && pat->statut().contains(ENCOURSEXAMEN) && pat->posteexamen() == nomposte)
                 {
@@ -476,12 +480,15 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
         }
         //!> on déverrouille les actes verrouillés en comptabilité par cet utilisateur s'il n'est plus connecté sur aucun poste
         bool usernotconnectedever = true;
-        foreach (PosteConnecte *post, Datas::I()->postesconnectes->postesconnectes()->values())
+        for (auto it = Datas::I()->postesconnectes->postesconnectes()->constBegin(); it != Datas::I()->postesconnectes->postesconnectes()->constEnd(); ++it)
+        {
+            PosteConnecte *post = const_cast<PosteConnecte*>(it.value());
             if(post->id() == iduserposte)
             {
                 usernotconnectedever = false;
                 break;
             }
+        }
         if (usernotconnectedever)
             db->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where PosePar = " + QString::number(iduserposte));
     }
@@ -1909,8 +1916,9 @@ void RufusAdmin::MetAJourLaConnexion()
             //! on déverrouille les dossiers verrouillés par cet utilisateur et on les remet en salle d'attente
             QString blabla              = ENCOURSEXAMEN;
             int length                  = blabla.size();
-            foreach (PatientEnCours* pat, Datas::I()->patientsencours->patientsencours()->values())
+            for (auto it = Datas::I()->patientsencours->patientsencours()->constBegin(); it != Datas::I()->patientsencours->patientsencours()->constEnd(); ++it)
             {
+                PatientEnCours *pat = const_cast<PatientEnCours*>(it.value());
                 if (pat != Q_NULLPTR)
                     if (pat->iduserencoursexam() == post->id() && pat->statut().left(length) == ENCOURSEXAMEN && pat->posteexamen() == post->nomposte())
                     {
@@ -1939,7 +1947,9 @@ void RufusAdmin::MetAJourLaConnexion()
     bool mettreajourlasalledattente = false;
 
     // on redonne le statut ARRIVE aux patients dont l'utilisateur s'est déconnecté
-    foreach (PatientEnCours *pat, Datas::I()->patientsencours->patientsencours()->values())
+    for (auto it = Datas::I()->patientsencours->patientsencours()->constBegin(); it != Datas::I()->patientsencours->patientsencours()->constEnd(); ++it)
+    {
+        PatientEnCours *pat = const_cast<PatientEnCours*>(it.value());
         if (pat != Q_NULLPTR)
             if (pat->statut().contains(ENCOURSEXAMEN))
             {
@@ -1958,6 +1968,7 @@ void RufusAdmin::MetAJourLaConnexion()
                     mettreajourlasalledattente = true;
                 }
             }
+    }
 
     // on retire de la salle d'attente les patients qui n'existent pas
     req = "delete from " TBL_SALLEDATTENTE " where idpat not in (select idpat from " TBL_PATIENTS ")";
@@ -3354,10 +3365,16 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
 {
     UpDialog        *gAsk           = new UpDialog(this);
     UpTextEdit      *TxtEdit        = new UpTextEdit(gAsk);
-    int x = QGuiApplication::screens().first()->geometry().width();
+    int x = 0;
+    int y = 0;
+    QList<QScreen*> listscreens = QGuiApplication::screens();
+    if (listscreens.size())
+    {
+        x = listscreens.first()->geometry().width();
 //    int y = qApp->desktop()->availableGeometry().height();
 //    int x = qApp->desktop()->availableGeometry().width();
-    int y = QGuiApplication::screens().first()->geometry().height();
+        y = listscreens.first()->geometry().height();
+    }
 
     gAsk->setModal(true);
     gAsk->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint);
