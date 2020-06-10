@@ -432,6 +432,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_OBJET_DEPENSES                              "Objet"
 #define CP_MONTANT_DEPENSES                            "Montant"
 #define CP_FAMILLEFISCALE_DEPENSES                     "FamFiscale"
+#define CP_IDOPERATION_DEPENSES                        "Nooperation"
 #define CP_MONNAIE_DEPENSES                            "Monnaie"
 #define CP_IDRECETTE_DEPENSES                          "idRec"
 #define CP_MODEPAIEMENT_DEPENSES                       "ModePaiement"
@@ -501,6 +502,24 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_CHQENATTENTE_LIGNRECETTES                   "EnAttente"
 #define CP_IDUSERENREGISTREUR_LIGNRECETTES             "EnregistrePar"
 #define CP_TYPERECETTE_LIGNRECETTES                    "TypeRecette"
+
+                            //! Table ComptaMedicale.autresrecettes
+#define CP_ID_AUTRESRECETTES                            "idRecette"
+#define CP_IDUSER_AUTRESRECETTES                        "idUser"
+#define CP_DATE_AUTRESRECETTES                          "DateRecette"
+#define CP_LIBELLE_AUTRESRECETTES                       "Libelle"
+#define CP_TYPERECETTE_AUTRESRECETTES                   "Typerecette"
+#define CP_MONTANT_AUTRESRECETTES                       "Montant"
+#define CP_PAIEMENT_AUTRESRECETTES                      "Paiement"
+#define CP_NOOPERATION_AUTRESRECETTES                   "Nooperation"
+#define CP_MONNAIE_AUTRESRECETTES                       "Monnaie"
+#define CP_IDCPTEVIREMENT_AUTRESRECETTES                "CompteVirement"
+#define CP_BANQUECHEQUE_AUTRESRECETTES                  "BanqueCheque"
+#define CP_TIREURCHEQUE_AUTRESRECETTES                  "TireurCheque"
+#define CP_DATEENREGISTREMENT_AUTRESRECETTES            "DateEnregistrement"
+#define CP_IDREMISECHQ_AUTRESRECETTES                   "idRemise"
+#define CP_CHQENATTENTE_AUTRESRECETTES                  "EnAttente"
+
 
                             //! Table ComptaMedicale.tiers
 #define CP_ID_TIERS                                     "idTiers"
