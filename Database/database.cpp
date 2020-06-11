@@ -1239,7 +1239,8 @@ QList<Compte*> DataBase::loadComptesAll()
 {
     QList<Compte*> listcomptes = QList<Compte*>();
     bool ok;
-    QString req = "SELECT idCompte, idBanque, idUser, IBAN, intitulecompte, NomCompteAbrege, SoldeSurDernierReleve, partage, desactive "
+    QString req = "SELECT " CP_ID_COMPTES ", " CP_IDBANQUE_COMPTES ", " CP_IDUSER_COMPTES ", " CP_IBAN_COMPTES " , " CP_INTITULE_COMPTES ", "
+            CP_NOMABREGE_COMPTES ", " CP_SOLDE_COMPTES ", " CP_PARTAGE_COMPTES ", " CP_DESACTIVE_COMPTES
           " FROM " TBL_COMPTES;
     QList<QVariantList> cptlist = StandardSelectSQL(req,ok);
     if(!ok || cptlist.size()==0)
@@ -1257,8 +1258,8 @@ Compte* DataBase::loadCompteById(int id)
 {
     Compte *cpt = Q_NULLPTR;
     bool ok;
-    QString req = "SELECT idCompte, idBanque, idUser, IBAN, intitulecompte, NomCompteAbrege, SoldeSurDernierReleve, partage, desactive "
-                  " FROM " TBL_COMPTES
+    QString req = "SELECT " CP_ID_COMPTES ", " CP_IDBANQUE_COMPTES ", " CP_IDUSER_COMPTES ", " CP_IBAN_COMPTES " , " CP_INTITULE_COMPTES ", "
+            CP_NOMABREGE_COMPTES ", " CP_SOLDE_COMPTES ", " CP_PARTAGE_COMPTES ", " CP_DESACTIVE_COMPTES
             " where idCompte = " + QString::number(id);
     QVariantList cptlist = getFirstRecordFromStandardSelectSQL(req,ok);
     if(!ok || cptlist.size()==0)
@@ -1385,7 +1386,7 @@ QList<Depense*> DataBase::loadDepensesByUser(int idUser)
                         " idRubrique"
                         " FROM " TBL_DEPENSES " dep"
                         " left join " TBL_FACTURES " fac on dep." CP_IDFACTURE_DEPENSES " = fac." CP_ID_FACTURES
-                        " left join " TBL_RUBRIQUES2035 " rub on dep." CP_REFFISCALE_DEPENSES " = rub.RefFiscale"
+                        " left join " TBL_RUBRIQUES2035 " rub on dep." CP_REFFISCALE_DEPENSES " = rub." CP_REFFISCALE_2035
                         " WHERE dep." CP_IDUSER_DEPENSES " = " + QString::number(idUser);
     //qDebug() << req;
     QList<QVariantList> deplist = StandardSelectSQL(req,ok);
@@ -1422,15 +1423,15 @@ QList<Depense*> DataBase::loadDepensesByUser(int idUser)
 void DataBase::loadDepenseArchivee(Depense *dep)
 {
     bool archivee = false;
-    QString req = "select idLigne from " TBL_ARCHIVESBANQUE " where idDep = " + QString::number(dep->id());
+    QString req = "select " CP_ID_ARCHIVESCPT " from " TBL_ARCHIVESBANQUE " where " CP_IDDEP_ARCHIVESCPT " = " + QString::number(dep->id());
     QVariantList arcdata = getFirstRecordFromStandardSelectSQL(req,ok);
     archivee = ok && arcdata.size() > 0;
     if (!archivee)  // pour les anciens enregistrements qui étaient archivés sans l'id...
     {
-        req = "select idligne from " TBL_ARCHIVESBANQUE
-              " where LigneDate = '" + dep->date().toString("yyyy-MM-dd") +
-              "' and LigneLibelle = '" + Utils::correctquoteSQL(dep->objet()) +
-              "' and LigneMontant = " + QString::number(dep->montant());
+        req = "select " CP_ID_ARCHIVESCPT " from " TBL_ARCHIVESBANQUE
+              " where " CP_DATE_ARCHIVESCPT " = '" + dep->date().toString("yyyy-MM-dd") +
+              "' and " CP_LIBELLE_ARCHIVESCPT " = '" + Utils::correctquoteSQL(dep->objet()) +
+              "' and " CP_MONTANT_ARCHIVESCPT " = " + QString::number(dep->montant());
         arcdata = getFirstRecordFromStandardSelectSQL(req,ok);
         archivee = ok && arcdata.size() > 0;
     }
@@ -1440,7 +1441,7 @@ void DataBase::loadDepenseArchivee(Depense *dep)
 QStringList DataBase::ListeRubriquesFiscales()
 {
     QStringList ListeRubriques = QStringList();
-    QString req = "SELECT reffiscale from " TBL_RUBRIQUES2035 " where FamFiscale is not null and famfiscale <> 'Prélèvement personnel' order by reffiscale";
+    QString req = "SELECT " CP_REFFISCALE_2035 " from " TBL_RUBRIQUES2035 " where " CP_FAMFISCALE_2035 " is not null and " CP_FAMFISCALE_2035 " <> 'Prélèvement personnel' order by " CP_REFFISCALE_2035;
     QList<QVariantList> rublist = StandardSelectSQL(req,ok);
     if(!ok || rublist.size()==0)
         return ListeRubriques;
@@ -1458,11 +1459,11 @@ QList<Depense*> DataBase::VerifExistDepense(QMap<int, Depense *> m_listDepenses,
     else if (Comp == DataBase::Inf)
         op = "<";
     QList<Depense*> listdepenses;
-    QString req = "select idDep from " TBL_DEPENSES " where DateDep " + op + "'" + date.toString("yyyy-MM-dd") +
-            "'and Objet = '" + Utils::correctquoteSQL(objet) +
-            "'and Montant = " + QString::number(montant) +
-            " and idUser = " + QString::number(iduser) +
-            " order by DateDep";
+    QString req = "select " CP_ID_DEPENSES " from " TBL_DEPENSES " where " CP_DATE_DEPENSES + op + "'" + date.toString("yyyy-MM-dd") +
+            "'and " CP_OBJET_DEPENSES " = '" + Utils::correctquoteSQL(objet) +
+            "'and " CP_MONTANT_DEPENSES " = " + QString::number(montant) +
+            " and " CP_IDUSER_DEPENSES " = " + QString::number(iduser) +
+            " order by " CP_DATE_DEPENSES;
     QList<QVariantList> deplist = StandardSelectSQL(req,ok);
     if(!ok || deplist.size()==0)
         return listdepenses;
@@ -1484,11 +1485,12 @@ QList<Depense*> DataBase::VerifExistDepense(QMap<int, Depense *> m_listDepenses,
 QList<Archive*> DataBase::loadArchiveByDate(QDate date, Compte *compte, int intervalle)
 {
     QList<Archive*> archives;
-    QString req = "select idLigne, idcompte, iddep, idrec, idrecspec, idremcheq, LigneDate, LigneLibelle, LigneMontant,"
-                  " LigneDebitCredit, LigneTypeoperation, LigneDateConsolidation, idArchive from " TBL_ARCHIVESBANQUE
-                  " where idCompte = " + QString::number(compte->id())
-                + " and lignedateconsolidation > '" + date.addDays(-intervalle).toString("yyyy-MM-dd") + "'"
-                + " and lignedateconsolidation <= '" + date.toString("yyyy-MM-dd") + "'";
+    QString req = "select " CP_ID_ARCHIVESCPT ", " CP_IDCOMPTE_ARCHIVESCPT ", " CP_IDDEP_ARCHIVESCPT ", " CP_IDREC_ARCHIVESCPT ", " CP_IDRECSPEC_ARCHIVESCPT ", " CP_IDREMCHEQ_ARCHIVESCPT ", "
+                            CP_DATE_ARCHIVESCPT ", " CP_LIBELLE_ARCHIVESCPT " , " CP_MONTANT_ARCHIVESCPT ","
+                            CP_DEBITCREDIT_ARCHIVESCPT ", " CP_TYPEOPERATION_ARCHIVESCPT ", " CP_DATECONSOLIDE_ARCHIVESCPT ", " CP_IDARCHIVE_ARCHIVESCPT " from " TBL_ARCHIVESBANQUE
+                  " where " CP_IDCOMPTE_ARCHIVESCPT " = " + QString::number(compte->id())
+                + " and " CP_DATECONSOLIDE_ARCHIVESCPT " > '" + date.addDays(-intervalle).toString("yyyy-MM-dd") + "'"
+                + " and " CP_DATECONSOLIDE_ARCHIVESCPT " <= '" + date.toString("yyyy-MM-dd") + "'";
     //qDebug() << req;
     QList<QVariantList> arclist = StandardSelectSQL(req,ok);
     if(!ok || arclist.size()==0)
@@ -1496,18 +1498,18 @@ QList<Archive*> DataBase::loadArchiveByDate(QDate date, Compte *compte, int inte
     for (int i=0; i<arclist.size(); ++i)
     {
        QJsonObject jData{};
-        jData["idligne"]                = arclist.at(i).at(0).toInt();
-        jData["idcompte"]               = arclist.at(i).at(1).toInt();
-        jData["iddepense"]              = arclist.at(i).at(2).toInt();
-        jData["idrecette"]              = arclist.at(i).at(3).toInt();
-        jData["idrecettespeciale"]      = arclist.at(i).at(4).toInt();
-        jData["idremisecheque"]         = arclist.at(i).at(5).toInt();
-        jData["lignedate"]              = arclist.at(i).at(6).toDate().toString("yyyy-MM-dd");
-        jData["lignelibelle"]           = arclist.at(i).at(7).toString();
-        jData["montant"]                = (arclist.at(i).at(9).toInt()==1? arclist.at(i).at(8).toDouble() : arclist.at(i).at(8).toDouble()*-1);
-        jData["lignetypeoperation"]     = arclist.at(i).at(10).toString();
-        jData["lignedateconsolidation"] = arclist.at(i).at(11).toDate().toString("yyyy-MM-dd");
-        jData["idarchive"]              = arclist.at(i).at(12).toInt();
+        jData[CP_ID_ARCHIVESCPT]                = arclist.at(i).at(0).toInt();
+        jData[CP_IDCOMPTE_ARCHIVESCPT]          = arclist.at(i).at(1).toInt();
+        jData[CP_IDDEP_ARCHIVESCPT]             = arclist.at(i).at(2).toInt();
+        jData[CP_IDREC_ARCHIVESCPT]             = arclist.at(i).at(3).toInt();
+        jData[CP_IDRECSPEC_ARCHIVESCPT]         = arclist.at(i).at(4).toInt();
+        jData[CP_IDREMCHEQ_ARCHIVESCPT]         = arclist.at(i).at(5).toInt();
+        jData[CP_DATE_ARCHIVESCPT]              = arclist.at(i).at(6).toDate().toString("yyyy-MM-dd");
+        jData[CP_LIBELLE_ARCHIVESCPT]           = arclist.at(i).at(7).toString();
+        jData[CP_MONTANT_ARCHIVESCPT]           = (arclist.at(i).at(9).toInt()==1? arclist.at(i).at(8).toDouble() : arclist.at(i).at(8).toDouble()*-1);
+        jData[CP_TYPEOPERATION_ARCHIVESCPT]     = arclist.at(i).at(10).toString();
+        jData[CP_DATECONSOLIDE_ARCHIVESCPT]     = arclist.at(i).at(11).toDate().toString("yyyy-MM-dd");
+        jData[CP_IDARCHIVE_ARCHIVESCPT]         = arclist.at(i).at(12).toInt();
         Archive *arc = new Archive(jData);
         if (arc != Q_NULLPTR)
             archives << arc;
@@ -1521,7 +1523,7 @@ QList<Archive*> DataBase::loadArchiveByDate(QDate date, Compte *compte, int inte
 QList<Banque*> DataBase::loadBanques()
 {
     QList<Banque*> banques;
-    QString req = "SELECT idBanque, idBanqueAbrege, NomBanque, CodeBanque FROM " TBL_BANQUES " order by nomBanque";
+    QString req = "SELECT " CP_ID_BANQUES ", " CP_NOMABREGE_BANQUES ", " CP_NOMBANQUE_BANQUES ", " CP_CODE_BANQUES " FROM " TBL_BANQUES " order by " CP_NOMBANQUE_BANQUES;
     QList<QVariantList> banqlist = StandardSelectSQL(req,ok);
     if(!ok || banqlist.size()==0)
         return banques;
@@ -1597,52 +1599,99 @@ QList<Recette*> DataBase::loadRecettesByPeriod(QDate datedebut, QDate datefin)
     QList<Recette*> listerecettes;
         //---------------------------------------------- Tous les actes effectués par tout le monde durant la période, sauf les impayés et les gratuits
         QString req =
-        "select res1.idActe, res1.actedate, res1.nom, res1.actecotation, res1.acteMontant, res1.actemonnaie, res1.TypePaiement,"
-        " res1.Tiers, Paye, res1.iduser, res1.userparent, res1.usercomptable, null as montantautresrecettes, null as typeautresrecettes from\n "
-        "(\n"
-            "select\n"
-            " act." CP_ID_ACTES ", " CP_DATE_ACTES ", concat(patnom, ' ', patprenom) as nom, " CP_COTATION_ACTES ", " CP_MONTANT_ACTES ", " CP_MONNAIE_ACTES
-            ", TypePaiement, Tiers, " CP_IDUSER_ACTES ", " CP_IDUSERPARENT_ACTES ", " CP_IDUSERCOMPTABLE_ACTES " from \n"
-            TBL_ACTES " act, " TBL_PATIENTS " pat, " TBL_TYPEPAIEMENTACTES " typ\n"
+        "select "
+        "res1." CP_ID_ACTES ", "
+        "res1." CP_DATE_ACTES ", "
+        "res1.nom, "
+        "res1." CP_COTATION_ACTES ", "
+        "res1." CP_MONTANT_ACTES ", "
+        "res1." CP_MONNAIE_ACTES ", "
+        "res1." CP_TYPEPAIEMENT_TYPEPAIEMENTACTES ", "
+        "res1.Tiers, "
+        "Paye, "
+        "res1." CP_IDUSER_ACTES ", "
+        "res1." CP_IDUSERPARENT_ACTES ", "
+        "res1." CP_IDUSERCOMPTABLE_ACTES ", "
+        "null as montantautresrecettes, "
+        "null as typeautresrecettes "
+        "from ("
+            "select "
+            "act." CP_ID_ACTES ", "
+            CP_DATE_ACTES ", "
+            "concat(patnom, ' ', patprenom) as nom, "
+            CP_COTATION_ACTES ", "
+            CP_MONTANT_ACTES ", "
+            CP_MONNAIE_ACTES ", "
+            CP_TYPEPAIEMENT_TYPEPAIEMENTACTES ", "
+            "Tiers, "
+            CP_IDUSER_ACTES ", "
+            CP_IDUSERPARENT_ACTES ", "
+            CP_IDUSERCOMPTABLE_ACTES
+            " from " TBL_ACTES " act, " TBL_PATIENTS " pat, " TBL_TYPEPAIEMENTACTES " typ"
             " where act." CP_IDPAT_ACTES " = pat.idpat\n"
             " and act." CP_ID_ACTES " = typ.idacte\n"
             " and " CP_DATE_ACTES " >= '" + datedebut.toString("yyyy-MM-dd") + "'\n"
             " and " CP_DATE_ACTES " <= '" + datefin.toString("yyyy-MM-dd") + "'\n"
             " order by " CP_DATE_ACTES ", nom\n"
-        ")\n"
-        " as res1\n"
-        " left outer join\n"
-        " (\n"
-            "select rec.idrecette, paye, lig.idActe from \n"
+        ") as res1"
+        " left outer join"
+        " ("
+            "select rec." CP_ID_LIGNRECETTES ", " CP_PAYE_LIGNEPAIEMENT ", lig." CP_IDACTE_LIGNEPAIEMENT " from \n"
             TBL_LIGNESPAIEMENTS " lig, " TBL_RECETTES " rec, " TBL_TYPEPAIEMENTACTES " typ2\n"
-            " where lig.idrecette = rec.idrecette\n"
-            " and lig.idActe = typ2.idacte\n"
-            " and TypePaiement <> 'T'\n"
-            " and TypePaiement <> 'G'\n"
-            " and datepaiement >= '" + datedebut.toString("yyyy-MM-dd") + "'\n"
-            " and datepaiement <= '" + datefin.toString("yyyy-MM-dd") + "'\n"
-        ")\n"
-        " as res3 on res1.idacte = res3.idActe\n";
+            " where lig." CP_IDRECETTE_LIGNEPAIEMENT " = rec." CP_ID_LIGNRECETTES "\n"
+            " and lig." CP_IDACTE_LIGNEPAIEMENT " = typ2.idacte\n"
+            " and " CP_TYPEPAIEMENT_TYPEPAIEMENTACTES " <> 'T'\n"
+            " and " CP_TYPEPAIEMENT_TYPEPAIEMENTACTES " <> 'G'\n"
+            " and " CP_DATE_LIGNRECETTES " >= '" + datedebut.toString("yyyy-MM-dd") + "'\n"
+            " and " CP_DATE_LIGNRECETTES " <= '" + datefin.toString("yyyy-MM-dd") + "'\n"
+        ") as res3 "
+        "on res1." CP_ID_ACTES " = res3." CP_IDACTE_LIGNEPAIEMENT "";
 
         //----------------------------------------------- et tous les tiers payants encaissés durant cette même période
         req +=
         " union\n"
 
-        " select null as idActe, DatePaiement as actedate, NomTiers as nom, null as actecotation, null as acteMontant, Monnaie as acteMonnaie, ModePaiement as TypePaiement,"
-        " null as Tiers, Montant as paye, iduser, iduser as userparent, iduser as usercomptable, null as montantautresrecettes, null as typeautresrecettes from \n"
-        TBL_RECETTES
-        "\n where TiersPayant = 'O'\n"
-        " and DatePaiement >= '" + datedebut.toString("yyyy-MM-dd") + "'\n"
-        " and DatePaiement <= '" + datefin.toString("yyyy-MM-dd") + "'\n"
+        " select "
+        "null as " CP_ID_ACTES ", "
+        CP_DATE_LIGNRECETTES " as " CP_DATE_ACTES ", "
+        CP_NOMPAYEUR_LIGNRECETTES " as nom, "
+        "null as " CP_COTATION_ACTES ", "
+        "null as " CP_MONTANT_ACTES ", "
+        CP_MONNAIE_LIGNRECETTES " as " CP_MONNAIE_ACTES ", "
+        CP_MODEPAIEMENT_LIGNRECETTES " as TypePaiement, "
+        "null as Tiers, "
+        CP_MONTANT_LIGNRECETTES " as paye, "
+        CP_IDUSER_LIGNRECETTES ", "
+        CP_IDUSER_LIGNRECETTES " as " CP_IDUSERPARENT_ACTES ", "
+        CP_IDUSER_LIGNRECETTES " as " CP_IDUSERCOMPTABLE_ACTES ", "
+        "null as montantautresrecettes, "
+        "null as typeautresrecettes"
+        " from "  TBL_RECETTES
+        " where TiersPayant = 'O'"
+        " and " CP_DATE_LIGNRECETTES " >= '" + datedebut.toString("yyyy-MM-dd") + "'\n"
+        " and " CP_DATE_LIGNRECETTES " <= '" + datefin.toString("yyyy-MM-dd") + "'\n"
 
-        " union\n"
+        " union"
 
-        " select null as idActe, DateRecette as actedate, Libelle as nom, null as actecotation, null as acteMontant, Monnaie as acteMonnaie,"
-        " Paiement as TypePaiement, null as Tiers, null as paye, null as iduser, null as userparent, iduser as usercomptable,"
-        " montant as montantautresrecettes, Typerecette as typeautresrecettes from \n" TBL_RECETTESSPECIALES
-        " \nwhere"
-        " DateRecette >= '" + datedebut.toString("yyyy-MM-dd") + "'\n"
-        " and DateRecette<= '" + datefin.toString("yyyy-MM-dd") + "'\n"
+        " select "
+        "null as idActe, "
+        CP_DATE_AUTRESRECETTES " as actedate, "
+        CP_LIBELLE_AUTRESRECETTES " as nom, "
+        "null as actecotation, "
+        "null as acteMontant, "
+        CP_MONNAIE_AUTRESRECETTES " as acteMonnaie, "
+        CP_PAIEMENT_AUTRESRECETTES " as TypePaiement, "
+        "null as Tiers, "
+        "null as Paye, "
+        "null as iduser, "
+        "null as userparent, "
+        CP_IDUSER_AUTRESRECETTES " as usercomptable, "
+        CP_MONTANT_AUTRESRECETTES " as montantautresrecettes, "
+        CP_TYPERECETTE_AUTRESRECETTES " as typeautresrecettes "
+        "from " TBL_RECETTESSPECIALES
+        " where "
+        CP_DATE_AUTRESRECETTES " >= '" + datedebut.toString("yyyy-MM-dd") + "'\n"
+        " and " CP_DATE_AUTRESRECETTES " <= '" + datefin.toString("yyyy-MM-dd") + "'\n"
         " order by actedate, nom";
 
         //proc->Edit(req);
@@ -1681,11 +1730,25 @@ QList<Recette*> DataBase::loadRecettesByPeriod(QDate datedebut, QDate datefin)
 */
 RecetteComptable* DataBase::loadRecetteComptablebyId(int id)
 {
-    QString req =   "SELECT idUser, DatePaiement, DateEnregistrement, Montant, ModePaiement,"
-                    " TireurCheque, CompteVirement, BanqueCheque, TiersPayant, NomTiers,"
-                    " Commission, Monnaie, idRemise, EnAttente, EnregistrePar,"
-                    " TypeRecette FROM " TBL_RECETTES
-                    " WHERE idRecette = " + QString::number(id);
+    QString req =   "SELECT "
+                    CP_IDUSER_LIGNRECETTES ", "
+                    CP_DATE_LIGNRECETTES ", "
+                    CP_DATEENREGISTREMENT_LIGNRECETTES ", "
+                    CP_MONTANT_LIGNRECETTES ", "
+                    CP_MODEPAIEMENT_LIGNRECETTES ","
+                    CP_TIREURCHEQUE_LIGNRECETTES ", "
+                    CP_IDCPTEVIREMENT_LIGNRECETTES ", "
+                    CP_BANQUECHEQUE_LIGNRECETTES ", "
+                    CP_TIERSPAYANT_LIGNRECETTES ", "
+                    CP_NOMPAYEUR_LIGNRECETTES ","
+                    CP_COMMISSION_LIGNRECETTES ", "
+                    CP_MONNAIE_LIGNRECETTES ", "
+                    CP_IDREMISECHQ_LIGNRECETTES ", "
+                    CP_CHQENATTENTE_LIGNRECETTES ", "
+                    CP_IDUSERENREGISTREUR_LIGNRECETTES ","
+                    CP_TYPERECETTE_LIGNRECETTES
+                    " FROM " TBL_RECETTES
+                    " WHERE " CP_ID_LIGNRECETTES " = " + QString::number(id);
     QVariantList recette = getFirstRecordFromStandardSelectSQL(req,ok);
     if(!ok || recette.size()==0)
         return Q_NULLPTR;
@@ -1720,15 +1783,29 @@ QList<PaiementTiers*> DataBase::loadPaiementTiersByUser(User* usr)
     QList<PaiementTiers*> listepaiements;
     if (usr == Q_NULLPTR)
         return listepaiements;
-    QString req =   "SELECT idRecette, DatePaiement, DateEnregistrement, Montant, ModePaiement,"
-                    " TireurCheque, CompteVirement, BanqueCheque, NomTiers, Commission,"
-                    " Monnaie, idRemise, EnAttente, EnregistrePar, TypeRecette,"
-                    " RCDate FROM " TBL_RECETTES
-                "\n LEFT OUTER JOIN (SELECT RCDate, idRemCheq FROM " TBL_REMISECHEQUES ") AS rc\n"
-                " ON rc.idRemCheq = idRemise\n"
-                " WHERE idUser = " + QString::number(usr->id()) +
-                "\n AND TiersPayant = 'O'\n"
-                " ORDER BY DatePaiement DESC, NomTiers";
+    QString req =   "SELECT "
+                    CP_ID_LIGNRECETTES ", "
+                    CP_DATE_LIGNRECETTES ", "
+                    CP_DATEENREGISTREMENT_LIGNRECETTES ", "
+                    CP_MONTANT_LIGNRECETTES ", "
+                    CP_MODEPAIEMENT_LIGNRECETTES ","
+                    CP_TIREURCHEQUE_LIGNRECETTES ", "
+                    CP_IDCPTEVIREMENT_LIGNRECETTES ", "
+                    CP_BANQUECHEQUE_LIGNRECETTES ", "
+                    CP_NOMPAYEUR_LIGNRECETTES ", "
+                    CP_COMMISSION_LIGNRECETTES ","
+                    CP_MONNAIE_LIGNRECETTES ", "
+                    CP_IDREMISECHQ_LIGNRECETTES ", "
+                    CP_CHQENATTENTE_LIGNRECETTES ", "
+                    CP_IDUSERENREGISTREUR_LIGNRECETTES ", "
+                    CP_TYPERECETTE_LIGNRECETTES ", "
+                    CP_DATE_REMCHEQ
+                    " FROM " TBL_RECETTES
+                "\n LEFT OUTER JOIN (SELECT " CP_DATE_REMCHEQ ", " CP_ID_REMCHEQ " FROM " TBL_REMISECHEQUES ") AS rc\n"
+                " ON rc." CP_ID_REMCHEQ " = " CP_IDREMISECHQ_LIGNRECETTES "\n"
+                " WHERE " CP_IDUSER_LIGNRECETTES " = " + QString::number(usr->id()) +
+                "\n AND " CP_TIERSPAYANT_LIGNRECETTES " = 'O'\n"
+                " ORDER BY " CP_DATE_LIGNRECETTES " DESC, " CP_NOMPAYEUR_LIGNRECETTES;
     QList<QVariantList> paiementslist = StandardSelectSQL(req,ok);
     if(!ok || paiementslist.size()==0)
         return listepaiements;
@@ -1768,10 +1845,10 @@ QList<LignePaiement *> DataBase::loadlignespaiementsByPatient(Patient *pat)
     if (pat == Q_NULLPTR)
         return listepaiements;
     bool ok;
-    QString req =   "SELECT idActe, lig.idRecette, Paye, Monnaie FROM " TBL_LIGNESPAIEMENTS " as lig"
-                    " inner join " TBL_RECETTES " rec on rec.idrecette = lig.idrecette"
-                    " where idActe in"
-                    " (select " CP_ID_ACTES " from " TBL_ACTES " where idpat = " + QString::number(pat->id()) + ")";
+    QString req =   "SELECT " CP_IDACTE_LIGNEPAIEMENT ", lig." CP_IDRECETTE_LIGNEPAIEMENT ", " CP_PAYE_LIGNEPAIEMENT ", " CP_MONNAIE_LIGNRECETTES " FROM " TBL_LIGNESPAIEMENTS " as lig"
+                    " inner join " TBL_RECETTES " rec on rec." CP_ID_LIGNRECETTES " = lig." CP_IDRECETTE_LIGNEPAIEMENT
+                    " where " CP_IDACTE_LIGNEPAIEMENT " in"
+                    " (select " CP_ID_ACTES " from " TBL_ACTES " where " CP_IDPAT_ACTES " = " + QString::number(pat->id()) + ")";
     QList<QVariantList> paiementslist = StandardSelectSQL(req, ok);
     if(!ok || paiementslist.size()==0)
         return listepaiements;
@@ -2718,7 +2795,7 @@ Intervention* DataBase::loadInterventionById(int idintervention)                
     QString req =   "SELECT " CP_ID_LIGNPRGOPERATOIRE ", " CP_HEURE_LIGNPRGOPERATOIRE ", " CP_IDPATIENT_LIGNPRGOPERATOIRE ", " CP_IDSESSION_LIGNPRGOPERATOIRE ", " CP_TYPEANESTH_LIGNPRGOPERATOIRE ", "  // 0-1-2-3-4
                               CP_IDTYPEINTERVENTION_LIGNPRGOPERATOIRE ", " CP_COTE_LIGNPRGOPERATOIRE ", " CP_IDIOL_LIGNPRGOPERATOIRE ", " CP_PWRIOL_LIGNPRGOPERATOIRE ", " CP_CYLIOL_LIGNPRGOPERATOIRE ", " // 5-6-7-8-9
                               CP_OBSERV_LIGNPRGOPERATOIRE ", " CP_IDACTE_LIGNPRGOPERATOIRE ", " CP_INCIDENT_LIGNPRGOPERATOIRE // 10-11-12
-                    " FROM " TBL_LIGNESPRGOPERATOIRES ;
+                    " FROM " TBL_LIGNESPRGOPERATOIRES
                     " WHERE " CP_ID_LIGNPRGOPERATOIRE " = " + QString::number(idintervention) ;
     QVariantList interventiondata = getFirstRecordFromStandardSelectSQL(req,ok);
     //qDebug() << req;

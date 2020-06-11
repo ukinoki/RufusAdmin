@@ -145,11 +145,11 @@ void dlg_gestioncomptes::AfficheCompte(QTableWidgetItem *pitem, QTableWidgetItem
     if (autorsupprimer)
     {
         bool ok = true;
-        QString req = "select idcompte from " TBL_ARCHIVESBANQUE
-                " where idcompte = " + QString::number(idCompte) +
+        QString req = "select " CP_IDCOMPTE_ARCHIVESCPT " from " TBL_ARCHIVESBANQUE
+                " where " CP_IDCOMPTE_ARCHIVESCPT " = " + QString::number(idCompte) +
                 " union"
-                " select idcompte from " TBL_LIGNESCOMPTES
-                " where idcompte = " + QString::number(idCompte) +
+                " select " CP_IDCOMPTE_LIGNCOMPTES " from " TBL_LIGNESCOMPTES
+                " where " CP_IDCOMPTE_LIGNCOMPTES " = " + QString::number(idCompte) +
                 " limit 1";
         autorsupprimer = (db->StandardSelectSQL(req, ok).size() == 0);
     }
