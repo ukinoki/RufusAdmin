@@ -246,15 +246,15 @@ void dlg_gestioncomptes::CompteFactice()
     {
         int idbanq = 0;
         bool ok = true;
-        QList<QVariantList> listPaPRS = db->SelectRecordsFromTable(QStringList() << "idbanque",
+        QList<QVariantList> listPaPRS = db->SelectRecordsFromTable(QStringList() << CP_ID_BANQUES,
                                                                       TBL_BANQUES, ok,
-                                                                      "where idbanqueabrege = 'PaPRS'");
+                                                                      "where" CP_NOMABREGE_BANQUES " = 'PaPRS'");
         if (listPaPRS.size()==0)
         {
-            db->StandardSQL("insert into " TBL_BANQUES " (idbanqueAbrege, Nombanque) values ('PaPRS','Panama Papers')");
-            listPaPRS = db->SelectRecordsFromTable(QStringList() << "idbanque",
+            db->StandardSQL("insert into " TBL_BANQUES " (" CP_NOMABREGE_BANQUES ", " CP_NOMBANQUE_BANQUES ") values ('PaPRS','Panama Papers')");
+            listPaPRS = db->SelectRecordsFromTable(QStringList() << CP_ID_BANQUES,
                                                    TBL_BANQUES, ok,
-                                                   "where idbanqueabrege = 'PaPRS'");
+                                                   "where " CP_NOMABREGE_BANQUES " = 'PaPRS'");
         }
         idbanq = listPaPRS.at(0).at(0).toInt();
         MetAJourListeBanques();
@@ -394,9 +394,9 @@ void dlg_gestioncomptes::ValidCompte()
     ui->Compteframe->setEnabled(false);
     ui->OKModifupSmallButton->setVisible(false);
     bool ok = true;
-    QList<QVariantList> listbanq = db->SelectRecordsFromTable(QStringList() << "idbanque",
+    QList<QVariantList> listbanq = db->SelectRecordsFromTable(QStringList() << CP_ID_BANQUES,
                                                                   TBL_BANQUES, ok,
-                                                                  "where nomBanque = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
+                                                                  "where " CP_NOMBANQUE_BANQUES " = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
     int idbanque = listbanq.at(0).at(0).toInt();
     if (m_mode == Modif)
     {
@@ -444,7 +444,7 @@ void dlg_gestioncomptes::ValidCompte()
 void dlg_gestioncomptes::MetAJourListeBanques()
 {
     bool ok = true;
-    QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << "nombanque" << "idbanque",
+    QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << CP_NOMBANQUE_BANQUES << CP_ID_BANQUES,
                                                                   TBL_BANQUES, ok);
     ui->BanqueupcomboBox->clear();
     for (int i=0; i<listbanques.size(); i++)
@@ -518,9 +518,9 @@ bool dlg_gestioncomptes::VerifCompte()
 
     int idbanque = -1;
     bool ok = true;
-    QList<QVariantList> listbanq = db->SelectRecordsFromTable(QStringList() << "idbanque",
+    QList<QVariantList> listbanq = db->SelectRecordsFromTable(QStringList() << CP_ID_BANQUES,
                                                                   TBL_BANQUES, ok,
-                                                                  "where nomBanque = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
+                                                                  "where " CP_NOMBANQUE_BANQUES " = '" + Utils::correctquoteSQL(ui->BanqueupcomboBox->currentText()) + "'");
     idbanque = listbanq.at(0).at(0).toInt();
 
     if (m_mode == Nouv)

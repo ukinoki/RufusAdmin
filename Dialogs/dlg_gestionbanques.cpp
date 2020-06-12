@@ -121,9 +121,9 @@ void dlg_gestionbanques::AfficheBanque()
     UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
     int idBanque = uptablebanq->item(lbl->Row(),0)->text().toInt();
     bool ok = true;
-    QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << "NomBanque" << "idBanqueAbrege" << "idbanque",
+    QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << CP_NOMBANQUE_BANQUES << CP_NOMABREGE_BANQUES << CP_ID_BANQUES,
                                                                     TBL_BANQUES, ok,
-                                                                    "where idBanque = " + QString::number(idBanque));
+                                                                    "where " CP_ID_BANQUES " = " + QString::number(idBanque));
     if (listbanques.size()>0)
     {
         QVariantList banque = listbanques.at(0);
@@ -131,9 +131,9 @@ void dlg_gestionbanques::AfficheBanque()
         ui->NomAbregeupLineEdit->setText(banque.at(1).toString());
     }
     wdg_buttonframe->wdg_moinsBouton->setEnabled(true);
-    QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idBanque",
+    QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << CP_IDBANQUE_COMPTES,
                                                                     TBL_COMPTES, ok,
-                                                                    "where idBanque = " + listbanques.at(0).at(2).toString());
+                                                                    "where " CP_IDBANQUE_COMPTES " = " + listbanques.at(0).at(2).toString());
     if (listcomptes.size()>0)
         wdg_buttonframe->wdg_moinsBouton->setEnabled(false);
     lbl = Q_NULLPTR;
@@ -246,7 +246,7 @@ void dlg_gestionbanques::ValideModifBanque()
             }
         }
         bool ok = true;
-        QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege", TBL_BANQUES, ok);
+        QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << CP_NOMABREGE_BANQUES, TBL_BANQUES, ok);
         if (listabreges.size()>0)
             for (int i=0; i<listabreges.size(); i++)
                 if (listabreges.at(i).at(0).toString() == ui->NomAbregeupLineEdit->text())
@@ -255,9 +255,9 @@ void dlg_gestionbanques::ValideModifBanque()
                     UpMessageBox::Watch(this,msg);
                     return;
                 }
-        listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
+        listabreges = db->SelectRecordsFromTable(QStringList() << CP_NOMABREGE_BANQUES,
                                                                       TBL_BANQUES, ok,
-                                                                      "where idbanqueabrege = '" + ui->NomAbregeupLineEdit->text() + "'");
+                                                                      "where " CP_NOMABREGE_BANQUES " = '" + ui->NomAbregeupLineEdit->text() + "'");
         if(listabreges.size()>0)
         {
             UpMessageBox::Watch(this,tr("Cette abréviation est déjà utilisée!"));
@@ -265,8 +265,8 @@ void dlg_gestionbanques::ValideModifBanque()
             return;
         }
         QHash<QString, QString> listsets;
-        listsets.insert("idbanqueabrege",   ui->NomAbregeupLineEdit->text());
-        listsets.insert("nombanque",        nombanque);
+        listsets.insert(CP_NOMABREGE_BANQUES,   ui->NomAbregeupLineEdit->text());
+        listsets.insert(CP_NOMBANQUE_BANQUES,        nombanque);
         db->InsertIntoTable(TBL_BANQUES, listsets);
         Datas::I()->banques->initListe();
         if (m_fermeapresvalidation)
@@ -282,9 +282,9 @@ void dlg_gestionbanques::ValideModifBanque()
         UpLabel* lbl = static_cast<UpLabel*>(uptablebanq->cellWidget(uptablebanq->currentRow(),1));
         int idBanque = uptablebanq->item(lbl->Row(),0)->text().toInt();
         bool ok = true;
-        QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << "nombanque",
+        QList<QVariantList> listabreges = db->SelectRecordsFromTable(QStringList() << CP_NOMBANQUE_BANQUES,
                                                                                              TBL_BANQUES, ok,
-                                                                                             "where idbanque <> " + QString::number(idBanque));
+                                                                                             "where " CP_ID_BANQUES " <> " + QString::number(idBanque));
         if (listabreges.size()>0)
             for (int i=0; i<listabreges.size(); i++)
                 if (listabreges.at(i).at(0).toString().toUpper() == nombanque.toUpper())
@@ -293,9 +293,9 @@ void dlg_gestionbanques::ValideModifBanque()
                     UpMessageBox::Watch(this,msg);
                     return;
                 }
-        listabreges = db->SelectRecordsFromTable(QStringList() << "idbanqueabrege",
+        listabreges = db->SelectRecordsFromTable(QStringList() << CP_NOMABREGE_BANQUES,
                                                                       TBL_BANQUES, ok,
-                                                                      "where idbanque <> " + QString::number(idBanque));
+                                                                      "where " CP_ID_BANQUES " <> " + QString::number(idBanque));
         if (listabreges.size()>0)
             for (int i=0; i<listabreges.size(); i++)
                 if (listabreges.at(i).at(0).toString() == ui->NomAbregeupLineEdit->text())
@@ -305,11 +305,11 @@ void dlg_gestionbanques::ValideModifBanque()
                     return;
                 }
         QHash<QString, QVariant> listsets;
-        listsets.insert("nombanque",      nombanque);
-        listsets.insert("idbanqueabrege", ui->NomAbregeupLineEdit->text());
+        listsets.insert(CP_NOMBANQUE_BANQUES,      nombanque);
+        listsets.insert(CP_NOMABREGE_BANQUES, ui->NomAbregeupLineEdit->text());
         DataBase:: I()->UpdateTable(TBL_BANQUES,
                                               listsets,
-                                              "where idBanque = " + QString::number(idBanque));
+                                              "where " CP_ID_BANQUES " = " + QString::number(idBanque));
         Datas::I()->banques->initListe();
     }
     RemplirTableView();
@@ -344,10 +344,10 @@ void dlg_gestionbanques::RemplirTableView()
     QTableWidgetItem    *pitem0;
     UpLabel             *label1;
     bool ok = true;
-    QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << "idbanque" << "nombanque",
+    QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << CP_ID_BANQUES << CP_NOMBANQUE_BANQUES,
                                                                                          TBL_BANQUES, ok,
                                                                                          "",
-                                                                                         "order by nomBanque");
+                                                                                         "order by" CP_NOMBANQUE_BANQUES);
     if (listbanques.size() > 0)
     {
         uptablebanq->setRowCount(listbanques.size());
