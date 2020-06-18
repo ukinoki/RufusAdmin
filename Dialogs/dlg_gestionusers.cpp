@@ -665,8 +665,8 @@ void dlg_gestionusers::EnregistreUser()
         }
     }
 
-    req = "update " TBL_COMPTES " set partage = ";
-    db->StandardSQL(req + (ui->SocieteComptableupRadioButton->isChecked()? "1" : "null") + " where iduser = " +  ui->idUseruplineEdit->text());
+    req = "update " TBL_COMPTES " set " CP_PARTAGE_COMPTES " = ";
+    db->StandardSQL(req + (ui->SocieteComptableupRadioButton->isChecked()? "1" : "null") + " where " CP_IDUSER_COMPTES " = " +  ui->idUseruplineEdit->text());
     setDataCurrentUser(ui->idUseruplineEdit->text().toInt()); // reactualise l'item user correspondant
     RemplirTableWidget();
 

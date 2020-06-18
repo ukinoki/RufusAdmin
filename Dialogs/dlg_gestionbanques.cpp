@@ -208,14 +208,14 @@ void dlg_gestionbanques::SupprBanque()
     bool ok = true;
     QList<QVariantList> listcomptes = db->SelectRecordsFromTable(QStringList() << "idBanque",
                                                                     TBL_COMPTES, ok,
-                                                                    "where idBanque = " + QString::number(idBanque));
+                                                                    "where " CP_IDBANQUE_COMPTES " = " + QString::number(idBanque));
     if (listcomptes.size()>0)
     {
         UpMessageBox::Watch(this, tr("Impossible de supprimer la banque ") + lbl->text(), tr("Elle est utilisée par d'autres utilisateurs"));
         return;
     }
     Datas::I()->banques->initListe();
-    db->SupprRecordFromTable(idBanque,"idBanque",TBL_BANQUES);
+    db->SupprRecordFromTable(idBanque, CP_ID_BANQUES, TBL_BANQUES);
     RemplirTableView();
     AfficheBanque();
 }

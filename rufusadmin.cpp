@@ -25,7 +25,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("12-06-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("18-06-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2390,14 +2390,14 @@ void RufusAdmin::SupprimerDocsEtFactures()
     QString NomDirStockageImagerie = m_settings->value("DossierImagerie").toString();
 
     /* Supprimer les documents en attente de suppression*/
-    QString req = "Select filepath from " TBL_DOCSASUPPRIMER;
+    QString req = "Select " CP_FILEPATH_DOCSASUPPR " from " TBL_DOCSASUPPRIMER;
     QList<QVariantList> ListeDocs = db->StandardSelectSQL(req, ok);
     for (int i=0; i<ListeDocs.size(); i++)
     {
         QString CheminFichier = NomDirStockageImagerie + ListeDocs.at(i).at(0).toString();
         if (!QFile(CheminFichier).remove())
             UpMessageBox::Watch(this, tr("Fichier introuvable!"), CheminFichier);
-        db->StandardSQL("delete from " TBL_DOCSASUPPRIMER " where filepath = '" + Utils::correctquoteSQL(ListeDocs.at(i).at(0).toString()) + "'");
+        db->StandardSQL("delete from " TBL_DOCSASUPPRIMER " where " CP_FILEPATH_DOCSASUPPR " = '" + Utils::correctquoteSQL(ListeDocs.at(i).at(0).toString()) + "'");
     }
 
     /* Supprimer les factures en attente de suppression - même démarche mais on fait une copie de la facture dans le dossier FACTURESSANSLIEN avant de la supprimer*/
@@ -2408,7 +2408,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
         ShowMessage::I()->SplashMessage(msg, 3000);
         return;
     }
-    req = "select LienFichier from " TBL_FACTURESASUPPRIMER;
+    req = "select " CP_LIENFICHIER_FACTASUPPR " from " TBL_FACTURESASUPPRIMER;
     QList<QVariantList> ListeFactures = db->StandardSelectSQL(req, ok);
     for (int i=0; i<ListeFactures.size(); i++)
     {
@@ -2426,7 +2426,7 @@ void RufusAdmin::SupprimerDocsEtFactures()
         /*  on l'efface du dossier de factures*/
         QFile(NomDirStockageImagerie + NOM_DIR_FACTURES + lienfichier).remove();
         /* on détruit l'enregistrement dans la table FacturesASupprimer*/
-        db->StandardSQL("delete from " TBL_FACTURESASUPPRIMER " where LienFichier = '" + Utils::correctquoteSQL(lienfichier) + "'");
+        db->StandardSQL("delete from " TBL_FACTURESASUPPRIMER " where " CP_LIENFICHIER_FACTASUPPR " = '" + Utils::correctquoteSQL(lienfichier) + "'");
     }
 }
 
