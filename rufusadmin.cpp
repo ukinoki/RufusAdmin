@@ -21,11 +21,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusAdmin)
 {
-    Datas::I();
-
-    // la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
+    //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("18-06-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("22-06-2020/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -190,7 +188,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     VerifPosteImport();
     VerifVersionBase();
     CalcExporteDocs();
-    QList<QVariantList> listdate = db->StandardSelectSQL("select max(creele) from " TBL_MESSAGES, m_ok);
+    QList<QVariantList> listdate = db->StandardSelectSQL("select max(" CP_DATECREATION_MSG ") from " TBL_MESSAGES, m_ok);
     if (listdate.size()==0)
         m_dateDernierMessage = QDateTime::currentDateTime();
     else
