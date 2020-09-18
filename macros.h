@@ -800,8 +800,17 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_DIR_IMAGES                          "/Images"
 #define NOM_DIR_VIDEOS                          "/Videos"
 #define NOM_DIR_PROV                            "/Prov"
+#define NOM_DIR_FRONTO                          "/Fronto"
+#define NOM_DIR_AUTOREF                         "/Autoref"
+#define NOM_DIR_REFRACTEUR                      "/Refracteur"
+#define NOM_DIR_TONO                            "/Tono"
 #define NOM_DIR_LOGS                            "/Logs"
 #define NOM_DIR_ECHECSTRANSFERTS                "/EchecsTransferts"
+
+#define PATH_DIR_FRONTO                         PATH_DIR_PROV NOM_DIR_FRONTO
+#define PATH_DIR_AUTOREF                        PATH_DIR_PROV NOM_DIR_AUTOREF
+#define PATH_DIR_REFRACTEUR                     PATH_DIR_PROV NOM_DIR_REFRACTEUR
+#define PATH_DIR_TONO                           PATH_DIR_PROV NOM_DIR_TONO
 
 #define NOM_RUFUSFILE_INI                       "/Rufus.ini"
 #define NOM_ADMINFILE_INI                       "/RufusAdmin.ini"
