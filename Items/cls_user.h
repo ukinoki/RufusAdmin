@@ -18,9 +18,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CLS_USER_H
 #define CLS_USER_H
 
-#include <QMap>
-#include <QVariant>
-#include <QDate>
 #include "cls_item.h"
 #include "macros.h"
 #include "log.h"

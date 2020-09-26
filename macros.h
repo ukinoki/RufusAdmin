@@ -88,6 +88,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TBL_PATIENTS                          "rufus.Patients"
 #define TBL_RENSEIGNEMENTSMEDICAUXPATIENTS    "rufus.renseignementsmedicauxpatients"
 #define TBL_SALLEDATTENTE                     "rufus.salledattente"
+#define TBL_SESSIONS                          "rufus.Sessions"
 #define TBL_SPECIALITES                       "rufus.specialitesmedicales"
 #define TBL_UTILISATEURS                      "rufus.utilisateurs"
 #define TBL_USERSCONNECTES                    "rufus.UtilisateursConnectes"
@@ -311,6 +312,15 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_POSTEEXAMEN_SALDAT                           "PosteExamen"
 #define CP_IDUSERENCOURSEXAM_SALDAT                     "idUserEnCoursExam"
 #define CP_IDSALDAT_SALDAT                              "idSalDat"
+
+                            //! Table Rufus.Sessions
+#define CP_ID_SESSIONS                                  "idSession"
+#define CP_IDUSER_SESSIONS                              "idUser"
+#define CP_IDSUPERVISEUR_SESSIONS                       "idSuperviseur"
+#define CP_IDPARENT_SESSIONS                            "idParent"
+#define CP_IDCOMPTABLE_SESSIONS                         "idComptable"
+#define CP_IDLIEU_SESSIONS                              "idLieu"
+#define CP_DATE_SESSIONS                                "DateSession"
 
                             //! Table Rufus.Utilisateurs connectes
 #define CP_IDUSER_USRCONNECT                            "idUser"
