@@ -37,7 +37,8 @@ void Session::setData(QJsonObject data)
     Utils::setDataInt(data, CP_IDPARENT_SESSIONS, m_idUserParent);
     Utils::setDataInt(data, CP_IDCOMPTABLE_SESSIONS, m_idUserComptable);
     Utils::setDataInt(data, CP_IDLIEU_SESSIONS, m_idlieu);
-    Utils::setDataDate(data,CP_DATE_SESSIONS, m_date);
+    Utils::setDataDateTime(data,CP_DATEDEBUT_SESSIONS, m_datedebut);
+    Utils::setDataDateTime(data,CP_DATEFIN_SESSIONS, m_datefin);
     m_data = data;
 }
 

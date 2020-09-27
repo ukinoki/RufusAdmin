@@ -58,7 +58,7 @@ Session* Sessions::CreationSession(QHash<QString, QVariant> sets)
     Session *sess = Q_NULLPTR;
     int idSession = 0;
     DataBase::I()->locktables(QStringList() << TBL_SESSIONS);
-    idSession = DataBase::I()->selectMaxFromTable(CP_ID_COM, TBL_SESSIONS, m_ok);
+    idSession = DataBase::I()->selectMaxFromTable(CP_ID_SESSIONS, TBL_SESSIONS, m_ok);
     bool result = ( m_ok );
     if (result)
     {
@@ -78,13 +78,14 @@ Session* Sessions::CreationSession(QHash<QString, QVariant> sets)
     for (QHash<QString, QVariant>::const_iterator itset = sets.constBegin(); itset != sets.constEnd(); ++itset)
     {
         champ  = itset.key();
-        if (champ == CP_IDSUPERVISEUR_SESSIONS)         data[champ] = itset.value().toInt();
-        else if (champ == CP_IDUSER_SESSIONS)           data[champ] = itset.value().toInt();
-        else if (champ == CP_IDPARENT_SESSIONS)         data[champ] = itset.value().toInt();
-        else if (champ == CP_IDCOMPTABLE_SESSIONS)      data[champ] = itset.value().toInt();
-        else if (champ == CP_DATE_SESSIONS)             data[champ] = itset.value().toString();
+        if (champ == CP_IDSUPERVISEUR_SESSIONS)         data[champ] = itset.value().toString();
+        else if (champ == CP_IDUSER_SESSIONS)           data[champ] = itset.value().toString();
+        else if (champ == CP_IDPARENT_SESSIONS)         data[champ] = itset.value().toString();
+        else if (champ == CP_IDCOMPTABLE_SESSIONS)      data[champ] = itset.value().toString();
+        else if (champ == CP_DATEDEBUT_SESSIONS)        data[champ] = itset.value().toString();
+        else if (champ == CP_DATEFIN_SESSIONS)          data[champ] = itset.value().toString();
     }
-    sess = new Session(data);
+    m_currentsession = new Session(data);
     if (sess != Q_NULLPTR)
         map_sessions->insert(sess->id(), sess);
     return sess;

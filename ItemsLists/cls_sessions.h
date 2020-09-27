@@ -24,7 +24,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 class Sessions: public ItemsList
 {
 private:
-    QMap<int, Session*>        *map_sessions = Q_NULLPTR;                                       //!< une liste de sessions
+    QMap<int, Session*>         *map_sessions = Q_NULLPTR;                                      //!< une liste de sessions
+    Session                     *m_currentsession = Q_NULLPTR;                                  //!> la session en cours
 
 public:
     explicit    Sessions(QObject *parent = Q_NULLPTR);
@@ -32,6 +33,7 @@ public:
     QMap<int, Session *> *sessions() const;
 
     Session*    getById(int id, Item::LOADDETAILS details = Item::LoadDetails);                 //!> charge une session à partir de son id
+    Session* currentsession() { return m_currentsession; };
 
     //!> actions combinées sur l'item et l'enregistrement correspondant en base de données
 

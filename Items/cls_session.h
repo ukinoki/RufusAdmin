@@ -29,8 +29,8 @@ public: //static
     static int ROLE_INDETERMINE; //-3
 
 private:
-    int m_iduser;
-    int m_idlieu;
+    int m_iduser = ROLE_INDETERMINE;
+    int m_idlieu = ROLE_INDETERMINE;
     int m_idUserSuperviseur = ROLE_INDETERMINE;     //!< son id si le user est responsable de ses SESSIONS
                                                     //!< l'id du user assisté s'il est assistant
     int m_idUserParent = ROLE_INDETERMINE;          //!< son id si le user n'est pas remplaçant
@@ -45,23 +45,30 @@ private:
                                                         //! s'il n'est pas responsable de ses SESSIONS
                                                             //! -2 = ROLE_VIDE - le comptable de l'Session sera enregistré au moment de l'enregistrement de la cotation
                                                             //! ce sera l'id du user qui enregistrera la cotation
-    QDate m_date;
-    
+    QDateTime m_datedebut = QDateTime();
+    QDateTime m_datefin = QDateTime();
+
 public:
     Session(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
     void setData(QJsonObject data);
 
-    QDate date() const                      { return m_date; };;
-    int idsite() const                      { return m_idlieu; };;
+    QDateTime datedebut() const             { return m_datedebut; };
+    QDateTime datefin() const               { return m_datefin; };
+    int iduser() const                      { return m_iduser; };
+    int idsite() const                      { return m_idlieu; };
     int idsuperviseur() const               { return m_idUserSuperviseur; };
     int idParent() const                    { return m_idUserParent; };
     int idComptable() const                 { return m_idUserComptable; };
     
     void setid(int id)                      { m_id = id;
                                               m_data[CP_ID_SESSIONS] = id; }
-    void setdate(QDate date)                { m_date = date;
-                                              m_data[CP_DATE_SESSIONS] = date.toString("yyyy-MM-dd"); }
-    void setidsuperviseur(int id)           { m_idUserSuperviseur = id;
+    void setdatedebut(QDateTime date)       { m_datedebut = date;
+                                              m_data[CP_DATEDEBUT_SESSIONS] = date.toString("yyyy-MM-dd hh:mm:ss"); }
+    void setdatefin(QDateTime date)         { m_datefin = date;
+                                              m_data[CP_DATEFIN_SESSIONS] = date.toString("yyyy-MM-dd hh:mm:ss"); }
+    void setidsuperviseur(int id)           { m_iduser = id;
+                                              m_data[CP_IDUSER_SESSIONS] = id; }
+    void setiduser(int id)                  { m_idUserSuperviseur = id;
                                               m_data[CP_IDSUPERVISEUR_SESSIONS] = id; }
     void setidcomptable(int id)             { m_idUserComptable = id;
                                               m_data[CP_IDCOMPTABLE_SESSIONS] = id; }

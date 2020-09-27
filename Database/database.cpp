@@ -3445,14 +3445,15 @@ QJsonObject DataBase::loadSessionData(QVariantList sessiondata)             //! 
     data[CP_IDSUPERVISEUR_SESSIONS]        = sessiondata.at(2).toInt();
     data[CP_IDPARENT_SESSIONS]             = sessiondata.at(3).toInt();
     data[CP_IDCOMPTABLE_SESSIONS]          = sessiondata.at(4).toInt();
-    data[CP_DATE_SESSIONS]                 = sessiondata.at(5).toDate().toString("yyyy-MM-dd");
+    data[CP_DATEDEBUT_SESSIONS]            = QDateTime(sessiondata.at(5).toDate(), sessiondata.at(5).toTime()).toMSecsSinceEpoch();
+    data[CP_DATEFIN_SESSIONS]              = QDateTime(sessiondata.at(6).toDate(), sessiondata.at(6).toTime()).toMSecsSinceEpoch();
     return data;
 }
 
 Session* DataBase::loadSessionById(int idsession)                           //! charge une session définie par son id - utilisé pour renouveler les données en cas de modification
 {
     Session *session = Q_NULLPTR;
-    QString req =   "SELECT " CP_ID_SESSIONS ", " CP_IDUSER_SESSIONS ", " CP_IDSUPERVISEUR_SESSIONS ", " CP_IDPARENT_SESSIONS ", " CP_IDCOMPTABLE_SESSIONS ", " CP_DATE_SESSIONS // 0-1-2-3-4
+    QString req =   "SELECT " CP_ID_SESSIONS ", " CP_IDUSER_SESSIONS ", " CP_IDSUPERVISEUR_SESSIONS ", " CP_IDPARENT_SESSIONS ", " CP_IDCOMPTABLE_SESSIONS ", " CP_DATEDEBUT_SESSIONS ", " CP_DATEFIN_SESSIONS // 0-1-2-3-4
                     " FROM " TBL_SESSIONS
                     " WHERE " CP_ID_SESSIONS " = " + QString::number(idsession) ;
     QVariantList sessiondata = getFirstRecordFromStandardSelectSQL(req,ok);
