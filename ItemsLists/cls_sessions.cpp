@@ -28,9 +28,9 @@ QMap<int, Session *> *Sessions::sessions() const
 }
 
 /*!
- * \brief Sessions::getById -> charge un Session à partir de son id
+ * \brief Sessions::getById -> charge une session à partir de son id
  * \param id
- * \param details si l'Session n'est pas dans liste et si details = LoadDetails => va chercher l'Session dans la BDD sinon, renvoie Q_NULLPTR
+ * \param details si la session n'est pas dans liste et si details = LoadDetails => va chercher la session dans la BDD sinon, renvoie Q_NULLPTR
  * \return
  * +++++ cette fonction n'ajoute pas la session à la map_sessions quelquesoit son résultat
  */

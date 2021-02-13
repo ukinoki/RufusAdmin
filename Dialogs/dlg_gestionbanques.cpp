@@ -347,7 +347,7 @@ void dlg_gestionbanques::RemplirTableView()
     QList<QVariantList> listbanques = db->SelectRecordsFromTable(QStringList() << CP_ID_BANQUES << CP_NOMBANQUE_BANQUES,
                                                                                          TBL_BANQUES, ok,
                                                                                          "",
-                                                                                         "order by" CP_NOMBANQUE_BANQUES);
+                                                                                         "order by " CP_NOMBANQUE_BANQUES);
     if (listbanques.size() > 0)
     {
         uptablebanq->setRowCount(listbanques.size());

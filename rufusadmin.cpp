@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("29-09-2020/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("13-02-2021/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -455,7 +455,7 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
     {
         QString nomposte = post->nomposte();
         int iduserposte = post->id();
-            //!> suppression du post de la liste des postes connectés
+            //!> suppression du poste de la liste des postes connectés
         Datas::I()->postesconnectes->SupprimePosteConnecte(post);
         bool mettreajourlasalledattente = false;
             //!> remise en salle d'attente des patients en cours d'examen sur ce poste
