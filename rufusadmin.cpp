@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("16-03-2021/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("17-03-2021/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -494,8 +494,8 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
 
 void RufusAdmin::ListeAppareils()
 {
-    QString req = "select distinct list.TitreExamen, list.NomAPPareil from " TBL_APPAREILSCONNECTESCENTRE " appcon, " TBL_LISTEAPPAREILS " list"
-          " where list.idappareil = appcon.idappareil and idLieu = " + QString::number(Datas::I()->sites->idcurrentsite());
+    QString req = "select distinct list." CP_TITREEXAMEN_APPAREIL ", list." CP_NOMAPPAREIL_APPAREIL " from " TBL_APPAREILSCONNECTESCENTRE " appcon, " TBL_LISTEAPPAREILS " list"
+          " where list." CP_ID_APPAREIL " = appcon." CP_IDAPPAREIL_APPAREILS " and " CP_IDLIEU_APPAREILS " = " + QString::number(Datas::I()->sites->idcurrentsite());
     //qDebug()<< req;
     bool ok;
     QList<QVariantList> listdocs = db->StandardSelectSQL(req, ok);
@@ -939,9 +939,9 @@ void RufusAdmin::SupprAppareil()
 {
     if (ui->AppareilsConnectesupTableWidget->selectedItems().size()==0)
         return;
-    QString req = " select list.TitreExamen, list.NomAppareil from " TBL_LISTEAPPAREILS " list, " TBL_APPAREILSCONNECTESCENTRE " appcon"
-                  " where list.idAppareil = appcon.idappareil"
-                  " and list.idappareil = " + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text();
+    QString req = " select list." CP_TITREEXAMEN_APPAREIL ", list." CP_NOMAPPAREIL_APPAREIL " from " TBL_LISTEAPPAREILS " list, " TBL_APPAREILSCONNECTESCENTRE " appcon"
+                  " where list." CP_ID_APPAREIL " = appcon." CP_IDAPPAREIL_APPAREILS
+                  " and list." CP_ID_APPAREIL " = " + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text();
     QList<QVariantList> listapps = db->StandardSelectSQL(req, m_ok);
     if (!m_ok)
         return;
@@ -961,9 +961,9 @@ void RufusAdmin::SupprAppareil()
     msgbox.exec();
     if (msgbox.clickedButton() == OKBouton)
     {
-        req = "delete from " TBL_APPAREILSCONNECTESCENTRE " where idAppareil = "
+        req = "delete from " TBL_APPAREILSCONNECTESCENTRE " where " CP_IDAPPAREIL_APPAREILS " = "
                 + ui->AppareilsConnectesupTableWidget->selectedItems().at(0)->text()
-                + " and idLieu = " + QString::number(Datas::I()->sites->idcurrentsite());
+                + " and " CP_IDLIEU_APPAREILS " = " + QString::number(Datas::I()->sites->idcurrentsite());
         db->StandardSQL(req);
         m_settings->remove("DossierEchangeImagerie/" + listapps.at(0).at(1).toString());
         Remplir_Table();
@@ -994,11 +994,11 @@ void RufusAdmin::Remplir_Table()
 
     ui->AppareilsConnectesupTableWidget->clearContents();
 
-    QString  Remplirtablerequete = "SELECT list.idAppareil, list.TitreExamen, list.NomAppareil, Format"
+    QString  Remplirtablerequete = "SELECT list." CP_ID_APPAREIL ", list." CP_TITREEXAMEN_APPAREIL ", list." CP_NOMAPPAREIL_APPAREIL ", " CP_FORMAT_APPAREIL
               " FROM "  TBL_APPAREILSCONNECTESCENTRE " appcon , " TBL_LISTEAPPAREILS " list"
-              " where list.idappareil = appcon.idappareil"
-              " and idLieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
-              " ORDER BY TitreExamen";
+              " where list." CP_ID_APPAREIL " = appcon." CP_IDAPPAREIL_APPAREILS
+              " and " CP_IDLIEU_APPAREILS " = " + QString::number(Datas::I()->sites->idcurrentsite()) +
+              " ORDER BY " CP_TITREEXAMEN_APPAREIL;
     QList<QVariantList> listapps = db->StandardSelectSQL(Remplirtablerequete, m_ok);
     if (!m_ok)
         return;
@@ -1059,8 +1059,8 @@ void RufusAdmin::Remplir_Table()
     }
 
     m_listeAppareils.clear();
-    QString req = "select NomAppareil from " TBL_LISTEAPPAREILS
-                  " where idAppareil not in (select idAppareil from " TBL_APPAREILSCONNECTESCENTRE " where idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) + ")";
+    QString req = "select " CP_NOMAPPAREIL_APPAREIL " from " TBL_LISTEAPPAREILS
+                  " where " CP_ID_APPAREIL " not in (select " CP_IDAPPAREIL_APPAREILS " from " TBL_APPAREILSCONNECTESCENTRE " where " CP_IDLIEU_APPAREILS " = " + QString::number(Datas::I()->sites->idcurrentsite()) + ")";
     QList<QVariantList> listnomsapps = db->StandardSelectSQL(req, m_ok);
     if (listnomsapps.size() == 0)
         wdg_buttonframe->wdg_plusBouton->setEnabled(false);
@@ -1115,7 +1115,7 @@ void RufusAdmin::ChoixButtonFrame()
 void RufusAdmin::ChoixDossierStockageApp()
 {
     UpPushButton *bout = static_cast<UpPushButton*>(sender());
-    QString req = "select TitreExamen, NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + QString::number(bout->iD());
+    QString req = "select " CP_TITREEXAMEN_APPAREIL ", " CP_NOMAPPAREIL_APPAREIL " from " TBL_LISTEAPPAREILS " where " CP_ID_APPAREIL " = " + QString::number(bout->iD());
     QString exam = "";
     QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, m_ok);
     if (!m_ok)
@@ -1146,8 +1146,8 @@ void RufusAdmin::ChoixDossierStockageApp()
 void RufusAdmin::EnregistreAppareil()
 {
     if (!dlg_askAppareil) return;
-    QString req = "insert into " TBL_APPAREILSCONNECTESCENTRE " (idAppareil, idLieu) Values("
-                  " (select idappareil from " TBL_LISTEAPPAREILS " where NomAppareil = '" + dlg_askAppareil->findChildren<UpComboBox*>().at(0)->currentText() + "'), "
+    QString req = "insert into " TBL_APPAREILSCONNECTESCENTRE " (" CP_IDAPPAREIL_APPAREILS ", " CP_IDLIEU_APPAREILS ") Values("
+                  " (select " CP_ID_APPAREIL " from " TBL_LISTEAPPAREILS " where " CP_NOMAPPAREIL_APPAREIL " = '" + dlg_askAppareil->findChildren<UpComboBox*>().at(0)->currentText() + "'), "
                   + QString::number(Datas::I()->sites->idcurrentsite()) + ")";
     db->StandardSQL(req);
     dlg_askAppareil->done(0);
@@ -1192,7 +1192,7 @@ void RufusAdmin::EnregDossierStockageApp(QString dir)
     }
     QString id;
     id = ui->AppareilsConnectesupTableWidget->item(line->Row(),0)->text();
-    QString req = "select NomAppareil from " TBL_LISTEAPPAREILS " where idAppareil = " + id;
+    QString req = "select " CP_NOMAPPAREIL_APPAREIL " from " TBL_LISTEAPPAREILS " where " CP_ID_APPAREIL " = " + id;
     QString exam = "";
     QVariantList examdata = db->getFirstRecordFromStandardSelectSQL(req, m_ok, tr("Impossible de retrouver le nom de l'appareil"));
     if (!m_ok)
