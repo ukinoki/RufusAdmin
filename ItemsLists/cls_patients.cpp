@@ -38,28 +38,22 @@ bool Patients::isfull()
 
 void Patients::setcurrentpatient(Patient *pat)
 {
-    if (m_currentpatient != Q_NULLPTR)
-        delete m_currentpatient;
     if (pat == Q_NULLPTR)
-        m_currentpatient = Q_NULLPTR;
-    else
-    {
-        m_currentpatient = new Patient();
+        return;
+    if (m_currentpatient->id() != pat->id())
+        m_currentpatient->resetdatas();
+    if (!m_currentpatient->isalloaded())
         DataBase::I()->loadPatientById(pat->id(), m_currentpatient, Item::LoadDetails);
-    }
 }
 
 void Patients::setdossierpatientaouvrir(Patient *pat)
 {
-    if (m_dossierpatientaouvrir != Q_NULLPTR)
-        delete m_dossierpatientaouvrir;
     if (pat == Q_NULLPTR)
-        m_dossierpatientaouvrir = Q_NULLPTR;
-    else
-    {
-        m_dossierpatientaouvrir = new Patient();
+        return;
+    if (m_dossierpatientaouvrir->id() != pat->id())
+        m_dossierpatientaouvrir->resetdatas();
+    if (!m_dossierpatientaouvrir->isalloaded())
         DataBase::I()->loadPatientById(pat->id(), m_dossierpatientaouvrir, Item::LoadDetails);
-    }
 }
 
 DonneesOphtaPatient* Patients::donneesophtacurrentpatient()
