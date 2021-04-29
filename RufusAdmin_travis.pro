@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
-QT       += sql core gui network multimedia serialport
+QT       += sql core gui network multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

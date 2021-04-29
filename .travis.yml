@@ -11,7 +11,7 @@ before_install:
   - sudo apt-get update -qq
  
 install:
-  - sudo apt-get -y install qt511base qt511multimedia
+  - sudo apt-get -y install qt511base qt511serialport qt511multimedia
   - source /opt/qt511/bin/qt511-env.sh
   - sudo apt-get -y install gcc-7 g++-7 cmake libyelp-dev yelp-tools libsecret-1-dev libnautilus-extension-dev libpulse-dev libpulse-mainloop-glib0       
   - sudo apt-get install libopenjp2-7-dev libnss3-dev libpoppler-glib-dev libpoppler-qt5-dev
