@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("25-03-2021/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("07-06-2021/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -357,7 +357,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
                                                 TCPServer,  [=] (QString msg) {TCPServer->envoyerATous(msg);});
     connect(&t_timer,                   &QTimer::timeout,   this,       &RufusAdmin::ListeAppareils);
     t_timer             .setInterval(5000);
-    ImportDocsExternes();
+    t_timer.start();
 
     Datas::I()->banques->initListe();
     Datas::I()->motifs->initListe();
@@ -494,13 +494,33 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
 
 void RufusAdmin::ListeAppareils()
 {
-    QString req = "select distinct list." CP_TITREEXAMEN_APPAREIL ", list." CP_NOMAPPAREIL_APPAREIL " from " TBL_APPAREILSCONNECTESCENTRE " appcon, " TBL_LISTEAPPAREILS " list"
-          " where list." CP_ID_APPAREIL " = appcon." CP_IDAPPAREIL_APPAREILS " and " CP_IDLIEU_APPAREILS " = " + QString::number(Datas::I()->sites->idcurrentsite());
+    m_listeAppareils.clear();
+    disconnect(&m_filewatcher, &QFileSystemWatcher::directoryChanged,   this, &RufusAdmin::ImportNouveauDocExterne);
+
+    QString req =   "select distinct list." CP_TITREEXAMEN_APPAREIL ", list." CP_NOMAPPAREIL_APPAREIL " from " TBL_APPAREILSCONNECTESCENTRE " appcon, " TBL_LISTEAPPAREILS " list"
+                    " where list." CP_ID_APPAREIL " = appcon." CP_IDAPPAREIL_APPAREILS " and " CP_IDLIEU_APPAREILS " = " + QString::number(Datas::I()->sites->idcurrentsite());
     //qDebug()<< req;
-    bool ok;
-    QList<QVariantList> listdocs = db->StandardSelectSQL(req, ok);
-    if (listdocs.size()>0)
-        m_importdocsexternesthread->RapatrieDocumentsThread(listdocs);
+    QList<QVariantList> listdocs = db->StandardSelectSQL(req, m_ok);
+    if (m_ok && listdocs.size()>0)
+    {
+        for (int itr=0; itr<listdocs.size(); itr++)
+        {
+            QString appareil =  listdocs.at(itr).at(1).toString();
+            QString nomdossier = m_settings->value("DossierEchangeImagerie/" + appareil).toString();  // le dossier où sont exportés les documents d'un appareil donné
+            m_filewatcher.addPath(nomdossier);
+            if (QDir(nomdossier).exists())
+            {
+                QString titreexamen = listdocs.at(itr).at(0).toString();
+                QString nomappareil = listdocs.at(itr).at(1).toString();
+                m_listeappareils << (QStringList() << titreexamen << nomappareil << nomdossier);
+                //qDebug() << "l'appareil " + nomappareil + " est surveillé sur le dossier " + nomdossier;
+                ImportNouveauDocExterne(nomdossier);
+            }
+        }
+    }
+    // Surveillance du dossier d'imagerie ----------------------------------------------------------------------------------
+    if (m_listeappareils.size() > 0)
+        connect(&m_filewatcher,     &QFileSystemWatcher::directoryChanged,  this,   [=](QString nomfile) { ImportNouveauDocExterne(nomfile); } );
 }
 
 void RufusAdmin::AskAppareil()
@@ -767,7 +787,6 @@ void RufusAdmin::ConnectTimers()
     connect (t_timerUserConnecte,        &QTimer::timeout,      this,   &RufusAdmin::MetAJourLaConnexion);
     connect (t_timerVerifDivers,         &QTimer::timeout,      this,   &RufusAdmin::VerifPosteImport);
     connect (t_timerVerifDivers,         &QTimer::timeout,      this,   &RufusAdmin::VerifVersionBase);
-    connect (t_timerUserConnecte,        &QTimer::timeout,      this,   &RufusAdmin::ImportDocsExternes);
     if (db->ModeAccesDataBase() != Utils::Distant)
     {
         connect (t_timerUserConnecte,    &QTimer::timeout,      this,   &RufusAdmin::ExporteDocs);
@@ -784,7 +803,6 @@ void RufusAdmin::DisconnectTimers()
     disconnect (t_timerSupprDocs,        &QTimer::timeout,      this,   &RufusAdmin::SupprimerDocsEtFactures);
     disconnect (t_timerVerifDivers,      &QTimer::timeout,      this,   &RufusAdmin::VerifPosteImport);
     disconnect (t_timerVerifDivers,      &QTimer::timeout,      this,   &RufusAdmin::VerifVersionBase);
-    disconnect (t_timerUserConnecte,     &QTimer::timeout,      this,   &RufusAdmin::ImportDocsExternes);
     disconnect (t_timerDocsAExporter,    &QTimer::timeout,      this,   &RufusAdmin::CalcExporteDocs);
     disconnect (t_timerUserConnecte,     &QTimer::timeout,      this,   &RufusAdmin::ExporteDocs);
     DisconnectTimerInactive();
@@ -1833,29 +1851,6 @@ void RufusAdmin::GestionUsers()
                                      "pour pouvoir prendre en compte les modifications apportées!"));
     }
     ConnectTimerInactive();
-}
-
-void RufusAdmin::ImportDocsExternes()
-{
-    //! si aucun appareil n'a de dossier d'échange, inutile de lancer l'import des documents
-    bool verifdocs = false;
-    for (int row=0; row<ui->AppareilsConnectesupTableWidget->rowCount(); row++)
-    {
-        UpLineEdit *line    = dynamic_cast<UpLineEdit*>(ui->AppareilsConnectesupTableWidget->cellWidget(row,4));
-        if (line!=Q_NULLPTR)
-            if (line->text() != "")
-            {
-                verifdocs = true;
-                break;
-            }
-    }
-    if (verifdocs != t_timer.isActive())
-    {
-        if (verifdocs)
-            t_timer.start();
-        else
-            t_timer.stop();
-    }
 }
 
 void RufusAdmin::MasqueAppli()
@@ -3244,6 +3239,30 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
     if (!OKbase && !OKImages && !OKVideos && !OKFactures)
         return false;
     return Backup(dirdestination, OKbase, OKImages, OKVideos, OKFactures);
+}
+
+void RufusAdmin::ImportNouveauDocExterne(QString nomdossier)
+{
+    for (int itr=0; itr<m_listeappareils.size(); itr++)
+    {
+        if (m_listeappareils.at(itr).at(2) == nomdossier)
+        {
+            QString titreexamen = m_listeappareils.at(itr).at(0);
+            QString nomappareil = m_listeappareils.at(itr).at(1);
+            QDir dossier = QDir(nomdossier);
+            QStringList filters, listnomsfiles;
+            filters << "*.pdf" << "*.jpg";
+            listnomsfiles = QDir(nomdossier).entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
+            for (int it=0; it<listnomsfiles.size(); it++)
+            {
+                QString nomfile = listnomsfiles.at(it);
+                //qDebug() << "l'appareil " + nomappareil + " vient d'émettre le  " + titreexamen + " dans le fichier " + nomdossier+ "/" + nomfile;
+                QStringList newdoclist = m_listeappareils.at(itr);
+                //qDebug() << newdoclist.at(0) << newdoclist.at(1) << newdoclist.at(2);
+                m_importdocsexternesthread->RapatrieDocumentsThread(newdoclist);
+            }
+        }
+    }
 }
 
 bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages, bool OKVideos, bool OKFactures)

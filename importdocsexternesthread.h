@@ -255,7 +255,7 @@ class ImportDocsExternesThread : public QObject
     Q_OBJECT
 public:
     explicit        ImportDocsExternesThread();
-    void            RapatrieDocumentsThread(QList<QVariantList> listdocs);
+    void            RapatrieDocumentsThread(QStringList newdoc);
     enum Acces      {Local, Distant}; Q_ENUM(Acces)
 
 signals:

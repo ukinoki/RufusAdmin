@@ -50,6 +50,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
 #include <QFileDialog>
+#include <QFileSystemWatcher>
 #include <QGroupBox>
 #include <QHostInfo>
 #include <QMainWindow>
@@ -108,6 +109,8 @@ private:
     QSystemTrayIcon             *ictray_RufusAdminTrayIcon;
     QTimer                      *t_timerUserConnecte, *t_timerVerifDivers, *t_timerSupprDocs, *t_timerDocsAExporter, *t_timerProgressBar;
     QTimer                      t_timer;
+    QFileSystemWatcher          m_filewatcher;                  /*! le filesystemwatcher surveille les dossiers où sont enregistrés les nouveaux documents d'imagerie */
+    QList<QStringList>          m_listeappareils;               /*! liste les noms des appareils, le titre des examens émis et leur dossier de destination */
     ImportDocsExternesThread    *m_importdocsexternesthread = Q_NULLPTR;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
@@ -140,7 +143,7 @@ private:
     void                        GestionMotifs();
     void                        GestionLieux();
     void                        GestionUsers();
-    void                        ImportDocsExternes();
+    void                        ImportNouveauDocExterne(QString nomdossier);         /*! importe le document d'imagerie qui vient d'être émis par l'appareil nomapp*/
     void                        ListeAppareils();
     void                        MasqueAppli();
     void                        MetAJourLaConnexion();
