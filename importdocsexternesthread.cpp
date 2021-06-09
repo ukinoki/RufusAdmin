@@ -50,9 +50,6 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QStringList  newdoc)     
         m_encours = false;
         return;
     }
-    QString NomDirDoc = newdoc.at(2);  // le dossier où sont exportés les documents d'un appareil donné
-    if (NomDirDoc == "")
-        NomDirDoc = "Triumph Speed Triple 1050 2011";
     /* Retrouver
                  * Titre du document
                  * Date du document
@@ -60,17 +57,24 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QStringList  newdoc)     
                  * idpatient
                 */
     // Titre du document------------------------------------------------------------------------------------------------------------------------------------------------
-    QString Titredoc    = newdoc.at(0);
+    QString NomDirDoc;  // le dossier où a été exporté le document
+    QString Titredoc;
+    for (int itr=0; itr<Utils::I()->listeappareils().size(); itr++)
+    {
+        if (Utils::I()->listeappareils().at(itr).at(1) == newdoc.at(0))
+        {
+            NomDirDoc   = Utils::I()->listeappareils().at(itr).at(2);
+            Titredoc    = Utils::I()->listeappareils().at(itr).at(0);
+        }
+    }
+    if (NomDirDoc == "")
+        NomDirDoc = "Triumph Speed Triple 1050 2011";
+
+    // Titre du document------------------------------------------------------------------------------------------------------------------------------------------------
     QString Typedoc     = Titredoc;
     QString SousTypeDoc = Titredoc;
-    QString Appareil    = newdoc.at(1);
-    QStringList filters, listnomsfiles;
-    filters << "*.pdf" << "*.jpg";
-    if (QDir(NomDirDoc).entryList(filters, QDir::Files | QDir::NoDotAndDotDot).size() == 0)
-        return;;
-    QString nomdoc      = QDir(NomDirDoc).entryList(filters, QDir::Files | QDir::NoDotAndDotDot).at(0);
-    if (nomdoc.contains("smbtest"))
-        return;
+    QString Appareil    = newdoc.at(0);
+    QString nomdoc      = newdoc.at(1);
 
     QString CheminFichierImage = NomDirDoc + "/" + nomdoc;
     QFile   jnaltrsferfile(m_pathdirOKtransfer + "/0JournalTransferts - " + m_datetransfer + ".txt");

@@ -100,7 +100,7 @@ private:
     QMap<QString,QIcon>         map_icons;
     QString                     m_nouvMDP, m_ancMDP, m_confirmMDP;
     QString                     m_domaine;
-    QStringList                 m_listeAppareils;
+    QStringList                 m_listeAppareilsNonConnectes;
     QIcon                       ic_Backup, ic_Copy, ic_Erase, ic_Sunglasses, ic_SortirDossier, ic_OK, ic_Annul,
                                  ic_Euro,  ic_EuroCount,  ic_FermeAppuye,  ic_FermeRelache,  ic_Help,  ic_Null;
     QSettings                   *m_settings = Q_NULLPTR;
