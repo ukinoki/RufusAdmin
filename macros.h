@@ -964,6 +964,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define ECHO_BIOMETRIE              "EBM"
 #define AUTRE_BIOMETRIE             "ABM"
 
+//modes de mesure appareils refraction
+#define COM1                        "COM1"
+#define COM2                        "COM2"
+#define COM3                        "COM3"
+#define COM4                        "COM4"
+#define BOX                         "Box"
+#define RESEAU                      "Réseau"
+
 //mots utilisés en macros dans les documents à imprimer
 #define STR_TITRUSER            "TITREUSER"
 #define STR_NOMPAT              "NOM PATIENT"
