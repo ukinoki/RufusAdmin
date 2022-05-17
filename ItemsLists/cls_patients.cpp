@@ -37,6 +37,8 @@ bool Patients::isfull()
 
 void Patients::setcurrentpatient(Patient *pat)
 {
+    if (m_currentpatient == Q_NULLPTR)
+        m_currentpatient = new Patient;
     if (pat == Q_NULLPTR)
     {
         m_currentpatient->resetdatas();
