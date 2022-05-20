@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("19-05-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("20-05-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -496,7 +496,17 @@ void RufusAdmin::ListeAppareils()
 {
     QList<QStringList> listappareils = QList<QStringList>();
     Utils::I()->listeappareils().clear();
-    disconnect(&m_filewatcher, &QFileSystemWatcher::directoryChanged,   this, &RufusAdmin::ImportNouveauDocExterne);
+    bool usetimer  = true; /*! ce timer est utilisé à la place du QFileSystemWatcher dont le siggnal directorychanged bugue beaucoup
+                             * le code du QfileSytemWatcgher est gardé au cas où le buge serait corrigé
+                             * il suffit alors de mettre le bool usetimer à false */
+    if (!usetimer)
+        disconnect(&m_filewatcher, &QFileSystemWatcher::directoryChanged,   this, &RufusAdmin::ImportNouveauDocExterne);
+    else
+    {
+        t_timerfilewatcher.start(5000);
+        t_timerfilewatcher.disconnect();
+    }
+
 
     QString req =   "select distinct list." CP_TITREEXAMEN_APPAREIL ", list." CP_NOMAPPAREIL_APPAREIL " from " TBL_APPAREILSCONNECTESCENTRE " appcon, " TBL_LISTEAPPAREILS " list"
                     " where list." CP_ID_APPAREIL " = appcon." CP_IDAPPAREIL_APPAREILS " and " CP_IDLIEU_APPAREILS " = " + QString::number(Datas::I()->sites->idcurrentsite());
@@ -508,22 +518,55 @@ void RufusAdmin::ListeAppareils()
         {
             QString appareil =  listdocs.at(itr).at(1).toString();
             QString nomdossier = m_settings->value("DossierEchangeImagerie/" + appareil).toString();  // le dossier où sont exportés les documents d'un appareil donné
-            m_filewatcher.addPath(nomdossier);
-            if (QDir(nomdossier).exists())
-            {
-                QString titreexamen = listdocs.at(itr).at(0).toString();
-                QString nomappareil = listdocs.at(itr).at(1).toString();
-                listappareils << (QStringList() << titreexamen << nomappareil << nomdossier);
-                Utils::I()->setlisteappareils(listappareils);
-                //qDebug() << "l'appareil " + nomappareil + " est surveillé sur le dossier " + nomdossier;
-                ImportNouveauDocExterne(nomdossier);
-            }
+            if (nomdossier != "")
+                if (QDir(nomdossier).exists())
+                {
+                    m_filewatcher.addPath(nomdossier);
+                    QString titreexamen = listdocs.at(itr).at(0).toString();
+                    QString nomappareil = listdocs.at(itr).at(1).toString();
+                    listappareils << (QStringList() << titreexamen << nomappareil << nomdossier);
+                    Utils::I()->setlisteappareils(listappareils);
+                    //qDebug() << "l'appareil " + nomappareil + " est surveillé sur le dossier " + nomdossier;
+                    ImportNouveauDocExterne(nomdossier);
+                }
         }
     }
     // Surveillance du dossier d'imagerie ----------------------------------------------------------------------------------
     Utils::I()->setlisteappareils(listappareils);
     if (Utils::I()->listeappareils().size() > 0)
-        connect(&m_filewatcher,     &QFileSystemWatcher::directoryChanged,  this,   [=](QString nomfile) { ImportNouveauDocExterne(nomfile); } );
+    {
+        if (!usetimer)
+            connect(&m_filewatcher,     &QFileSystemWatcher::directoryChanged,  this,   [=](QString nomdossier) { ImportNouveauDocExterne(nomdossier); } );
+        else
+            connect (&t_timerfilewatcher,   &QTimer::timeout,   this, [=] {VerifDocsDossiersEchanges();});
+    }
+}
+void RufusAdmin::VerifDocsDossiersEchanges()
+{
+    for (int itr=0; Utils::I()->listeappareils().size(); itr++)
+    {
+        QString appareil =  Utils::I()->listeappareils().at(itr).at(1);
+        QString nomdossier = m_settings->value("DossierEchangeImagerie/" + appareil).toString();  // le dossier où sont exportés les documents d'un appareil donné
+        if (nomdossier != "")
+            if (QDir(nomdossier).exists())
+            {
+                QStringList filters, listnomsfiles;
+                filters << "*.pdf" << "*.jpg";
+                listnomsfiles = QDir(nomdossier).entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
+                if (listnomsfiles.size() > 0)
+                    for (int it=0; it<listnomsfiles.size(); it++)
+                    {
+                        QString nomfile = listnomsfiles.at(it);
+                        if (!nomfile.contains("smbtest"))
+                        {
+                            //qDebug() << "l'appareil " + nomappareil + " vient d'émettre le  " + titreexamen + " dans le fichier " + nomdossier+ "/" + nomfile;
+                            QStringList newdoclist = QStringList() << appareil << nomfile;
+                            //qDebug() << newdoclist.at(0) << newdoclist.at(1) << newdoclist.at(2);
+                            m_importdocsexternesthread->RapatrieDocumentsThread(newdoclist);
+                        }
+                    }
+            }
+    }
 }
 
 void RufusAdmin::AskAppareil()

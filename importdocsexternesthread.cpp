@@ -508,18 +508,18 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(QStringList  newdoc)     
         req = "insert into " TBL_DOCSEXTERNES " (" CP_ID_DOCSEXTERNES ", " CP_IDUSER_DOCSEXTERNES ",  " CP_IDPAT_DOCSEXTERNES ",  " CP_TYPEDOC_DOCSEXTERNES ",  " CP_SOUSTYPEDOC_DOCSEXTERNES ", " CP_TITRE_DOCSEXTERNES ", " CP_DATE_DOCSEXTERNES ","
                 CP_IDEMETTEUR_DOCSEXTERNES ", " CP_LIENFICHIER_DOCSEXTERNES ", " CP_EMISORRECU_DOCSEXTERNES ", " CP_FORMATDOC_DOCSEXTERNES ", " CP_IDLIEU_DOCSEXTERNES ")"
                                                                                                                                                                        " values("
-                + QString::number(idimpr) + ", "                                         /*! idImpression */
-                + QString::number(Datas::I()->users->Admin()->id()) + ", "               /*! idUser */
-                + idPatient + ", '"                                                      /*! idPat */
-                + Typedoc + "', '"                                                       /*! TypeDoc */
-                + SousTypeDoc + "', '"                                                   /*! SousTypeDoc */
-                + Titredoc + "', '"                                                      /*! Titre */
-                + datestring + " " + QTime::currentTime().toString("HH:mm:ss") + "', "   /*! DateImpression */
-                + QString::number(Datas::I()->users->Admin()->id()) + ", '"              /*! UserEmetteur */
-                + "/" + m_datetransfer + "/" + NomFileDoc + "', "                        /*! lienversfichier */
-                + "0" + ", '"                                                            /*! EmisRecu */
-                IMAGERIE "', "                                                           /*! FormatDoc */
-                + QString::number(Datas::I()->sites->idcurrentsite()) + ")";             /*! idLieu */
+                + QString::number(idimpr) + ", "
+                + QString::number(Datas::I()->users->Admin()->id()) + ", "
+                + idPatient + ", '"
+                + Typedoc + "', '"
+                + SousTypeDoc + "', '"
+                + Titredoc + "', '"
+                + datestring + " " + QTime::currentTime().toString("HH:mm:ss") + "', "
+                + QString::number(Datas::I()->users->Admin()->id()) + ", '"
+                + "/" + m_datetransfer + "/" + NomFileDoc + "', "
+                + "0" + ", '"
+                IMAGERIE "', "
+                + QString::number(Datas::I()->sites->idcurrentsite()) + ")";
 
         if(db->StandardSQL(req))
         {
