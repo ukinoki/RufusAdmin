@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("20-05-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("21-05-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -496,9 +496,12 @@ void RufusAdmin::ListeAppareils()
 {
     QList<QStringList> listappareils = QList<QStringList>();
     Utils::I()->listeappareils().clear();
-    bool usetimer  = true; /*! ce timer est utilisé à la place du QFileSystemWatcher dont le siggnal directorychanged bugue beaucoup
-                             * le code du QfileSytemWatcgher est gardé au cas où le buge serait corrigé
-                             * il suffit alors de mettre le bool usetimer à false */
+    bool usetimer = true;  /*! Il semble que la classe QSystemFileWatcher pose quelques problèmes.
+                             * au démarrage du système le signal directorychanged ne marche pas bien sur Mac quand le fichier d'échange est sur une machine Linux ou Windows
+                             * il faut redémarrer une Rufus pour que ça se décide à marcher
+                             * On peut utiliser un timer à la place. C'est nettement moins élégant mais ça marche très bien.
+                             * Il suffit de mettre ce bool à true pour utiliser le timer
+                             * Le code pour le QFileSystemWatcher a été conservé au cas où le problème serait résolu */
     if (!usetimer)
         disconnect(&m_filewatcher, &QFileSystemWatcher::directoryChanged,   this, &RufusAdmin::ImportNouveauDocExterne);
     else
@@ -516,16 +519,24 @@ void RufusAdmin::ListeAppareils()
     {
         for (int itr=0; itr<listdocs.size(); itr++)
         {
+            if (!usetimer)
+            {
+                QStringList listpaths;
+                for (int f = 0; f<m_filewatcher.directories().size(); f++)
+                    listpaths << m_filewatcher.directories().at(f);
+                if (listpaths.size()>0)
+                    m_filewatcher.removePaths(listpaths);
+            }
             QString appareil =  listdocs.at(itr).at(1).toString();
             QString nomdossier = m_settings->value("DossierEchangeImagerie/" + appareil).toString();  // le dossier où sont exportés les documents d'un appareil donné
             if (nomdossier != "")
                 if (QDir(nomdossier).exists())
                 {
-                    m_filewatcher.addPath(nomdossier);
+                    if (!usetimer)
+                        m_filewatcher.addPath(nomdossier);
                     QString titreexamen = listdocs.at(itr).at(0).toString();
                     QString nomappareil = listdocs.at(itr).at(1).toString();
                     listappareils << (QStringList() << titreexamen << nomappareil << nomdossier);
-                    Utils::I()->setlisteappareils(listappareils);
                     //qDebug() << "l'appareil " + nomappareil + " est surveillé sur le dossier " + nomdossier;
                     ImportNouveauDocExterne(nomdossier);
                 }
@@ -538,9 +549,10 @@ void RufusAdmin::ListeAppareils()
         if (!usetimer)
             connect(&m_filewatcher,     &QFileSystemWatcher::directoryChanged,  this,   [=](QString nomdossier) { ImportNouveauDocExterne(nomdossier); } );
         else
-            connect (&t_timerfilewatcher,   &QTimer::timeout,   this, [=] {VerifDocsDossiersEchanges();});
+            connect (&t_timerfilewatcher,   &QTimer::timeout,   this, &RufusAdmin::VerifDocsDossiersEchanges);
     }
 }
+
 void RufusAdmin::VerifDocsDossiersEchanges()
 {
     for (int itr=0; Utils::I()->listeappareils().size(); itr++)

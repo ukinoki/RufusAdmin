@@ -109,8 +109,8 @@ private:
     QSystemTrayIcon             *ictray_RufusAdminTrayIcon;
     QTimer                      *t_timerUserConnecte, *t_timerVerifDivers, *t_timerSupprDocs, *t_timerDocsAExporter, *t_timerProgressBar;
     QTimer                      t_timer;
-    QFileSystemWatcher          m_filewatcher;                  /*! le filesystemwatcher surveille les dossiers où sont enregistrés les nouveaux documents d'imagerie */
-    QTimer                      t_timerfilewatcher;             /*! utilisé à la place du QfileSystemWatcher qui gugue pas mal */
+    QTimer                      t_timerfilewatcher;             /*! utilisé à la place du QfileSystemWatcher dont le signal directorychanged bugue trop */
+    QFileSystemWatcher          m_filewatcher;                  /*! le QFilesystemwatcher surveille les dossiers où sont enregistrés les nouveaux documents d'imagerie */
     QList<QStringList>          m_listeappareils;               /*! liste les noms des appareils, le titre des examens émis et leur dossier de destination */
     ImportDocsExternesThread    *m_importdocsexternesthread = Q_NULLPTR;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
@@ -144,8 +144,8 @@ private:
     void                        GestionMotifs();
     void                        GestionLieux();
     void                        GestionUsers();
-    void                        ImportNouveauDocExterne(QString nomdossier);                              /*! importe le document d'imagerie qui vient d'être émis par l'appareil nomapp*/
-
+    void                        ImportNouveauDocExterne(QString nomdossier);                              /*! importe le document d'imagerie qui vient d'être émis par l'appareil nomapp
+                                                                                                           * importe les fichiers d'imagerie quand on utilise le QFileSystemWatcher m_filewatcher*/
     void                        ListeAppareils();
     void                        MasqueAppli();
     void                        MetAJourLaConnexion();
@@ -161,7 +161,8 @@ private:
     void                        ReconstruitListeLieuxExercice();
     void                        TrayIconMenu();
     bool                        VerifBase();
-    void                        VerifDocsDossiersEchanges();
+    void                        VerifDocsDossiersEchanges();                               /*! utilisé à la place du QFileSystemWatcher dont le signal directorychanged bugue trop
+                                                                                             * importe les fichiers d'imagerie quand on utilise le QTimer t_timerfilewatcher */
     void                        VerifPosteImport();
     void                        VerifVersionBase();
 
