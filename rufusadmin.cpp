@@ -495,7 +495,6 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
 void RufusAdmin::ListeAppareils()
 {
     QList<AppareilImagerie*> listappareils = QList<AppareilImagerie*>();
-    Utils::I()->listeappareils().clear();
     bool usetimer = true;  /*! Il semble que la classe QSystemFileWatcher pose quelques problèmes.
                              * au démarrage du système le signal directorychanged ne marche pas bien sur Mac quand le fichier d'échange est sur une machine Linux ou Windows
                              * il faut redémarrer une Rufus pour que ça se décide à marcher
