@@ -26,6 +26,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "database.h"
 #include "utils.h"
 #include "gbl_datas.h"
+#include "cls_appareilimagerie.h"
 
 /*! Cette classe tourne en tache de fond et importe les documents d'imagerie dans la base de données
  * DIFFERENTE POUR RUFUS ET RUFUSADMIN
@@ -255,7 +256,7 @@ class ImportDocsExternesThread : public QObject
     Q_OBJECT
 public:
     explicit        ImportDocsExternesThread();
-    void            RapatrieDocumentsThread(QStringList newdoc);    /*! la QStringList newdoc contient 2 éléments: le nom de l'appareil qui a émis l'examen et le nom du fichier émis */
+    void            RapatrieDocumentsThread(AppareilImagerie *appareil, QString nomfiledoc);    /*! la QStringList newdoc contient 2 éléments: le nom de l'appareil qui a émis l'examen et le nom du fichier émis */
     enum Acces      {Local, Distant}; Q_ENUM(Acces)
 
 signals:

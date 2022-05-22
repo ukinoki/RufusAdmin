@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("21-05-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("22-05-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -494,7 +494,7 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
 
 void RufusAdmin::ListeAppareils()
 {
-    QList<QStringList> listappareils = QList<QStringList>();
+    QList<AppareilImagerie*> listappareils = QList<AppareilImagerie*>();
     Utils::I()->listeappareils().clear();
     bool usetimer = true;  /*! Il semble que la classe QSystemFileWatcher pose quelques problèmes.
                              * au démarrage du système le signal directorychanged ne marche pas bien sur Mac quand le fichier d'échange est sur une machine Linux ou Windows
@@ -503,11 +503,12 @@ void RufusAdmin::ListeAppareils()
                              * Il suffit de mettre ce bool à true pour utiliser le timer
                              * Le code pour le QFileSystemWatcher a été conservé au cas où le problème serait résolu */
     if (!usetimer)
-        disconnect(&m_filewatcher, &QFileSystemWatcher::directoryChanged,   this, &RufusAdmin::ImportNouveauDocExterne);
+        disconnect(&m_filewatcher, nullptr, nullptr, nullptr);
     else
     {
+        t_timerfilewatcher.stop();
         t_timerfilewatcher.start(5000);
-        t_timerfilewatcher.disconnect();
+        disconnect(&t_timerfilewatcher, nullptr, nullptr, nullptr);
     }
 
 
@@ -527,18 +528,16 @@ void RufusAdmin::ListeAppareils()
                 if (listpaths.size()>0)
                     m_filewatcher.removePaths(listpaths);
             }
-            QString appareil =  listdocs.at(itr).at(1).toString();
-            QString nomdossier = m_settings->value("DossierEchangeImagerie/" + appareil).toString();  // le dossier où sont exportés les documents d'un appareil donné
+            QString nomappareil =  listdocs.at(itr).at(1).toString();
+            QString nomdossier = m_settings->value("DossierEchangeImagerie/" + nomappareil).toString();  // le dossier où sont exportés les documents d'un appareil donné
             if (nomdossier != "")
                 if (QDir(nomdossier).exists())
                 {
+                    QString titreexamen = listdocs.at(itr).at(0).toString();
+                    AppareilImagerie *appareil = new AppareilImagerie(titreexamen, nomappareil, nomdossier);
                     if (!usetimer)
                         m_filewatcher.addPath(nomdossier);
-                    QString titreexamen = listdocs.at(itr).at(0).toString();
-                    QString nomappareil = listdocs.at(itr).at(1).toString();
-                    listappareils << (QStringList() << titreexamen << nomappareil << nomdossier);
-                    //qDebug() << "l'appareil " + nomappareil + " est surveillé sur le dossier " + nomdossier;
-                    ImportNouveauDocExterne(nomdossier);
+                    ImportNouveauDocExterne(appareil);
                 }
         }
     }
@@ -547,7 +546,12 @@ void RufusAdmin::ListeAppareils()
     if (Utils::I()->listeappareils().size() > 0)
     {
         if (!usetimer)
-            connect(&m_filewatcher,     &QFileSystemWatcher::directoryChanged,  this,   [=](QString nomdossier) { ImportNouveauDocExterne(nomdossier); } );
+            connect(&m_filewatcher,     &QFileSystemWatcher::directoryChanged,  this,   [=](QString nomdossier)
+            {
+                for (int i=0; i<Utils::I()->listeappareils().size(); i++)
+                    if (Utils::I()->listeappareils().at(i)->nomdossierechange() == nomdossier)
+                        ImportNouveauDocExterne(Utils::I()->listeappareils().at(i));
+            } );
         else
             connect (&t_timerfilewatcher,   &QTimer::timeout,   this, &RufusAdmin::VerifDocsDossiersEchanges);
     }
@@ -557,8 +561,8 @@ void RufusAdmin::VerifDocsDossiersEchanges()
 {
     for (int itr=0; Utils::I()->listeappareils().size(); itr++)
     {
-        QString appareil =  Utils::I()->listeappareils().at(itr).at(1);
-        QString nomdossier = m_settings->value("DossierEchangeImagerie/" + appareil).toString();  // le dossier où sont exportés les documents d'un appareil donné
+        AppareilImagerie *appareil =  Utils::I()->listeappareils().at(itr);
+        QString nomdossier = m_settings->value("DossierEchangeImagerie/" + appareil->nomdossierechange()).toString();  // le dossier où sont exportés les documents d'un appareil donné
         if (nomdossier != "")
             if (QDir(nomdossier).exists())
             {
@@ -568,14 +572,9 @@ void RufusAdmin::VerifDocsDossiersEchanges()
                 if (listnomsfiles.size() > 0)
                     for (int it=0; it<listnomsfiles.size(); it++)
                     {
-                        QString nomfile = listnomsfiles.at(it);
-                        if (!nomfile.contains("smbtest"))
-                        {
-                            //qDebug() << "l'appareil " + nomappareil + " vient d'émettre le  " + titreexamen + " dans le fichier " + nomdossier+ "/" + nomfile;
-                            QStringList newdoclist = QStringList() << appareil << nomfile;
-                            //qDebug() << newdoclist.at(0) << newdoclist.at(1) << newdoclist.at(2);
-                            m_importdocsexternesthread->RapatrieDocumentsThread(newdoclist);
-                        }
+                        QString nomfiledoc = listnomsfiles.at(it);
+                        if (!nomfiledoc.contains("smbtest"))
+                            m_importdocsexternesthread->RapatrieDocumentsThread(appareil, nomfiledoc);
                     }
             }
     }
@@ -3299,31 +3298,18 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
     return Backup(dirdestination, OKbase, OKImages, OKVideos, OKFactures);
 }
 
-void RufusAdmin::ImportNouveauDocExterne(QString nomdossier)
+void RufusAdmin::ImportNouveauDocExterne(AppareilImagerie *appareil)
 {
-    for (int itr=0; itr<Utils::I()->listeappareils().size(); itr++)
+    QStringList filters, listnomsfiles;
+    filters << "*.pdf" << "*.jpg";
+    listnomsfiles = QDir(appareil->nomdossierechange()).entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
+    for (int it=0; it<listnomsfiles.size(); it++)
     {
-        if (Utils::I()->listeappareils().at(itr).at(2) == nomdossier)
-        {
-            QString titreexamen = Utils::I()->listeappareils().at(itr).at(0);
-            QString nomappareil = Utils::I()->listeappareils().at(itr).at(1);
-            QDir dossier = QDir(nomdossier);
-            QStringList filters, listnomsfiles;
-            filters << "*.pdf" << "*.jpg";
-            listnomsfiles = QDir(nomdossier).entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
-            for (int it=0; it<listnomsfiles.size(); it++)
-            {
-                QString nomfile = listnomsfiles.at(it);
-                if (!nomfile.contains("smbtest"))
-                {
-                    //qDebug() << "l'appareil " + nomappareil + " vient d'émettre le  " + titreexamen + " dans le fichier " + nomdossier+ "/" + nomfile;
-                    QStringList newdoclist = QStringList() << nomappareil << nomfile;
-                    //qDebug() << newdoclist.at(0) << newdoclist.at(1) << newdoclist.at(2);
-                    m_importdocsexternesthread->RapatrieDocumentsThread(newdoclist);
-                }
-            }
-         }
+        QString nomfiledoc = listnomsfiles.at(it);
+        if (!nomfiledoc.contains("smbtest"))
+            m_importdocsexternesthread->RapatrieDocumentsThread(appareil, nomfiledoc);
     }
+
 }
 
 bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages, bool OKVideos, bool OKFactures)

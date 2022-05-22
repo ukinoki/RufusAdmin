@@ -144,7 +144,7 @@ private:
     void                        GestionMotifs();
     void                        GestionLieux();
     void                        GestionUsers();
-    void                        ImportNouveauDocExterne(QString nomdossier);                              /*! importe le document d'imagerie qui vient d'être émis par l'appareil nomapp
+    void                        ImportNouveauDocExterne(AppareilImagerie *appareil);                              /*! importe le document d'imagerie qui vient d'être émis par l'appareil nomapp
                                                                                                            * importe les fichiers d'imagerie quand on utilise le QFileSystemWatcher m_filewatcher*/
     void                        ListeAppareils();
     void                        MasqueAppli();
