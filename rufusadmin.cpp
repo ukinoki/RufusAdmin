@@ -146,8 +146,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     m_IPadress      = Utils::IPAdress();
     m_macAdress     = Utils::MACAdress();
     m_utiliseTCP    = (m_IPadress!=""); /*! quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
-                                         * il faut initialiser le TCP avant de lancer la fonction MetAJourLaConnexion()
-                                         * parce que si un poste a été déconnecté accidentellement RufusAdmin plante si le TCP n'a pas été initialisé */
+                                         * sinon, il faut initialiser le TCP avant de lancer la fonction MetAJourLaConnexion()
+                                         * parce que si un poste a été déconnecté accidentellement RufusAdmin plante en éliminant ce poste de la liste si le TCP n'a pas été initialisé */
     if (m_utiliseTCP)
         TCPServer           = TcpServer::I();
     MetAJourLaConnexion();
@@ -360,7 +360,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
                 TCPServer,  [=] (QString msg)
         {
             //qDebug()<< msg;
-            TCPServer->envoyerATous(msg);
+            EnvoieTCPMessage(TOUS, msg);
         });
     connect(&t_timer,                   &QTimer::timeout,   this,       &RufusAdmin::ListeAppareils);
     t_timer             .setInterval(5000);
@@ -480,8 +480,7 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
             if (mettreajourlasalledattente)
             {
                 flags->MAJFlagSalleDAttente();
-                if (m_utiliseTCP)
-                    TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+                EnvoieTCPMessage(TOUS, TCPMSG_MAJSalAttente);
             }
         }
         //!> on déverrouille les actes verrouillés en comptabilité par cet utilisateur s'il n'est plus connecté sur aucun poste
@@ -1366,6 +1365,16 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
     }
 }
 
+void RufusAdmin::EnvoieTCPMessage(enum TypeMessage typemessage, QString msg, int dest)
+{
+   if (!m_utiliseTCP)
+       return;
+   if (typemessage == TOUS)
+       TCPServer->envoyerATous(msg);
+   else if (typemessage == BAL)
+       TCPServer->envoyerBALMsgA(dest, msg);
+}
+
 void RufusAdmin::setMapIcons()
 {
     map_icons["OK"]             =  ic_OK;
@@ -1908,8 +1917,7 @@ void RufusAdmin::GestionUsers()
     if(Dlg_GestUsr->exec()>0)
     {
         Datas::I()->users->initListe();
-        if (m_utiliseTCP)
-            TCPServer->envoyerATous(TCPMSG_MAJListeUsers);
+        EnvoieTCPMessage(TOUS, TCPMSG_MAJListeUsers);
         UpMessageBox::Watch(this, tr("Donnes utilisateurs modifiées?"),
                                   tr("Si vous avez modifié des données d'utilisateurs actuellement connectés,\n"
                                      "chacun de ces utilisateurs doit relancer le programme\n"
@@ -2044,8 +2052,7 @@ void RufusAdmin::MetAJourLaConnexion()
     if (mettreajourlasalledattente)
     {
         flags->MAJFlagSalleDAttente();
-        if (m_utiliseTCP)
-            TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+        EnvoieTCPMessage(TOUS, TCPMSG_MAJSalAttente);
     }
 }
 
@@ -3492,15 +3499,13 @@ void RufusAdmin::VerifModifsFlags()
     if (m_flagsalledattente < flag)
     {
         m_flagsalledattente = flag;
-        if (m_utiliseTCP)
-            TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+        EnvoieTCPMessage(TOUS, TCPMSG_MAJSalAttente);
     }
     flag = flags->flagCorrespondants();
     if (m_flagcorrespondants < flag)
     {
         m_flagcorrespondants = flag;
-        if (m_utiliseTCP)
-            TCPServer->envoyerATous(TCPMSG_MAJCorrespondants);
+        EnvoieTCPMessage(TOUS, TCPMSG_MAJCorrespondants);
     }
     flag = flags->flagMessages();
     if (m_flagmessages < flag)
@@ -3528,9 +3533,11 @@ void RufusAdmin::VerifModifsFlags()
             }
             m_dateDernierMessage = listmsg.at(listmsg.size()-1).at(2).toDateTime();
         }
-        if (m_utiliseTCP)
-            for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
-                TCPServer->envoyerBALMsgA(itmsg.key(), TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL);
+        for (QHash<int,int>::const_iterator itmsg = mapmessages.constBegin(); itmsg != mapmessages.constEnd(); ++itmsg)
+        {
+            QString msg = TCPMSG_Separator + QString::number(itmsg.value()) + TCPMSG_MsgBAL;
+            EnvoieTCPMessage(BAL,msg,itmsg.key());
+        }
     }
 }
 

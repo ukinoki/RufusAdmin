@@ -85,6 +85,8 @@ class RufusAdmin : public QMainWindow
 public:
     explicit RufusAdmin(QWidget *parent = Q_NULLPTR);
     ~RufusAdmin();
+    enum        TypeMessage {TOUS, BAL};
+                Q_ENUM(TypeMessage)
 
 private:
     Ui::RufusAdmin              *ui;
@@ -115,6 +117,7 @@ private:
     ImportDocsExternesThread    *m_importdocsexternesthread = Q_NULLPTR;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
+    void                        EnvoieTCPMessage(enum TypeMessage, QString msg, int dest = 0);
 
     void                        closeEvent(QCloseEvent *event);
 
