@@ -39,7 +39,10 @@ public:
     void                    envoyerATous(QString msg, qintptr emetteurorigin = 0);              /*! envoi de message commun sur tous les sockets - emetteurorigin sera exclu de la liste des destinataires */
     void                    envoieListeSockets(qintptr descriptor = -1);                        /*! envoie la liste des sockets sur tous les sockets */
 
+    bool islaunched() const;
+
 private:
+    bool m_islaunched = false;
     static TcpServer*               instance;
     TcpServer();
     QMap<qintptr, TcpSocket*>       map_socketdescriptors = QMap<qintptr, TcpSocket*>();    // le map des sockets à partir des socketdescriptor

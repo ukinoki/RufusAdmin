@@ -41,6 +41,7 @@ bool TcpServer::start()
     }
     // le serveur a été démarré correctement
     emit ModifListeSockets(listestringidPostesConnectes());  // déclenche la fonction void RufusAdmin::ResumeTCPSocketStatut() qui recalcule le statut des sockets
+    m_islaunched = true;
     return true;
 }
 
@@ -146,7 +147,10 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
     else if (msg == TCPMSG_EnvoieListSocket)          // un client a demandé la liste mise à jour des sockets
         envoieListeSockets(descriptor);
     else if (msg.contains(TCPMSG_MAJDocsExternes))
+    {
+        //qDebug() << msg;
         envoyerATous(msg);
+    }
     else if (msg.contains(TCPMSG_TestConnexion))
     {
         qDebug() << msg + " - " + QTime::currentTime().toString("HH:mm");
@@ -189,21 +193,27 @@ void TcpServer::envoieListeSockets(qintptr descriptor)
     emit ModifListeSockets(listidpost);
 }
 
+bool TcpServer::islaunched() const
+{
+    return m_islaunched;
+}
+
 QString TcpServer::listestringidPostesConnectes()
 {
     QString liststringidpost = "";
     PosteConnecte *post = Datas::I()->postesconnectes->admin();
     if (post != Q_NULLPTR)
         liststringidpost += post->stringid();
-    for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
-    {
-        if (!OKControleIterator(itskt))
-            break;
-        TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
-        if (skt->stringid() != "")
-            liststringidpost += TCPMSG_Separator + skt->stringid();
-        ++ itskt;
-    }
+    if (map_socketdescriptors.count()>0)
+        for (auto itskt = map_socketdescriptors.begin(); itskt != map_socketdescriptors.end();)
+        {
+            if (!OKControleIterator(itskt))
+                break;
+            TcpSocket *skt = const_cast<TcpSocket*>(itskt.value());
+            if (skt->stringid() != "")
+                liststringidpost += TCPMSG_Separator + skt->stringid();
+            ++ itskt;
+        }
     return liststringidpost + TCPMSG_ListeStringIdPostesConnectes;
 }
 

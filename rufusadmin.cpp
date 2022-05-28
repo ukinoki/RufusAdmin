@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("22-05-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("29-05-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -143,6 +143,13 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I()->sites->initListe();
     DetermineLieuExercice();
     flags           = Flags::I();
+    m_IPadress      = Utils::IPAdress();
+    m_macAdress     = Utils::MACAdress();
+    m_utiliseTCP    = (m_IPadress!=""); /*! quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
+                                         * il faut initialiser le TCP avant de lancer la fonction MetAJourLaConnexion()
+                                         * parce que si un poste a été déconnecté accidentellement RufusAdmin plante si le TCP n'a pas été initialisé */
+    if (m_utiliseTCP)
+        TCPServer           = TcpServer::I();
     MetAJourLaConnexion();
     ui->AppareilsconnectesupLabel->setText(tr("Appareils connectés au réseau") + " <font color=\"green\"><b>" + Datas::I()->sites->currentsite()->nom() + "</b></font> ");
 
@@ -160,12 +167,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     }
 
     // 5 mettre en place le TcpSocket
-    m_IPadress      = Utils::IPAdress();
-    m_macAdress     = Utils::MACAdress();
-    m_utiliseTCP    = (m_IPadress!=""); // quand le poste n'est connecté à aucun réseau local, il n'a pas d'IP locale => on désactive le TCPServer
     if (m_utiliseTCP)
     {
-        TCPServer           = TcpServer::I();
         connect(TCPServer,  &TcpServer::ModifListeSockets,      this,   &RufusAdmin::ResumeTCPSocketStatut);
         connect(TCPServer,  &TcpServer::deconnexionposte,       this,   &RufusAdmin::DeconnexionPoste);         // élimine les instances du poste déconnecté dans la liste des postes et dans la bdd
         TCPServer           ->start();
@@ -354,7 +357,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
                                                 this,       &RufusAdmin::AfficheMessageImport);
     if (m_utiliseTCP)
         connect(m_importdocsexternesthread,    QOverload<QString>::of(&ImportDocsExternesThread::emitmsg),
-                                                TCPServer,  [=] (QString msg) {TCPServer->envoyerATous(msg);});
+                TCPServer,  [=] (QString msg)
+        {
+            //qDebug()<< msg;
+            TCPServer->envoyerATous(msg);
+        });
     connect(&t_timer,                   &QTimer::timeout,   this,       &RufusAdmin::ListeAppareils);
     t_timer             .setInterval(5000);
     t_timer.start();
@@ -473,7 +480,8 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
             if (mettreajourlasalledattente)
             {
                 flags->MAJFlagSalleDAttente();
-                TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+                if (m_utiliseTCP)
+                    TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
             }
         }
         //!> on déverrouille les actes verrouillés en comptabilité par cet utilisateur s'il n'est plus connecté sur aucun poste
@@ -506,7 +514,7 @@ void RufusAdmin::ListeAppareils()
     else
     {
         t_timerfilewatcher.stop();
-        t_timerfilewatcher.start(5000);
+        t_timerfilewatcher.start(2500);
         disconnect(&t_timerfilewatcher, nullptr, nullptr, nullptr);
     }
 
@@ -1900,7 +1908,8 @@ void RufusAdmin::GestionUsers()
     if(Dlg_GestUsr->exec()>0)
     {
         Datas::I()->users->initListe();
-        TCPServer->envoyerATous(TCPMSG_MAJListeUsers);
+        if (m_utiliseTCP)
+            TCPServer->envoyerATous(TCPMSG_MAJListeUsers);
         UpMessageBox::Watch(this, tr("Donnes utilisateurs modifiées?"),
                                   tr("Si vous avez modifié des données d'utilisateurs actuellement connectés,\n"
                                      "chacun de ces utilisateurs doit relancer le programme\n"
@@ -1988,7 +1997,9 @@ void RufusAdmin::MetAJourLaConnexion()
           Datas::I()->postesconnectes->SupprimePosteConnecte(post);
           UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Le poste ") + nomposte + tr(" a été retiré de la liste des postes connectés actuellement au serveur"), Icons::icSunglasses(), 3000);
        }
-       TCPServer->envoieListeSockets();
+       if (m_utiliseTCP)
+           if (TCPServer->islaunched())
+               TCPServer->envoieListeSockets();
     }
 
     if (Datas::I()->patientsencours->patientsencours()->size() == 0)
@@ -2033,7 +2044,8 @@ void RufusAdmin::MetAJourLaConnexion()
     if (mettreajourlasalledattente)
     {
         flags->MAJFlagSalleDAttente();
-        TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
+        if (m_utiliseTCP)
+            TCPServer->envoyerATous(TCPMSG_MAJSalAttente);
     }
 }
 
