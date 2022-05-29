@@ -73,6 +73,8 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "flags.h"
 #include "ostask.h"
 #include "timerthread.h"
+#include "cls_appareilimagerie.h"
+
 
 namespace Ui {
 class RufusAdmin;
@@ -113,7 +115,6 @@ private:
     QTimer                      t_timer;
     QTimer                      t_timerfilewatcher;             /*! utilisé à la place du QfileSystemWatcher dont le signal directorychanged bugue trop */
     QFileSystemWatcher          m_filewatcher;                  /*! le QFilesystemwatcher surveille les dossiers où sont enregistrés les nouveaux documents d'imagerie */
-    QList<QStringList>          m_listeappareils;               /*! liste les noms des appareils, le titre des examens émis et leur dossier de destination */
     ImportDocsExternesThread    *m_importdocsexternesthread = Q_NULLPTR;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
@@ -149,7 +150,7 @@ private:
     void                        GestionUsers();
     void                        ImportNouveauDocExterne(AppareilImagerie *appareil);                              /*! importe le document d'imagerie qui vient d'être émis par l'appareil nomapp
                                                                                                            * importe les fichiers d'imagerie quand on utilise le QFileSystemWatcher m_filewatcher*/
-    void                        ListeAppareils();
+    void                        ReconstruireListeAppareils();
     void                        MasqueAppli();
     void                        MetAJourLaConnexion();
     void                        ModifDirImagerie();
@@ -307,6 +308,25 @@ private:
                                                                              * vide la table EchangeImages
                                                                              * purge les champs jpg et pdf de la table Factures
                                                                              */
+
+    //--------------------------------------------------------------------------------------------------------
+    // les appareils d'imagerie
+    //--------------------------------------------------------------------------------------------------------
+    //! la liste des appareils d'imagerie contenant pour chaque appareil: le titre de l'examen, le nom de l'appareil, le dossier de stockage des images émises
+private:
+    QList<AppareilImagerie*> m_listeappareils;
+public:
+    void setlisteappareils (QList<AppareilImagerie*> listappareils)
+    {
+        for (int i=0; i < m_listeappareils.size(); i++)
+            delete m_listeappareils.at(i);
+        m_listeappareils = listappareils;
+    };
+    QList<AppareilImagerie*> listeappareils() {return m_listeappareils;};
+
+
+
+
 
     // TCPServer, TCPSocket
     bool                m_utiliseTCP;

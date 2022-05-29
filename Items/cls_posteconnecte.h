@@ -27,7 +27,7 @@ class PosteConnecte : public Item
 {
 
     /*! la classe PosteConnecte gère les connexions des utilisateurs
-     * un utilisateur peut -être connecté sur plusieurs posts en même temps dans la même session
+     * un utilisateur peut -être connecté sur plusieurs postes en même temps dans la même session
      * la clé de la table correspond au couple iduser-macadress qui ne peut donc qu'être unique
      */
 public:

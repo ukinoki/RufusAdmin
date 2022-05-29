@@ -37,7 +37,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "upmessagebox.h"
 #include "dlg_message.h"
 #include "poppler-qt5.h"
-#include "cls_appareilimagerie.h"
 
 #include <QInputDialog>
 #include <QCoreApplication>
@@ -197,19 +196,6 @@ public:
 
     //! écriture sur un port série d'un qByteArray
     static void writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString msgdebug, int timetowaitms = 0);
-
-    //! laliste des appareils d'imageire contenant pour chaque appareil: le titre de l'examen, le nom de l'appareil, le dossier de stockage des images émises
-private:
-    QList<AppareilImagerie*> m_listeappareils;
-public:
-    void setlisteappareils (QList<AppareilImagerie*> listappareils)
-    {
-        for (int i=0; i < m_listeappareils.size(); i++)
-            delete m_listeappareils.at(i);
-        m_listeappareils = listappareils;
-    };
-    QList<AppareilImagerie*> listeappareils() {return m_listeappareils;};
-
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Utils::Days)
 
