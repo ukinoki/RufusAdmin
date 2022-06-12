@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("06-06-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("12-06-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2582,11 +2582,13 @@ void RufusAdmin::VerifVersionBase()
     int version = m_parametres->versionbase();
     if (version != VERSION_BASE)
     {
-        UpMessageBox::Watch(this, tr("Versons incompatibles"),
+        QString msg =
                 tr("Vous utilisez une version de RufusAdmin prévue\npour être utilisée avec la version de la base Rufus n°") + QString::number(VERSION_BASE)+ "\n" +
                 tr("La version de la base Rufus en cours d'utilisation est la n° ") + QString::number(version) + "\n" +
                 tr("Faites une mise à jour de Rufus et Rufus Admin pour qu'ils utilisent les dernières versions de la base") + "\n\n-> " +
-                tr("Dans le cas contraire, des dysfonctionnements peuvent survenir"));
+                tr("Dans le cas contraire, des dysfonctionnements peuvent survenir");
+        qintptr z = 0;
+        ShowMessage::I()->PriorityMessage(msg, z, 5000);
     }
 }
 
