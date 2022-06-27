@@ -236,7 +236,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
                             //! Table Rufus.Metadocuments
 #define CP_ID_DOSSIERIMPRESSIONS                        "idMetaDocument"
-#define CP_TEXTE_DOSSIERIMPRESSIONS                     "TextMetaDocument"
 #define CP_RESUME_DOSSIERIMPRESSIONS                    "ResumeMetaDocument"
 #define CP_IDUSER_DOSSIERIMPRESSIONS                    "idUser"
 #define CP_PUBLIC_DOSSIERIMPRESSIONS                    "Public"
@@ -827,17 +826,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_DIR_IMAGES                          "/Images"
 #define NOM_DIR_VIDEOS                          "/Videos"
 #define NOM_DIR_PROV                            "/Prov"
-#define NOM_DIR_FRONTO                          "/Fronto"
-#define NOM_DIR_AUTOREF                         "/Autoref"
-#define NOM_DIR_REFRACTEUR                      "/Refracteur"
-#define NOM_DIR_TONO                            "/Tono"
 #define NOM_DIR_LOGS                            "/Logs"
 #define NOM_DIR_ECHECSTRANSFERTS                "/EchecsTransferts"
-
-#define PATH_DIR_FRONTO                         PATH_DIR_PROV NOM_DIR_FRONTO
-#define PATH_DIR_AUTOREF                        PATH_DIR_PROV NOM_DIR_AUTOREF
-#define PATH_DIR_REFRACTEUR                     PATH_DIR_PROV NOM_DIR_REFRACTEUR
-#define PATH_DIR_TONO                           PATH_DIR_PROV NOM_DIR_TONO
 
 #define NOM_RUFUSFILE_INI                       "/Rufus.ini"
 #define NOM_ADMINFILE_INI                       "/RufusAdmin.ini"
@@ -1022,5 +1012,21 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define STR_TYPEINTERVENTION    "TYPEINTERVENTION"
 
 #define STR_NOCOR               "PAS DE CORRESPONDANT RÉFÉRENCÉ POUR CE PATIENT"
+
+//QSettings
+#define Param_Poste_PortFronto                          "Param_Poste/PortFronto"
+#define Param_Poste_PortAutoref                         "Param_Poste/PortAutoref"
+#define Param_Poste_PortTono                            "Param_Poste/PortTonometre"
+#define Param_Poste_PortRefracteur                      "Param_Poste/PortRefracteur"
+#define Param_Poste_PortFronto_Reseau                   Param_Poste_PortFronto "/Reseau"
+#define Param_Poste_PortAutoref_Reseau                  Param_Poste_PortAutoref "/Reseau"
+#define Param_Poste_PortTono_Reseau                     Param_Poste_PortTono "/Reseau"
+#define Param_Poste_PortRefracteur_Reseau               Param_Poste_PortRefracteur "/Reseau"
+#define Param_Poste_PortRefracteur_Reseau_AdressAutoref Param_Poste_PortRefracteur_Reseau "AdressAutoref"
+#define Param_Poste_PortRefracteur_Reseau_AdressFronto  Param_Poste_PortRefracteur_Reseau "/AdressFronto"
+#define Param_Poste_Fronto                              "Param_Poste/Fronto"
+#define Param_Poste_Autoref                             "Param_Poste/Autoref"
+#define Param_Poste_Tono                                "Param_Poste/Tonometre"
+#define Param_Poste_Refracteur                          "Param_Poste/Refracteur"
 
 #endif // MACROS_H

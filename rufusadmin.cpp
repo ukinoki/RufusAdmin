@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("13-06-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("27-06-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -126,10 +126,10 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         exit(0);
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
-    QString reqp = "select NomPosteConnecte from " TBL_USERSCONNECTES
-                   " where idUser = " + QString::number(Admin()->id()) +
-                   " and NomPosteConnecte != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEUR "'"
-                   " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()) +
+    QString reqp = "select " CP_NOMPOSTE_USRCONNECT " from " TBL_USERSCONNECTES
+                   " where " CP_IDUSER_USRCONNECT " = " + QString::number(Admin()->id()) +
+                   " and " CP_NOMPOSTE_USRCONNECT " != '" + QHostInfo::localHostName().left(60) + " - " NOM_ADMINISTRATEUR "'"
+                   " and " CP_IDLIEU_USRCONNECT " = " + QString::number(Datas::I()->sites->idcurrentsite()) +
                    " and time_to_sec(timediff(now(),heurederniereconnexion)) < 60";
     QList<QVariantList> listusr2 = db->StandardSelectSQL(reqp, m_ok);
     if (listusr2.size()>0)
@@ -138,7 +138,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         exit(0);
     }
     else
-        db->StandardSQL("delete from " TBL_USERSCONNECTES " where idUser = " + QString::number(Admin()->id()) + " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite()));
+        db->StandardSQL("delete from " TBL_USERSCONNECTES " where " CP_IDUSER_USRCONNECT " = " + QString::number(Admin()->id()) + " and " CP_IDLIEU_USRCONNECT " = " + QString::number(Datas::I()->sites->idcurrentsite()));
 
     Datas::I()->sites->initListe();
     DetermineLieuExercice();
@@ -267,7 +267,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Stocklay    ->addWidget(ui->StockageupLabel);
     Stocklay    ->addWidget(ui->StockageupLineEdit);
     Stocklay    ->addWidget(ui->StockageupPushButton);
-    Stocklay    ->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding, QSizePolicy::Expanding));
+    Stocklay    ->addSpacerItem(new QSpacerItem(5,15,QSizePolicy::Expanding, QSizePolicy::Expanding));
     QHBoxLayout *appcentrelay = new QHBoxLayout();
     appcentrelay->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding, QSizePolicy::Expanding));
     appcentrelay->addWidget(ui->AppareilsconnectesupLabel);
@@ -285,25 +285,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     setFixedWidth(ui->Appareilsconnectesframe->width() + 20);
     Remplir_Table();
     if (db->ModeAccesDataBase() == Utils::Poste)
-    {
-        QString NomDirStockageImagerie = m_parametres->dirimagerieserveur();
-        m_settings->setValue("DossierImagerie",NomDirStockageImagerie);
-        setWindowTitle("RufusAdmin - " + tr("Monoposte") + " - " + Datas::I()->sites->currentsite()->nom());
-    }
-    else if (db->ModeAccesDataBase() == Utils::ReseauLocal)
-    {
-        setWindowTitle("RufusAdmin - " + tr("Réseau local") + " - " + Datas::I()->sites->currentsite()->nom());
-    }
-    else if (db->ModeAccesDataBase() == Utils::Distant)
-    {
-        setWindowTitle("RufusAdmin - " + tr("Accès distant crypté SSL") + " - " + Datas::I()->sites->currentsite()->nom());
-        ui->Exportframe         ->setVisible(false);
-        ui->Diversframe         ->setVisible(false);
-    }
+        setWindowTitle("RufusAdmin - " + Datas::I()->sites->currentsite()->nom());
 
     ui->Exportframe         ->setVisible(db->ModeAccesDataBase() != Utils::Distant);
     QString Base = (db->ModeAccesDataBase() == Utils::Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
-    ui->StockageupLineEdit->setText(m_settings->value(Base + "DossierImagerie").toString());
+    ui->StockageupLineEdit->setText(m_parametres->dirimagerieserveur());
 
     ReconstruitListeLieuxExercice();
     Datas::I()->comptes->initListe();
@@ -832,9 +818,21 @@ void RufusAdmin::CalcTimeBupRestore()
     QString Volumelitteral = Utils::getExpressionSize(volume);
     QString timelitteral;
     if (Volumelitteral.right(2) == "Go")
-        timelitteral = QString::number(time/60000,'f',0) + tr(" minutes");
+    {
+        QString timeb = QString::number(time/60000,'f',0);
+        if (timeb != "0")
+            timelitteral = timeb + tr(" minutes");
+        else
+            timelitteral = tr("moins d'une minute");
+    }
     else if (Volumelitteral.right(2) == "To")
-        timelitteral = QString::number(time/60000/60,'f',0) + tr(" heures");
+    {
+        QString timeb = QString::number(time/60000/60,'f',0);
+        if (timeb != "0")
+            timelitteral = timeb + tr(" heures");
+        else
+            timelitteral = tr("moins d'une heure");
+    }
     else
         timelitteral = tr("moins d'une minute");
     QString color = m_freespace>volume? "green": "red";
@@ -1205,24 +1203,20 @@ void RufusAdmin::ChoixDossierStockageApp()
         return;
     if (examdata.size()>0)
         exam = examdata.at(1).toString();
-    QString dir = getDossierDocuments(exam);
-    if (dir == "")
-        dir = PATH_DIR_RUFUS;
-    QFileDialog dialog(this, "", dir);
-    dialog.setFileMode(QFileDialog::Directory);
-    dialog.setViewMode(QFileDialog::List);
     DisconnectTimerInactive();
-    if (dialog.exec()>0)
-    {
-        QDir dockdir = dialog.directory();
-        int row;
-        UpLineEdit *line = Q_NULLPTR;
-        row = ui->AppareilsConnectesupTableWidget->findItems(QString::number(bout->iD()), Qt::MatchExactly).at(0)->row();
-        line    = dynamic_cast<UpLineEdit*>(ui->AppareilsConnectesupTableWidget->cellWidget(row,4));
-        if (line!=Q_NULLPTR)
-            line->setText(dockdir.path());
-        m_settings->setValue("DossierEchangeImagerie/" + exam, dockdir.path());
-    }
+    QString dir = getDossierDocuments(exam);
+    if (dir == "" || !QDir(dir).exists())
+        dir = PATH_DIR_RUFUS;
+    QUrl url = Utils::getExistingDirectoryUrl(this, "", QUrl::fromLocalFile(dir), QStringList()<<db->parametres()->dirbkup());
+    if (url == QUrl())
+        return;
+    int row;
+    UpLineEdit *line = Q_NULLPTR;
+    row = ui->AppareilsConnectesupTableWidget->findItems(QString::number(bout->iD()), Qt::MatchExactly).at(0)->row();
+    line    = dynamic_cast<UpLineEdit*>(ui->AppareilsConnectesupTableWidget->cellWidget(row,4));
+    if (line!=Q_NULLPTR)
+        line->setText(url.path());
+    m_settings->setValue("DossierEchangeImagerie/" + exam, url.path());
     ConnectTimerInactive();
 }
 
@@ -1240,26 +1234,21 @@ void RufusAdmin::EnregistreAppareil()
 void RufusAdmin::ModifDirImagerie()
 {
     QString dir = ui->StockageupLineEdit->text();
-    if (dir == "")
+    if (dir == "" || !QDir(dir).exists())
         dir = PATH_DIR_RUFUS;
-    QFileDialog dialog(this, "", dir);
-    dialog.setFileMode(QFileDialog::Directory);
-    dialog.setViewMode(QFileDialog::List);
-    if (dialog.exec()>0)
-    {
-        QDir dockdir = dialog.directory();
-        if (db->ModeAccesDataBase() == Utils::Poste)
-            if (!dockdir.match(PATH_DIR_RUFUS "/*", dockdir.path()))
-            {
-                UpMessageBox::Watch(this, tr("Vous devez choisir un sous-dossier du dossier Rufus"), PATH_DIR_RUFUS);
-                return;
-            }
-        ui->StockageupLineEdit->setText(dockdir.path());
-        QString Base = (db->ModeAccesDataBase() == Utils::Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
-        m_settings->setValue(Base + "DossierImagerie", dockdir.path());
-        if (db->ModeAccesDataBase() == Utils::Poste)
-            db->setdirimagerie(dockdir.path());
-    }
+    QUrl url = Utils::getExistingDirectoryUrl(this, "", QUrl::fromLocalFile(dir), QStringList()<<db->parametres()->dirbkup());
+    if (url == QUrl())
+        return;
+    if (db->ModeAccesDataBase() == Utils::Poste)
+        if (!QDir(url.path()).match(PATH_DIR_RUFUS "/*", url.path()))
+        {
+            UpMessageBox::Watch(this, tr("Vous devez choisir un sous-dossier du dossier Rufus"), PATH_DIR_RUFUS);
+            return;
+        }
+    ui->StockageupLineEdit->setText(url.path());
+    if (db->ModeAccesDataBase() == Utils::Poste)
+        db->setdirimagerie(url.path());
+
 }
 
 void RufusAdmin::EnregDossierStockageApp(QString dir)
@@ -1405,7 +1394,7 @@ void RufusAdmin::CalcExporteDocs()
 void RufusAdmin::ExporteDocs()
 {
     bool ok;
-    QString NomDirStockageImagerie  = m_settings->value("DossierImagerie").toString();
+    QString NomDirStockageImagerie  = m_parametres->dirimagerieserveur();
     if (!QDir(NomDirStockageImagerie).exists() || NomDirStockageImagerie == "")
     {
         QString msg = tr("Le dossier de sauvegarde d'imagerie") + " <font color=\"red\"><b>" + NomDirStockageImagerie + "</b></font>" + tr(" n'existe pas");
@@ -1512,7 +1501,7 @@ void RufusAdmin::ExporteDocs()
                 //qDebug() << "erreur";
                 return;
             }
-            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_settings->value("DossierImagerie").toString()))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_parametres->dirimagerieserveur()))
             {
                 db->SupprRecordFromTable(listexportjpg.at(i).at(0).toInt(), CP_ID_FACTURES, TBL_FACTURES);
                 continue;
@@ -1735,7 +1724,7 @@ void RufusAdmin::ExporteDocs()
                 //qDebug() << "erreur";
                 return;
             }
-            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_settings->value("DossierImagerie").toString()))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_parametres->dirimagerieserveur()))
             {
                 db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), CP_ID_FACTURES, TBL_FACTURES);
                 continue;
@@ -2125,16 +2114,13 @@ void RufusAdmin::RestaureBase()
                               "Ce processus est long et peut durer plusieurs minutes.\n"
                               "(environ 1' pour 2 Go)\n"));
     QString dir = PATH_DIR_RUFUS;
-    QFileDialog dialog(Q_NULLPTR,tr("Restaurer à partir du dossier") , dir);
-    dialog.setViewMode(QFileDialog::List);
-    dialog.setFileMode(QFileDialog::DirectoryOnly);
-    bool b = (dialog.exec()>0);
-    if (!b)
+    QUrl url = Utils::getExistingDirectoryUrl(this, tr("Restaurer à partir du dossier"), QUrl::fromLocalFile(dir));
+    if (url == QUrl())
     {
         ConnectTimers();
         return;
     }
-    QDir dirtorestore = dialog.directory();
+    QDir dirtorestore = url.path();
     if (dirtorestore.dirName()=="")
     {
         ConnectTimers();
@@ -2143,8 +2129,8 @@ void RufusAdmin::RestaureBase()
     if (dirtorestore.absolutePath().contains(" "))
     {
         UpMessageBox::Watch(Q_NULLPTR, tr("Echec de la restauration"),
-                            tr("Le chemin vers le dossier ") + dirtorestore.absolutePath() + tr(" contient des espaces!") + "\n" +
-                            tr("il n'est pas possbile de procéder à une restuartion dans ce cas") +
+                            tr("Le chemin vers le dossier ") + url.path() + tr(" contient des espaces!") + "\n" +
+                            tr("il n'est pas possbile de procéder à une restauration dans ce cas") +
                             tr("renommez le dossier où se trouve la restauration en enlevant les espaces"));
         ConnectTimers();
         return;
@@ -2190,25 +2176,21 @@ void RufusAdmin::RestaureBase()
     }
 
     /*! 3 - détermination de l'emplacement de destination des fichiers d'imagerie */
-    QString NomDirStockageImagerie = m_parametres->dirimagerieserveur();
-    if (!QDir(NomDirStockageImagerie).exists())
+    QString NomDirStockageImagerie = PATH_DIR_IMAGERIE;
+    if (!QDir(PATH_DIR_IMAGERIE).exists())
     {
-        bool exist = QDir().exists(PATH_DIR_IMAGERIE);
-        QString existdir = (exist? "" : "\n" + tr("Créez-le au besoin"));
         UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage d'imagerie"),
                             tr("Indiquez un dossier valide dans la boîte de dialogue qui suit") + "\n" +
-                            tr("Utilisez de préférence le dossier ") + PATH_DIR_IMAGERIE +
-                            existdir);
-        QFileDialog dialogimg(Q_NULLPTR,tr("Stocker les images dans le dossier") , PATH_DIR_RUFUS + (exist? NOM_DIR_IMAGERIE : ""));
-        dialogimg.setViewMode(QFileDialog::List);
-        dialogimg.setFileMode(QFileDialog::DirectoryOnly);
-        bool b = (dialogimg.exec()>0);
-        if (!b)
+                            tr("Utilisez de préférence le dossier ") + PATH_DIR_IMAGERIE + " " +tr("Créez-le au besoin"));
+        if (dir == "" || !QDir(dir).exists())
+            dir = PATH_DIR_RUFUS;
+        QUrl url = Utils::getExistingDirectoryUrl(this, tr("Stocker les images dans le dossier"), QUrl::fromLocalFile(dir), QStringList()<<db->parametres()->dirbkup());
+        if (url == QUrl())
         {
             ConnectTimers();
             return;
         }
-        QDir dirstock = dialogimg.directory();
+        QDir dirstock = url.path();
         NomDirStockageImagerie = dirstock.dirName();
         if (NomDirStockageImagerie=="")
         {
@@ -2222,8 +2204,6 @@ void RufusAdmin::RestaureBase()
             ConnectTimers();
             return;
         }
-        m_settings->setValue(Utils::getBaseFromMode(Utils::Poste) + "DossierImagerie", NomDirStockageImagerie);
-        db->setdirimagerie(NomDirStockageImagerie);
     }
 
     /*! 4 - choix des éléments à restaurer */
@@ -2233,7 +2213,7 @@ void RufusAdmin::RestaureBase()
         bool okrestorebase = false;
         foreach (UpCheckBox *chk, dlg_buprestore->findChildren<UpCheckBox*>())
         {
-            /*! 4a - restauration de la base de données */
+            /*! 4a - restauration de la base de données tout d'abord */
             if (chk->accessibleDescription() == "base")
             {
                 if (chk->isChecked())
@@ -2437,6 +2417,7 @@ void RufusAdmin::RestaureBase()
             }
         }
         delete dlg_buprestore;
+        db->setdirimagerie(NomDirStockageImagerie);
         //qDebug() << msg;
         UpMessageBox::Watch(this,tr("restauration terminée"),msg);
         if (okrestorebase)
@@ -2457,7 +2438,7 @@ void RufusAdmin::RestaureBase()
 void RufusAdmin::SupprimerDocsEtFactures()
 {
     bool ok = true;
-    QString NomDirStockageImagerie = m_settings->value("DossierImagerie").toString();
+    QString NomDirStockageImagerie = m_parametres->dirimagerieserveur();
 
     /* Supprimer les documents en attente de suppression*/
     QString req = "Select " CP_FILEPATH_DOCSASUPPR " from " TBL_DOCSASUPPRIMER;
@@ -2714,23 +2695,17 @@ void RufusAdmin::ModifDirBackup()
 {
     QString dirsauvorigin   = ui->DirBackupuplineEdit->text();
     DisconnectTimerInactive();
-    QString dirSauv         = QFileDialog::getExistingDirectory(this,tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
-                                                                "Le nom de dossier ne doit pas contenir d'espace"), QDir::homePath());
-    if (dirSauv == "")
+    QUrl url = Utils::getExistingDirectoryUrl(this, tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
+                                                       "Le nom de dossier ne doit pas contenir d'espace"), QUrl::fromLocalFile(dirsauvorigin));
+    if (url == QUrl())
     {
         ConnectTimerInactive();
         return;
     }
-    if (dirSauv.contains(" "))
+    ui->DirBackupuplineEdit ->setText(url.path());
+    if (dirsauvorigin != url.path())
     {
-        UpMessageBox::Watch(this, tr("Nom de dossier non conforme"),tr("Vous ne pouvez pas choisir un dossier dont le nom contient des espaces"));
-        ConnectTimerInactive();
-        return;
-    }
-    ui->DirBackupuplineEdit ->setText(dirSauv);
-    if (dirsauvorigin != dirSauv)
-    {
-        db->setdirbkup(dirSauv);
+        db->setdirbkup(url.path());
         ParamAutoBackup();
         ui->EffacePrgSauvupPushButton->setEnabled(m_parametres->daysbkup()
                                                && QDir(m_parametres->dirbkup()).exists()
@@ -3260,18 +3235,12 @@ void RufusAdmin::startImmediateBackup()
     if (AutresPostesConnectes())
         return;
     QString dirsauvorigin   = ui->DirBackupuplineEdit->text();
-    QString dirSauv         = QFileDialog::getExistingDirectory(this,
-                                                                tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
-                                                                   "Le nom de dossier ne doit pas contenir d'espace"),
-                                                                (QDir(dirsauvorigin).exists()? dirsauvorigin : QDir::homePath()),
-                                                                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (dirSauv.contains(" "))
-    {
-        UpMessageBox::Watch(this, tr("Nom de dossier non conforme"),tr("Vous ne pouvez pas choisir un dossier dont le nom contient des espaces"));
-        return;
-    }
-    if (dirSauv != "")
-        ImmediateBackup(dirSauv);
+    if (dirsauvorigin == "" || !QDir(dirsauvorigin).exists())
+        dirsauvorigin = PATH_DIR_RUFUS;
+    QUrl url = Utils::getExistingDirectoryUrl(this, tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
+                                                         "Le nom de dossier ne doit pas contenir d'espace"), QUrl::fromLocalFile(dirsauvorigin));
+    if (url != QUrl())
+        ImmediateBackup(url.path());
 }
 
 bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte)
@@ -3282,14 +3251,12 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
 
     if (dirdestination == "")
     {
-        QString dirSauv = QFileDialog::getExistingDirectory(Q_NULLPTR,
-                                                            tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base") + "\n" + tr("Le nom de dossier ne doit pas contenir d'espace"),
-                                                            (QDir(m_parametres->dirbkup()).exists()? m_parametres->dirbkup() : QDir::homePath()));
-        if (dirSauv.contains(" "))
-            UpMessageBox::Watch(Q_NULLPTR, tr("Nom de dossier non conforme"),tr("Vous ne pouvez pas choisir un dossier dont le nom contient des espaces"));
-        if (dirSauv == "" || dirSauv.contains(" "))
+        QString dir = QDir(m_parametres->dirbkup()).exists()? m_parametres->dirbkup() : QDir::homePath();
+        QUrl url = Utils::getExistingDirectoryUrl(this, tr("Choisissez le dossier dans lequel vous voulez sauvegarder la base\n"
+                                                             "Le nom de dossier ne doit pas contenir d'espace"), QUrl::fromLocalFile(dir));
+        if (url == QUrl())
             return false;
-        dirdestination = dirSauv;
+        dirdestination = url.path();
     }
     if (!QDir(dirdestination).exists())
         return false;

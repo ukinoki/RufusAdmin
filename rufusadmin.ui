@@ -558,7 +558,7 @@ la base</string>
           <rect>
            <x>7</x>
            <y>256</y>
-           <width>312</width>
+           <width>351</width>
            <height>16</height>
           </rect>
          </property>
@@ -566,13 +566,13 @@ la base</string>
           <enum>Qt::NoContextMenu</enum>
          </property>
          <property name="text">
-          <string>Emplacement de stockage des documents archivés</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Emplacement du dossier d'imagerie - &lt;span style=&quot; font-weight:600; color:#ff2600;&quot;&gt;Eviter de modifier&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
         <widget class="QPushButton" name="StockageupPushButton">
          <property name="geometry">
           <rect>
-           <x>850</x>
+           <x>870</x>
            <y>250</y>
            <width>54</width>
            <height>32</height>
@@ -600,21 +600,21 @@ la base</string>
         <widget class="UpLineEdit" name="StockageupLineEdit">
          <property name="geometry">
           <rect>
-           <x>331</x>
+           <x>358</x>
            <y>254</y>
-           <width>517</width>
+           <width>465</width>
            <height>21</height>
           </rect>
          </property>
          <property name="minimumSize">
           <size>
-           <width>517</width>
+           <width>465</width>
            <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>517</width>
+           <width>490</width>
            <height>16777215</height>
           </size>
          </property>
@@ -1298,7 +1298,7 @@ des organismes bancaires</string>
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>
@@ -1319,6 +1319,16 @@ des organismes bancaires</string>
    <header>uppushbutton.h</header>
   </customwidget>
   <customwidget>
+   <class>UpTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>uptablewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>uplineedit.h</header>
+  </customwidget>
+  <customwidget>
    <class>UpSmallButton</class>
    <extends>QPushButton</extends>
    <header>upsmallbutton.h</header>
@@ -1329,11 +1339,6 @@ des organismes bancaires</string>
    <header>uplabel.h</header>
   </customwidget>
   <customwidget>
-   <class>UpLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>uplineedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpComboBox</class>
    <extends>QComboBox</extends>
    <header>upcombobox.h</header>
@@ -1342,11 +1347,6 @@ des organismes bancaires</string>
    <class>UpRadioButton</class>
    <extends>QRadioButton</extends>
    <header>upradiobutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>UpTableWidget</class>
-   <extends>QTableWidget</extends>
-   <header location="global">uptablewidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>

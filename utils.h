@@ -20,6 +20,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QBuffer>
 #include <QCryptographicHash>
 #include <QDir>
+#include <QFileDialog>
 #include <QJsonDocument>
 #include <QRegExp>
 #include <QHostAddress>
@@ -29,6 +30,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QProcess>
 #include <QJsonObject>
 #include <QTextCodec>
+#include <QUrl>
 #include <cmath>
 
 #include "uplineedit.h"
@@ -124,6 +126,7 @@ public:
     static bool                     mkpath(QString path);
     static void                     cleanfolder(QString path);
     static double                   mmToInches(double mm);
+    static QUrl                     getExistingDirectoryUrl(QWidget *parent, QString title = "", QUrl Dirdefaut = QUrl::fromLocalFile(QDir::homePath()), QStringList listnomsaeliminer = QStringList(), bool ExclureNomAvecEspace = true);
 
     //! refraction
     static QString                  PrefixePlus(double);                           //! convertit en QString signé + ou - les valeurs QDouble de dioptries
@@ -152,6 +155,7 @@ public:
 
     //! renvoie la valeur littérale d'un enum (à condition d'avoir placé la macro Q_ENUM(nomdelenum) dans la définition de l'enum
     static QString EnumDescription(QMetaEnum metaEnum, int val);
+    // p.e.         qDebug() << Utils::EnumDescription(QMetaEnum::fromType<Refraction::Mesure>(), ref->typemesure());
 
     //! calcule la taille idéale d'une police
     static void CalcFontSize(QFont &font);
@@ -196,6 +200,7 @@ public:
 
     //! écriture sur un port série d'un qByteArray
     static void writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString msgdebug, int timetowaitms = 0);
+
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Utils::Days)
 
