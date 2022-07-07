@@ -1032,7 +1032,7 @@ pour l'enregistrement des actes</string>
            <x>5</x>
            <y>0</y>
            <width>280</width>
-           <height>205</height>
+           <height>195</height>
           </rect>
          </property>
          <property name="focusPolicy">
@@ -1067,7 +1067,7 @@ pour l'enregistrement des actes</string>
           <property name="geometry">
            <rect>
             <x>8</x>
-            <y>50</y>
+            <y>45</y>
             <width>161</width>
             <height>22</height>
            </rect>
@@ -1086,7 +1086,7 @@ pour l'enregistrement des actes</string>
           <property name="geometry">
            <rect>
             <x>8</x>
-            <y>75</y>
+            <y>65</y>
             <width>111</width>
             <height>22</height>
            </rect>
@@ -1105,7 +1105,7 @@ pour l'enregistrement des actes</string>
           <property name="geometry">
            <rect>
             <x>8</x>
-            <y>125</y>
+            <y>105</y>
             <width>161</width>
             <height>22</height>
            </rect>
@@ -1120,11 +1120,11 @@ pour l'enregistrement des actes</string>
            <string>Secrétaire</string>
           </property>
          </widget>
-         <widget class="UpRadioButton" name="AutreNonSoignantupRadioButton">
+         <widget class="UpRadioButton" name="AutreFonctionupRadioButton">
           <property name="geometry">
            <rect>
             <x>8</x>
-            <y>150</y>
+            <y>125</y>
             <width>111</width>
             <height>22</height>
            </rect>
@@ -1136,14 +1136,14 @@ pour l'enregistrement des actes</string>
            <enum>Qt::NoContextMenu</enum>
           </property>
           <property name="text">
-           <string>Autre</string>
+           <string>Autre Fonction</string>
           </property>
          </widget>
          <widget class="UpLineEdit" name="AutreFonctionuplineEdit">
           <property name="geometry">
            <rect>
             <x>125</x>
-            <y>150</y>
+            <y>125</y>
             <width>150</width>
             <height>21</height>
            </rect>
@@ -1156,7 +1156,7 @@ pour l'enregistrement des actes</string>
           <property name="geometry">
            <rect>
             <x>125</x>
-            <y>75</y>
+            <y>65</y>
             <width>150</width>
             <height>21</height>
            </rect>
@@ -1169,7 +1169,7 @@ pour l'enregistrement des actes</string>
           <property name="geometry">
            <rect>
             <x>8</x>
-            <y>175</y>
+            <y>145</y>
             <width>161</width>
             <height>22</height>
            </rect>
@@ -1188,13 +1188,32 @@ pour l'enregistrement des actes</string>
           <property name="geometry">
            <rect>
             <x>125</x>
-            <y>100</y>
+            <y>90</y>
             <width>121</width>
             <height>20</height>
            </rect>
           </property>
           <property name="text">
            <string>Médecin</string>
+          </property>
+         </widget>
+         <widget class="UpRadioButton" name="NeutreupRadioButton">
+          <property name="geometry">
+           <rect>
+            <x>8</x>
+            <y>165</y>
+            <width>161</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::StrongFocus</enum>
+          </property>
+          <property name="contextMenuPolicy">
+           <enum>Qt::NoContextMenu</enum>
+          </property>
+          <property name="text">
+           <string>Neutre</string>
           </property>
          </widget>
         </widget>
@@ -1444,14 +1463,19 @@ inactifs</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>UpLabel</class>
-   <extends>QLabel</extends>
-   <header>uplabel.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpPushButton</class>
    <extends>QPushButton</extends>
    <header>uppushbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>uptablewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>uplineedit.h</header>
   </customwidget>
   <customwidget>
    <class>UpSmallButton</class>
@@ -1459,9 +1483,9 @@ inactifs</string>
    <header>upsmallbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>UpLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>uplineedit.h</header>
+   <class>UpLabel</class>
+   <extends>QLabel</extends>
+   <header>uplabel.h</header>
   </customwidget>
   <customwidget>
    <class>UpComboBox</class>
@@ -1472,11 +1496,6 @@ inactifs</string>
    <class>UpRadioButton</class>
    <extends>QRadioButton</extends>
    <header>upradiobutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>UpTableWidget</class>
-   <extends>QTableWidget</extends>
-   <header location="global">uptablewidget.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -1492,7 +1511,7 @@ inactifs</string>
   <tabstop>AutreSoignantupRadioButton</tabstop>
   <tabstop>AutreSoignantupLineEdit</tabstop>
   <tabstop>SecretaireupRadioButton</tabstop>
-  <tabstop>AutreNonSoignantupRadioButton</tabstop>
+  <tabstop>AutreFonctionupRadioButton</tabstop>
   <tabstop>AutreFonctionuplineEdit</tabstop>
   <tabstop>RPPSupLineEdit</tabstop>
   <tabstop>NumCOupLineEdit</tabstop>

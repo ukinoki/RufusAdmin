@@ -85,8 +85,9 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     connect(ui->OPHupRadioButton,               &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
     connect(ui->OrthoptistupRadioButton,        &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
     connect(ui->AutreSoignantupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->AutreNonSoignantupRadioButton,  &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AutreFonctionupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
     connect(ui->SecretaireupRadioButton,        &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->NeutreupRadioButton,            &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
     connect(ui->ComptaLiberalupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
     connect(ui->ComptaNoLiberalupRadioButton,   &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
     connect(ui->ComptaRemplaupRadioButton,      &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
@@ -161,10 +162,11 @@ void dlg_gestionusers::setConfig(enum UserMode mode)
     switch (mode) {
     case PREMIERUSER:
         ui->SecretaireupRadioButton         ->setEnabled(false);
-        ui->AutreNonSoignantupRadioButton   ->setEnabled(false);
+        ui->AutreFonctionupRadioButton   ->setEnabled(false);
         ui->AutreSoignantupRadioButton      ->setEnabled(false);
         ui->AutreSoignantupLineEdit         ->setVisible(false);
         ui->AutreFonctionuplineEdit         ->setVisible(false);
+        ui->NeutreupRadioButton             ->setEnabled(false);
         ui->SocieteComptableupRadioButton   ->setEnabled(false);
         ui->AssistantupRadioButton          ->setEnabled(false);
         ui->ResponsableLes2upRadioButton    ->setEnabled(false);
@@ -391,7 +393,7 @@ void dlg_gestionusers::EnregistreUser()
     QString actif = (ui->InactivUsercheckBox->isChecked()?  "1" : "null");
     QString req = "update " TBL_UTILISATEURS " set "
             CP_NOM_USR " = '"          + Utils::correctquoteSQL(Utils::trimcapitilize(ui->NomuplineEdit->text()))        + "',\n"
-            CP_PRENOM_USR " = "        + (ui->SocieteComptableupRadioButton->isChecked()? "null" : "'" + Utils::correctquoteSQL(Utils::trimcapitilize(ui->PrenomuplineEdit->text())) + "'") + ",\n"
+            CP_PRENOM_USR " = "         + ((ui->SocieteComptableupRadioButton->isChecked() || ui->NeutreupRadioButton->isChecked())? "null" : "'" + Utils::correctquoteSQL(Utils::trimcapitilize(ui->PrenomuplineEdit->text())) + "'") + ",\n"
             CP_PORTABLE_USR " = '"     + ui->PortableuplineEdit->text()   + "',\n"
             CP_MAIL_USR " = '"         + ui->MailuplineEdit->text()       + "',\n"
             CP_POLICEECRAN_USR " = '" POLICEPARDEFAUT "',\n"
@@ -587,7 +589,7 @@ void dlg_gestionusers::EnregistreUser()
         }
         req += ((ui->CotationupRadioButton->isVisible() && ui->CotationupRadioButton->isChecked())?   CP_CCAM_USR " = 1,\n" : CP_CCAM_USR " = null,\n");
     }
-    else if (ui->AutreNonSoignantupRadioButton->isChecked())
+    else if (ui->AutreFonctionupRadioButton->isChecked())
         req += CP_FONCTION_USR " = '" + Utils::correctquoteSQL(ui->AutreFonctionuplineEdit->text()) + "',\n"
                CP_SPECIALITE_USR " = '" + Utils::correctquoteSQL(ui->AutreFonctionuplineEdit->text()) + "',\n"
                CP_IDSPECIALITE_USR " = null,\n"
@@ -635,6 +637,22 @@ void dlg_gestionusers::EnregistreUser()
                CP_NUMCO_USR " = null,\n "
                CP_NUMPS_USR " = null,\n "
                CP_DROITS_USR " = '" SOCIETECOMPTABLE "',\n";
+    else if (ui->NeutreupRadioButton->isChecked())
+         req += CP_FONCTION_USR " = null,\n"
+                CP_SPECIALITE_USR " = null,\n"
+                CP_IDSPECIALITE_USR " = null,\n"
+                CP_SOIGNANTSTATUS_USR " = 6,\n"
+                CP_ISMEDECIN_USR " = null,\n"
+                CP_ISAGA_USR " = null,\n"
+                CP_RESPONSABLEACTES_USR " = null,\n"
+                CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
+                CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
+                CP_CCAM_USR " = null,\n"
+                CP_ENREGHONORAIRES_USR " = null,\n"
+                CP_IDEMPLOYEUR_USR " = null,\n"
+                CP_NUMCO_USR " = null,\n "
+                CP_NUMPS_USR " = null,\n "
+                CP_DROITS_USR " = '" NEUTRE "',\n";
     if (ui->OPHupRadioButton->isChecked() && !ui->AssistantupRadioButton->isChecked() && !ui->ComptaRemplaupRadioButton->isChecked() && ui->CotationupRadioButton->isChecked())
     {
         QString secteur = "null";
@@ -655,13 +673,16 @@ void dlg_gestionusers::EnregistreUser()
     db->StandardSQL(req);
     int idlieu=-1;
     db->SupprRecordFromTable(ui->idUseruplineEdit->text().toInt(), "idUser", TBL_JOINTURESLIEUX);
-    for(int i=0; i< ui->AdressupTableWidget->rowCount(); i++)
+    if (!m_neutre)
     {
-        UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
-        if (butt->isChecked())
+        for(int i=0; i< ui->AdressupTableWidget->rowCount(); i++)
         {
-            idlieu = butt->iD();
-            db->StandardSQL("insert into " TBL_JOINTURESLIEUX "(iduser, idlieu) values (" + ui->idUseruplineEdit->text() + ", " + QString::number(idlieu) + ")");
+            UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+            if (butt->isChecked())
+            {
+                idlieu = butt->iD();
+                db->StandardSQL("insert into " TBL_JOINTURESLIEUX "(iduser, idlieu) values (" + ui->idUseruplineEdit->text() + ", " + QString::number(idlieu) + ")");
+            }
         }
     }
 
@@ -954,26 +975,27 @@ void dlg_gestionusers::RegleAffichage()
      * 3 = autre
      * 4 = non soignant
      * 5 = societe comptable
-     */
+     * 6 = neutre
+    */
     DefinitLesVariables();
 
-    ui->RPPSlabel                   ->setVisible(responsable);
-    ui->RPPSupLineEdit              ->setVisible(responsable);
-    ui->ModeExercicegroupBox        ->setVisible(soignant);
-    ui->CotationupRadioButton       ->setVisible(soigntnonrplct);
-    ui->SecteurgroupBox             ->setVisible(medecin && soigntnonrplct);
-    ui->OPTAMupRadioButton          ->setVisible(medecin && soigntnonrplct && (ui->Secteur1upRadioButton->isChecked() || ui->Secteur2upRadioButton->isChecked()));
-    ui->NumCOlabel                  ->setVisible(medecin);
-    ui->NumCOupLineEdit             ->setVisible(medecin);
-    ui->TitreupcomboBox             ->setVisible(medecin);
-    ui->Titrelabel                  ->setVisible(medecin);
-    ui->AutreSoignantupLineEdit     ->setVisible(autresoignant);
-    ui->MedecincheckBox             ->setVisible(autresoignant);
+    ui->RPPSlabel                   ->setVisible(m_responsable);
+    ui->RPPSupLineEdit              ->setVisible(m_responsable);
+    ui->ModeExercicegroupBox        ->setVisible(m_soignant);
+    ui->CotationupRadioButton       ->setVisible(m_soigntnonrplct);
+    ui->SecteurgroupBox             ->setVisible(m_medecin && m_soigntnonrplct);
+    ui->OPTAMupRadioButton          ->setVisible(m_medecin && m_soigntnonrplct && (ui->Secteur1upRadioButton->isChecked() || ui->Secteur2upRadioButton->isChecked()));
+    ui->NumCOlabel                  ->setVisible(m_medecin);
+    ui->NumCOupLineEdit             ->setVisible(m_medecin);
+    ui->TitreupcomboBox             ->setVisible(m_medecin);
+    ui->Titrelabel                  ->setVisible(m_medecin);
+    ui->AutreSoignantupLineEdit     ->setVisible(m_autresoignant);
+    ui->MedecincheckBox             ->setVisible(m_autresoignant);
     ui->AutreSoignantupLineEdit     ->setVisible(ui->AutreSoignantupRadioButton->isChecked());
-    ui->AutreFonctionuplineEdit     ->setVisible(ui->AutreNonSoignantupRadioButton->isChecked());
+    ui->AutreFonctionuplineEdit     ->setVisible(ui->AutreFonctionupRadioButton->isChecked());
 
-    ui->Comptawidget                ->setVisible(responsable || soccomptable);
-    ui->ComptagroupBox              ->setVisible(responsable);
+    ui->Comptawidget                ->setVisible(m_responsable || m_soccomptable);
+    ui->ComptagroupBox              ->setVisible(m_responsable);
     ui->ComptaNoLiberalupRadioButton->setImmediateToolTip("");
     if (ui->ListUserstableWidget    ->currentItem()!=Q_NULLPTR)
     {
@@ -985,18 +1007,20 @@ void dlg_gestionusers::RegleAffichage()
         ui->ComptaNoLiberalupRadioButton  ->setImmediateToolTip(avert);
         ui->ComptaNoLiberalupRadioButton  ->setEnabled(u);
     }
-    ui->GererCompteuppushButton     ->setVisible(respliberal || soccomptable);
-    ui->Employeurwidget             ->setVisible(respsalarie);
-    ui->CompteActeswidget           ->setVisible(respliberal);
-    ui->CompteComptawidget          ->setVisible(respliberal || soccomptable);
-    ui->AGAupRadioButton            ->setVisible(respliberal);
+    ui->GererCompteuppushButton     ->setVisible(m_respliberal || m_soccomptable);
+    ui->Employeurwidget             ->setVisible(m_respsalarie);
+    ui->CompteActeswidget           ->setVisible(m_respliberal);
+    ui->CompteComptawidget          ->setVisible(m_respliberal || m_soccomptable);
+    ui->AGAupRadioButton            ->setVisible(m_respliberal);
 
-    ui->Prenomlabel                 ->setVisible(!soccomptable);
-    ui->PrenomuplineEdit            ->setVisible(!soccomptable);
+    ui->Prenomlabel                 ->setVisible(!m_soccomptable && !m_neutre);
+    ui->PrenomuplineEdit            ->setVisible(!m_soccomptable && !m_neutre);
+    ui->AdressupTableWidget         ->setVisible(!m_soccomptable && !m_neutre);
+    ui->GestLieuxpushButton         ->setVisible(!m_soccomptable && !m_neutre);
 
-    if (respliberal || soccomptable)
-        ActualiseRsgnmtBanque(soccomptable);
-    if (respsalarie)
+    if (m_respliberal || m_soccomptable)
+        ActualiseRsgnmtBanque(m_soccomptable);
+    if (m_respsalarie)
     {
         CalcListitemsEmployeurcomboBox(ui->idUseruplineEdit->text().toInt());
         ui->EmployeurcomboBox->setCurrentIndex(0);
@@ -1165,6 +1189,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     bool autresoignant  = m_userencours->isAutreSoignant();
     bool soignant       = m_userencours->isSoignant();
     bool soccomptable   = m_userencours->isSocComptable();
+    bool neutre         = m_userencours->isNeutre();
     bool medecin        = m_userencours->isMedecin();
 
     bool assistant      = m_userencours->isAssistant();
@@ -1287,6 +1312,14 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
         ui->AutreFonctionuplineEdit     ->clear();
         ui->SocieteComptableupRadioButton  ->setChecked(true);
     }
+    else if (neutre)
+     {
+         ui->NumCOupLineEdit             ->clear();
+         ui->RPPSupLineEdit              ->clear();
+         ui->AutreSoignantupLineEdit     ->clear();
+         ui->AutreFonctionuplineEdit     ->clear();
+         ui->NeutreupRadioButton         ->setChecked(true);
+     }
     else if (!soignant)
     {
         ui->NumCOupLineEdit             ->clear();
@@ -1298,7 +1331,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
         }
         else
         {
-            ui->AutreNonSoignantupRadioButton ->setChecked(true);
+            ui->AutreFonctionupRadioButton ->setChecked(true);
             ui->AutreFonctionuplineEdit     ->setText(m_userencours->fonction());
         }
         ui->AutreSoignantupLineEdit     ->setVisible(false);
@@ -1308,8 +1341,8 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     {
         ui->ComptagroupBox              ->setVisible(true);
         ui->ModeExercicegroupBox        ->setVisible(true);
-        ui->AGAupRadioButton              ->setVisible(true);
-        ui->AGAupRadioButton              ->setChecked(m_userencours->isAGA());
+        ui->AGAupRadioButton            ->setVisible(true);
+        ui->AGAupRadioButton            ->setChecked(m_userencours->isAGA());
         ui->SecteurgroupBox             ->setVisible(true);
         ui->RPPSlabel                   ->setVisible(true);
         ui->RPPSupLineEdit              ->setVisible(true);
@@ -1328,30 +1361,33 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     }
     wdg_buttonframe->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(QString::number(idUser),Qt::MatchExactly).at(0)->foreground() != m_color
                                                && ui->ListUserstableWidget->rowCount()>1);
-     return true;
+    RegleAffichage();
+    return true;
 }
 
 void   dlg_gestionusers::DefinitLesVariables()
 {
-    ophtalmo       = ui->OPHupRadioButton                ->isChecked();
-    orthoptist     = ui->OrthoptistupRadioButton         ->isChecked();
-    autresoignant  = ui->AutreSoignantupRadioButton      ->isChecked();
-    medecin        = (ui->MedecincheckBox->isChecked() && ui->AutreSoignantupRadioButton->isChecked())
+    m_ophtalmo       = ui->OPHupRadioButton                ->isChecked();
+    m_orthoptist     = ui->OrthoptistupRadioButton         ->isChecked();
+    m_autresoignant  = ui->AutreSoignantupRadioButton      ->isChecked();
+    m_autrenonsoignant  = ui->AutreFonctionupRadioButton   ->isChecked();
+    m_medecin        = (ui->MedecincheckBox->isChecked() && ui->AutreSoignantupRadioButton->isChecked())
                    || ui->OPHupRadioButton->isChecked();
-    soccomptable   = ui->SocieteComptableupRadioButton   ->isChecked();
+    m_soccomptable   = ui->SocieteComptableupRadioButton   ->isChecked();
+    m_neutre         = ui->NeutreupRadioButton             ->isChecked();
 
-    assistant      = ui->AssistantupRadioButton          ->isChecked();
+    m_assistant      = ui->AssistantupRadioButton          ->isChecked();
 
-    liberal        = ui->ComptaLiberalupRadioButton      ->isChecked();
-    pasliberal     = ui->ComptaNoLiberalupRadioButton    ->isChecked();
-    retrocession   = ui->ComptaRemplaupRadioButton       ->isChecked();
+    m_liberal        = ui->ComptaLiberalupRadioButton      ->isChecked();
+    m_pasliberal     = ui->ComptaNoLiberalupRadioButton    ->isChecked();
+    m_retrocession   = ui->ComptaRemplaupRadioButton       ->isChecked();
 
-    cotation       = ui->CotationupRadioButton           ->isChecked();
-    soignant       = (ophtalmo || orthoptist|| autresoignant);
-    responsable    = soignant && !assistant;
-    respsalarie    = responsable && pasliberal;
-    respliberal    = responsable && liberal;
-    soigntnonrplct = responsable && !retrocession;
+    m_cotation       = ui->CotationupRadioButton           ->isChecked();
+    m_soignant       = (m_ophtalmo || m_orthoptist|| m_autresoignant);
+    m_responsable    = m_soignant && !m_assistant;
+    m_respsalarie    = m_responsable && m_pasliberal;
+    m_respliberal    = m_responsable && m_liberal;
+    m_soigntnonrplct = m_responsable && !m_retrocession;
 }
 
 bool dlg_gestionusers::ExisteEmployeur(int iduser)
@@ -1625,7 +1661,7 @@ bool dlg_gestionusers::VerifFiche()
         this->ui->NomuplineEdit->setFocus();
         return false;
     }
-    if (ui->PrenomuplineEdit->text().isEmpty() && !ui->SocieteComptableupRadioButton->isChecked())
+    if (ui->PrenomuplineEdit->text().isEmpty() && !ui->SocieteComptableupRadioButton->isChecked() && !ui->NeutreupRadioButton->isChecked())
     {
         UpMessageBox::Watch(this,tr("Vous n'avez pas spécifié de prénom!"));
         this->ui->PrenomuplineEdit->setFocus();
@@ -1658,7 +1694,7 @@ bool dlg_gestionusers::VerifFiche()
         return false;
     }
 
-    if (soignant)
+    if (m_soignant)
     {
         QList<QRadioButton*> listbouton = ui->ModeExercicegroupBox->findChildren<QRadioButton*>();
         bool a = false;
@@ -1674,7 +1710,7 @@ bool dlg_gestionusers::VerifFiche()
             return false;
         }
     }
-    if (responsable)
+    if (m_responsable)
     {
         QList<QRadioButton*> listbouton = ui->ComptagroupBox->findChildren<QRadioButton*>();
         bool a = false;
@@ -1690,25 +1726,25 @@ bool dlg_gestionusers::VerifFiche()
             return false;
         }
     }
-    if (medecin && ui->NumCOupLineEdit->text().isEmpty())
+    if (m_medecin && ui->NumCOupLineEdit->text().isEmpty())
     {
         UpMessageBox::Watch(this,tr("Vous n'avez pas spécifié le n° de l'Ordre!"));
         this->ui->NumCOupLineEdit->setFocus();
         return false;
     }
-    if (ui->AutreNonSoignantupRadioButton->isChecked() && ui->AutreFonctionuplineEdit->text().isEmpty())
+    if (ui->AutreFonctionupRadioButton->isChecked() && ui->AutreFonctionuplineEdit->text().isEmpty())
     {
         UpMessageBox::Watch(this,tr("Vous n'avez pas spécifié la fonction!"));
         this->ui->AutreFonctionuplineEdit->setFocus();
         return false;
     }
-    if (responsable && ui->RPPSupLineEdit->text().isEmpty())
+    if (m_responsable && ui->RPPSupLineEdit->text().isEmpty())
     {
         UpMessageBox::Watch(this,tr("Vous n'avez pas spécifié le RPPS!"));
         this->ui->RPPSupLineEdit->setFocus();
         return false;
     }
-    if (medecin && cotation)
+    if (m_medecin && m_cotation)
     {
         QList<QRadioButton*> listb = ui->SecteurgroupBox->findChildren<QRadioButton*>();
         bool a = false;
@@ -1724,19 +1760,19 @@ bool dlg_gestionusers::VerifFiche()
             return false;
         }
     }
-    if (respliberal)
+    if (m_respliberal)
         if (ui->CompteActescomboBox->currentIndex()==-1)
         {
             UpMessageBox::Watch(this,tr("Vous avez oublié de spécifier un compte bancaire pour l'encaissement des honoraires!"));
             return false;
         }
-    if (respliberal || soccomptable)
+    if (m_respliberal || m_soccomptable)
         if (ui->CompteComptacomboBox->currentIndex()==-1)
         {
             UpMessageBox::Watch(this,tr("Vous avez oublié de spécifier un compte bancaire pour l'enregistrement de la comptabilité!"));
             return false;
         }
-    if (pasliberal)
+    if (m_pasliberal)
         if (ui->EmployeurcomboBox->currentIndex()==-1)
         {
             UpMessageBox::Watch(this,tr("Vous avez oublié de spécifier un employeur pour cet utilisateur non libéral!"));

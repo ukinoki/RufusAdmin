@@ -60,21 +60,23 @@ private:
     DataBase                *db;
     bool                    m_MDPverified;
     UserMode                m_usermode;
-    bool                    ophtalmo;
-    bool                    orthoptist;
-    bool                    autresoignant;
-    bool                    medecin;
-    bool                    soccomptable;
-    bool                    assistant;
-    bool                    liberal;
-    bool                    pasliberal;
-    bool                    retrocession;
-    bool                    cotation;
-    bool                    soignant;
-    bool                    responsable;
-    bool                    respsalarie;
-    bool                    respliberal;
-    bool                    soigntnonrplct;
+    bool                    m_ophtalmo;
+    bool                    m_orthoptist;
+    bool                    m_autresoignant;
+    bool                    m_autrenonsoignant;
+    bool                    m_neutre;
+    bool                    m_medecin;
+    bool                    m_soccomptable;
+    bool                    m_assistant;
+    bool                    m_liberal;
+    bool                    m_pasliberal;
+    bool                    m_retrocession;
+    bool                    m_cotation;
+    bool                    m_soignant;
+    bool                    m_responsable;
+    bool                    m_respsalarie;
+    bool                    m_respliberal;
+    bool                    m_soigntnonrplct;
 
     bool                    m_ok;
 
