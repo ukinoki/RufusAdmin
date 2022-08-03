@@ -133,14 +133,20 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
     else if (msg.contains(TCPMSG_StringidPoste))         // le stringid du poste qui vient de se connecter
     {
         msg.remove(TCPMSG_StringidPoste);
-        //qDebug() << "stringid = " << msg;
+        // qDebug() << "stringid = " << msg;
         skt->setStringid(msg);
+        QString resume;
         PosteConnecte *post = Datas::I()->postesconnectes->getByStringId(msg);
-        User *usr = Datas::I()->users->getById(post->id());
-        QString resume = (post == Q_NULLPTR? tr("un inconnu vient de se connecter je ne sais où") : (usr? usr->login() : "xxx") + " " +  tr("vient de se connecter sur") + " " + post->nomposte());
-        //qDebug() << "TCPMSG_DataSocket" << msg << " - sktdescriptor" << sktdescriptor;
+        if (!post)
+            resume = tr("un inconnu vient de se connecter de je ne sais où");
+        else
+        {
+            User *usr = Datas::I()->users->getById(post->id());
+            resume = (usr? usr->login() : "xxx") + " " +  tr("vient de se connecter sur") + " " + post->nomposte();
+        }
+        // qDebug() << resume;
         Logs::LogSktMessage("TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_StringidPoste)\n\t"
-                            "data = " + msg);
+                            "data = " + msg + " -----------------------------------------> " + resume);
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), resume, Icons::icSunglasses(), 3000);
         envoieListeSockets();
     }

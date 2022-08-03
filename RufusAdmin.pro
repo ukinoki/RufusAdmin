@@ -77,6 +77,8 @@ include(Components/components.pri)
 include(TcpServer/tcpserver.pri)
 include(Dialogs/dialogs.pri)
 include(Widgets/widgets.pri)
+include(SingleApplication/singleapplication.pri)
+DEFINES += QAPPLICATION_CLASS=QApplication # cette instruction doit être incluse APRES la ligne précédente
 
 ICON = Sunglasses.icns
 
