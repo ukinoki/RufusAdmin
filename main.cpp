@@ -21,13 +21,19 @@ QMap<QString,QIcon> Icons::m_mapIcon = QMap<QString,QIcon>();
 
 #include "rufusadmin.h"
 #include <QApplication>
-#include "singleapplication.h"
+#ifdef Q_OS_LINUX
+    #include "singleapplication.h"
+#endif
 
 int main(int argc, char *argv[])
 {
     qRegisterMetaType<qintptr>("qintptr");
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
-    SingleApplication a(argc, argv);
+    #ifdef Q_OS_LINUX
+        SingleApplication app(argc, argv);
+    #else
+        QApplication app(argc, argv);
+    #endif
 
     QPixmap pixmap("://rufusadmin.jpg");
     QSplashScreen *splash = new QSplashScreen(pixmap);
@@ -38,5 +44,5 @@ int main(int argc, char *argv[])
     RufusAdmin w;
     w.show();
 
-    return a.exec();
+    return app.exec();
 }
