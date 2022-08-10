@@ -82,6 +82,8 @@ include(SingleApplication/singleapplication.pri)
 DEFINES += QAPPLICATION_CLASS=QApplication # cette instruction doit être incluse APRES la ligne précédente
 }
 
+TRANSLATIONS    = rufusadmin_en.ts
+
 ICON = Sunglasses.icns
 
 OSX {

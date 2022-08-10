@@ -15,25 +15,39 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "icons.h"
-QMap<QString,QPixmap> Icons::m_mapPixmap = QMap<QString,QPixmap>();
-QMap<QString,QIcon> Icons::m_mapIcon = QMap<QString,QIcon>();
-
 #include "rufusadmin.h"
 #include <QApplication>
 #ifdef Q_OS_LINUX
     #include "singleapplication.h"
 #endif
 
+QMap<QString,QPixmap> Icons::m_mapPixmap = QMap<QString,QPixmap>();
+QMap<QString,QIcon> Icons::m_mapIcon = QMap<QString,QIcon>();
+
+
 int main(int argc, char *argv[])
 {
     qRegisterMetaType<qintptr>("qintptr");
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
+
+    /*! Le lancement de 2 instances du programme sur le même poste provoque un patacaisse dans la gestion des postes connectés et génère des erreurs.
+     * la classe SingleApplication permet de bloquer le lancement de plusieurs instances du programme sur le même poste
+     * Elle n'est pas utile sous MacOS qui ne le permet pas par défaut.
+     * Elle est utile sous Linux.
+     */
     #ifdef Q_OS_LINUX
         SingleApplication app(argc, argv);
     #else
         QApplication app(argc, argv);
     #endif
+
+    QString locale = QLocale::system().name().section('_', 0, 0);
+    QString dirloc;
+    dirloc = QCoreApplication::applicationDirPath();
+    dirloc += "/rufusadmin" + locale;
+    QTranslator translator;
+    translator.load(dirloc);
+    app.installTranslator(&translator);
 
     QPixmap pixmap("://rufusadmin.jpg");
     QSplashScreen *splash = new QSplashScreen(pixmap);
@@ -41,6 +55,7 @@ int main(int argc, char *argv[])
     Utils::Pause(1500);
     splash->close();
     delete splash;
+
     RufusAdmin w;
     w.show();
 

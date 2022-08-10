@@ -66,6 +66,12 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
 
     QString CheminFichierImage = NomDirDoc + "/" + nomfiledoc;
     QFile   jnaltrsferfile(m_pathdirOKtransfer + "/0JournalTransferts - " + m_datetransfer + ".txt");
+    if (jnaltrsferfile.open(QIODevice::Append))
+    {
+        QTextStream out(&jnaltrsferfile);
+        out << QDate::currentDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << " - " + tr ("Rapatriement de ") << Titredoc << " - " << nomfiledoc << " - " << QHostInfo::localHostName() << "\n" ;
+        jnaltrsferfile.close();
+    }
     QString commentechec;
 
     file_origine.setFileName(CheminFichierImage);
@@ -232,7 +238,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
                      * 0     - 1              -2- 3    - 4  - 5            - 6           - 7     - 8 - 9       - 10   - 11 - 12           - 13   - 14 - 15        - 16
                     */
 
-        QRegExp re("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}_[0-9]{2}_[0-9]{2}Z-"); // correspond aux sections 2,3,et 4 avant 2019 eet 3,4 et 5 aprçs
+        QRegExp re("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}_[0-9]{2}_[0-9]{2}Z-"); // correspond aux sections 2,3,et 4 avant 2019 eet 3,4 et 5 après
         if (nomfiledoc.contains(re))
         {
             int idxdate;
@@ -529,7 +535,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
             if (jnaltrsferfile.open(QIODevice::Append))
             {
                 QTextStream out(&jnaltrsferfile);
-                out << Titredoc << " - " << nomfiledoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
+                out << QDate::currentDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << Titredoc << " - " << nomfiledoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                 jnaltrsferfile.close();
             }
             if (file_origine.remove())
@@ -632,7 +638,7 @@ void ImportDocsExternesThread::EchecImport(QString txt)
     if (echectrsfer.open(QIODevice::Append))
     {
         QTextStream out(&echectrsfer);
-        out << txt << "\n" ;
+        out << QDate::currentDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << txt << "\n" ;
         echectrsfer.close();
     }
 }

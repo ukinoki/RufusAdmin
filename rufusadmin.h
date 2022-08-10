@@ -57,6 +57,9 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QStorageInfo>
 #include <QSplashScreen>
 #include <QSystemTrayIcon>
+
+#include <QTranslator>
+
 #include <poppler-qt5.h>
 #include "dlg_gestionbanques.h"
 #include "dlg_gestionusers.h"
