@@ -556,7 +556,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
         }
         else
         {
-            commentechec = tr("impossible d'enregistrer ") + nomfiledoc;
+            commentechec = tr("impossible d'enregistrer le fichier");
             EchecImport(Titredoc + " - " + nomfiledoc + " - " + commentechec + " - " + QHostInfo::localHostName());
         }
     }
@@ -613,7 +613,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
         }
         else
         {
-            commentechec = tr("impossible d'enregistrer ") + nomfiledoc;
+            commentechec = tr("impossible d'enregistrer le fichier");
             EchecImport(Titredoc + " - " + nomfiledoc + " - " + commentechec + " - " + QHostInfo::localHostName());
         }
     }
