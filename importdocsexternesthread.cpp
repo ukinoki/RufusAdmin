@@ -641,6 +641,7 @@ void ImportDocsExternesThread::EchecImport(QString txt)
         out << QDate::currentDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << txt << "\n" ;
         echectrsfer.close();
     }
+    m_encours = false;
 }
 
 /*! \brief bool ImportDocsExternesThread::DefinitDossiersImagerie()
