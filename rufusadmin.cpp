@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("8-10-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("03-11-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -2275,23 +2275,14 @@ void RufusAdmin::RestaureBase()
                         db->VideDatabases();
 
                         //! Restauration à partir du dossier sélectionné
-                        int a = 99;
                         Msg = (tr("Restauration de la base Rufus") + "\n"
                                + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
                         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
-                        DefinitScriptRestore(listnomsfilestorestore);
-                        QString task = "sh " + PATH_FILE_SCRIPTRESTORE;
-                        QProcess dumpProcess(parent());
-                        dumpProcess.start(task);
-                        dumpProcess.waitForFinished(1000000000);
-                        if (dumpProcess.exitStatus() == QProcess::NormalExit)
-                            a = dumpProcess.exitCode();
+                        int a = ExecuteSQLScript(listnomsfilestorestore);
                         if (a != 0)
                             msg += tr("Erreur de restauration de la base");
                         else
                             msg += tr("Restauration de la base OK") + "\n";
-                        if (QFile::exists(PATH_FILE_SCRIPTRESTORE))
-                            QFile::remove(PATH_FILE_SCRIPTRESTORE);
                         okrestorebase = (a == 0);
                     }
                 }
@@ -2641,14 +2632,7 @@ bool RufusAdmin::VerifBase()
                 QString NomDumpFile = PATH_DIR_RESSOURCES "/majbase" + QString::number(Version) + ".sql";
                 QFile::remove(NomDumpFile);
                 DumpFile.copy(NomDumpFile);
-                DefinitScriptRestore(QStringList() << NomDumpFile);
-                QString task = "sh " + PATH_FILE_SCRIPTRESTORE;
-                QProcess dumpProcess(parent());
-                dumpProcess.start(task);
-                dumpProcess.waitForFinished();
-                if (dumpProcess.exitStatus() == QProcess::NormalExit)
-                    a = dumpProcess.exitCode();
-                QFile::remove(PATH_FILE_SCRIPTRESTORE);
+                a = ExecuteSQLScript(QStringList() << NomDumpFile);
                 QFile::remove(NomDumpFile);
                 if (a == 0)
                 {
@@ -2679,12 +2663,6 @@ bool RufusAdmin::VerifBase()
                     }
                 req = "update " TBL_MANUFACTURERS " set CorNom = null, CorPrenom = null, CorStatut = null, CorMail = null, CorTelephone = null";
                 DataBase::I()->StandardSQL(req);
-//                DataBase::I()->StandardSQL("ALTER TABLE `rufus`.`Manufacturers` "
-//                "DROP COLUMN `CorTelephone`,"
-//                "DROP COLUMN `CorMail`,"
-//                "DROP COLUMN `CorStatut`,"
-//                "DROP COLUMN `CorPrenom`,"
-//                "DROP COLUMN `CorNom`;");
             }
         }
     }
@@ -3153,22 +3131,10 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
     }
 }
 
-void RufusAdmin::DefinitScriptRestore(QStringList ListNomFiles)
+int RufusAdmin::ExecuteSQLScript(QStringList ListScripts)
 {
-    /*
-#!/bin/bash
-MYSQL_USER="Admin"
-MYSQL_PASSWORD="bob"
-MYSQL_PORT="3306"
-MYSQL=/usr/local/mysql/bin/mysql
-$MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File1"
-$MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File2"
-$MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File3"
-...etc...
-    */
-    // élaboration du script de restore
-    QString scriptrestore = "#!/bin/bash";
-    scriptrestore += "\n";
+    QList<QStringList> args;
+    int a = 99;
     QString cheminmysql;
 #ifdef Q_OS_MACX
     cheminmysql = "/usr/local/mysql/bin";           // Depuis HighSierra on ne peut plus utiliser + Dir.absolutePath() + DIR_LIBS2 - le script ne veut pas utiliser le client mysql du package (???)
@@ -3176,24 +3142,51 @@ $MYSQL -u $MYSQL_USER -p$MYSQL_PASSWORD -h localhost -P $MYSQL_PORT < File3"
 #ifdef Q_OS_LINUX
     cheminmysql = "/usr/bin";
 #endif
-    scriptrestore += "MYSQL=" + cheminmysql;
-    scriptrestore += "/mysql";
-    scriptrestore += "\n";
-    for (int i=0; i<ListNomFiles.size(); i++)
-    if (QFile(ListNomFiles.at(i)).exists())
+    QString host;
+    if( db->ModeAccesDataBase() == Utils::Poste )
+        host = "localhost";
+    else
+        host = m_settings->value(Utils::getBaseFromMode(db->ModeAccesDataBase()) + Param_Serveur).toString();
+    bool useSSL = (db->ModeAccesDataBase() == Utils::Distant);
+    QString login = LOGIN_SQL;
+    if (useSSL)
+        login += "SSL";
+    QString dirkey = "/etc/mysql";
+    QString keys = "";
+    if (useSSL)
     {
-        scriptrestore += "$MYSQL -u " LOGIN_SQL  " -p" MDP_SQL " -h localhost -P " + QString::number(db->port()) + " < " + ListNomFiles.at(i);
-        scriptrestore += "\n";
+        if (m_settings->value(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL).toString() != "")
+            dirkey = m_settings->value(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL).toString();
+        else
+            m_settings->setValue(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL,dirkey);
+        keys += " --ssl-ca=" + dirkey + "/ca-cert.pem --ssl-cert=" + dirkey + "/client-cert.pem --ssl-key=" + dirkey + "/client-key.pem";
     }
-    if (QFile::exists(PATH_FILE_SCRIPTRESTORE))
-        QFile::remove(PATH_FILE_SCRIPTRESTORE);
-    QFile fbackup(PATH_FILE_SCRIPTRESTORE);
-    if (fbackup.open(QIODevice::ReadWrite))
+    for (int i=0; i<ListScripts.size(); i++)
+        if (QFile(ListScripts.at(i)).exists())
+        {
+            QStringList arg;
+            QString command = cheminmysql + "/mysql -u " + login + " -p" MDP_SQL " -h " + host + " -P " + QString::number(db->port()) + keys;
+            QString path = ListScripts.at(i);
+            arg << command << path;
+            args << arg;
+        }
+
+    QProcess dumpProcess(parent());
+    for (int i=0; i< args.size(); i++)
     {
-        QTextStream out(&fbackup);
-        out << scriptrestore ;
-        fbackup.close();
+        QString path = args.at(i).last();
+        QString command = args.at(i).first();;
+        dumpProcess.setStandardInputFile(path);
+        dumpProcess.start(command);
+        dumpProcess.waitForFinished(1000000000); /*! sur des systèmes lents, la création de la base prend parfois plus que les 30 secondes que sont la valeur par défaut de l'instruction waitForFinished()
+                                              * et dans ce cas le processus est interrompu avant que toute la base soit créée */
+        //qDebug() << Utils::EnumDescription(QMetaEnum::fromType<QProcess::ExitStatus>(), dumpProcess.exitCode()) << "dumpProcess.exitCode()" << dumpProcess.exitCode() << dumpProcess.errorString();
+        if (dumpProcess.exitStatus() == QProcess::NormalExit)
+            a = dumpProcess.exitCode();
+        if (a != 0)
+            i = args.size();
     }
+    return a;
 }
 
 void RufusAdmin::EffaceBDDDataBackup()

@@ -834,7 +834,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_RUFUSFILE_INI                       "/Rufus.ini"
 #define NOM_ADMINFILE_INI                       "/RufusAdmin.ini"
 #define NOM_FILE_SCRIPTBACKUP                   "/RufusScriptBackup.sh"
-#define NOM_FILE_SCRIPTRESTORE                  "/RufusScriptRestore.sh"
 #define NOM_FILE_SCRIPT_MACOS_PLIST             "/rufus.bup.plist"
 
 #define PATH_DIR_RUFUSADMIN                     QDir::homePath() + NOM_DIR_RUFUSADMIN
@@ -855,7 +854,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define PATH_FILE_INI                           PATH_DIR_RUFUSADMIN NOM_ADMINFILE_INI
 #define PATH_RUFUSFILE_INI                      PATH_DIR_RUFUS NOM_RUFUSFILE_INI
 #define PATH_FILE_SCRIPTBACKUP                  PATH_DIR_RUFUSADMIN NOM_FILE_SCRIPTBACKUP
-#define PATH_FILE_SCRIPTRESTORE                 PATH_DIR_RUFUSADMIN NOM_FILE_SCRIPTRESTORE
 #define PATH_FILE_SCRIPT_MACOS_PLIST            "/Library/LaunchAgents" NOM_FILE_SCRIPT_MACOS_PLIST
 
 // Variables mysql

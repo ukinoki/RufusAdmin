@@ -272,8 +272,8 @@ private:
                             /*! calcule la durée approximative du backup */
     void                    DefinitScriptBackup(QString pathdirdestination, bool AvecImages= true, bool AvecVideos = true, bool AvecFactures = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
-    void                    DefinitScriptRestore(QStringList ListNomFiles);
-                            /*! crée le script RufusScriptRestore.sh qui va éxécuter la restauration de la base MySQL et le lance */
+    int                     ExecuteSQLScript(QStringList ListScripts);
+                            /*! Exécute une liste de scripts SQL (restauration de la base MySQL p.e.) */
     void                    EffaceBDDDataBackup();
                             /*! efface le paramètrage de sauvegarde (moment et emplacement) dans la base de données */
     void                    EffaceProgrammationBackup();
