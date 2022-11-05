@@ -28,7 +28,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
             . un dossier NomdelAppareil_echecstranserts dans lequel sont enregistrés les fichiers qui n'ont pas pu être incorporés dans la base de données
             . un dossier NomdelAppareil_transfertOK où sont stockés les transferts réussis.
         . chaque fois qu'un nouveau fichier apparaît dans le fichier d'échange, le programme essaie de le reconnaître en identifiant l'id patient concerné dans le nom du fichier.
-            Certains appareils                                                                                       ne permettent pas d'enregistrer un id, le programme utilise alors nom et prenom
+            Certains appareils ne permettent pas d'enregistrer un id, le programme utilise alors nom et prenom
             . s'il réussit
                 . le fichier est renommé avec l'architecture idpatient_nompatient_prenompatient_dateexamen_typexamen plus l'extension jpg ou pdf
                 . il est recopié dans le dossier NomdelAppareil_transfertOK
@@ -39,7 +39,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
                 . le fichier est recopié dans le dossier NomdelAppareil_echectransfert
                 . il est effacé du dossier d'échange
                 . une ligne est crée dans le fichier 0journaltransferts_datedujour.txt dans le dossier NomdelAppareil_echecstransferts pour enregistrer l'opération
- * 3. Alimenter la table Images.EcahngeImages dans laquelle seront intégrés chaque image correspondant au dossier patient ouvert.
+ * 3. Alimenter la table Images.EchangeImages dans laquelle seront intégrés chaque image correspondant au dossier patient ouvert.
       Cette table est alimentée à la demande avec les images de ce patient au fur et à mesure que le programme les demande
       La table est vidée avant chaque procédure de sauvegarde
  * 4. ëtre le serveur TCP du réseau local
@@ -178,7 +178,13 @@ private:
     void                        ConnectTimerInactive();
     void                        DisconnectTimerInactive();
 
-    void                        ExporteDocs();
+    void                        ExporteDocs();                                              /*! exporte les documents d'imagerie inscrits dans la base par les postes distants
+                                                                                                pour les archiver en fichiers standards sur le HD du serveur
+                                                                                                les fichiers d'imagerie ou les factures enregistrés par des utilisateurs distants sont stockés
+                                                                                                dans les champs pdf ou jpg de la table Rufus.Impressions pour les imageries et ComptaMedicale.Factures pour les factures.
+                                                                                                Cette fonction, appelée par le timer t_timerUserConnecte ou par le bouton ui->ExportImagespushButton,
+                                                                                                permet de récupérer le contenu blob de ces fichiers
+                                                                                                et de recréer un fichier d'imagerie stocké dans le système de fichiers du serveur */
 
     //--------------------------------------------------------------------------------------------------------
     // les sauvegardes

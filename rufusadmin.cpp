@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("03-11-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("05-11-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -371,9 +371,14 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     }
 #endif
 
-    //! - mise à jour du programmateur de l'effacement des fichiers images provisoires
-    if (db->ModeAccesDataBase() == Utils::Poste)
-        ProgrammeSQLVideImagesTemp(m_parametres->heurebkup());
+    //! - mise à jour du programmateur de l'effacement des fichiers images provisoires - abandonné parce qu'il continue à fonctionner même en cas de plantage du programme
+    //if (db->ModeAccesDataBase() == Utils::Poste)
+        //ProgrammeSQLVideImagesTemp(m_parametres->heurebkup());
+    db->StandardSQL("Use " DB_IMAGES);
+    db->StandardSQL("DROP EVENT IF EXISTS VideImagesEchange");
+    db->StandardSQL("Use " DB_COMPTA);
+    db->StandardSQL("DROP EVENT IF EXISTS VideFactures");
+
 
     installEventFilter(this);
     EpureLogs();
@@ -2926,7 +2931,7 @@ void RufusAdmin::ParamAutoBackup()
     */
 }
 
-void RufusAdmin::ProgrammeSQLVideImagesTemp(QTime timebackup)
+void RufusAdmin::ProgrammeSQLVideImagesTemp(QTime timebackup) /*!  - abandonné parce qu'il continue à fonctionner même en cas de plantage du programme */
 {
     //programmation de l'effacement du contenu de la table ImagesEchange
     db->StandardSQL("Use " DB_IMAGES);
@@ -3133,7 +3138,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathdirdestination, bool AvecImages
 
 int RufusAdmin::ExecuteSQLScript(QStringList ListScripts)
 {
-    QList<QStringList> args;
+    QStringList listpaths;
     int a = 99;
     QString cheminmysql;
 #ifdef Q_OS_MACX
@@ -3161,21 +3166,18 @@ int RufusAdmin::ExecuteSQLScript(QStringList ListScripts)
             m_settings->setValue(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL,dirkey);
         keys += " --ssl-ca=" + dirkey + "/ca-cert.pem --ssl-cert=" + dirkey + "/client-cert.pem --ssl-key=" + dirkey + "/client-key.pem";
     }
+    QString command = cheminmysql + "/mysql -u " + login + " -p" MDP_SQL " -h " + host + " -P " + QString::number(db->port()) + keys;
     for (int i=0; i<ListScripts.size(); i++)
         if (QFile(ListScripts.at(i)).exists())
         {
-            QStringList arg;
-            QString command = cheminmysql + "/mysql -u " + login + " -p" MDP_SQL " -h " + host + " -P " + QString::number(db->port()) + keys;
             QString path = ListScripts.at(i);
-            arg << command << path;
-            args << arg;
+            listpaths << path;
         }
 
     QProcess dumpProcess(parent());
-    for (int i=0; i< args.size(); i++)
+    for (int i=0; i< listpaths.size(); i++)
     {
-        QString path = args.at(i).last();
-        QString command = args.at(i).first();;
+        QString path = listpaths.at(i);
         dumpProcess.setStandardInputFile(path);
         dumpProcess.start(command);
         dumpProcess.waitForFinished(1000000000); /*! sur des systèmes lents, la création de la base prend parfois plus que les 30 secondes que sont la valeur par défaut de l'instruction waitForFinished()
@@ -3184,7 +3186,7 @@ int RufusAdmin::ExecuteSQLScript(QStringList ListScripts)
         if (dumpProcess.exitStatus() == QProcess::NormalExit)
             a = dumpProcess.exitCode();
         if (a != 0)
-            i = args.size();
+            i = listpaths.size();
     }
     return a;
 }
@@ -3318,6 +3320,10 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     qintptr handledlg = 0;
     ShowMessage::I()->PriorityMessage(tr("Sauvegarde en cours"),handledlg);
     DisconnectTimerInactive();
+
+    //On vide les champs blob de la table factures et la table EchangeImages
+    db->StandardSQL("UPDATE " TBL_FACTURES " SET " CP_JPG_FACTURES " = null, " CP_PDF_FACTURES " = null");
+    db->StandardSQL("DELETE FROM " TBL_ECHANGEIMAGES);
 
     if (OKBase)
     {
