@@ -193,6 +193,24 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_MAJFLAGUSERDISTANT_FLAGS                     "flagUserDistant"
 #define CP_MAJFLAGIMPRESSIONS_FLAGS                     "MAJflagImpressions"
 
+                            //! Table Rufus.ccam
+#define CP_ID_CCAM                                      "idccam"
+#define CP_CODECCAM_CCAM                                "codeccam"
+#define CP_NOM_CCAM                                     "nom"
+#define CP_MONTANTOPTAM_CCAM                            "optam"
+#define CP_MONTANTNONOPTAM_CCAM                        "nonoptam"
+
+                            //! Table Rufus.cotations
+#define CP_ID_COTATIONS                                 "idcotation"
+#define CP_TYPEACTE_COTATIONS                           "Typeacte"
+#define CP_MONTANTOPTAM_COTATIONS                       "MontantOPTAM"
+#define CP_MONTANTNONOPTAM_COTATIONS                    "MontantNonOPTAM"
+#define CP_MONTANTPRATIQUE_COTATIONS                    "MontantPratique"
+#define CP_CODECCAM_COTATIONS                           "CCAM"
+#define CP_IDUSER_COTATIONS                             "idUser"
+#define CP_FREQUENCE_COTATIONS                          "Frequence"
+#define CP_TIP_COTATIONS                                "Tip"
+
                             //! Table Rufus.LieuxExercice
 #define CP_ID_SITE                                      "idLieu"
 #define CP_NOM_SITE                                     "NomLieu"

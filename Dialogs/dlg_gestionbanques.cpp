@@ -23,13 +23,11 @@ dlg_gestionbanques::dlg_gestionbanques(QWidget *parent, QString nouvbanqueabrege
     ui(new Ui::dlg_gestionbanques)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
     db                      = DataBase::I();
-
     m_fermeapresvalidation   = (nouvbanqueabrege != "");
-    setWindowTitle(tr("Enregistrer une nouvelle banque"));
     setAttribute(Qt::WA_DeleteOnClose);
+    setWindowModality(Qt::WindowModal);
 
     if (m_fermeapresvalidation)
     {

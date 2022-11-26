@@ -24,6 +24,7 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    setWindowTitle(tr("Gestion des utilisateurs"));
 
     db                  = DataBase::I();
     m_mode              = Modifier;
@@ -262,7 +263,7 @@ void dlg_gestionusers::ChoixButtonFrame()
 
 void dlg_gestionusers::CreerUser()
 {
-    dlg_ask                        = new UpDialog(this);
+    dlg_ask                     = new UpDialog(this);
     QVBoxLayout *lay            = new QVBoxLayout();
     UpLabel *label              = new UpLabel();
     UpLabel *label2             = new UpLabel();
@@ -271,7 +272,7 @@ void dlg_gestionusers::CreerUser()
     UpLineEdit *Line2           = new UpLineEdit();
     UpLineEdit *Line3           = new UpLineEdit();
 
-    dlg_ask                        ->setModal(true);
+    dlg_ask                        ->setWindowModality(Qt::WindowModal);
     dlg_ask                        ->move(QPoint(x()+width()/2,y()+height()/2));
     dlg_ask                        ->setFixedSize(300,300);
     dlg_ask                        ->setWindowTitle("");
@@ -306,7 +307,7 @@ void dlg_gestionusers::CreerUser()
     label2                      ->setText(tr("Choisissez un mot de passe\n- mini 5 maxi 12 caractères -\n- pas de caractères spéciaux ou accentués -"));
     label3                      ->setText(tr("Confirmez le mot de passe"));
 
-    dlg_ask                        ->AjouteLayButtons(UpDialog::ButtonOK);
+    dlg_ask                        ->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     connect(dlg_ask->OKButton,     &QPushButton::clicked,  this,   &dlg_gestionusers::EnregistreNouvUser);
 
     lay                         ->addWidget(label);
@@ -325,6 +326,7 @@ void dlg_gestionusers::CreerUser()
     Line                        ->setFocus();
     dlg_ask->exec();
     delete dlg_ask;
+    dlg_ask = Q_NULLPTR;
 }
 
 void dlg_gestionusers::EnregistreNouvMDP()
@@ -856,7 +858,6 @@ void dlg_gestionusers::GestionComptes()
     bool verifcpta  = ui->CompteComptawidget->isVisible();
     QString cptcpta = ui->CompteComptacomboBox->currentText();
     dlg_gestioncomptes *Dlg_GestComptes = new dlg_gestioncomptes(m_userencours, this);
-    Dlg_GestComptes ->setWindowTitle(tr("Comptes bancaires de ") + m_userencours->login());
     Dlg_GestComptes ->exec();
     if (verifempl)
         if (ui->EmployeurcomboBox->currentText() != empl)
@@ -897,7 +898,8 @@ void dlg_gestionusers::ModifUser()
 
 void dlg_gestionusers::GestionLieux()
 {
-    m_MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), m_MDPverified );
+    QString mdp ("");
+    m_MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), mdp, m_MDPverified, this);
     if (!m_MDPverified)
             return;
     dlg_listelieux *gestLieux = new dlg_listelieux();
@@ -1088,7 +1090,7 @@ void dlg_gestionusers::SupprUser()
                             if (db->StandardSelectSQL("select " CP_ID_LIGNCOMPTES " from " TBL_LIGNESCOMPTES " where " CP_IDCOMPTE_LIGNCOMPTES " = " + icpt, m_ok).size()==0)
                                 Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(idcpt));
         }
-        db->SupprRecordFromTable(idUser, "idUser", TBL_COTATIONS);
+        db->SupprRecordFromTable(idUser, CP_IDUSER_COTATIONS, TBL_COTATIONS);
         db->StandardSQL("delete from " TBL_JOINTURESLIEUX " where iduser not in (select " CP_ID_USR " from " TBL_UTILISATEURS ")");
 
         QString req = "select user, host from mysql.user where user like '" + ui->ListUserstableWidget->selectedItems().at(1)->text() + "%'";
@@ -1420,7 +1422,7 @@ void dlg_gestionusers::Inactifs()
         }
     };
     UpDialog *dlg_listinactifs = new UpDialog(this);
-    dlg_listinactifs->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint);
+    dlg_listinactifs->setWindowModality(Qt::WindowModal);
     QTableView *wdg_bigtable = new QTableView(dlg_listinactifs);
 
     //! Remplissage de la table

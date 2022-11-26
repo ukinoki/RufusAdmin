@@ -87,7 +87,7 @@ private:
 
     bool m_AGA = false;
     bool m_desactive = false;
-    bool m_OPTAM = false;
+    bool m_OPTAM = true;
     bool m_ccam;
 
     bool m_useCompta;

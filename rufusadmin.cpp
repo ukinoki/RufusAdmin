@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("07-11-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("26-11-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -94,36 +94,17 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     DataBase::I()->setidUserConnected(Admin()->id());
 
-    QInputDialog quest;
-    quest.setCancelButtonText("Annuler");
-    quest.setLabelText(tr("Saisissez le mot de passe Administrateur"));
-    quest.setInputMode(QInputDialog::TextInput);
-    quest.setTextEchoMode(QLineEdit::Password);
-    QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
-    for (int i=0;i<list.size();i++)
-        list.at(0)->setAlignment(Qt::AlignCenter);
-    QList<QLabel*> listlab = quest.findChildren<QLabel*>();
-    for (int i=0;i<listlab.size();i++)
-        listlab.at(0)->setAlignment(Qt::AlignCenter);
-    quest.setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-    if (quest.exec() > 0)
-    {
-        if (Utils::calcSHA1(quest.textValue()) != Admin()->password())
-        {
-            if (quest.textValue() != Admin()->password())
-            {
-                UpMessageBox::Watch(Q_NULLPTR, QObject::tr("Mot de passe invalide!"));
-                exit(0);
-            }
-            else
-            {
-                QString pwd = Utils::calcSHA1(Admin()->password());
-                db->setmdpadmin(pwd);
-            }
-        }
-    }
+    /*! On ne peut pas utiliser Utils::VerifMDP(Admin()->password(),tr("Saisissez le mot de passe Administrateur")))
+     * parce qu'à ce stade du code, Admin()->password() est encore égal à la valeur SHA1 du mdp admin
+     * et qu'il faut récupérer la valeur non cryptée du mdp
+     */
+    //db->setmdpadmin(Utils::calcSHA1("bob"));
+    QString mdp ("");
+    if (Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur"),mdp))
+        db->setmdpadmin(Utils::calcSHA1(mdp));
     else
         exit(0);
+
 
     // on vérifie que le programme n'est pas déjà en cours d'éxécution sur un autre poste
     QString reqp = "select " CP_NOMPOSTE_USRCONNECT " from " TBL_USERSCONNECTES
@@ -391,7 +372,8 @@ RufusAdmin::~RufusAdmin()
 
 void RufusAdmin::closeEvent(QCloseEvent *event)
 {
-    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+    QString mdp ("");
+    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur"), mdp))
     {
         event->ignore();
         return;
@@ -583,10 +565,8 @@ void RufusAdmin::AskAppareil()
 {
     DisconnectTimerInactive();
     dlg_askAppareil = new UpDialog(this);
-    dlg_askAppareil->setModal(true);
-    dlg_askAppareil->move(QPoint(x()+width()/2,y()+height()/2));
+    dlg_askAppareil->setWindowModality(Qt::WindowModal);
     dlg_askAppareil->setFixedWidth(400);
-    dlg_askAppareil->setWindowTitle(tr("Choisissez un appareil"));
     QHBoxLayout *lay = new QHBoxLayout;
     UpLabel *label = new UpLabel();
     label->setText("Nom de l'appareil");
@@ -600,7 +580,7 @@ void RufusAdmin::AskAppareil()
     lay->addWidget(upCombo);
     dlg_askAppareil->dlglayout()->insertLayout(0,lay);
     dlg_askAppareil->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
-    dlg_askAppareil->AjouteLayButtons(UpDialog::ButtonOK);
+    dlg_askAppareil->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     connect(dlg_askAppareil->OKButton,    &QPushButton::clicked, this, &RufusAdmin::EnregistreAppareil);
     dlg_askAppareil->exec();
     upCombo->showPopup();
@@ -1883,6 +1863,7 @@ void RufusAdmin::GestionBanques()
     DisconnectTimerInactive();
     dlg_gestionbanques *Dlg_Banq = new dlg_gestionbanques(this);
     Dlg_Banq->exec();
+    delete Dlg_Banq;
     ConnectTimerInactive();
 }
 
@@ -1891,8 +1872,10 @@ void RufusAdmin::GestionLieux()
     DisconnectTimerInactive();
     dlg_listelieux *gestLieux = new dlg_listelieux(this);
     gestLieux->exec();
+    delete gestLieux;
     ReconstruitListeLieuxExercice();
     ConnectTimerInactive();
+
 }
 
 void RufusAdmin::GestionMotifs()
@@ -1909,7 +1892,7 @@ void RufusAdmin::GestionUsers()
 {
     DisconnectTimerInactive();
     dlg_gestionusers *Dlg_GestUsr = new dlg_gestionusers(ui->EmplacementServeurupComboBox->currentData().toInt(), dlg_gestionusers::ADMIN, true, this);
-    Dlg_GestUsr->setWindowTitle(tr("Gestion des utilisateurs"));
+    Dlg_GestUsr->setWindowModality(Qt::WindowModal);
     if(Dlg_GestUsr->exec()>0)
     {
         Datas::I()->users->initListe();
@@ -1919,6 +1902,7 @@ void RufusAdmin::GestionUsers()
                                      "chacun de ces utilisateurs doit relancer le programme\n"
                                      "pour pouvoir prendre en compte les modifications apportées!"));
     }
+    delete Dlg_GestUsr;
     ConnectTimerInactive();
 }
 
@@ -2056,10 +2040,8 @@ void RufusAdmin::ModifMDP()
 {
     DisconnectTimerInactive();
     dlg_askMDP    = new UpDialog(this);
-    dlg_askMDP    ->setModal(true);
-    dlg_askMDP    ->move(QPoint(x()+width()/2,y()+height()/2));
+    dlg_askMDP    ->setWindowModality(Qt::WindowModal);
     QRegExp  rxMdp           = QRegExp("^[a-zA-Z0-9]{3,15}$");
-
 
     UpLineEdit *ConfirmMDP = new UpLineEdit(dlg_askMDP);
     ConfirmMDP->setEchoMode(QLineEdit::Password);
@@ -2067,30 +2049,35 @@ void RufusAdmin::ModifMDP()
     ConfirmMDP->setValidator(new QRegExpValidator(rxMdp,this));
     ConfirmMDP->setAlignment(Qt::AlignCenter);
     dlg_askMDP->dlglayout()->insertWidget(0,ConfirmMDP);
+
     UpLabel *labelConfirmMDP = new UpLabel();
     labelConfirmMDP->setText(tr("Confirmez le nouveau mot de passe"));
     dlg_askMDP->dlglayout()->insertWidget(0,labelConfirmMDP);
+
     UpLineEdit *NouvMDP = new UpLineEdit(dlg_askMDP);
     NouvMDP->setEchoMode(QLineEdit::Password);
     NouvMDP->setObjectName(m_nouvMDP);
     NouvMDP->setValidator(new QRegExpValidator(rxMdp,this));
     NouvMDP->setAlignment(Qt::AlignCenter);
     dlg_askMDP->dlglayout()->insertWidget(0,NouvMDP);
+
     UpLabel *labelNewMDP = new UpLabel();
     labelNewMDP->setText(tr("Entrez le nouveau mot de passe"));
     dlg_askMDP->dlglayout()->insertWidget(0,labelNewMDP);
+
     UpLineEdit *AncMDP = new UpLineEdit(dlg_askMDP);
     AncMDP->setEchoMode(QLineEdit::Password);
     AncMDP->setAlignment(Qt::AlignCenter);
     AncMDP->setValidator(new QRegExpValidator(rxMdp,this));
     AncMDP->setObjectName(m_ancMDP);
     dlg_askMDP->dlglayout()->insertWidget(0,AncMDP);
+
     UpLabel *labelOldMDP = new UpLabel();
     labelOldMDP->setText(tr("Ancien mot de passe"));
     dlg_askMDP->dlglayout()->insertWidget(0,labelOldMDP);
     AncMDP->setFocus();
 
-    dlg_askMDP->AjouteLayButtons(UpDialog::ButtonOK);
+    dlg_askMDP->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     QList <QWidget*> ListTab;
     ListTab << AncMDP << NouvMDP << ConfirmMDP << dlg_askMDP->OKButton;
     for (int i = 0; i<ListTab.size()-1 ; i++ )
@@ -2100,6 +2087,8 @@ void RufusAdmin::ModifMDP()
     dlg_askMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
 
     dlg_askMDP->exec();
+    delete dlg_askMDP;
+    dlg_askMDP = Q_NULLPTR;
     ConnectTimerInactive();
 }
 
@@ -2184,7 +2173,7 @@ void RufusAdmin::RestaureBase()
     QString NomDirStockageImagerie = PATH_DIR_IMAGERIE;
     if (!QDir(PATH_DIR_IMAGERIE).exists())
     {
-        UpMessageBox::Watch(Q_NULLPTR,tr("Pas de dossier de stockage d'imagerie"),
+        UpMessageBox::Watch(this,tr("Pas de dossier de stockage d'imagerie"),
                             tr("Indiquez un dossier valide dans la boîte de dialogue qui suit") + "\n" +
                             tr("Utilisez de préférence le dossier ") + PATH_DIR_IMAGERIE + " " +tr("Créez-le au besoin"));
         if (dir == "" || !QDir(dir).exists())
@@ -2205,7 +2194,7 @@ void RufusAdmin::RestaureBase()
         NomDirStockageImagerie = dirstock.absolutePath();
         if (NomDirStockageImagerie.contains(" "))
         {
-            UpMessageBox::Watch(Q_NULLPTR, tr("Echec de la restauration"), tr("Le chemin vers le dossier ") + NomDirStockageImagerie + tr(" contient des espaces!"));
+            UpMessageBox::Watch(this, tr("Echec de la restauration"), tr("Le chemin vers le dossier ") + NomDirStockageImagerie + tr(" contient des espaces!"));
             ConnectTimers();
             return;
         }
@@ -2245,7 +2234,8 @@ void RufusAdmin::RestaureBase()
                         msg += tr("Base non restaurée");
                         break;
                     }
-                    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+                    QString mdp ("");
+                    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur"), mdp))
                     {
                         msg += tr("Base non restaurée");
                         break;
@@ -2412,7 +2402,6 @@ void RufusAdmin::RestaureBase()
                 }
             }
         }
-        delete dlg_buprestore;
         db->setdirimagerie(NomDirStockageImagerie);
         //qDebug() << msg;
         UpMessageBox::Watch(this,tr("restauration terminée"),msg);
@@ -2422,6 +2411,8 @@ void RufusAdmin::RestaureBase()
             exit(0);
         }
     }
+    delete dlg_buprestore;
+    dlg_buprestore = Q_NULLPTR;
     ConnectTimers();
 }
 
@@ -2484,7 +2475,8 @@ void RufusAdmin::ChoixMenuSystemTray(QString txt)
     bool visible = isVisible();
     if (!visible)
         showNormal();
-    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur")))
+    QString mdp ("");
+    if (!Utils::VerifMDP(db->getMDPAdmin(),tr("Saisissez le mot de passe Administrateur"),mdp))
     {
         if (!visible)
             MasqueAppli();
@@ -3279,6 +3271,8 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
 
     if (!OKbase && !OKImages && !OKVideos && !OKFactures)
         return false;
+    delete dlg_buprestore;
+    dlg_buprestore = Q_NULLPTR;
     return Backup(dirdestination, OKbase, OKImages, OKVideos, OKFactures);
 }
 
@@ -3428,7 +3422,6 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
         y = listscreens.first()->geometry().height();
     }
 
-    gAsk->setModal(true);
     gAsk->setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint);
 
     TxtEdit->setText(txt);
@@ -3440,7 +3433,7 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
 
     gAsk->dlglayout()->insertWidget(0,TxtEdit);
 
-    gAsk->AjouteLayButtons();
+    gAsk->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     connect(gAsk->OKButton, &QPushButton::clicked, gAsk, &QDialog::accept);
     gAsk->restoreGeometry(m_settings->value("PositionsFiches/PositionEdit").toByteArray());
 

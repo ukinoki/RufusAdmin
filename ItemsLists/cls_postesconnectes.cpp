@@ -76,6 +76,7 @@ void PostesConnectes::SupprimeAllPostesConnectes()
 
 PosteConnecte* PostesConnectes::admin(Item::UPDATE upd)
 {
+    //!* renvoie le poste utilisé par RufusAdmin après avoir vérifié que RufusAdmin est toujours actif - renvoie qnullptr dans le cas contraire
     if (adminset && upd == Item::NoUpdate)
         return m_admin;
     initListe();
@@ -94,6 +95,18 @@ PosteConnecte* PostesConnectes::admin(Item::UPDATE upd)
 PosteConnecte* PostesConnectes::currentpost()
 {
     return getByStringId(Utils::MACAdress() + " - " + QString::number(DataBase::I()->idUserConnected()));
+}
+
+void PostesConnectes::MAJlistePostesConnectes()
+{
+    QList<QString> listpostes = DataBase::I()->loadStringIdPostesConnectes();
+    for (auto it = map_postesconnectes->constBegin(); it != map_postesconnectes->constEnd();)
+    {
+        if (!listpostes.contains(it.key()))
+            delete map_postesconnectes->take(it.key());
+        else
+            ++it;
+    }
 }
 
 void PostesConnectes::SupprimePosteConnecte(PosteConnecte *post)

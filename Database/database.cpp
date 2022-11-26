@@ -973,6 +973,18 @@ QList<PosteConnecte*> DataBase::loadPostesConnectes()
     return postes;
 }
 
+QList<QString> DataBase::loadStringIdPostesConnectes()
+{
+    QList<QString> listpostes = QList<QString>();
+    QString req = "select idUser, MACAdressePosteConnecte from " TBL_USERSCONNECTES ;
+    QList<QVariantList> postlist = StandardSelectSQL(req, ok);
+    if( !ok || postlist.size()==0 )
+        return listpostes;
+    for (int i=0; i<postlist.size(); ++i)
+        listpostes << postlist.at(i).at(1).toString().split(" ").at(0) + " - " + postlist.at(i).at(0).toString();
+    return listpostes;
+}
+
 /*
  * Correspondants
 */
@@ -1999,15 +2011,21 @@ QList<LignePaiement *> DataBase::loadlignespaiementsByPatient(Patient *pat)
 /*
  * Cotations
 */
-QList<Cotation*> DataBase::loadCotationsByUser(int iduser)
+QList<Cotation*> DataBase::loadCotationsByUser(User *usr)
 {
     int k = 0;
+    QList<Cotation*> cotations = QList<Cotation*>();
+    if (usr == Q_NULLPTR)
+        return cotations;
+    bool optam = usr->isOPTAM();
+    int secteur = usr->secteurconventionnel();
+    //qDebug() << optam << secteur;
 
-    QList<Cotation*> cotations;
-    QString  req = "SELECT idcotation, Typeacte, OPTAM, nonOPTAM, MontantPratique, CCAM, Frequence, nom"
-          " FROM " TBL_COTATIONS " cot left join " TBL_CCAM " cc on cot.typeacte= cc.codeccam"
-          " where idUser = " + QString::number(iduser) + " and typeacte in (select codeccam from " TBL_CCAM ")"
-          " order by typeacte";
+    QString  req = "SELECT " CP_ID_COTATIONS ", " CP_TYPEACTE_COTATIONS ", " CP_MONTANTOPTAM_CCAM ", " CP_MONTANTNONOPTAM_CCAM ", " CP_MONTANTPRATIQUE_COTATIONS ", "
+                    CP_CODECCAM_COTATIONS ", " CP_FREQUENCE_COTATIONS ", " CP_NOM_CCAM
+                    " FROM " TBL_COTATIONS " cot left join " TBL_CCAM " cc on cot." CP_TYPEACTE_COTATIONS " = cc." CP_CODECCAM_CCAM
+                    " where " CP_IDUSER_COTATIONS " = " + QString::number(usr->id()) + " and " CP_TYPEACTE_COTATIONS " in (select " CP_CODECCAM_CCAM " from " TBL_CCAM ")"
+                    " order by " CP_TYPEACTE_COTATIONS;
     //qDebug() << req;
     QList<QVariantList> cotlist = StandardSelectSQL(req,ok);
     if(!ok)
@@ -2019,22 +2037,24 @@ QList<Cotation*> DataBase::loadCotationsByUser(int iduser)
         jcotation["id"]                 = k;
         jcotation["idcotation"]         = cotlist.at(i).at(0).toInt();
         jcotation["typeacte"]           = cotlist.at(i).at(1).toString();
+        jcotation["montantconventionnel"] = ((secteur > 1) && optam? cotlist.at(i).at(2).toDouble() : cotlist.at(i).at(3).toDouble());
         jcotation["montantoptam"]       = cotlist.at(i).at(2).toDouble();
         jcotation["montantnonoptam"]    = cotlist.at(i).at(3).toDouble();
-        jcotation["montantpratique"]    = cotlist.at(i).at(4).toDouble();
+        jcotation["montantpratique"]    = (secteur < 2? cotlist.at(i).at(2).toDouble() :cotlist.at(i).at(4).toDouble());
         jcotation["ccam"]               = (cotlist.at(i).at(5).toInt()==1);
-        jcotation["iduser"]             = iduser;
+        jcotation["iduser"]             = usr->id();
         jcotation["frequence"]          = cotlist.at(i).at(6).toInt();
         jcotation["descriptif"]         = cotlist.at(i).at(7).toString();
         Cotation *cotation = new Cotation(jcotation);
         if (cotation != Q_NULLPTR)
             cotations << cotation;
     }
-    req = " SELECT idcotation, Typeacte, MontantOPTAM, MontantNonOPTAM, MontantPratique, CCAM, Frequence, tip"
+    req = " SELECT " CP_ID_COTATIONS ", " CP_TYPEACTE_COTATIONS ", " CP_MONTANTOPTAM_COTATIONS ", " CP_MONTANTNONOPTAM_COTATIONS ", " CP_MONTANTPRATIQUE_COTATIONS ", "
+          CP_CODECCAM_COTATIONS ", " CP_FREQUENCE_COTATIONS ", " CP_TIP_COTATIONS
           " FROM "  TBL_COTATIONS
-          " where idUser = " + QString::number(iduser) +
-          " and typeacte not in (select codeccam from  " TBL_CCAM ")"
-          " order by typeacte";
+          " where " CP_IDUSER_COTATIONS " = " + QString::number(usr->id()) +
+          " and " CP_TYPEACTE_COTATIONS " not in (select " CP_CODECCAM_CCAM " from  " TBL_CCAM ")"
+          " order by " CP_TYPEACTE_COTATIONS;
     cotlist = StandardSelectSQL(req,ok);
     if(!ok || cotlist.size()==0)
         return cotations;
@@ -2049,7 +2069,7 @@ QList<Cotation*> DataBase::loadCotationsByUser(int iduser)
         jcotation["montantnonoptam"]    = cotlist.at(i).at(3).toDouble();
         jcotation["montantpratique"]    = cotlist.at(i).at(4).toDouble();
         jcotation["ccam"]               = (cotlist.at(i).at(5).toInt()==1);
-        jcotation["iduser"]             = iduser;
+        jcotation["iduser"]             = usr->id();
         jcotation["frequence"]          = cotlist.at(i).at(6).toInt();
         jcotation["descriptif"]         = cotlist.at(i).at(7).toString();
         Cotation *cotation = new Cotation(jcotation);
@@ -2062,9 +2082,9 @@ QList<Cotation*> DataBase::loadCotationsByUser(int iduser)
 QStringList DataBase::loadTypesCotations()
 {
     QStringList listcotations;
-    QString req = "select distinct typeacte as code from " TBL_COTATIONS
+    QString req = "select distinct " CP_TYPEACTE_COTATIONS " as code from " TBL_COTATIONS
                   " union "
-                  " select codeccam as code from " TBL_CCAM
+                  " select " CP_CODECCAM_CCAM " as code from " TBL_CCAM
                   " order by code asc";
     QList<QVariantList> cotlist = StandardSelectSQL(req,ok);
     if(!ok || cotlist.size()==0)

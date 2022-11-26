@@ -23,6 +23,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(parent), ui(new Ui::dlg_gestioncomptes)
 {
     ui->setupUi(this);
+    setWindowModality(Qt::WindowModal);
     db                      = DataBase::I();
     m_userencours           = user;
 
@@ -178,7 +179,7 @@ void dlg_gestioncomptes::AnnulModif()
 
 void dlg_gestioncomptes::Banques()
 {
-    dlg_gestionbanques *Dlg_Banq = new dlg_gestionbanques();
+    dlg_gestionbanques *Dlg_Banq = new dlg_gestionbanques(this);
     if (Dlg_Banq->exec()>0)
         MetAJourListeBanques();
 }
