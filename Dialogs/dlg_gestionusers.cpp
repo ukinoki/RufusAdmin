@@ -335,7 +335,7 @@ void dlg_gestionusers::EnregistreNouvMDP()
     {
         // Vérifier la cohérence
         QString anc, nouv, confirm;
-        UpMessageBox msgbox;
+        UpMessageBox msgbox(this);
         msgbox.setText(tr("Erreur"));
         msgbox.setIcon(UpMessageBox::Warning);
         UpSmallButton OKBouton("OK");
@@ -817,7 +817,7 @@ void dlg_gestionusers::FermeFiche()
 {
     if (ui->OKupSmallButton->isEnabled())
     {
-        UpMessageBox msgbox;
+        UpMessageBox msgbox(this);
         UpSmallButton OKBouton(tr("Enregistrer les modifications"));
         UpSmallButton AnnulBouton(tr("Annnuler"));
         msgbox.setText(tr("Modification des données"));
@@ -859,6 +859,7 @@ void dlg_gestionusers::GestionComptes()
     QString cptcpta = ui->CompteComptacomboBox->currentText();
     dlg_gestioncomptes *Dlg_GestComptes = new dlg_gestioncomptes(m_userencours, this);
     Dlg_GestComptes ->exec();
+    delete Dlg_GestComptes;
     if (verifempl)
         if (ui->EmployeurcomboBox->currentText() != empl)
             modif   = true;
@@ -1051,7 +1052,7 @@ void dlg_gestionusers::SupprUser()
             UpMessageBox::Watch(this, tr("Impossible de supprimer ce compte d'utilisateur!"), tr("cet utilisateur est enregistré comme employeur d'autres utilisateurs"));
             return;
         }
-    UpMessageBox msgbox;
+    UpMessageBox msgbox(this);
     UpPushButton OKBouton;
     UpPushButton AnnulBouton;
     QString vamourir = ui->ListUserstableWidget->selectedItems().at(1)->text();
@@ -1474,7 +1475,7 @@ void dlg_gestionusers::Inactifs()
     dlg_listinactifs->setWindowTitle(tr("Utilisateurs inactifs"));
 
     connect(dlg_listinactifs->OKButton, &QPushButton::clicked, dlg_listinactifs, [=] {  calclistusers(m_model);
-                                                                                        dlg_listinactifs->close();
+                                                                                        dlg_listinactifs->accept();
                                                                                         RemplirTableWidget(); });
 
     dlg_listinactifs->exec();

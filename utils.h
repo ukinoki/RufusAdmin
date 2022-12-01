@@ -127,7 +127,7 @@ public:
     static bool                     mkpath(QString path);
     static void                     cleanfolder(QString path);
     static double                   mmToInches(double mm);
-    static QUrl                     getExistingDirectoryUrl(QWidget *parent, QString title = "", QUrl Dirdefaut = QUrl::fromLocalFile(PATH_DIR_RUFUS), QStringList listnomsaeliminer = QStringList(), bool ExclureNomAvecEspace = true);
+    static QUrl                     getExistingDirectoryUrl(QWidget *parent = Q_NULLPTR, QString title = "", QUrl Dirdefaut = QUrl::fromLocalFile(PATH_DIR_RUFUS), QStringList listnomsaeliminer = QStringList(), bool ExclureNomAvecEspace = true);
 
     //! refraction
     static QString                  PrefixePlus(double);                           //! convertit en QString signé + ou - les valeurs QDouble de dioptries
@@ -147,7 +147,7 @@ public:
                                                                     \result monoposte = BDD_POSTE, reseau local = BDD_LOCAL, distant = BDD_DISTANT
                                                                     \param le mode d'accès */
     static QString                  calcSHA1(QString mdp);              /*! renvoie la valeur de mdp codée en SHA */
-    static bool                     VerifMDP(QString MDP, QString Msg, QString &mdpval, bool mdpverified = false, QWidget *parent = Q_NULLPTR);
+    static bool                     VerifMDP(QString MDP, QString Msg, QString &mdp, bool mdpverified = false, QWidget *parent = Q_NULLPTR);
 
     //! Calcule âge
     static QMap<QString,QVariant> CalculAge(QDate datedenaissance);

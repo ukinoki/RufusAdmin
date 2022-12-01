@@ -38,8 +38,6 @@ dlg_gestioncomptes::dlg_gestioncomptes(User *user, QWidget *parent) : UpDialog(p
     connect(t_timer, &QTimer::timeout, this, &dlg_gestioncomptes::Clign);
     ui->CompteFacticePushButton->setVisible(false);
 
-    setAttribute(Qt::WA_DeleteOnClose);
-
     wdg_buttonframe             = new WidgetButtonFrame(ui->ComptesuptableWidget);
     wdg_buttonframe             ->AddButtons(WidgetButtonFrame::Plus | WidgetButtonFrame::Modifier | WidgetButtonFrame::Moins);
     wdg_NouvBanqupPushButton    = new UpSmallButton();
@@ -102,7 +100,7 @@ void dlg_gestioncomptes::closeEvent(QCloseEvent *event)
 {
      if (ui->ComptesuptableWidget->rowCount() == 0)
     {
-        UpMessageBox msgbox;
+        UpMessageBox msgbox(this);
         UpSmallButton OKBouton(tr("Je confirme"));
         UpSmallButton NoBouton(tr("Annuler"));
         msgbox.setText(tr("Vous n'avez pas de compte bancaire enregistré!"));
@@ -180,8 +178,9 @@ void dlg_gestioncomptes::AnnulModif()
 void dlg_gestioncomptes::Banques()
 {
     dlg_gestionbanques *Dlg_Banq = new dlg_gestionbanques(this);
-    if (Dlg_Banq->exec()>0)
+    if (Dlg_Banq->exec() == QDialog::Accepted)
         MetAJourListeBanques();
+    delete Dlg_Banq;
 }
 
 void dlg_gestioncomptes::DesactiveCompte()
@@ -229,7 +228,7 @@ void dlg_gestioncomptes::Clign()
 
 void dlg_gestioncomptes::CompteFactice()
 {
-    UpMessageBox msgbox;
+    UpMessageBox msgbox(this);
     UpSmallButton OKBouton(tr("Annuler"));
     UpSmallButton RemplirBouton(tr("Utiliser des coordonnées bancaires factices"));
     msgbox.setText(tr("Enregistrement des coordonnées bancaires"));
@@ -354,7 +353,7 @@ void dlg_gestioncomptes::SupprCompte()
     */
     if(!m_compteencours)
         return;
-    UpMessageBox msgbox;
+    UpMessageBox msgbox(this);
     UpSmallButton OKBouton(tr("Supprimer le compte"));
     UpSmallButton NoBouton(tr("Annuler"));
     msgbox.setIcon(UpMessageBox::Warning);

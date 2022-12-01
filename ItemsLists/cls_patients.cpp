@@ -325,7 +325,6 @@ bool Patients::veriftelephone(Patient *pat, QWidget *parent)
 {
     bool retour = false;
     UpDialog            *dlg_telephone = new UpDialog(parent);
-    dlg_telephone->setAttribute(Qt::WA_DeleteOnClose);
     dlg_telephone->setWindowModality(Qt::WindowModal);
     dlg_telephone->setWindowTitle(tr("No de téléphone"));
 
@@ -377,5 +376,6 @@ bool Patients::veriftelephone(Patient *pat, QWidget *parent)
     });
     lineport->setFocus();
     dlg_telephone->exec();
+    delete dlg_telephone;
     return retour;
 };

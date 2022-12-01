@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("26-11-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("30-11-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1893,7 +1893,7 @@ void RufusAdmin::GestionUsers()
     DisconnectTimerInactive();
     dlg_gestionusers *Dlg_GestUsr = new dlg_gestionusers(ui->EmplacementServeurupComboBox->currentData().toInt(), dlg_gestionusers::ADMIN, true, this);
     Dlg_GestUsr->setWindowModality(Qt::WindowModal);
-    if(Dlg_GestUsr->exec()>0)
+    if(Dlg_GestUsr->exec() == QDialog::Accepted)
     {
         Datas::I()->users->initListe();
         EnvoieTCPMessage(TOUS, TCPMSG_MAJListeUsers);
@@ -2115,20 +2115,6 @@ void RufusAdmin::RestaureBase()
         return;
     }
     QDir dirtorestore = url.path();
-    if (dirtorestore.dirName()=="")
-    {
-        ConnectTimers();
-        return;
-    }
-    if (dirtorestore.absolutePath().contains(" "))
-    {
-        UpMessageBox::Watch(Q_NULLPTR, tr("Echec de la restauration"),
-                            tr("Le chemin vers le dossier ") + url.path() + tr(" contient des espaces!") + "\n" +
-                            tr("il n'est pas possbile de procéder à une restauration dans ce cas") +
-                            tr("renommez le dossier où se trouve la restauration en enlevant les espaces"));
-        ConnectTimers();
-        return;
-    }
 
     /*! --------------------------------------------------------------------------------------------------------------------------------------------------------
     * Restauration ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -2186,23 +2172,11 @@ void RufusAdmin::RestaureBase()
         }
         QDir dirstock = url.path();
         NomDirStockageImagerie = dirstock.dirName();
-        if (NomDirStockageImagerie=="")
-        {
-            ConnectTimers();
-            return;
-        }
-        NomDirStockageImagerie = dirstock.absolutePath();
-        if (NomDirStockageImagerie.contains(" "))
-        {
-            UpMessageBox::Watch(this, tr("Echec de la restauration"), tr("Le chemin vers le dossier ") + NomDirStockageImagerie + tr(" contient des espaces!"));
-            ConnectTimers();
-            return;
-        }
     }
 
     /*! 4 - choix des éléments à restaurer */
     AskBupRestore(RestoreOp, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKRessces, OKImages, OKVideos, OKFactures);
-    if (dlg_buprestore->exec()>0)
+    if (dlg_buprestore->exec() == QDialog::Accepted)
     {
         bool okrestorebase = false;
         foreach (UpCheckBox *chk, dlg_buprestore->findChildren<UpCheckBox*>())
@@ -3254,7 +3228,7 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
     bool OKFactures = false;
 
     AskBupRestore(BackupOp, m_parametres->dirimagerieserveur(), dirdestination);
-    if (dlg_buprestore->exec()==0)
+    if (dlg_buprestore->exec() != QDialog::Accepted)
         return false;
     QList<UpCheckBox*> listchk = dlg_buprestore->findChildren<UpCheckBox*>();
     for (int i= 0; i<listchk.size(); i++)
