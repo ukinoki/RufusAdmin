@@ -39,8 +39,9 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
         return;
     }
     m_encours = true;
+    QDate m_currentdate = db->ServerDate();
     m_listmsg.clear();
-    m_datetransfer = QDate::currentDate().toString("yyyy-MM-dd");
+    m_datetransfer = m_currentdate.toString("yyyy-MM-dd");
     if (!DefinitDossiersImagerie())
     {
         m_encours = false;
@@ -69,7 +70,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
     if (jnaltrsferfile.open(QIODevice::Append))
     {
         QTextStream out(&jnaltrsferfile);
-        out << QDate::currentDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << " - " + tr ("Rapatriement de ") << Titredoc << " - " << nomfiledoc << " - " << QHostInfo::localHostName() << "\n" ;
+        out << m_currentdate.toString("yyyy-MM-dd") << QTime::currentTime().toString() << " - " + tr ("Rapatriement de ") << Titredoc << " - " << nomfiledoc << " - " << QHostInfo::localHostName() << "\n" ;
         jnaltrsferfile.close();
     }
     QString commentechec;
@@ -101,7 +102,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
                 datestring      = annee + mois + jour;
         }
         if (datestring == "")
-            datestring      = QDate::currentDate().toString("yyyyMMdd");
+            datestring      = m_currentdate.toString("yyyyMMdd");
         Titredoc            = "Biométrie - Aladdin";
         Typedoc             = "Biométrie";
         SousTypeDoc         = "Aladdin";
@@ -114,7 +115,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
             datestring  = datestring.left(8);
         }
         else
-             datestring      = QDate::currentDate().toString("yyyyMMdd");
+             datestring      = m_currentdate.toString("yyyyMMdd");
         Titredoc    = "OCT - Topcon";
         Typedoc     = "OCT";
         SousTypeDoc = "Topcon";
@@ -127,7 +128,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
             datestring  = datestring.left(8);
         }
         else
-             datestring      = QDate::currentDate().toString("yyyyMMdd");
+             datestring      = m_currentdate.toString("yyyyMMdd");
         Titredoc    = "RNM - Canon";
         Typedoc     = "RNM";
         QString cote = "";
@@ -540,7 +541,7 @@ void ImportDocsExternesThread::RapatrieDocumentsThread(AppareilImagerie *apparei
             if (jnaltrsferfile.open(QIODevice::Append))
             {
                 QTextStream out(&jnaltrsferfile);
-                out << QDate::currentDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << Titredoc << " - " << nomfiledoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
+                out << m_currentdate.toString("yyyy-MM-dd") << QTime::currentTime().toString() << Titredoc << " - " << nomfiledoc << " - " << idPatient << " - " << identpat << " - " << QHostInfo::localHostName() << "\n" ;
                 jnaltrsferfile.close();
             }
             if (file_origine.remove())
@@ -643,7 +644,7 @@ void ImportDocsExternesThread::EchecImport(QString txt)
     if (echectrsfer.open(QIODevice::Append))
     {
         QTextStream out(&echectrsfer);
-        out << QDate::currentDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << txt << "\n" ;
+        out << db->ServerDate().toString("yyyy-MM-dd") << QTime::currentTime().toString() << txt << "\n" ;
         echectrsfer.close();
     }
     m_encours = false;

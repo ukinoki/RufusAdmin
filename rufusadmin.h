@@ -121,6 +121,13 @@ private:
     ImportDocsExternesThread    *m_importdocsexternesthread = Q_NULLPTR;
     UpDialog                    *dlg_askAppareil, *dlg_askMDP;
     WidgetButtonFrame           *wdg_buttonframe;
+    QDate m_currentdate;
+    QTime m_currenttime;
+
+    void RecalcCurrentDateTime() {
+        QDateTime dt = db->ServerDateTime();
+        m_currentdate = dt.date();
+        m_currenttime = dt.time();}
     void                        EnvoieTCPMessage(enum TypeMessage, QString msg, int dest = 0);
 
     void                        closeEvent(QCloseEvent *event);

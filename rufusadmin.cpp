@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("04-12-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("29-12-2022/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -93,6 +93,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I()->users       ->initListe();
 
     DataBase::I()->setidUserConnected(Admin()->id());
+    RecalcCurrentDateTime();
 
     /*! On ne peut pas utiliser Utils::VerifMDP(Admin()->password(),tr("Saisissez le mot de passe Administrateur")))
      * parce qu'à ce stade du code, Admin()->password() est encore égal à la valeur SHA1 du mdp admin
@@ -174,7 +175,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     CalcExporteDocs();
     QList<QVariantList> listdate = db->StandardSelectSQL("select max(" CP_DATECREATION_MSG ") from " TBL_MESSAGES, m_ok);
     if (listdate.size()==0)
-        m_dateDernierMessage = QDateTime::currentDateTime();
+        m_dateDernierMessage = db->ServerDateTime();
     else
         m_dateDernierMessage = listdate.at(0).at(0).toDateTime();
 
