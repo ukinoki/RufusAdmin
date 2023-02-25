@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("23-01-2022/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("25-02-2023/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1304,7 +1304,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
 
         if (anc == "")
         {
-            QSound::play(NOM_ALARME);
+            Utils::playAlarm();
             msgbox.setInformativeText(tr("Ancien mot de passe requis"));
             dlg_askMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
             msgbox.exec();
@@ -1312,15 +1312,15 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         }
         if (Utils::calcSHA1(anc) != m_parametres->mdpadmin())
         {
-            QSound::play(NOM_ALARME);
+            Utils::playAlarm();
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas le bon\n"));
             dlg_askMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
             msgbox.exec();
             return;
         }
-        if (!Utils::rgx_AlphaNumeric_3_12.exactMatch(nouv) || nouv == "")
+        if (!Utils::RegularExpressionMatches(Utils::rgx_AlphaNumeric_5_12, nouv) || nouv == "")
         {
-            QSound::play(NOM_ALARME);
+            Utils::playAlarm();
             msgbox.setInformativeText(tr("Le nouveau mot de passe n'est pas conforme\n(au moins 3 caractères - chiffres ou lettres non accentuées -\n"));
             dlg_askMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
             msgbox.exec();
@@ -1328,7 +1328,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
         }
         if (nouv != confirm)
         {
-            QSound::play(NOM_ALARME);
+            Utils::playAlarm();
             msgbox.setInformativeText("Les mots de passe ne correspondent pas\n");
             dlg_askMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
             msgbox.exec();
@@ -1553,7 +1553,47 @@ void RufusAdmin::ExporteDocs()
             QByteArray bapdf;
             bapdf.append(listexportpdf.at(i).at(4).toByteArray());
 
-            Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
+            QBuffer buf(&bapdf);
+            QPdfDocument document;
+            document.load(&buf);
+            if( document.pageCount() > 0)
+            {
+                QFile file(CheminOKTransfrDoc);
+                if (file.open(QIODevice::NewOnly))
+                {
+                    QDataStream out(&file);
+                    out << bapdf;
+                }
+            } else {
+
+                UpSystemTrayIcon::I()->showMessages(tr("Messages"), listmsg, Icons::icSunglasses(), 3000);
+                QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
+                QFile   echectrsfer(echectrsfername);
+                if (echectrsfer.open(QIODevice::Append))
+                {
+                    QTextStream out(&echectrsfer);
+                    out << NomFileDoc << "\n" ;
+                    echectrsfer.close();
+                    QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
+                    if (CD.open(QIODevice::OpenModeFlag::NewOnly))
+                    {
+                        QDataStream out(&CD);
+                        out << bapdf;
+                    }
+                }
+                QString delreq = "delete from  " TBL_DOCSEXTERNES " where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString();
+                //qDebug() << delreq;
+                db->StandardSQL(delreq);
+                continue;
+            }
+
+            /*!
+             * Well. I think that this part reads blobs declared as PDF in DB
+             * Then, verifies (usinf Poppler) that PDF is valid
+             * if not, save the BLOB to file (Text stream???), and ... delete from DB???
+             */
+
+/*!            Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
             if (!document || document->isLocked() || document == Q_NULLPTR)
             {
                 QString msg;
@@ -1580,8 +1620,8 @@ void RufusAdmin::ExporteDocs()
             }
             Poppler::PDFConverter *doctosave = document->pdfConverter();
             doctosave->setOutputFileName(CheminOKTransfrDoc);
-            doctosave->convert();
-
+            doctosave->convert(); //*/
+#if !defined(Q_OS_WIN)
             QFile CC(CheminOKTransfrDoc);
             CC.open(QIODevice::ReadWrite);
             CC.setPermissions(QFileDevice::ReadOther
@@ -1589,6 +1629,7 @@ void RufusAdmin::ExporteDocs()
                               | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                               | QFileDevice::ReadUser   | QFileDevice::WriteUser);
             CC.close();
+#endif
             db->StandardSQL ("update " TBL_DOCSEXTERNES " set "
                              CP_PDF_DOCSEXTERNES " = null, compression = null,"
                              CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
@@ -1798,6 +1839,41 @@ void RufusAdmin::ExporteDocs()
             QByteArray bapdf;
             bapdf.append(listexportpdffact.at(i).at(6).toByteArray());
 
+            QBuffer buf(&bapdf);
+            QPdfDocument document;
+            document.load(&buf);
+            if( document.pageCount() > 0)
+            {
+                QFile file(CheminOKTransfrDoc);
+                if (file.open(QIODevice::NewOnly))
+                {
+                    QDataStream out(&file);
+                    out << bapdf;
+                }
+            } else {
+                QStringList listmsg;
+                listmsg << tr("Impossible de charger le document ") + NomFileDoc;
+                UpSystemTrayIcon::I()->showMessages(tr("Messages"), listmsg, Icons::icSunglasses(), 3000);
+                QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
+                QFile   echectrsfer(echectrsfername);
+                if (echectrsfer.open(QIODevice::Append))
+                {
+                    QTextStream out(&echectrsfer);
+                    out << NomFileDoc << "\n" ;
+                    echectrsfer.close();
+                    QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
+                    if (CD.open(QIODevice::OpenModeFlag::NewOnly))
+                    {
+                        QDataStream out(&CD);
+                        out << bapdf;
+                    }
+                }
+                QString delreq = "delete from  " TBL_DOCSEXTERNES " where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString();
+                //qDebug() << delreq;
+                db->StandardSQL(delreq);
+                continue;
+            }
+            /*!
             Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
             if (!document || document->isLocked() || document == Q_NULLPTR)
             {
@@ -1825,8 +1901,9 @@ void RufusAdmin::ExporteDocs()
             }
             Poppler::PDFConverter *doctosave = document->pdfConverter();
             doctosave->setOutputFileName(CheminOKTransfrDoc);
-            doctosave->convert();
+            doctosave->convert();//*/
 
+#if !defined(Q_OS_WIN)
             QFile CC(CheminOKTransfrDoc);
             CC.open(QIODevice::ReadWrite);
             CC.setPermissions(QFileDevice::ReadOther
@@ -1834,6 +1911,7 @@ void RufusAdmin::ExporteDocs()
                               | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
                               | QFileDevice::ReadUser   | QFileDevice::WriteUser);
             CC.close();
+#endif
             db->StandardSQL ("update " TBL_FACTURES " set " CP_PDF_FACTURES " = null, " CP_LIENFICHIER_FACTURES " = '/" + user + "/" + Utils::correctquoteSQL(NomFileDoc)  + "." PDF "'"
                              " where " CP_ID_FACTURES " = " + listexportpdffact.at(i).at(0).toString());
             faits ++;
@@ -2042,12 +2120,12 @@ void RufusAdmin::ModifMDP()
     DisconnectTimerInactive();
     dlg_askMDP    = new UpDialog(this);
     dlg_askMDP    ->setWindowModality(Qt::WindowModal);
-    QRegExp  rxMdp           = QRegExp("^[a-zA-Z0-9]{3,15}$");
+    QRegularExpression  rxMdp           = QRegularExpression("^[a-zA-Z0-9]{3,15}$");
 
     UpLineEdit *ConfirmMDP = new UpLineEdit(dlg_askMDP);
     ConfirmMDP->setEchoMode(QLineEdit::Password);
     ConfirmMDP->setObjectName(m_confirmMDP);
-    ConfirmMDP->setValidator(new QRegExpValidator(rxMdp,this));
+    ConfirmMDP->setValidator(new QRegularExpressionValidator(rxMdp,this));
     ConfirmMDP->setAlignment(Qt::AlignCenter);
     dlg_askMDP->dlglayout()->insertWidget(0,ConfirmMDP);
 
@@ -2058,7 +2136,7 @@ void RufusAdmin::ModifMDP()
     UpLineEdit *NouvMDP = new UpLineEdit(dlg_askMDP);
     NouvMDP->setEchoMode(QLineEdit::Password);
     NouvMDP->setObjectName(m_nouvMDP);
-    NouvMDP->setValidator(new QRegExpValidator(rxMdp,this));
+    NouvMDP->setValidator(new QRegularExpressionValidator(rxMdp,this));
     NouvMDP->setAlignment(Qt::AlignCenter);
     dlg_askMDP->dlglayout()->insertWidget(0,NouvMDP);
 
@@ -2069,7 +2147,7 @@ void RufusAdmin::ModifMDP()
     UpLineEdit *AncMDP = new UpLineEdit(dlg_askMDP);
     AncMDP->setEchoMode(QLineEdit::Password);
     AncMDP->setAlignment(Qt::AlignCenter);
-    AncMDP->setValidator(new QRegExpValidator(rxMdp,this));
+    AncMDP->setValidator(new QRegularExpressionValidator(rxMdp,this));
     AncMDP->setObjectName(m_ancMDP);
     dlg_askMDP->dlglayout()->insertWidget(0,AncMDP);
 
@@ -2613,7 +2691,7 @@ bool RufusAdmin::VerifBase()
                 }
                 else
                 {
-                    QSound::play(NOM_ALARME);
+                    Utils::playAlarm();
                     UpMessageBox::Watch(Q_NULLPTR,tr("Echec de la mise à jour vers la version ") + QString::number(Version) + "\n" + tr("Le programme de mise à jour n'a pas pu effectuer la tâche!"));
                     return false;
                 }
@@ -2963,7 +3041,7 @@ QStringList RufusAdmin::DecomposeScriptSQL(QString nomficscript)
         }
         else                    // -- c'est une requête SQL
         {
-            matched = queryStr.split(";\n", QString::SkipEmptyParts).at(0);
+            matched = queryStr.split(";\n", Qt::SkipEmptyParts).at(0);
             Atraiter = matched.trimmed()+ ";";
             queryStr.replace(0,matched.size()+2,"");
             queryStr = queryStr.replace(QRegularExpression("((\\n)+)",  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
@@ -3166,7 +3244,7 @@ void RufusAdmin::EffaceBDDDataBackup()
     ui->DirBackupuplineEdit->setText("");
     ui->HeureBackuptimeEdit->setTime(QTime(0,0));
 
-    db->setdaysbkup(nullptr);
+    db->setdaysbkup(Utils::Day::Aucun);
     db->setheurebkup();
     db->setdirbkup();
     EffaceProgrammationBackup();

@@ -21,7 +21,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QLineEdit>
 #include <QDoubleValidator>
 #include <QEvent>
-#include <QSound>
+#include <QSoundEffect>
 #include <QTimer>
 #include <QToolTip>
 
@@ -52,7 +52,7 @@ public:
 
 private:
     QString     m_tooltipmsg;
-    bool        eventFilter(QObject *obj, QEvent *event)  ;
+    bool        eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     int         m_row, m_col, m_id;
     QString     m_valeuravant, m_valeurapres, m_champ, m_table;
     QVariant    m_datas;
@@ -65,9 +65,10 @@ signals:
     void        mouseDoubleClick(int row);
 
 protected:
+    using QLineEdit::enterEvent;
     void        enterEvent(QEvent *e);
-    void        mouseReleaseEvent(QMouseEvent *e);
-    void        mouseDoubleClickEvent(QMouseEvent *e);
+    void        mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void        mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
 
 };
 

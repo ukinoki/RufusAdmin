@@ -29,31 +29,34 @@ Utils* Utils::I()
 /*
  * Initialisation des variables static const
 */
-QRegExp const Utils::rgx_rx = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ -]*");
-QRegExp const Utils::rgx_AlphaNumeric = QRegExp("[A-Za-z0-9]*");
-QRegExp const Utils::rgx_AlphaNumeric_3_12 = QRegExp("[A-Za-z0-9]{3,12}$");
-QRegExp const Utils::rgx_AlphaNumeric_5_15 = QRegExp("[A-Za-z0-9]{5,15}$");
-QRegExp const Utils::rgx_AlphaNumeric_5_12  = QRegExp("[A-Za-z0-9]{5,12}$");
-QRegExp const Utils::rgx_MajusculeSeul = QRegExp("[A-Z]*");
-QRegExp const Utils::rgx_IPV4 = QRegExp("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}");
-QRegExp const Utils::rgx_IPV4_mask = QRegExp("(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
-                              "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
-                              "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
-                              "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])");
+QRegularExpression const Utils::rgx_rx                  = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ -]*");
+QRegularExpression const Utils::rgx_AlphaNumeric        = QRegularExpression("[A-Za-z0-9]*");
+QRegularExpression const Utils::rgx_AlphaNumeric_3_12   = QRegularExpression("[A-Za-z0-9]{3,12}$");
+QRegularExpression const Utils::rgx_AlphaNumeric_5_15   = QRegularExpression("[A-Za-z0-9]{5,15}$");
+QRegularExpression const Utils::rgx_AlphaNumeric_5_12   = QRegularExpression("[A-Za-z0-9]{5,12}$");
+QRegularExpression const Utils::rgx_MajusculeSeul       = QRegularExpression("[A-Z]*");
+QRegularExpression const Utils::rgx_IPV4                = QRegularExpression("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}");
+QRegularExpression const Utils::rgx_IPV4_mask           = QRegularExpression("(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
+                                                                            "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
+                                                                            "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
+                                                                            "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])");
 
-QRegExp const Utils::rgx_mail           = QRegExp("^[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+@[A-Za1-z0-9_-]+(.[A-Za1-z0-9_-]+).[A-Za-z0-9_-]{2,6}");
-QRegExp const Utils::rgx_NNI = QRegExp("[12][0-9]{14}");
+QRegularExpression const Utils::rgx_mail                = QRegularExpression("^[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+@[A-Za1-z0-9_-]+(.[A-Za1-z0-9_-]+).[A-Za-z0-9_-]{2,6}");
+QRegularExpression const Utils::rgx_NNI                 = QRegularExpression("[12][0-9]{14}");
 
-QRegExp const Utils::rgx_adresse = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -]*");
-QRegExp const Utils::rgx_intitulecompta = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -/%]*");
-QRegExp const Utils::rgx_CP = QRegExp("[0-9]{5}");
-QRegExp const Utils::rgx_ville = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ -]*");
-QRegExp const Utils::rgx_telephone = QRegExp("[0-9 ]*");
+QRegularExpression const Utils::rgx_adresse             = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -]*");
+QRegularExpression const Utils::rgx_intitulecompta      = QRegularExpression("[/%éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -]*");
+/*! QRegularExpression const Utils::rgx_intitulecompta  = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -/%]*");
+ *  ne marche pas sous Qt6 et laisse tout passer - il faut mettre le front slash et le % devant pour que ça marche
+ *  bug ou c'est moi qui n'ai rien compris ????? */
+QRegularExpression const Utils::rgx_CP                  = QRegularExpression("[0-9]{5}");
+QRegularExpression const Utils::rgx_ville               = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ -]*");
+QRegularExpression const Utils::rgx_telephone           = QRegularExpression("[0-9 ]*");
 
-QRegExp const Utils::rgx_tabac = QRegExp("[0-9]{2}");
-QRegExp const Utils::rgx_cotation = QRegExp("[a-zA-Z0-9.+/ ]*");
+QRegularExpression const Utils::rgx_tabac               = QRegularExpression("[0-9]{2}");
+QRegularExpression const Utils::rgx_cotation            = QRegularExpression("[a-zA-Z0-9.+/ ]*");
 
-QRegExp const Utils::rgx_recherche = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-Z %-]*");
+QRegularExpression const Utils::rgx_recherche           = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-Z %-]*");
 
 
 /*!
@@ -69,6 +72,24 @@ void Utils::Pause(int msec)
     QTime dieTime = QTime::currentTime().addMSecs(msec);
     while (QTime::currentTime() < dieTime)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
+}
+
+bool Utils::IsCharSpecial( QChar c)
+{
+  if( c == ' ' || c == '-' || c == '\'' ) return true;
+  return false;
+}
+
+bool Utils::IsCharNL( QChar c)
+{
+  if( c == '\n' ) return true;
+  return false;
+}
+
+bool Utils::IsCharCR( QChar c)
+{
+  if( c == '\r' ) return true;
+  return false;
 }
 
 /*!
@@ -91,7 +112,8 @@ QString Utils::trim(QString text, bool end, bool removereturnend)
     while( textC.size() )                   // enlève les espaces, les tirets et les apostrophes du début
     {
         c = textC.at(0);
-        if( c == " " || c == "-" || c == "'" )
+
+        if( IsCharSpecial(c) )
             textC = textC.remove(0,1);
         else
             break;
@@ -102,7 +124,7 @@ QString Utils::trim(QString text, bool end, bool removereturnend)
         {
             int lastIndex = textC.size() - 1;
             c = textC.at(lastIndex);
-            if( c == " " || c == "-" || c == "'" )
+            if( IsCharSpecial(c) )
                 textC = textC.remove(lastIndex,1);
             else
                 break;
@@ -113,7 +135,7 @@ QString Utils::trim(QString text, bool end, bool removereturnend)
         {
             int lastIndex = textC.size() - 1;
             c = textC.at(lastIndex);
-            if( c == "\n" )
+            if( c == '\n' )
                 textC = textC.remove(lastIndex,1);
             else
                 break;
@@ -124,7 +146,7 @@ QString Utils::trim(QString text, bool end, bool removereturnend)
     for( int i=0; i < textC.size(); ++i )   // enlève les espaces, les tirets et les apostrophes en doublon
     {
         c = textC.at(i);
-        if( lastChar == " " || lastChar == "-" || lastChar == "'" )
+        if( IsCharSpecial(lastChar) )
             if( lastChar == c )
                 continue;
 
@@ -159,7 +181,7 @@ QString Utils::capitilize(QString text, bool onlyfirst)
     for( int i=0; i < text.size(); ++i )
     {
         c = text.at(i);
-        if( lastChar == " " || lastChar == "-" || lastChar == "'" )
+        if( IsCharSpecial(lastChar) )
             c = c.toUpper();
         newText += c;
         lastChar = c;
@@ -191,14 +213,23 @@ QString Utils::trimcapitilize(QString text, bool end, bool maj, bool lower)
 
 QString Utils::retirecaracteresaccentues(QString nom)
 {
-    nom.replace(QRegExp("[éêëè]"),"e");
-    nom.replace(QRegExp("[ÉÈÊË]"),"E");
-    nom.replace(QRegExp("[àâ]"),"a");
-    nom.replace(QRegExp("[ÂÀ]"),"A");
-    nom.replace(QRegExp("[îï]"),"i");
-    nom.replace(QRegExp("[ÏÎ]"),"I");
-    nom.replace(QRegExp("[ôö]"),"o");
-    nom.replace(QRegExp("[ÔÖ]"),"O");
+    QRegularExpression re;
+    re.setPattern("[éêëè]");
+    nom.replace(re,"e");
+    re.setPattern("[ÉÈÊË]");
+    nom.replace(re,"E");
+    re.setPattern("[àâ]");
+    nom.replace(re,"a");
+    re.setPattern("[ÂÀ]");
+    nom.replace(re,"A");
+    re.setPattern("[îï]");
+    nom.replace(re,"i");
+    re.setPattern("[ÏÎ]");
+    nom.replace(re,"I");
+    re.setPattern("[ôö]");
+    nom.replace(re,"o");
+    re.setPattern("[ÔÖ]");
+    nom.replace(re,"O");
     nom.replace("ù","u");
     nom.replace("Ù","U");
     nom.replace("ç","c");
@@ -244,29 +275,25 @@ void Utils::convertPlainText(QString &text)
  */
 void Utils::nettoieHTML(QString &text, bool supprimeLesLignesVidesDuMilieu)
 {
-    QRegExp reg1 = QRegExp("<p style=\"-qt-paragraph-type:empty; "
-                           "margin-top:[0-9]{1,2}px; margin-bottom:[0-9]{1,2}px; "
-                           "margin-left:[0-9]{1,2}px; margin-right:[0-9]{1,2}px; "
-                           "-qt-block-indent:0; text-indent:[0-9]{1,2}px;\"><br /></p>");
+    QRegularExpression reg1;
+    reg1.setPattern("<p style=\"-qt-paragraph-type:empty; "
+                              "margin-top:[0-9]{1,2}px; margin-bottom:[0-9]{1,2}px; "
+                              "margin-left:[0-9]{1,2}px; margin-right:[0-9]{1,2}px; "
+                              "-qt-block-indent:0; text-indent:[0-9]{1,2}px;\"><br /></p>");
     //reg1 = QRegExp("<p style=\"-qt-paragraph-type:empty;([\\.]*)<br /></p>");
-    QRegExp reg2 = QRegExp("<p style=\" margin-top:0px; margin-bottom:0px; "
-                           "margin-left:[0-9]{1,2}px; margin-right:[0-9]{1,2}px; "
-                           "-qt-block-indent:0; text-indent:[0-9]{1,2}px;\">");
+    QRegularExpression reg2;
+    reg2.setPattern("<p style=\" margin-top:0px; margin-bottom:0px; "
+                              "margin-left:[0-9]{1,2}px; margin-right:[0-9]{1,2}px; "
+                              "-qt-block-indent:0; text-indent:[0-9]{1,2}px;\">");
     bool remetunelignealafin = convertHTML(text);
     if (supprimeLesLignesVidesDuMilieu)
         text.remove(reg1);
     text.replace(reg2,"<p style=\" margin-top:0px; margin-bottom:0px;\">");
     text.remove("border=\"0\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;\" ");
-    text.remove(HTMLCOMMENT_LINUX);
-    text.remove(HTMLCOMMENT_MAC);
+    text.remove(HTMLCOMMENT);
     if (remetunelignealafin)
         text.append(HTML_FINPARAGRAPH);
-#ifdef Q_OS_LINUX
-    text.append(HTMLCOMMENT_LINUX);
-#endif
-#ifdef Q_OS_MAC
-    text.append(HTMLCOMMENT_MAC);
-#endif
+    text.append(HTMLCOMMENT);
 }
 
 /*!
@@ -282,7 +309,8 @@ bool Utils::retirelignevidefinhtml(QString &txthtml)
         int debut = txthtml.lastIndexOf("<p");
         int fin   = txthtml.lastIndexOf("</p>");
         int longARetirer = fin - debut + 4;
-        if (txthtml.midRef(debut,longARetirer).contains("-qt-paragraph-type:empty;"))
+
+        if ( txthtml.mid(debut,longARetirer).contains( QString("-qt-paragraph-type:empty;")) )
         {
             txthtml.remove(debut,longARetirer);
             ligneretiree = true;
@@ -308,7 +336,7 @@ QSize Utils::CalcSize(QString txt, QFont fm)
     int         nlignes         = lmsg.size();
     for (int k=0; k<nlignes; k++)
     {
-        int x   = int(QFontMetrics(fm).width(lmsg.at(k))*correction);
+        int x   = int(QFontMetrics(fm).horizontalAdvance(lmsg.at(k))*correction);
         w       = (x>w? x : w);
         //qDebug() << lmsg.at(k) + " - ligne = " + QString::number(k+1) + " - largeur = " + QString::number(w);
     }
@@ -469,13 +497,26 @@ qint32 Utils::ArrayToInt(QByteArray source)
     return number;
 }
 
+QByteArray Utils::StringToArray(QString source)
+{
+    QByteArray ba;
+    ba = source.toLocal8Bit();
+    return ba;
+}
+
 QByteArray Utils::IntToArray(int source)
 {
     //permet d'éviter le cast
+ #ifdef Q_OS_WIN
+    QByteArray ba((const char *) &source, sizeof(int));
+ #else
     QByteArray ba;
-    QDataStream data(&ba, QIODevice::ReadWrite);
-    data << source;
+    //QDataStream data(&ba, QIODevice::ReadWrite);
+    //data << source;
+    ba = QByteArray::number(source);
+#endif
     return ba;
+
 }
 
 QString Utils::IPAdress()
@@ -497,12 +538,16 @@ QString Utils::IPAdress()
     {
         QNetworkInterface::InterfaceFlags flags = netInterface.flags();
         if(flags.testFlag(QNetworkInterface::IsRunning) && !flags.testFlag(QNetworkInterface::IsLoopBack))
+        {
             foreach (const QNetworkAddressEntry &address, netInterface.addressEntries())
+            {
                 if(address.ip().protocol() == QAbstractSocket::IPv4Protocol)
                 {
                     IPadress = address.ip().toString();
                     break;
                 }
+            }
+        }
         if (IPadress != "")
             break;
     }
@@ -510,9 +555,22 @@ QString Utils::IPAdress()
     return IPadress;
 }
 
+// https://doc-snapshots.qt.io/qt6-dev/qtcore-changes-qt6.html
+bool Utils::RegularExpressionMatches(QRegularExpression rgx, QString s, bool exact)
+{
+    QRegularExpression re = rgx;
+    if( exact )
+      re = QRegularExpression(QRegularExpression::anchoredPattern(rgx.pattern()));
+
+    QRegularExpressionMatch m =re.match(s);
+    return m.hasMatch();
+}
+
 QString Utils::calcIP(QString IP, bool aveczero)
 {
-    if (!rgx_IPV4.exactMatch(IP))
+    //QRegularExpressionMatch::hasMatch():
+
+    if (!RegularExpressionMatches(rgx_IPV4,IP))
         return IP;
 
     QString IPaveczero (""), IPsanszero ("");
@@ -559,7 +617,9 @@ QString Utils::getMacForIP(QString ipAddress)
     if(process.waitForFinished())
     {
         QString result = process.readAll();
-        QStringList list = result.split(QRegularExpression("\\s+"));
+        QRegularExpression re;
+        re.setPattern("\\s+");
+        QStringList list = result.split(re);
         if(list.contains(ipAddress))
             MAC = list.at(list.indexOf(ipAddress) + 1);
     }
@@ -598,78 +658,74 @@ QString Utils::calcSHA1(QString mdp)
     -- VÉRIFICATION DE MDP --------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------*/
 /*!
- * \brief Utils::VerifMDP
- * \param MDP = le mdp à vérifeir
- * \param Msg = message de la boîte de diaolgue
- * \param mdpval = la valeur entrée par l'utilisateur dans la boîte de dialogue
- * \param mdpverified = le mot de passe a déjà été vérifié -> permet de shunter la fonction si le mdp a déjà été vérifié
- * \param parent
- * \return
- */
-bool Utils::VerifMDP(QString MDP, QString Msg, QString &mdpval, bool mdpverified, QWidget *parent)
-{
-    if (mdpverified)
-        return true;
+  * \brief Utils::VerifMDP
+  * \param MDP = le mdp à vérifeir
+  * \param Msg = message de la boîte de diaolgue
+  * \param mdpval = la valeur entrée par l'utilisateur dans la boîte de dialogue
+  * \param mdpverified = le mot de passe a déjà été vérifié -> permet de shunter la fonction si le mdp a déjà été vérifié
+  * \param parent
+  * \return
+  */
+ bool Utils::VerifMDP(QString MDP, QString Msg, QString &mdpval, bool mdpverified, QWidget *parent)
+ {
+     if (mdpverified)
+         return true;
+     if (parent != Q_NULLPTR)
+     {
+         UpDialog *dlg_askMDP    = new UpDialog(parent);
+         dlg_askMDP      ->setWindowModality(Qt::WindowModal);
 
-    if (parent != Q_NULLPTR)
-    {
-        UpDialog *dlg_askMDP    = new UpDialog(parent);
-        dlg_askMDP      ->setWindowModality(Qt::WindowModal);
+         UpLineEdit *ConfirmMDP = new UpLineEdit(dlg_askMDP);
+         ConfirmMDP      ->setEchoMode(QLineEdit::Password);
+         ConfirmMDP      ->setAlignment(Qt::AlignCenter);
+         ConfirmMDP      ->setMaxLength(25);
+         dlg_askMDP      ->dlglayout()->insertWidget(0,ConfirmMDP);
 
-        UpLineEdit *ConfirmMDP = new UpLineEdit(dlg_askMDP);
-        ConfirmMDP      ->setEchoMode(QLineEdit::Password);
-        ConfirmMDP      ->setAlignment(Qt::AlignCenter);
-        ConfirmMDP      ->setMaxLength(25);
-        dlg_askMDP      ->dlglayout()->insertWidget(0,ConfirmMDP);
+         UpLabel *labelConfirmMDP = new UpLabel();
+         labelConfirmMDP ->setText(Msg);
+         labelConfirmMDP ->setAlignment(Qt::AlignCenter);
+         dlg_askMDP      ->dlglayout()->insertWidget(0,labelConfirmMDP);
 
-        UpLabel *labelConfirmMDP = new UpLabel();
-        labelConfirmMDP ->setText(Msg);
-        labelConfirmMDP ->setAlignment(Qt::AlignCenter);
-        dlg_askMDP      ->dlglayout()->insertWidget(0,labelConfirmMDP);
-
-        dlg_askMDP      ->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
-        connect(dlg_askMDP->OKButton,    &QPushButton::clicked, dlg_askMDP, [=] {
-            if (calcSHA1(ConfirmMDP->text()) == MDP)
-                dlg_askMDP->accept();
-            else if (ConfirmMDP->text() == MDP)
-                dlg_askMDP->accept();
-            else
-                UpMessageBox::Watch(dlg_askMDP, QObject::tr("Mot de passe invalide!"));
-        });
-        dlg_askMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
-        dlg_askMDP->dlglayout()->setSpacing(8);
-        mdpval = ConfirmMDP->text();
-        mdpverified = (dlg_askMDP->exec() == QDialog::Accepted);
-        delete dlg_askMDP;
-        return mdpverified;
-    }
-    else
-    {
-        QInputDialog quest(parent);
-        quest.setCancelButtonText("Annuler");
-        quest.setLabelText(Msg);
-        quest.setInputMode(QInputDialog::TextInput);
-        quest.setTextEchoMode(QLineEdit::Password);
-        QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
-        for (int i=0;i<list.size();i++)
-            list.at(0)->setAlignment(Qt::AlignCenter);
-        QList<QLabel*> listlab = quest.findChildren<QLabel*>();
-        for (int i=0;i<listlab.size();i++)
-            listlab.at(0)->setAlignment(Qt::AlignCenter);
-        quest.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
-        int a = quest.exec();
-        mdpval = quest.textValue();
-        if (a > 0)
-        {
-            if (calcSHA1(quest.textValue()) == MDP)
-                return true;
-            else if (quest.textValue() == MDP)
-                return true;
-            else
-                UpMessageBox::Watch(parent, QObject::tr("Mot de passe invalide!"));
-        }
-        return false;
-    }
+         dlg_askMDP      ->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
+         connect(dlg_askMDP->OKButton,    &QPushButton::clicked, dlg_askMDP, [=] {
+             if (calcSHA1(ConfirmMDP->text()) == MDP)
+                 dlg_askMDP->accept();
+             else if (ConfirmMDP->text() == MDP)
+                 dlg_askMDP->accept();
+             else
+                 UpMessageBox::Watch(dlg_askMDP, QObject::tr("Mot de passe invalide!"));
+         });
+         dlg_askMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
+         dlg_askMDP->dlglayout()->setSpacing(8);
+         mdpval = ConfirmMDP->text();
+         mdpverified = (dlg_askMDP->exec() == QDialog::Accepted);
+          return mdpverified;
+     }
+     else
+     {
+         QInputDialog quest(parent);
+         quest.setCancelButtonText("Annuler");
+         quest.setLabelText(Msg);
+         quest.setInputMode(QInputDialog::TextInput);
+         quest.setTextEchoMode(QLineEdit::Password);
+         QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
+         for (int i=0;i<list.size();i++)
+             list.at(0)->setAlignment(Qt::AlignCenter);
+         QList<QLabel*> listlab = quest.findChildren<QLabel*>();
+         for (int i=0;i<listlab.size();i++)
+             listlab.at(0)->setAlignment(Qt::AlignCenter);
+         quest.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+         if (quest.exec() == QDialog::Accepted)
+         {
+             if (calcSHA1(quest.textValue()) == MDP)
+                 return true;
+             else if (quest.textValue() == MDP)
+                 return true;
+             else
+                 UpMessageBox::Watch(Q_NULLPTR, QObject::tr("Mot de passe invalide!"));
+         }
+         return false;
+     }
 }
 
 /*---------------------------------------------------------------------------------------------------------------------
@@ -716,7 +772,13 @@ QUrl   Utils::getExistingDirectoryUrl(QWidget *parent, QString title, QUrl Dirde
     QUrl url = Dirdefaut;
     url = QFileDialog::getExistingDirectoryUrl(parent, title, url, QFileDialog::ShowDirsOnly);
     if (url.path() == "")
-        return QUrl();
+        return QUrl();   
+#ifdef Q_OS_WIN
+    if( url.path().startsWith("/") )
+    {
+        url.setPath(url.path().last(url.path().length()-1));
+    }
+#endif
     if (ExclureNomAvecEspace)
             if (url.path().contains(" "))
             {
@@ -770,20 +832,28 @@ QStringList Utils::DecomposeScriptSQL(QString nomficscript)
     }
     QString queryStr(file.readAll());
     file.close();
+    QRegularExpression re;
     // On retire tous les commentaires, les tabulations, les espaces ou les retours à la ligne multiples
     //        queryStr = queryStr.replace(QRegularExpression("(\\/\\*(.|\\n)*?\\*\\/|^--.*\\n|\\t|\\n)", QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("(\\/\\*(.|\\n)*?\\*\\/)",   QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("(^;\\n)",                   QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("(--.*\\n)",                 QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
-    queryStr = queryStr.replace(QRegularExpression("( +)",                      QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), " ");
-    queryStr = queryStr.replace(QRegularExpression("((\\t)+)",                  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), " ");
-    queryStr = queryStr.replace(QRegularExpression("(^ *)",                     QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("((\\n)+)",                  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
+    re.setPattern("(\\/\\*(.|\\n)*?\\*\\/)");
+    queryStr = queryStr.replace(re, "");
+    re.setPattern("(^;\\n)");
+    queryStr = queryStr.replace(re, "");
+    re.setPattern("(--.*\\n)");
+    queryStr = queryStr.replace(re, "\n");
+    re.setPattern("( +)");
+    queryStr = queryStr.replace(re, " ");
+    re.setPattern("((\\t)+)");
+    queryStr = queryStr.replace(re, " ");
+    re.setPattern("(^ *)");
+    queryStr = queryStr.replace(re, "");
+    re.setPattern("((\\n)+)");
+    queryStr = queryStr.replace(re, "\n");
     //Retire les espaces en début et fin de string
     queryStr = queryStr.trimmed();
 
     QString matched, delimiter, Atraiter;
-    QRegularExpression re("^(\\s|\\n)*DELIMITER\\s*(.|\\n)*END\\s*.\\n"); //isole les créations de procédure SQL dans le script
+    re.setPattern("^(\\s|\\n)*DELIMITER\\s*(.|\\n)*END\\s*.\\n"); //isole les créations de procédure SQL dans le script
 
     while (queryStr.size()>0 && queryStr.contains(";"))
     {
@@ -796,22 +866,30 @@ QStringList Utils::DecomposeScriptSQL(QString nomficscript)
             //Edit(Atraiter);
             delimiter   = Atraiter.data()[Atraiter.size()-1];
             //Edit(delimiter);
-            Atraiter.replace(QRegularExpression("DELIMITER\\s*"),"");
+            re.setPatternOptions(QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption);
+            re.setPattern("DELIMITER\\s*");
+            Atraiter.replace(re,"");
             Atraiter.replace(delimiter,"");
-            Atraiter = Atraiter.replace(QRegularExpression("(^ *)",     QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-            Atraiter = Atraiter.replace(QRegularExpression("(^(\\n)+)", QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-            Atraiter = Atraiter.replace(QRegularExpression("((\\n)+)",  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
+            re.setPattern("^ *)");
+            Atraiter.replace(re,"");
+            re.setPattern("(^(\\n)+)");
+            Atraiter.replace(re,"");
+            re.setPattern("((\\n)+)");
+            Atraiter.replace(re,"\n");
+
             //Edit(Atraiter);
             queryStr.replace(0,matched.size(),"");
         }
         else                    // -- c'est une requête SQL
         {
-            matched = queryStr.split(";\n", QString::SkipEmptyParts).at(0);
+            matched = queryStr.split(";\n", Qt::SkipEmptyParts).at(0);
             Atraiter = matched.trimmed()+ ";";
             queryStr.replace(0,matched.size()+2,"");
-            queryStr = queryStr.replace(QRegularExpression("((\\n)+)",  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
+            re.setPattern("((\\n)+)");
+            queryStr = queryStr.replace(re, "\n");
         }
-        queryStr = queryStr.replace(QRegularExpression("(^(\\n)*)",     QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
+        re.setPattern("(^(\\n)*)");
+        queryStr = queryStr.replace(re, "");
         listinstruct << Atraiter;
     }
     return listinstruct;
@@ -986,7 +1064,7 @@ void Utils::CalcFontSize(QFont &font)
     {
         font.setPointSize(i);
         QFontMetrics fm(font);
-        int Htaille = fm.width("date de naissance");
+        int Htaille = fm.horizontalAdvance("date de naissance");
         if (Htaille > 108 || fm.height()*1.1 > 20)
         {
             font.setPointSize(i-1);
@@ -1117,57 +1195,62 @@ QString Utils::TraduitCote(Cote cote)
     }
 }
 
+QList<QImage> Utils::calcImagefromPdf(QString filename)
+{
+    QList<QImage> listimg = QList<QImage>();
+    QPdfDocument pdf;
+    pdf.load(filename);
+    for (int i=0; i<pdf.pageCount(); i++)
+    {
+        QPdfDocumentRenderOptions renderpdf;
+        renderpdf.setRenderFlags(QPdfDocumentRenderOptions::RenderFlag::None);
+        QSize pageSize = pdf.pagePointSize(i).toSize();
+        pageSize.rheight() *= 5;
+        pageSize.rwidth() *= 5;
+        QImage image = pdf.render(i, pageSize,renderpdf);
+        listimg << image;
+    }
+    return listimg;
+}
+
 QList<QImage> Utils::calcImagefromPdf(QByteArray ba)
 {
     QList<QImage> listimg = QList<QImage>();
-    Poppler::Document* document = Poppler::Document::loadFromData(ba);
-    if (!document || document->isLocked()) {
-        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de charger le document"));
-        delete document;
-        return listimg;
-    }
-    if (document == Q_NULLPTR) {
-        UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de charger le document"));
-        delete document;
-        return listimg;
-    }
-    document->setRenderHint(Poppler::Document::TextAntialiasing);
-    for (int i=0; i< document->numPages(); ++i)
+    QPdfDocument pdf;
+    QBuffer *buff = new QBuffer(&ba);
+    buff->open(QIODevice::ReadWrite);
+    pdf.load(buff);
+    for (int i=0; i<pdf.pageCount(); i++)
     {
-        Poppler::Page* pdfPage = document->page(i);
-        if (pdfPage == Q_NULLPTR) {
-            UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de retrouver les pages du document"));
-            delete document;
-            return listimg;
-        }
-        QImage image = pdfPage->renderToImage(300,300);
-        if (image.isNull()) {
-            UpMessageBox::Watch(Q_NULLPTR,tr("Impossible de retrouver les pages du document"));
-            delete document;
-            return listimg;
-        }
+        QPdfDocumentRenderOptions renderpdf;
+        renderpdf.setRenderFlags(QPdfDocumentRenderOptions::RenderFlag::None);
+        QSize pageSize = pdf.pagePointSize(i).toSize();
+        pageSize.rheight() *= 5;
+        pageSize.rwidth() *= 5;
+        QImage image = pdf.render(i, pageSize,renderpdf);
         listimg << image;
 
-        /*! pour vérifier que ça marche */
+        /*! Pour vérifier que ça marche */
         //AfficheImage(image);
     }
-    delete document;
+    delete buff;
     return listimg;
 }
 
 void Utils::AfficheImage(QImage img)
 {
-    UpDialog *dlg   = new UpDialog();
-    QPixmap pix     = QPixmap();
-    pix             = QPixmap::fromImage(img.scaled(QSize(1050-2, 1485-2), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
-    UpLabel *lab    = new UpLabel();
-    lab             ->resize(pix.width(), pix.height());
-    lab             ->setPixmap(pix);
-    dlg->dlglayout()->insertWidget(0,lab);
-    dlg             ->AjouteLayButtons();
-    dlg             ->exec();
+    UpDialog *dlg = new UpDialog();
+    QPixmap pix = QPixmap();
+    pix = QPixmap::fromImage(img).scaled(QSize(210-2,297-2),Qt::KeepAspectRatioByExpanding,Qt::SmoothTransformation);
+    UpLabel *lab = new UpLabel();
+    lab->resize(pix.width(),pix.height());
+    lab->setPixmap(pix);
+    dlg->layout()->addWidget(lab);
+    dlg->AjouteLayButtons();
+    dlg->exec();
     delete dlg;
 }
+
 
 QJsonValue Utils::jsonValFromImage(const QImage &img)
 {
@@ -1184,6 +1267,90 @@ QImage Utils::imagemapFrom(const QJsonValue &val)
     return QImage::fromData(QByteArray::fromBase64(encoded), "JPG");
 }
 
+
+/*!
+   reconstruit la liste des ports COM disponibles sur le système (COM1,COM2,COM3, COM4...etc...) à partir de la liste des noms physiques des ports disponibles
+*/
+QMap<QString, QString> Utils::ReconstruitMapPortsCOM()
+{
+    QMap<QString,QString> mapports=  QMap<QString,QString> ();
+    QString portappareil ("");
+    QList<QSerialPortInfo> availableports = QSerialPortInfo::availablePorts();
+    if (availableports.size() == 0)
+        return mapports;
+    for (int i=0; i<availableports.size(); i++)
+    {
+        QString nomgeneriqueduport = availableports.at(i).portName();
+        if (nomgeneriqueduport.contains("usbserial"))
+        {
+            QString lastchar = nomgeneriqueduport.at(nomgeneriqueduport.size() - 1);
+            QString firstchar = nomgeneriqueduport.split("-").at(1).right(1);
+            /*!
+          * nom des ports sous BigSur  = "usbserial-F******" + no 0,1,2 ou 3
+          * on peut aussi avoir un truc du genre "usbserial-A906IXA8" avec certaines clés
+          * nom des ports sous driver FTDI (Startech) = "usbserial-FT0G2WCR" + lettre A,B,C ou D
+         */
+            if (lastchar == "0" ||  lastchar == "A" || firstchar == "A")
+                mapports.insert(COM1, nomgeneriqueduport);
+            else if (lastchar == "1" ||  lastchar == "B" || firstchar == "B")
+                mapports.insert(COM2, nomgeneriqueduport);
+            else if (lastchar == "2" ||  lastchar == "C" || firstchar == "C")
+                mapports.insert(COM3, nomgeneriqueduport);
+             else if (lastchar == "3" ||  lastchar == "D" || firstchar == "D")
+                mapports.insert(COM4, nomgeneriqueduport);
+            else if (lastchar == "4" ||  lastchar == "E" || firstchar == "E")
+                mapports.insert(COM5, nomgeneriqueduport);
+            else if (lastchar == "5" ||  lastchar == "F")
+                mapports.insert(COM6, nomgeneriqueduport);
+            else if (lastchar == "6" ||  lastchar == "G")
+                mapports.insert(COM7, nomgeneriqueduport);
+            else if (lastchar == "7" ||  lastchar == "H")
+                mapports.insert(COM8, nomgeneriqueduport);
+        }
+        else if (nomgeneriqueduport.contains("ttyUSB"))
+        {
+            QString lastchar = nomgeneriqueduport.at(nomgeneriqueduport.size() - 1);
+            if (lastchar == "0")
+                mapports.insert(COM1, nomgeneriqueduport);
+            else if (lastchar == "1")
+                mapports.insert(COM2, nomgeneriqueduport);
+            else if (lastchar == "2")
+                mapports.insert(COM3, nomgeneriqueduport);
+            else if (lastchar == "3")
+                mapports.insert(COM4, nomgeneriqueduport);
+            else if (lastchar == "4")
+                mapports.insert(COM5, nomgeneriqueduport);
+            else if (lastchar == "5")
+                mapports.insert(COM6, nomgeneriqueduport);
+            else if (lastchar == "6")
+                mapports.insert(COM7, nomgeneriqueduport);
+            else if (lastchar == "7")
+                mapports.insert(COM8, nomgeneriqueduport);
+        }
+#ifdef Q_OS_WIN
+        else if (nomgeneriqueduport.left(3) == "COM")
+            mapports.insert(nomgeneriqueduport, nomgeneriqueduport);
+#endif
+    }
+    return mapports;
+}
+
+
+void Utils::writeDataToFileDateTime (QByteArray data, QString name, QString path)
+{
+    if( !QDir(path).exists())
+    {
+        QDir().mkdir(path);
+    }
+
+    QDateTime now = QDateTime::currentDateTime();
+    QFile file(path+"/"+now.toString("yyyyMMdd_HHmmss")+name);
+    if (file.open(QFile::WriteOnly)) {
+        file.write(data);
+        file.close();
+    }
+}
+
 void Utils::writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString msgdebug, int timetowaitms)
 {
     qint32 baud = port->baudRate();
@@ -1196,4 +1363,54 @@ void Utils::writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString m
     port->write(datas);
     port->flush();
     port->waitForBytesWritten(timetowaitms);
+}
+
+
+bool Utils::isSerialPort( QString name )
+{
+  if (name.contains("usbserial"))
+  {
+      return true;
+  }
+  if (name.contains("ttyUSB"))
+  {
+      return true;
+  }
+  if (name.contains("COM"))
+  {
+      return true;
+  }
+  return false;
+}
+
+void Utils::playAlarm(QString sound)
+{
+    QSoundEffect se = QSoundEffect();
+    se.setSource(QUrl(sound));
+    se.play();
+}
+
+
+//! récupérer l'index d'une valeur dans un QMetaEnum
+int Utils::getindexFromValue(const QMetaEnum & e, int value)
+{
+    for(int i=0; i< e.keyCount(); i++){
+        if(e.key(i) == e.valueToKey(value))
+            return i;
+    }
+    return -1;
+}
+
+QByteArray Utils::cleanByteArray( QByteArray byteArray )
+{
+    QByteArray reponseDataClean;
+    for( int i=0;i < byteArray.length(); i++ )
+    {
+        unsigned char c = byteArray.at(i);
+        // avoid control chars except CR and LF
+        if( c > 31 || c == 10 || c == 13 ) {
+            reponseDataClean += c;
+        }
+    }
+    return reponseDataClean;
 }

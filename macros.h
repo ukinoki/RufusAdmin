@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "qglobal.h"
 #ifndef MACROS_H
 #define MACROS_H
 
@@ -961,8 +962,15 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CB                  "B"
 
 // ancres et comentaires html
-#define HTMLCOMMENT_LINUX           "<!LINUX>"
-#define HTMLCOMMENT_MAC             "<!MAC>"
+#if defined(Q_OS_LINUX)
+#define HTMLCOMMENT                 "<!LINUX>"
+#elif defined(Q_OS_MACX)
+#define HTMLCOMMENT                 "<!MAC>"
+#elif defined(Q_OS_WIN)
+#define HTMLCOMMENT                 "<!WIN>"
+#else
+#define HTMLCOMMENT                 "<!COMMENT>"
+#endif
 #define HTMLANCHOR_BODEBUT          "<BOdebut>"
 #define HTMLANCHOR_BOFIN            "<BOfin>"
 #define HTML_FINPARAGRAPH           "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px;\"></p>"
@@ -992,8 +1000,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define COM2                        "COM2"
 #define COM3                        "COM3"
 #define COM4                        "COM4"
+#define COM5                        "COM5"
+#define COM6                        "COM6"
+#define COM7                        "COM7"
+#define COM8                        "COM8"
+
 #define BOX                         "Box"
-#define RESEAU                      "Réseau"
+#define DOSSIER_ECHANGE             "DossierEchange"
+#define N_NULL                      "-"
 
 //mots utilisés en macros dans les documents à imprimer
 #define STR_TITRUSER            "TITREUSER"

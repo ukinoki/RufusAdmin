@@ -23,23 +23,25 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDir>
 #include <QFileDialog>
 #include <QJsonDocument>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QHostAddress>
 #include <QNetworkInterface>
 #include <QHostInfo>
 #include <QMetaEnum>
 #include <QProcess>
 #include <QJsonObject>
-#include <QTextCodec>
+#include <QSerialPortInfo>
 #include <QUrl>
 #include <cmath>
+#include <QStandardPaths>
 
 #include "uplineedit.h"
 #include "uplabel.h"
 #include "uptextedit.h"
 #include "upmessagebox.h"
 #include "dlg_message.h"
-#include "poppler-qt5.h"
+
+#include <QPdfDocument>
 
 #include <QInputDialog>
 #include <QCoreApplication>
@@ -54,6 +56,7 @@ private:
     static Utils*      instance;
 public:
     enum Day {
+                Aucun       = 0x0,
                 Lundi       = 0x1,
                 Mardi       = 0x2,
                 Mercredi    = 0x4,
@@ -73,29 +76,29 @@ public:
 
     static Utils   *I();
 
-    static QRegExp const rgx_rx;
-    static QRegExp const rgx_AlphaNumeric;
-    static QRegExp const rgx_AlphaNumeric_3_12;
-    static QRegExp const rgx_AlphaNumeric_5_12;
-    static QRegExp const rgx_AlphaNumeric_5_15;
-    static QRegExp const rgx_MajusculeSeul;
+    static QRegularExpression const rgx_rx;
+    static QRegularExpression const rgx_AlphaNumeric;
+    static QRegularExpression const rgx_AlphaNumeric_3_12;
+    static QRegularExpression const rgx_AlphaNumeric_5_12;
+    static QRegularExpression const rgx_AlphaNumeric_5_15;
+    static QRegularExpression const rgx_MajusculeSeul;
 
-    static QRegExp const rgx_IPV4;
-    static QRegExp const rgx_IPV4_mask;
+    static QRegularExpression const rgx_IPV4;
+    static QRegularExpression const rgx_IPV4_mask;
 
-    static QRegExp const rgx_mail;
-    static QRegExp const rgx_NNI;
+    static QRegularExpression const rgx_mail;
+    static QRegularExpression const rgx_NNI;
 
-    static QRegExp const rgx_adresse;
-    static QRegExp const rgx_intitulecompta;
-    static QRegExp const rgx_CP;
-    static QRegExp const rgx_ville;
-    static QRegExp const rgx_telephone;
+    static QRegularExpression const rgx_adresse;
+    static QRegularExpression const rgx_intitulecompta;
+    static QRegularExpression const rgx_CP;
+    static QRegularExpression const rgx_ville;
+    static QRegularExpression const rgx_telephone;
 
-    static QRegExp const rgx_tabac;
-    static QRegExp const rgx_cotation;
+    static QRegularExpression const rgx_tabac;
+    static QRegularExpression const rgx_cotation;
 
-    static QRegExp const rgx_recherche;
+    static QRegularExpression const rgx_recherche;
 
 
     static void Pause(int msec = 1000);
@@ -109,6 +112,9 @@ public:
     //! QString
     static QSize                    CalcSize(QString txt, QFont fm = qApp->font());
     static QString                  retirecaracteresaccentues(QString nom);
+    static bool                     IsCharSpecial( QChar c);
+    static bool                     IsCharNL( QChar c);
+    static bool                     IsCharCR( QChar c);
     static QString                  trim(QString text, bool end=true, bool removereturnend = false);
     static QString                  capitilize(QString text, bool onlyfirst = false);
     static QString                  trimcapitilize(QString, bool end = true, bool maj = true, bool lower = true);
@@ -116,9 +122,11 @@ public:
     static int                      MaxInt()    {return std::numeric_limits<int>::max();}
     static QByteArray               IntToArray(int source);
     static QString                  IPAdress();
+    static bool                     RegularExpressionMatches(QRegularExpression rgx, QString s, bool exact = true);
     static QString                  calcIP(QString IP, bool aveczero = false);
     static QString                  MACAdress();
     static QString                  getMacForIP(QString ipAddress);
+    static QByteArray               StringToArray(QString source);
 
     //! Fichiers
     static bool                     CompressFileJPG(QString pathfile, QString Dirprov, QDate datetransfert = QDate::currentDate());
@@ -197,16 +205,32 @@ public:
 
     //! renvoie chaque page d'un pdf comme une image
     static QList<QImage> calcImagefromPdf(QByteArray pdf);
+    static QList<QImage> calcImagefromPdf(QString filename);
+    static void AfficheImage(QImage img);
+
+
+    //! reconstruit la map des ports COM disponibles sur le système sous la forme (COMxx,nomgeneriqueduport)
+    static QMap<QString, QString> ReconstruitMapPortsCOM();
 
     //! gestion des images en QJsonValue
     static QJsonValue jsonValFromImage(const QImage &p);
     static QImage imagemapFrom(const QJsonValue &val);
-    static void AfficheImage(QImage img);
 
     //! écriture sur un port série d'un qByteArray
     static void writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString msgdebug, int timetowaitms = 0);
+    static void writeDataToFileDateTime (QByteArray datas, QString file, QString path);
 
-};
+    //! Savoir si un port es serial
+    static bool isSerialPort( QString name );
+
+    //! Sound Alarme
+    static void playAlarm(QString sound = NOM_ALARME);
+
+    //! récupérer l'index d'une valeur dans un QMetaEnum
+    static int getindexFromValue(const QMetaEnum & e, int value);
+
+    //! Removes control characters from byteArray
+    static QByteArray cleanByteArray( QByteArray byteArray );};
 Q_DECLARE_OPERATORS_FOR_FLAGS(Utils::Days)
 
 #endif // UTILS_H

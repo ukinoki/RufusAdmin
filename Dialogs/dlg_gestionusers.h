@@ -18,7 +18,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DLG_GESTIONUSERS_H
 #define DLG_GESTIONUSERS_H
 
-#include <QDesktopWidget>
+
 #include <QInputDialog>
 #include <QNetworkInterface>
 #include <QTableWidgetItem>
