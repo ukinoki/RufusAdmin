@@ -1310,7 +1310,7 @@ void RufusAdmin::EnregistreNouvMDPAdmin()
             msgbox.exec();
             return;
         }
-        if (Utils::calcSHA1(anc) != m_parametres->mdpadmin())
+        if (Utils::calcSHA1(anc) != m_parametres->mdpadmin() && anc != m_parametres->mdpadmin())
         {
             Utils::playAlarm();
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas le bon\n"));
