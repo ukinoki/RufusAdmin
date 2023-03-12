@@ -23,7 +23,7 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     ui(new Ui::dlg_gestionusers)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     setWindowTitle(tr("Gestion des utilisateurs"));
 
     db                  = DataBase::I();
@@ -903,7 +903,7 @@ void dlg_gestionusers::GestionLieux()
     m_MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), mdp, m_MDPverified, this);
     if (!m_MDPverified)
             return;
-    dlg_listelieux *gestLieux = new dlg_listelieux();
+    dlg_listelieux *gestLieux = new dlg_listelieux(this);
     gestLieux->exec();
     ReconstruitListeLieuxExercice();
     delete gestLieux;
