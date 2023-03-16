@@ -34,6 +34,7 @@ QRegExp const Utils::rgx_AlphaNumeric = QRegExp("[A-Za-z0-9]*");
 QRegExp const Utils::rgx_AlphaNumeric_3_12 = QRegExp("[A-Za-z0-9]{3,12}$");
 QRegExp const Utils::rgx_AlphaNumeric_5_15 = QRegExp("[A-Za-z0-9]{5,15}$");
 QRegExp const Utils::rgx_AlphaNumeric_5_12  = QRegExp("[A-Za-z0-9]{5,12}$");
+QRegExp const Utils::rgx_Question  = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -]*[?]*");
 QRegExp const Utils::rgx_MajusculeSeul = QRegExp("[A-Z]*");
 QRegExp const Utils::rgx_IPV4 = QRegExp("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}");
 QRegExp const Utils::rgx_IPV4_mask = QRegExp("(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
@@ -1184,6 +1185,74 @@ QImage Utils::imagemapFrom(const QJsonValue &val)
     return QImage::fromData(QByteArray::fromBase64(encoded), "JPG");
 }
 
+/*!
+  reconstruit la liste des ports COM disponibles sur le système  sous la forme (COMxx,nomgeneriqueduport)
+*/
+QMap<QString, QString> Utils::ReconstruitMapPortsCOM()
+{
+    QMap<QString,QString> mapports=  QMap<QString,QString> ();
+    QString portappareil ("");
+    QList<QSerialPortInfo> availableports = QSerialPortInfo::availablePorts();
+    if (availableports.size() == 0)
+        return mapports;
+    for (int i=0; i<availableports.size(); i++)
+    {
+        QString nomgeneriqueduport = availableports.at(i).portName();
+        if (nomgeneriqueduport.contains("usbserial"))
+        {
+            QString lastchar = nomgeneriqueduport.right(1);
+            QString firstchar = nomgeneriqueduport.split("-").at(1).left(1);
+            /*!
+         * nom des ports sous BigSur  = "usbserial-F******" + no 0,1,2 ou 3
+         * on peut aussi avoir un truc du genre "usbserial-A906IXA8" avec certaines clés
+         * nom des ports sous driver FTDI (Startech) = "usbserial-FT0G2WCR" + lettre A,B,C ou D
+        */
+            if (lastchar == "0" ||  lastchar == "A" || firstchar == "A")
+                mapports.insert(COM1, nomgeneriqueduport);
+            else if (lastchar == "1" ||  lastchar == "B" || firstchar == "B")
+                mapports.insert(COM2, nomgeneriqueduport);
+            else if (lastchar == "2" ||  lastchar == "C" || firstchar == "C")
+                mapports.insert(COM3, nomgeneriqueduport);
+            else if (lastchar == "3" ||  lastchar == "D" || firstchar == "D")
+                mapports.insert(COM4, nomgeneriqueduport);
+            else if (lastchar == "4" ||  lastchar == "E" || firstchar == "E")
+                mapports.insert(COM5, nomgeneriqueduport);
+            else if (lastchar == "5" ||  lastchar == "F")
+                mapports.insert(COM6, nomgeneriqueduport);
+            else if (lastchar == "6" ||  lastchar == "G")
+                mapports.insert(COM7, nomgeneriqueduport);
+            else if (lastchar == "7" ||  lastchar == "H")
+                mapports.insert(COM8, nomgeneriqueduport);
+        }
+        else if (nomgeneriqueduport.contains("ttyUSB"))
+        {
+            QString lastchar = nomgeneriqueduport.at(nomgeneriqueduport.size() - 1);
+            if (lastchar == "0")
+                mapports.insert(COM1, nomgeneriqueduport);
+            else if (lastchar == "1")
+                mapports.insert(COM2, nomgeneriqueduport);
+            else if (lastchar == "2")
+                mapports.insert(COM3, nomgeneriqueduport);
+            else if (lastchar == "3")
+                mapports.insert(COM4, nomgeneriqueduport);
+            else if (lastchar == "4")
+                mapports.insert(COM5, nomgeneriqueduport);
+            else if (lastchar == "5")
+                mapports.insert(COM6, nomgeneriqueduport);
+            else if (lastchar == "6")
+                mapports.insert(COM7, nomgeneriqueduport);
+            else if (lastchar == "7")
+                mapports.insert(COM8, nomgeneriqueduport);
+        }
+#ifdef Q_OS_WIN
+        else if (nomgeneriqueduport.left(3) == "COM")
+            mapports.insert(nomgeneriqueduport, nomgeneriqueduport);
+#endif
+    }
+    return mapports;
+}
+
+
 void Utils::writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString msgdebug, int timetowaitms)
 {
     qint32 baud = port->baudRate();
@@ -1197,3 +1266,13 @@ void Utils::writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString m
     port->flush();
     port->waitForBytesWritten(timetowaitms);
 }
+
+//! récupérer l'index d'une valeur dans un QMetaEnum
+int Utils::getindexFromValue(const QMetaEnum & e, int value)
+{
+    for(int i=0; i< e.keyCount(); i++){
+        if(e.key(i) == e.valueToKey(value))
+            return i;
+    }
+    return -1;
+};

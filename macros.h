@@ -19,7 +19,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define MACROS_H
 
 // Les versions de la base et des ressources
-#define VERSION_BASE                                72  // version de la base de données
+#define VERSION_BASE                                73  // version de la base de données
 #define VERSION_RESSOURCES                          35  // version des fichiers de ressources
 
 // Les bases
@@ -93,6 +93,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TBL_UTILISATEURS                      "rufus.utilisateurs"
 #define TBL_USERSCONNECTES                    "rufus.UtilisateursConnectes"
 #define TBL_VILLES                            "rufus.Villes"
+#define TBL_AUTRESVILLES                      "rufus.AutresVilles"
 
 // Les champs
 #define CP_ISALLLOADED                                  "isallloaded"
@@ -447,6 +448,17 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDDESTINATAIRE_JOINTURESMSG                  "idDestinataire"
 #define CP_LU_JOINTURESMSG                              "Lu"
 #define CP_FAIT_JOINTURESMSG                            "Fait"
+
+                            //! Table  Rufus.villes
+#define CP_ID_VILLES                                    "ville_id"
+#define CP_CP_VILLES                                    "codePostal"
+#define CP_NOM_VILLES                                   "ville"
+
+                            //! Table  Rufus.AutresVilles
+#define CP_ID_AUTRESVILLES                              "id"
+#define CP_CP_AUTRESVILLES                              "CodePostal"
+#define CP_NOM_AUTRESVILLES                             "Nom"
+
 
                             //! Table Images.EchangeImages
 #define CP_ID_ECHGIMAGES                                "idImpression"
@@ -898,7 +910,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define STYLE_UPGROUBOXACTIVE       "UpGroupBox {border: 2px solid rgb(164, 205, 255); border-radius: 10px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E0E0E0, stop: 1 #FFFFFF);}"
 #define STYLE_UPSMALLBUTTON         "UpSmallButton {border: 1px none black; padding-left: 8px; padding-top: 3px; padding-right: 8px; padding-bottom: 3px;}UpSmallButton:pressed {background-color: rgb(205, 205, 205);}UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}"
 #define STYLE_UPPUSHBUTTON          "UpPushButton {border: 1px solid gray; border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px; padding-left: 8px; padding-right: 8px; padding-top: 3px; padding-bottom: 3px; qproperty-iconSize: 30px 30px; qproperty-flat: false; color : #000000; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);} UpPushButton:focus {color : #000000; border: 2px solid rgb(164, 205, 255); border-radius: 5px;} UpPushButton:pressed {color : gray; background-color: rgb(175, 175, 175);} UpPushButton:!enabled {color : gray;}"
-#define STYLE_UPSWITCH              "UpSwitch {border-radius: 10px; background-color:rgb(50,200,105,145);}"
+#define STYLE_UPSWITCH              "UpSwitch {border-radius: 10px; background-color:rgba(50,200,105,145);}"
 
 // la police d'écran par défaut et le facteur de correction des td width html en impression qui varie entre Linux et OSX (???)
 #define POLICEPARDEFAUT         "Comic Sans MS"
@@ -992,8 +1004,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define COM2                        "COM2"
 #define COM3                        "COM3"
 #define COM4                        "COM4"
+#define COM5                        "COM5"
+#define COM6                        "COM6"
+#define COM7                        "COM7"
+#define COM8                        "COM8"
 #define BOX                         "Box"
-#define RESEAU                      "Réseau"
+#define DOSSIER_ECHANGE             "Dossier Echange"
+#define N_NULL                      "-"
 
 //mots utilisés en macros dans les documents à imprimer
 #define STR_TITRUSER            "TITREUSER"

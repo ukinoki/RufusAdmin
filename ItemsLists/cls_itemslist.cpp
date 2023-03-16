@@ -408,6 +408,8 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 else
                     ok = false;
             }
+            else
+                ok = false;
             break;
         }
         post = dynamic_cast<PosteConnecte*>(item);

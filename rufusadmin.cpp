@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("12_03-2023/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("16-03-2023/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -36,7 +36,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
         "QLineEdit:focus {border: 1px solid rgb(164, 205, 255);border-radius: 5px;}"
         "QRadioButton::indicator {width: 18px; height: 18px;}"
         "QRadioButton::indicator::checked {image: url(://blueball.png);}"
-        "QScrollArea {background-color:rgb(237, 237, 237); border: 1px solid rgb(150,150,150);}"
+        "QScrollArea {background-color:rgba(237, 237, 237); border: 1px solid rgb(150,150,150);}"
         "QTabBar::tab:selected {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #fafafa, stop: 1.0 rgb(164, 205, 255));}"
         "QTabBar::tab:hover {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #fafafa, stop: 0.4 #f4f4f4,stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);}"
         "QTabBar::tab:selected {border-color: #9B9B9B; border-bottom-color: #C2C7CB;}"
