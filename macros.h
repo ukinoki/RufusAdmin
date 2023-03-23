@@ -450,9 +450,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_FAIT_JOINTURESMSG                            "Fait"
 
                             //! Table  Rufus.villes
-#define CP_ID_VILLES                                    "ville_id"
-#define CP_CP_VILLES                                    "codePostal"
-#define CP_NOM_VILLES                                   "ville"
+#define CP_ID_VILLES                                    "id"
+#define CP_CP_VILLES                                    "CodePostal"
+#define CP_NOM_VILLES                                   "Nom"
 
                             //! Table  Rufus.AutresVilles
 #define CP_ID_AUTRESVILLES                              "id"
@@ -1088,7 +1088,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #define Ville_Defaut                                    "Param_Poste/VilleParDefaut"
 #define CodePostal_Defaut                               "Param_Poste/CodePostalParDefaut"
-#define Utilise_BDD_Villes                              "Param_Poste/Utilise_BasedeDonnees_Villes"
 
 #define Poste_VersionRessources                         "Param_Poste/VersionRessources"
 #define Position_Fiche                                  "PositionsFiches/Position"
