@@ -64,6 +64,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "dlg_gestionbanques.h"
 #include "dlg_gestionusers.h"
 #include "dlg_listelieux.h"
+#include "dlg_listevilles.h"
 #include "dlg_message.h"
 #include "dlg_motifs.h"
 #include "importdocsexternesthread.h"
@@ -164,6 +165,7 @@ private:
     void                        MasqueAppli();
     void                        MetAJourLaConnexion();
     void                        ModifDirImagerie();
+    void                        ModifBDDVilles(Villes::TownsFrom from);
     void                        ModifMDP();
     void                        NouvAppareil();
     void                        Remplir_Table();

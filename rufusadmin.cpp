@@ -337,6 +337,32 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I()->banques->initListe();
     Datas::I()->motifs->initListe();
 
+    //!-------------------- GESTION DES VILLES ET DES CODES POSTAUX-------------------------------------------------------*/
+    enum Villes::TownsFrom from;
+    if (m_parametres->villesfrance())
+        from = Villes::DATABASE;
+    else
+        from = Villes::CUSTOM;
+    Datas::I()->villes  ->initListe(from);
+    ui->UtiliseBDDVillescheckBox     ->setChecked(db->parametres()->villesfrance() == true);
+    ui->UtiliseCustomVillescheckBox  ->setChecked(db->parametres()->villesfrance() == false);
+    ui->ModifListVillesupPushButton  ->setVisible(db->parametres()->villesfrance() == false);
+    connect(ui->UtiliseCustomVillescheckBox, &QCheckBox::stateChanged, this, [=](int state){
+        ui->ModifListVillesupPushButton->setVisible(state == Qt::Checked);
+        enum Villes::TownsFrom from;
+        if (state == Qt::Checked)
+            from = Villes::CUSTOM;
+        else
+            from = Villes::DATABASE;
+        ModifBDDVilles(from);
+    });
+    connect(ui->ModifListVillesupPushButton,    &QPushButton::clicked, this, [=]{
+        dlg_listevilles *dlg_listvilles = new dlg_listevilles(this);
+        dlg_listvilles->exec();
+        delete dlg_listvilles;
+    });
+
+
     //! - mise à jour du programmateur de sauvegarde
     if (db->ModeAccesDataBase() == Utils::Poste)
         ParamAutoBackup();
@@ -2663,6 +2689,12 @@ void RufusAdmin::ModifDirBackup()
                                                && m_parametres->heurebkup() != QTime());
     }
     ConnectTimerInactive();
+}
+
+void RufusAdmin::ModifBDDVilles(Villes::TownsFrom from)
+{
+    db                  ->setvillesfrance(from == Villes::DATABASE);
+    Datas::I()->villes  ->initListe(from);
 }
 
 void RufusAdmin::ModifDateBackup()
