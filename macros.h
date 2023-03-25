@@ -327,6 +327,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_DIMANCHEBKUP_PARAMSYSTEME                    "DimancheBkup"
 #define CP_HEUREBKUP_PARAMSYSTEME                       "HeureBkup"
 #define CP_DIRBKUP_PARAMSYSTEME                         "DirBkup"
+#define CP_VILLES_PARAMSYSTEME                          "VillesFrance"
+#define CP_COTATIONS_PARAMSYSTEME                       "CotationsFrance"
+#define CP_COMPTA_PARAMSYSTEME                          "ComptaFrance"
 
                             //! Table Rufus.salledattente
 #define CP_IDPAT_SALDAT                                 "idPat"

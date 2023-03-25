@@ -26,6 +26,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "cls_patientsencours.h"
 #include "cls_postesconnectes.h"
 #include "cls_sites.h"
+#include "cls_villes.h"
 
 class Datas : public QObject
 {
@@ -44,6 +45,7 @@ public:
     PatientsEnCours *patientsencours;   //!> les patients en cours : patients dont les dossiers sont ouverts, ou présents en salle d'attente ou à l'accueil ou en cours d'examen
     PostesConnectes *postesconnectes;   //!> tous les postes connectes
     Sites *sites;                       //!< Les lieux de travail
+    Villes *villes;                     //!< toutes les villes
 };
 
 #endif // GBL_DATAS_H

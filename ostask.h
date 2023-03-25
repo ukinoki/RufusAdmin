@@ -4,6 +4,7 @@
 #include <QProcess>
 #include <QThread>
 #include <QDebug>
+#include <QEventLoop>
 
 class OsTask : public QObject
 {
@@ -11,10 +12,13 @@ class OsTask : public QObject
 public slots:
     void        executeScript(const QString &script)
     {
-        //qDebug() << script;
+        QEventLoop loop;
         QProcess dumpProcess(parent());
         dumpProcess.start(script);
-        dumpProcess.waitForFinished(1000000000);
+        while (dumpProcess.waitForFinished(1000000000))
+        {
+            loop.processEvents();
+        }
         int a = 99;
         if (dumpProcess.exitStatus() == QProcess::NormalExit)
             a = dumpProcess.exitCode();
