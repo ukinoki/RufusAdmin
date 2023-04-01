@@ -129,10 +129,6 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     prioritydlg         ->show();
     if (parent != Q_NULLPTR)
         parent->setEnabled(false);
-    int msec = 500;
-    QTime dieTime = QTime::currentTime().addMSecs(msec);
-    while (QTime::currentTime() < dieTime)
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
     connect(this,   &ShowMessage::closeprioiritydlg, prioritydlg, [=](qintptr a) { if (idmessage == a) {
             if (prioritydlg->parent() != Q_NULLPTR)
                 static_cast<QWidget*>(prioritydlg->parent())->setEnabled(true);
@@ -141,5 +137,4 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
         });
     if (duree > 0)
         QTimer::singleShot(duree, prioritydlg, &QDialog::close);
-
 }

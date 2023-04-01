@@ -367,7 +367,7 @@ void dlg_listelieux::SupprLieu()
     {
         int row = getRowFromSite(sit);
         m_model->takeRow(row);
-        UpSystemTrayIcon::I()->showMessage(tr("Messages"), lieu + " supprimé", Icons::icSunglasses(), 3000);
+        UpSystemTrayIcon::showMessage(lieu + " supprimé", 3000);
         Datas::I()->sites->SupprimeSite(sit);
         ReconstruitModel();
         wdg_tblview->selectRow(0);

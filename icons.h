@@ -266,6 +266,7 @@ public:
     static QIcon icSauvegarder(QSize size = QSize()) { return foundIC("icSauvegarder", "://save.png", size); }
     static QIcon icSide() { return foundIC("icSide", "://right_left.png"); }
     static QIcon icSunglasses() { return foundIC("icSunglasses", "://Sunglasses.png"); }
+    static QIcon icSunglassesMeca() { return foundIC("icSunglasses", "://sunglassesmeca_1.png"); }
     static QIcon icSupprimer() { return foundIC("icSmoking", "://Supprime.png", QSize(30,30)); }
     static QIcon icSmoking() { return foundIC("icSmoking", "://No_smoking.png"); }
     static QIcon icSortirDossier() { return foundIC("icSortirDossier", "://metadoc.png", QSize(25,25)); }
@@ -278,6 +279,8 @@ public:
     static QIcon icValide(QSize size = QSize()) { return foundIC("icValide", "://Valide2.jpg", size); } //25
     static QIcon icVitale(QSize size = QSize()) { return foundIC("icVitale", "://Vitale.jpg", size); }
     static QIcon icUpdate(QSize size = QSize()) { return foundIC("icUpdate", "://update.png", size); } //20
+
+    static QIcon icAppIcon() { return icSunglassesMeca(); }
 
     static bool CompareQIcon(const QIcon icon1, const QIcon icon2)
     {

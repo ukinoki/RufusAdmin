@@ -26,16 +26,25 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 class UpSystemTrayIcon : public QSystemTrayIcon
 {
+    struct Message
+    {
+        QString title;
+        QString text;
+        int     duration;
+        QIcon   icon;
+    };
     Q_OBJECT
 public:
     static      UpSystemTrayIcon* I();
-    void        showMessage(QString title, QString msg, QIcon icon, int duree);
-    void        showMessages(QString title, QStringList msg, QIcon icon, int duree);
+    static void showMessage(QString title, QString msg, int duree, const QIcon &icon = QIcon());
+    static void showMessages(QString title, QStringList msg, int duree, QIcon icon = QIcon());
+    static void showMessage(QString msg, int duree, const QIcon &icon = QIcon());
+    static void showMessages(QStringList msg, int duree, const QIcon &icon = QIcon());
+
 private:
     static UpSystemTrayIcon *instance;
     UpSystemTrayIcon(const QIcon icon, QObject *parent = Q_NULLPTR) : QSystemTrayIcon(icon, parent) {}
-    QList<QMap<QString, QVariant>>  list_messages; //!> chaque QMap de la liste contient ["titre"] , ["texte"], ["duree"]
-    QList<QIcon>                    list_icons;
+    QList<struct Message>           list_messages;
     void                            showListMessages();
 };
 

@@ -95,7 +95,7 @@ public:
 
 private:
     Ui::RufusAdmin              *ui;
-    Controller                  m_controller;
+    OsTask                      m_ostask;
     Flags                       *flags;
     bool                        m_ok;
     int                         m_flagcorrespondants;

@@ -21,40 +21,54 @@ UpSystemTrayIcon* UpSystemTrayIcon::instance =  Q_NULLPTR;
 UpSystemTrayIcon* UpSystemTrayIcon::I()
 {
     if( !instance )
-        instance = new UpSystemTrayIcon(Icons::icSunglasses());
+        instance = new UpSystemTrayIcon(Icons::icAppIcon());
     return instance;
 }
 
-void UpSystemTrayIcon::showMessage(QString title, QString msg, QIcon icon, int duree)
+void UpSystemTrayIcon::showMessage(QString title, QString msg, int duree, const QIcon &icon)
 {
-    QMap<QString, QVariant> map_messages;
-    map_messages["titre"] = title;
-    map_messages["texte"] = msg;
-    map_messages["duree"] = duree;
-    list_messages   .append(map_messages);
-    list_icons      .append(icon);
-    if (!isVisible())
-        showListMessages();
+    struct Message message = {
+        title,
+        msg,
+        duree,
+        icon.isNull() ? Icons::icAppIcon() : icon
+    };
+
+    I();
+    instance->list_messages << message;
+    if (!instance->isVisible())
+        instance->showListMessages();
 }
 
-void UpSystemTrayIcon::showMessages(QString title, QStringList listmsg, QIcon icon, int duree)
+void UpSystemTrayIcon::showMessages(QString title, QStringList listmsg, int duree, QIcon icon)
 {
+    if(icon.isNull())
+        icon = Icons::icAppIcon();
     for (int i=0; i<listmsg.size(); ++i)
-        showMessage(title, listmsg.at(i), icon, duree);
+        showMessage(title, listmsg.at(i), duree, icon);
+}
+
+void UpSystemTrayIcon::showMessage(QString msg, int duree, const QIcon &icon)
+{
+    showMessage(tr("Messages"), msg, duree, icon);
+}
+
+void UpSystemTrayIcon::showMessages(QStringList listmsg, int duree, const QIcon &icon)
+{
+   showMessages(tr("Messages"), listmsg, duree, icon);
 }
 
 void UpSystemTrayIcon::showListMessages()
 {
-    if (list_messages.size() == 0 || list_icons.size() == 0)
+    if (list_messages.isEmpty())
     {
         hide();
         return;
     }
     if (!isVisible())
         show();
-    int duree = list_messages.first()["duree"].toInt();
-    QSystemTrayIcon::showMessage(list_messages.first()["titre"].toString(), list_messages.first()["texte"].toString(), list_icons.first(), duree);
+    const struct Message &message = list_messages.constFirst();
+    QSystemTrayIcon::showMessage(message.title, message.text, message.icon, message.duration);
     list_messages.removeAt(0);
-    list_icons.removeAt(0);
-    QTimer::singleShot(duree, this, &UpSystemTrayIcon::showListMessages);
+    QTimer::singleShot(message.duration, this, &UpSystemTrayIcon::showListMessages);
 }

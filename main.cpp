@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     if (translator.load(dirloc))
         app.installTranslator(&translator);
 
-    QPixmap pixmap("://rufusadmin.jpg");
+    QPixmap pixmap("://rufus3.jpg");
     QSplashScreen *splash = new QSplashScreen(pixmap);
     splash->show();
     Utils::Pause(1500);
