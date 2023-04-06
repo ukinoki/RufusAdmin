@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("25-03-2023/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("05-04-2023/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -435,7 +435,7 @@ bool RufusAdmin::AutresPostesConnectes()
 {
     /*! avant la mise à jour 61, on ne peut pas utiliser Datas::I()->users->initListe() parce que le champ DateCreationMDP de la table utilisateurs n'existe pas */
     if (Datas::I()->users->all()->isEmpty())
-        Datas::I()->users       ->initShortListe();
+        Datas::I()->users       ->initListe();
     Datas::I()->postesconnectes->initListe();
     QString id = Utils::MACAdress() + " - " + QString::number(Admin()->id());
     for (auto it = Datas::I()->postesconnectes->postesconnectes()->constBegin(); it != Datas::I()->postesconnectes->postesconnectes()->constEnd(); ++it)
@@ -2661,7 +2661,17 @@ bool RufusAdmin::VerifBase()
                     }
                 req = "update " TBL_MANUFACTURERS " set CorNom = null, CorPrenom = null, CorStatut = null, CorMail = null, CorTelephone = null";
                 DataBase::I()->StandardSQL(req);
-            }            
+            }
+            if (Version == 74)
+            {
+                QSettings settings(PATH_FILE_INI, QSettings::IniFormat);
+                if (settings.contains("Param_Poste/Utilise_BasedeDonnees_Villes"))
+                {
+                    if (settings.value("Param_Poste/Utilise_BasedeDonnees_Villes").toBool() == false)
+                        db->setvillesfrance(false);
+                    settings.remove("Param_Poste/Utilise_BasedeDonnees_Villes");
+                }
+            }
         }
     }
     return true;

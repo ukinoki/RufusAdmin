@@ -454,7 +454,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/Images/images.qrc">:/password.png</pixmap>
+          <pixmap resource="../../Rufus/assets/Images/images.qrc">:/password.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -474,7 +474,7 @@
 lieux d'activité</string>
          </property>
          <property name="icon">
-          <iconset resource="../assets/Images/images.qrc">
+          <iconset resource="../../Rufus/assets/Images/images.qrc">
            <normaloff>:/address-book.png</normaloff>:/address-book.png</iconset>
          </property>
          <property name="iconSize">
@@ -529,13 +529,54 @@ lieux d'activité</string>
            <height>185</height>
           </rect>
          </property>
+         <widget class="UpRadioButton" name="AGAupRadioButton">
+          <property name="geometry">
+           <rect>
+            <x>13</x>
+            <y>165</y>
+            <width>151</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::StrongFocus</enum>
+          </property>
+          <property name="contextMenuPolicy">
+           <enum>Qt::NoContextMenu</enum>
+          </property>
+          <property name="text">
+           <string>Membre d'une AGA</string>
+          </property>
+         </widget>
+         <widget class="UpPushButton" name="GererCompteuppushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>266</x>
+            <y>137</y>
+            <width>210</width>
+            <height>35</height>
+           </rect>
+          </property>
+          <property name="contextMenuPolicy">
+           <enum>Qt::NoContextMenu</enum>
+          </property>
+          <property name="text">
+           <string>Gérer les comptes bancaires</string>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
          <widget class="QGroupBox" name="ComptagroupBox">
           <property name="geometry">
            <rect>
             <x>5</x>
-            <y>5</y>
-            <width>170</width>
-            <height>140</height>
+            <y>0</y>
+            <width>191</width>
+            <height>160</height>
            </rect>
           </property>
           <property name="contextMenuPolicy">
@@ -570,7 +611,7 @@ lieux d'activité</string>
            <property name="geometry">
             <rect>
              <x>8</x>
-             <y>110</y>
+             <y>130</y>
              <width>160</width>
              <height>22</height>
             </rect>
@@ -592,7 +633,7 @@ lieux d'activité</string>
            <property name="geometry">
             <rect>
              <x>8</x>
-             <y>50</y>
+             <y>73</y>
              <width>160</width>
              <height>22</height>
             </rect>
@@ -614,7 +655,7 @@ lieux d'activité</string>
            <property name="geometry">
             <rect>
              <x>8</x>
-             <y>75</y>
+             <y>97</y>
              <width>160</width>
              <height>22</height>
             </rect>
@@ -642,7 +683,7 @@ lieux d'activité</string>
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>95</y>
+             <y>116</y>
              <width>151</width>
              <height>16</height>
             </rect>
@@ -651,79 +692,41 @@ lieux d'activité</string>
             <enum>Qt::Horizontal</enum>
            </property>
           </widget>
-         </widget>
-         <widget class="UpRadioButton" name="AGAupRadioButton">
-          <property name="geometry">
-           <rect>
-            <x>13</x>
-            <y>152</y>
-            <width>151</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="focusPolicy">
-           <enum>Qt::StrongFocus</enum>
-          </property>
-          <property name="contextMenuPolicy">
-           <enum>Qt::NoContextMenu</enum>
-          </property>
-          <property name="text">
-           <string>Membre d'une AGA</string>
-          </property>
-         </widget>
-         <widget class="QWidget" name="CompteActeswidget" native="true">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>10</y>
-            <width>298</width>
-            <height>71</height>
-           </rect>
-          </property>
-          <widget class="UpComboBox" name="CompteActescomboBox">
+          <widget class="UpRadioButton" name="ComptaLiberalSELupRadioButton">
            <property name="geometry">
             <rect>
-             <x>0</x>
-             <y>40</y>
-             <width>297</width>
-             <height>26</height>
+             <x>8</x>
+             <y>49</y>
+             <width>171</width>
+             <height>22</height>
             </rect>
            </property>
-           <property name="toolTip">
-            <string>Le compte bancaire utilisé par défaut
-pour l'encaissement des honoraires</string>
+           <property name="focusPolicy">
+            <enum>Qt::StrongFocus</enum>
            </property>
-          </widget>
-          <widget class="QLabel" name="CompteActeslabel">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>208</width>
-             <height>41</height>
-            </rect>
+           <property name="contextMenuPolicy">
+            <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Compte bancaire utilisé
-pour l'enregistrement des actes</string>
+            <string>Activité libérale en SEL</string>
            </property>
           </widget>
          </widget>
          <widget class="QWidget" name="CompteComptawidget" native="true">
           <property name="geometry">
            <rect>
-            <x>180</x>
+            <x>200</x>
             <y>80</y>
-            <width>298</width>
+            <width>281</width>
             <height>51</height>
            </rect>
           </property>
-          <widget class="UpComboBox" name="CompteComptacomboBox">
+          <widget class="UpComboBox" name="CompteParDefautcomboBox">
            <property name="geometry">
             <rect>
-             <x>0</x>
+             <x>10</x>
              <y>20</y>
-             <width>297</width>
+             <width>270</width>
              <height>26</height>
             </rect>
            </property>
@@ -731,7 +734,7 @@ pour l'enregistrement des actes</string>
           <widget class="QLabel" name="CompteComptalabel">
            <property name="geometry">
             <rect>
-             <x>0</x>
+             <x>10</x>
              <y>0</y>
              <width>271</width>
              <height>21</height>
@@ -742,43 +745,21 @@ pour l'enregistrement des actes</string>
            </property>
           </widget>
          </widget>
-         <widget class="UpPushButton" name="GererCompteuppushButton">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>266</x>
-            <y>137</y>
-            <width>210</width>
-            <height>35</height>
-           </rect>
-          </property>
-          <property name="contextMenuPolicy">
-           <enum>Qt::NoContextMenu</enum>
-          </property>
-          <property name="text">
-           <string>Gérer les comptes bancaires</string>
-          </property>
-          <property name="flat">
-           <bool>false</bool>
-          </property>
-         </widget>
          <widget class="QWidget" name="Employeurwidget" native="true">
           <property name="geometry">
            <rect>
-            <x>180</x>
+            <x>200</x>
             <y>10</y>
-            <width>298</width>
+            <width>281</width>
             <height>51</height>
            </rect>
           </property>
           <widget class="UpComboBox" name="EmployeurcomboBox">
            <property name="geometry">
             <rect>
-             <x>0</x>
+             <x>12</x>
              <y>20</y>
-             <width>297</width>
+             <width>270</width>
              <height>26</height>
             </rect>
            </property>
@@ -786,7 +767,7 @@ pour l'enregistrement des actes</string>
           <widget class="QLabel" name="Employeurlabel">
            <property name="geometry">
             <rect>
-             <x>0</x>
+             <x>10</x>
              <y>0</y>
              <width>271</width>
              <height>21</height>
@@ -1450,7 +1431,7 @@ pour l'enregistrement des actes</string>
 inactifs</string>
    </property>
    <property name="icon">
-    <iconset resource="../assets/Images/images.qrc">
+    <iconset resource="../../Rufus/assets/Images/images.qrc">
      <normaloff>:/3DcursorOFF.png</normaloff>:/3DcursorOFF.png</iconset>
    </property>
    <property name="iconSize">
@@ -1518,10 +1499,7 @@ inactifs</string>
   <tabstop>GererCompteuppushButton</tabstop>
   <tabstop>ListUserstableWidget</tabstop>
   <tabstop>AGAupRadioButton</tabstop>
-  <tabstop>ComptaLiberalupRadioButton</tabstop>
-  <tabstop>ComptaRemplaupRadioButton</tabstop>
   <tabstop>CotationupRadioButton</tabstop>
-  <tabstop>ComptaNoLiberalupRadioButton</tabstop>
   <tabstop>Secteur1upRadioButton</tabstop>
   <tabstop>Secteur2upRadioButton</tabstop>
   <tabstop>Secteur3upRadioButton</tabstop>
@@ -1531,8 +1509,6 @@ inactifs</string>
   <tabstop>ResponsableupRadioButton</tabstop>
   <tabstop>AssistantupRadioButton</tabstop>
  </tabstops>
- <resources>
-  <include location="../assets/Images/images.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

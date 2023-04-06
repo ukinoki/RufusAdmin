@@ -1256,6 +1256,16 @@ des lieux d'activité</string>
               <string>Modifier la
 liste des villes</string>
              </property>
+             <property name="icon">
+              <iconset resource="assets/Images/images.qrc">
+               <normaloff>:/Rufus/assets/Images/nature.png</normaloff>:/Rufus/assets/Images/nature.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
             </widget>
            </item>
            <item>

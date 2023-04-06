@@ -8,10 +8,11 @@
 
 class OsTask : public QObject
 {
-    Q_OBJECT
+   Q_OBJECT
 public slots:
     void        executeScript(const QString &script)
     {
+        //qDebug() << script;
         QEventLoop loop;
         QProcess dumpProcess(parent());
         dumpProcess.start(script);
@@ -36,7 +37,8 @@ class Controller : public QObject
 private:
     OsTask *m_task = Q_NULLPTR;
 public:
-    ~Controller() {
+    ~Controller()
+    {
         OsTaskThread.quit();
         OsTaskThread.wait();
     }

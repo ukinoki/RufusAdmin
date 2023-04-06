@@ -42,9 +42,9 @@ public: //static
     static int COMPTA_AVEC_COTATION_SANS_COMPTABILITE; //2
     static int COMPTA_SANS_COTATION_AVEC_COMPTABILITE; //3
 
-    enum ENREGISTREMENTHONORAIRES {Liberal, Salarie, Retrocession, NoCompta};                       Q_ENUM(ENREGISTREMENTHONORAIRES)
+    enum ENREGISTREMENTHONORAIRES {Liberal, LiberalSEL, Salarie, Retrocession, NoCompta};                   Q_ENUM(ENREGISTREMENTHONORAIRES)
     enum METIER {Ophtalmo, Orthoptiste, AutreSoignant, NonSoignant, SocieteComptable, NoMetier, Neutre};    Q_ENUM(METIER)
-    enum RESPONSABLE {Responsable, AlterneResponsablePasResponsable, PasResponsable};               Q_ENUM(RESPONSABLE)
+    enum RESPONSABLE {Responsable, AlterneResponsablePasResponsable, PasResponsable};                       Q_ENUM(RESPONSABLE)
 
 private:
 
@@ -65,7 +65,6 @@ private:
     QString m_specialite = "";          //!> la spécialité
     QString m_numCO = "";               //!> le no du conseil de l'ordre
     QString m_portable = "";            //!> le no de téléphone portable
-    QString m_web = "";                 //!> le site web
     QString m_memo = "";                //!> memo sur l'utilisateur
     QString m_policeEcran = "";         //!> le choix de police d'écran de l'utilisateur
     QString m_policeAttribut = "";      //!> le choix d'attribut de la police d'écran
@@ -76,7 +75,6 @@ private:
     qlonglong m_numPS;
     int m_noSpecialite;
 
-    int m_poste;
     int m_employeur;
     int m_medecin;
 
@@ -143,6 +141,7 @@ public:
                                               m_data[CP_DATECREATIONMDP_USR] = date.toString("yyyy-MM-dd"); }
     QString nom() const;
     QString prenom() const;
+    QString grandnom() const {return (m_prenom !=""? m_prenom + " " : "") + m_nom;};
     METIER metier() const;                                          //!< Ophtalmo, Orthoptiste, AutreSoignant, NonSoignant, SocieteComptable, NoMetier
     ENREGISTREMENTHONORAIRES modeenregistrementhonoraires() const;  //!< Liberal, Salarie, Retrocession, NoCompta
     QString titre() const;
@@ -155,9 +154,7 @@ public:
     void setAGA(bool aga) {m_AGA = aga;}
     int idemployeur() const;
     int idcompteencaissementhonoraires() const;
-    void setidcompteencaissementhonoraires(int id)
-                                            { m_idCompteEncaissHonoraires = id;
-                                              m_data[CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR] = id;}
+    void setidcompteencaissementhonoraires(int id)  { m_idCompteEncaissHonoraires = id;}
     QString fonction() const;
 
     QFont police() const {
@@ -213,9 +210,10 @@ public:
     bool isSocComptable();
     bool isNeutre();
     bool isSoignant();
-    bool isComptable();
+    bool isComptableActes();
     bool isLiberal();
-    bool isSalarie();
+    bool isLiberalSEL();
+    bool isSoignantSalarie();
     bool isRemplacant();
     bool isSansCompta();
     bool isResponsable();

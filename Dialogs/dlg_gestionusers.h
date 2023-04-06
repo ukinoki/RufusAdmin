@@ -69,6 +69,7 @@ private:
     bool                    m_soccomptable;
     bool                    m_assistant;
     bool                    m_liberal;
+    bool                    m_liberalSEL;
     bool                    m_pasliberal;
     bool                    m_retrocession;
     bool                    m_cotation;
@@ -76,6 +77,7 @@ private:
     bool                    m_responsable;
     bool                    m_respsalarie;
     bool                    m_respliberal;
+    bool                    m_respliberalSEL;
     bool                    m_soigntnonrplct;
 
     bool                    m_ok;
@@ -89,12 +91,10 @@ private:
     QString                 m_nouvMDP, m_ancMDP, m_confirmMDP;
     QStringList             gListBanques;
     UpDialog                *gAskMDP;
-    void                    ActualiseRsgnmtBanque(bool soccomptable);
     void                    Annulation();
     bool                    AfficheParamUser(int idUser);
-    void                    CalcListitemsCompteActescomboBox(User *usr);
     void                    CalcListitemsCompteComptacomboBox(User *usr, bool soccomptable);
-    void                    CalcListitemsEmployeurcomboBox(int iduser);
+    void                    CalcListitemsEmployeurcomboBox(User* usr);
     void                    DefinitLesVariables();
     void                    EnregistreNouvMDP();
     void                    EnregistreNouvUser();

@@ -87,8 +87,8 @@ TRANSLATIONS    = rufusadmin_en.ts
 ICON = Sunglasses.icns
 
 OSX {
-INCLUDEPATH += /usr/local/include/poppler/qt5
-LIBS += -L/usr/local/lib/ -lpoppler-qt5
+INCLUDEPATH += /usr/local/opt/poppler-qt5/include/poppler/qt5
+LIBS += -L/usr/local/opt/poppler-qt5/lib/ -lpoppler-qt5
 # la ligne qui suit impose un fichier info.plist préconfiguré dans le package
 # en inserant les 2 lignes qui suivent dans ce fichier, l'application est réduite à une icone dans la barre des taches
 #   elle ne figure pas dans le dock et le menu est supprimé
@@ -102,12 +102,7 @@ LIBS += -L/usr/local/lib/ -lpoppler-qt5
 }
 
 DISTFILES += \
-    _Diagrams/ImpressionsRufus.vpp \
-    _Diagrams/readme.txt \
-    _Diagrams/Gestion des documents sous Rufus.pdf \
-    _Diagrams/Recuperation_CCAM-howto.txt \
-    _Diagrams/Creer_des_procedures_mysql_avec_Qt.rtf \
-    assets/A_faire.odt \
-    COPYING
+    assets/Licenses/License.rtf \
+    assets/Licenses/LICENSE
 
 

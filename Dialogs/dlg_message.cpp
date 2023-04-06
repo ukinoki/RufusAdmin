@@ -76,6 +76,7 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     idmessage           = idprioritymessage;
     QDialog             *prioritydlg = new QDialog(parent);
     prioritydlg         ->setAttribute(Qt::WA_DeleteOnClose);
+    //prioritydlg->setModal(true);
     prioritydlg         ->setSizeGripEnabled(false);
 
     UpLabel *imglbl     = new UpLabel(prioritydlg);
@@ -113,7 +114,7 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     prioritydlg         ->show();
     if (parent != Q_NULLPTR)
         parent->setEnabled(false);
-    Utils::Pause(500);
+    //Utils::Pause(500);
     connect(this,   &ShowMessage::closeprioiritydlg, prioritydlg, [=](qintptr a) { if (idmessage == a) {
             if (prioritydlg->parent() != Q_NULLPTR)
                 static_cast<QWidget*>(prioritydlg->parent())->setEnabled(true);

@@ -19,7 +19,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define MACROS_H
 
 // Les versions de la base et des ressources
-#define VERSION_BASE                                74  // version de la base de données
+#define VERSION_BASE                                75  // version de la base de données
 #define VERSION_RESSOURCES                          35  // version des fichiers de ressources
 
 // Les bases
@@ -379,16 +379,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_DROITS_USR                                   "UserDroits"
 #define CP_LOGIN_USR                                    "UserLogin"
 #define CP_MDP_USR                                      "UserMDP"
-#define CP_ADRESSE1_USR                                 "UserAdresse1"    //!> pas utilisé
-#define CP_ADRESSE2_USR                                 "UserAdresse2"    //!> pas utilisé
-#define CP_ADRESSE3_USR                                 "UserAdresse3"    //!> pas utilisé
-#define CP_CP_USR                                       "UserCodePostal"  //!> pas utilisé
-#define CP_VILLE_USR                                    "UserVille"       //!> pas utilisé
 #define CP_TEL_USR                                      "UserTelephone"   //!> pas utilisé
-#define CP_POSTE_USR                                    "UserPoste"
 #define CP_PORTABLE_USR                                 "UserPortable"
-#define CP_FAX_USR                                      "UserFax"         //!> pas utilisé
-#define CP_WEBSITE_USR                                  "UserWeb"
 #define CP_MAIL_USR                                     "UserMail"
 #define CP_MEMO_USR                                     "UserMemo"       //!> pas utilisé
 #define CP_IDCOMPTEPARDEFAUT_USR                        "IdCompteParDefaut"
@@ -399,7 +391,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_RESPONSABLEACTES_USR                         "ResponsableActes"
 #define CP_ENREGHONORAIRES_USR                          "UserEnregHonoraires"
 #define CP_IDEMPLOYEUR_USR                              "UserEmployeur"
-#define CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR           "idCompteEncaissHonoraires"
 #define CP_ISDESACTIVE_USR                              "UserDesactive"
 #define CP_POLICEECRAN_USR                              "UserPoliceEcran"
 #define CP_POLICEATTRIBUT_USR                           "UserPoliceAttribut"
@@ -912,7 +903,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define STYLE_UPGROUBOXINACTIVE     "UpGroupBox {font: bold; border: 1px solid rgb(164,164,164); border-radius: 10px;}"
 #define STYLE_UPGROUBOXACTIVE       "UpGroupBox {border: 2px solid rgb(164, 205, 255); border-radius: 10px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E0E0E0, stop: 1 #FFFFFF);}"
 #define STYLE_UPSMALLBUTTON         "UpSmallButton {border: 1px none black; padding-left: 8px; padding-top: 3px; padding-right: 8px; padding-bottom: 3px;}UpSmallButton:pressed {background-color: rgb(205, 205, 205);}UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}"
-#define STYLE_UPPUSHBUTTON          "UpPushButton {border: 1px solid gray; border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px; padding-left: 8px; padding-right: 8px; padding-top: 3px; padding-bottom: 3px; qproperty-iconSize: 30px 30px; qproperty-flat: false; color : #000000; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);} UpPushButton:focus {color : #000000; border: 2px solid rgb(164, 205, 255); border-radius: 5px;} UpPushButton:pressed {color : gray; background-color: rgb(175, 175, 175);} UpPushButton:!enabled {color : gray;}"
+#define STYLE_UPPUSHBUTTON          "UpPushButton {border: 1px solid gray; border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px; padding-left: 8px; padding-right: 8px; padding-top: 3px; padding-bottom: 3px; qproperty-iconSize: 35px 35px; qproperty-flat: false; color : #000000; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);} UpPushButton:focus {color : #000000; border: 2px solid rgb(164, 205, 255); border-radius: 5px;} UpPushButton:pressed {color : gray; background-color: rgb(175, 175, 175);} UpPushButton:!enabled {color : gray;}"
 #define STYLE_UPSWITCH              "UpSwitch {border-radius: 10px; background-color:rgba(50,200,105,145);}"
 
 // la police d'écran par défaut et le facteur de correction des td width html en impression qui varie entre Linux et OSX (???)
@@ -928,16 +919,19 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define OPHTALIBERAL            "ophlib"
 #define OPHTAREMPLACANT         "ophrmp"
 #define OPHTASALARIE            "ophsal"
+#define OPHTASEL                "ophsel"
 #define OPHTANOCOMPTA           "ophnocompta"
 #define OPHTAASSISTANT          "ophassistant"
 #define ORTHOLIBERAL            "ortholib"
 #define ORTHOREMPLACANT         "orthormp"
 #define ORTHOSALARIE            "orthosal"
+#define ORTHOSEL                "orthosel"
 #define ORTHONOCOMPTA           "orthonocompta"
 #define ORTHOASSISTANT          "orthoassistant"
 #define AUTRESOIGNANTLIBERAL    "autresoignantlib"
 #define AUTRESOIGNANTREMPLACANT "autresoignantrmp"
 #define AUTRESOIGNANTSALARIE    "autresoignantsal"
+#define AUTRESOIGNANTSEL        "autresoignantsel"
 #define AUTRESOIGNANTNOCOMPTA   "autrenocompta"
 #define AUTRESOIGNANTASSISTANT  "autreassistant"
 #define AUTREFONCTION           "a"
