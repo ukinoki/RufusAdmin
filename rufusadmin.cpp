@@ -337,6 +337,11 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     Datas::I()->banques->initListe();
     Datas::I()->motifs->initListe();
 
+    //!-------------------- GESTION DES COTATIONS FRANCE-------------------------------------------------------*/
+    ui->CotationsFrancecheckBox->setChecked(db->parametres()->cotationsfrance());
+    connect (ui->CotationsFrancecheckBox, &QCheckBox::stateChanged, this, [=](int state){db->setcotationsfrance(state == Qt::Checked);});
+    //!-------------------- GESTION DES COTATIONS FRANCE-------------------------------------------------------*/
+
     //!-------------------- GESTION DES VILLES ET DES CODES POSTAUX-------------------------------------------------------*/
     enum Villes::TownsFrom from;
     if (m_parametres->villesfrance())

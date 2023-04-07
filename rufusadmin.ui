@@ -27,6 +27,9 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QFrame" name="Sauvegardeframe">
       <property name="minimumSize">
@@ -700,7 +703,7 @@ la base</string>
         <property name="minimumSize">
          <size>
           <width>340</width>
-          <height>225</height>
+          <height>235</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -882,7 +885,7 @@ de passe administrateur</string>
         <property name="minimumSize">
          <size>
           <width>200</width>
-          <height>225</height>
+          <height>235</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -918,7 +921,7 @@ de passe administrateur</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>50</height>
+             <height>45</height>
             </size>
            </property>
            <property name="maximumSize">
@@ -950,7 +953,7 @@ de passe administrateur</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>51</height>
+             <height>45</height>
             </size>
            </property>
            <property name="maximumSize">
@@ -983,7 +986,7 @@ de consultation</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>50</height>
+             <height>45</height>
             </size>
            </property>
            <property name="maximumSize">
@@ -1016,7 +1019,7 @@ organismes bancaires</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>50</height>
+             <height>45</height>
             </size>
            </property>
            <property name="maximumSize">
@@ -1040,6 +1043,38 @@ des lieux d'activité</string>
             <size>
              <width>35</width>
              <height>35</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="UpPushButton" name="ExportImagespushButton">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>45</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="contextMenuPolicy">
+            <enum>Qt::NoContextMenu</enum>
+           </property>
+           <property name="text">
+            <string>Exporter les donnéees</string>
+           </property>
+           <property name="icon">
+            <iconset resource="assets/Images/images.qrc">
+             <normaloff>:/Valide.png</normaloff>:/Valide.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
             </size>
            </property>
           </widget>
@@ -1078,7 +1113,7 @@ des lieux d'activité</string>
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>225</height>
+          <height>235</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -1142,35 +1177,32 @@ des lieux d'activité</string>
           </widget>
          </item>
          <item>
-          <widget class="UpPushButton" name="ExportImagespushButton">
+          <widget class="QGroupBox" name="CotationsgroupBox">
            <property name="minimumSize">
             <size>
-             <width>0</width>
-             <height>50</height>
+             <width>350</width>
+             <height>40</height>
             </size>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>190</width>
-             <height>50</height>
-            </size>
+           <property name="title">
+            <string/>
            </property>
-           <property name="contextMenuPolicy">
-            <enum>Qt::NoContextMenu</enum>
-           </property>
-           <property name="text">
-            <string>Exporter les donnéees</string>
-           </property>
-           <property name="icon">
-            <iconset resource="assets/Images/images.qrc">
-             <normaloff>:/Valide.png</normaloff>:/Valide.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
+           <widget class="QCheckBox" name="CotationsFrancecheckBox">
+            <property name="geometry">
+             <rect>
+              <x>5</x>
+              <y>10</y>
+              <width>340</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Utiliser les cotations d'actes françaises</string>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+           </widget>
           </widget>
          </item>
          <item>
@@ -1258,7 +1290,7 @@ liste des villes</string>
              </property>
              <property name="icon">
               <iconset resource="assets/Images/images.qrc">
-               <normaloff>:/Rufus/assets/Images/nature.png</normaloff>:/Rufus/assets/Images/nature.png</iconset>
+               <normaloff>:/nature.png</normaloff>:/nature.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -1446,19 +1478,24 @@ liste des villes</string>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>UpLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>uplineedit.h</header>
+  </customwidget>
+  <customwidget>
    <class>UpPushButton</class>
    <extends>QPushButton</extends>
    <header>uppushbutton.h</header>
   </customwidget>
   <customwidget>
+   <class>UpComboBox</class>
+   <extends>QComboBox</extends>
+   <header>upcombobox.h</header>
+  </customwidget>
+  <customwidget>
    <class>UpTableWidget</class>
    <extends>QTableWidget</extends>
    <header>uptablewidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>UpLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>uplineedit.h</header>
   </customwidget>
   <customwidget>
    <class>UpSmallButton</class>
@@ -1469,11 +1506,6 @@ liste des villes</string>
    <class>UpLabel</class>
    <extends>QLabel</extends>
    <header>uplabel.h</header>
-  </customwidget>
-  <customwidget>
-   <class>UpComboBox</class>
-   <extends>QComboBox</extends>
-   <header>upcombobox.h</header>
   </customwidget>
   <customwidget>
    <class>UpRadioButton</class>
