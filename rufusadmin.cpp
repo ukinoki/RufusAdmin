@@ -271,6 +271,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     ui->Exportframe         ->setVisible(db->ModeAccesDataBase() != Utils::Distant);
     QString Base = (db->ModeAccesDataBase() == Utils::Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
+    connect (ui->StockageupLineEdit, &QLineEdit::textChanged, this, [=](QString s) {ui->StockageupLineEdit->setImmediateToolTip(s);});
     ui->StockageupLineEdit->setText(m_parametres->dirimagerieserveur());
 
     ReconstruitListeLieuxExercice();
@@ -288,6 +289,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     if (db->ModeAccesDataBase() == Utils::Poste)
     {
+        connect (ui->DirBackupuplineEdit, &QLineEdit::textChanged, this, [=](QString s) {ui->DirBackupuplineEdit->setImmediateToolTip(s);});
         if (QDir(m_parametres->dirbkup()).exists())
             ui->DirBackupuplineEdit->setText(m_parametres->dirbkup());
         if (m_parametres->heurebkup().isValid())
@@ -318,7 +320,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ictray_RufusAdminTrayIcon->setIcon(ic_RufusAdmin);
     ictray_RufusAdminTrayIcon->setVisible(true);
     connect(trayIconMenu,   &QMenu::aboutToShow,    this,   &RufusAdmin::TrayIconMenu);
-    ui->MessageupLabel->setText("");
 
     m_importdocsexternesthread = new ImportDocsExternesThread();
     connect(m_importdocsexternesthread,        QOverload<QStringList, int>::of(&ImportDocsExternesThread::emitmsg),

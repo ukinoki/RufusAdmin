@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>960</width>
+    <width>1072</width>
     <height>900</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>960</width>
+    <width>1072</width>
     <height>900</height>
    </size>
   </property>
@@ -26,10 +26,7 @@
    <string>RufusAdmin</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_3">
-    <property name="spacing">
-     <number>0</number>
-    </property>
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <widget class="QFrame" name="Sauvegardeframe">
       <property name="minimumSize">
@@ -71,6 +68,18 @@
        </property>
        <item>
         <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
          <property name="horizontalSpacing">
           <number>7</number>
          </property>
@@ -120,8 +129,14 @@
           <widget class="UpLineEdit" name="DirBackupuplineEdit">
            <property name="minimumSize">
             <size>
-             <width>517</width>
+             <width>435</width>
              <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>435</width>
+             <height>16777215</height>
             </size>
            </property>
            <property name="focusPolicy">
@@ -140,6 +155,18 @@
          </item>
          <item row="0" column="5">
           <widget class="QPushButton" name="DirBackuppushButton">
+           <property name="minimumSize">
+            <size>
+             <width>40</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>40</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
@@ -479,7 +506,7 @@ la base</string>
       </property>
       <property name="maximumSize">
        <size>
-        <width>16777215</width>
+        <width>990</width>
         <height>1677215</height>
        </size>
       </property>
@@ -554,10 +581,10 @@ la base</string>
       <widget class="QLabel" name="StockageupLabel">
        <property name="geometry">
         <rect>
-         <x>7</x>
-         <y>256</y>
-         <width>351</width>
-         <height>16</height>
+         <x>8</x>
+         <y>251</y>
+         <width>384</width>
+         <height>18</height>
         </rect>
        </property>
        <property name="contextMenuPolicy">
@@ -570,21 +597,21 @@ la base</string>
       <widget class="QPushButton" name="StockageupPushButton">
        <property name="geometry">
         <rect>
-         <x>870</x>
-         <y>250</y>
-         <width>54</width>
-         <height>32</height>
+         <x>845</x>
+         <y>251</y>
+         <width>40</width>
+         <height>25</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
-         <width>54</width>
+         <width>40</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>54</width>
+         <width>40</width>
          <height>16777215</height>
         </size>
        </property>
@@ -598,21 +625,21 @@ la base</string>
       <widget class="UpLineEdit" name="StockageupLineEdit">
        <property name="geometry">
         <rect>
-         <x>358</x>
-         <y>254</y>
-         <width>465</width>
-         <height>21</height>
+         <x>404</x>
+         <y>251</y>
+         <width>435</width>
+         <height>25</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
-         <width>465</width>
+         <width>435</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>490</width>
+         <width>435</width>
          <height>16777215</height>
         </size>
        </property>
@@ -694,22 +721,22 @@ la base</string>
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="5,0,5,0,5">
       <property name="spacing">
-       <number>0</number>
+       <number>3</number>
       </property>
       <item>
        <widget class="QFrame" name="AdminFrame">
         <property name="minimumSize">
          <size>
-          <width>340</width>
-          <height>235</height>
+          <width>0</width>
+          <height>262</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>340</width>
-          <height>225</height>
+          <width>320</width>
+          <height>262</height>
          </size>
         </property>
         <property name="frameShape">
@@ -724,34 +751,34 @@ la base</string>
         <property name="midLineWidth">
          <number>0</number>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <property name="spacing">
-          <number>0</number>
+          <number>2</number>
          </property>
          <property name="leftMargin">
-          <number>5</number>
+          <number>2</number>
          </property>
          <property name="topMargin">
-          <number>5</number>
+          <number>2</number>
          </property>
          <property name="rightMargin">
-          <number>5</number>
+          <number>2</number>
          </property>
          <property name="bottomMargin">
-          <number>5</number>
+          <number>2</number>
          </property>
          <item>
           <widget class="UpPushButton" name="InitMDPAdminpushButton">
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>50</height>
+             <height>60</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>310</width>
-             <height>50</height>
+             <width>315</width>
+             <height>16777215</height>
             </size>
            </property>
            <property name="contextMenuPolicy">
@@ -788,6 +815,18 @@ de passe administrateur</string>
          </item>
          <item>
           <widget class="QLabel" name="EmplacementServeurlabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>315</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Emplacement du serveur</string>
            </property>
@@ -795,9 +834,15 @@ de passe administrateur</string>
          </item>
          <item>
           <widget class="UpComboBox" name="EmplacementServeurupComboBox">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>310</width>
+             <width>315</width>
              <height>16777215</height>
             </size>
            </property>
@@ -818,6 +863,18 @@ de passe administrateur</string>
          </item>
          <item>
           <widget class="QLabel" name="VerifPosteImportDocslabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>315</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Poste importateur des documents</string>
            </property>
@@ -825,6 +882,18 @@ de passe administrateur</string>
          </item>
          <item>
           <widget class="QLabel" name="PosteImportDocslabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>315</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>...</string>
            </property>
@@ -832,6 +901,18 @@ de passe administrateur</string>
          </item>
          <item>
           <widget class="QLabel" name="PosteImportDocsPrioritairelabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>315</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>...</string>
            </property>
@@ -839,6 +920,18 @@ de passe administrateur</string>
          </item>
          <item>
           <widget class="QLabel" name="VersionRufuslabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>315</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Version de RufusAdmin</string>
            </property>
@@ -846,6 +939,18 @@ de passe administrateur</string>
          </item>
          <item>
           <widget class="QLabel" name="VersionBaselabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>315</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Version de la base</string>
            </property>
@@ -868,7 +973,7 @@ de passe administrateur</string>
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_3">
+       <spacer name="horizontalSpacer_10">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -884,14 +989,14 @@ de passe administrateur</string>
        <widget class="QFrame" name="Diversframe">
         <property name="minimumSize">
          <size>
-          <width>200</width>
-          <height>235</height>
+          <width>0</width>
+          <height>262</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
-          <height>225</height>
+          <width>220</width>
+          <height>262</height>
          </size>
         </property>
         <property name="frameShape">
@@ -900,9 +1005,9 @@ de passe administrateur</string>
         <property name="frameShadow">
          <enum>QFrame::Sunken</enum>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <layout class="QVBoxLayout" name="verticalLayout">
          <property name="spacing">
-          <number>0</number>
+          <number>2</number>
          </property>
          <property name="leftMargin">
           <number>2</number>
@@ -921,20 +1026,21 @@ de passe administrateur</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>45</height>
+             <height>61</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>200</width>
-             <height>50</height>
+             <width>220</width>
+             <height>16777215</height>
             </size>
            </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Gestion des utilisateurs</string>
+            <string>Gestion
+des utilisateurs</string>
            </property>
            <property name="icon">
             <iconset resource="assets/Images/images.qrc">
@@ -953,21 +1059,21 @@ de passe administrateur</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>45</height>
+             <height>61</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>200</width>
-             <height>50</height>
+             <width>220</width>
+             <height>16777215</height>
             </size>
            </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Paramétrer les motifs
-de consultation</string>
+            <string>Paramétrer les
+motifs de consultation</string>
            </property>
            <property name="icon">
             <iconset resource="assets/Images/images.qrc">
@@ -986,13 +1092,13 @@ de consultation</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>45</height>
+             <height>61</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>200</width>
-             <height>50</height>
+             <width>220</width>
+             <height>16777215</height>
             </size>
            </property>
            <property name="contextMenuPolicy">
@@ -1019,21 +1125,21 @@ organismes bancaires</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>45</height>
+             <height>61</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>200</width>
-             <height>50</height>
+             <width>220</width>
+             <height>16777215</height>
             </size>
            </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Gestion
-des lieux d'activité</string>
+            <string>Gestion des
+lieux d'activité</string>
            </property>
            <property name="icon">
             <iconset resource="assets/Images/images.qrc">
@@ -1048,38 +1154,6 @@ des lieux d'activité</string>
           </widget>
          </item>
          <item>
-          <widget class="UpPushButton" name="ExportImagespushButton">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>45</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>200</width>
-             <height>50</height>
-            </size>
-           </property>
-           <property name="contextMenuPolicy">
-            <enum>Qt::NoContextMenu</enum>
-           </property>
-           <property name="text">
-            <string>Exporter les donnéees</string>
-           </property>
-           <property name="icon">
-            <iconset resource="assets/Images/images.qrc">
-             <normaloff>:/Valide.png</normaloff>:/Valide.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -1087,7 +1161,7 @@ des lieux d'activité</string>
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>25</height>
+             <height>40</height>
             </size>
            </property>
           </spacer>
@@ -1096,7 +1170,7 @@ des lieux d'activité</string>
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_6">
+       <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -1112,14 +1186,14 @@ des lieux d'activité</string>
        <widget class="QFrame" name="Exportframe">
         <property name="minimumSize">
          <size>
-          <width>0</width>
-          <height>235</height>
+          <width>400</width>
+          <height>262</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>225</height>
+          <height>262</height>
          </size>
         </property>
         <property name="frameShape">
@@ -1128,9 +1202,9 @@ des lieux d'activité</string>
         <property name="frameShadow">
          <enum>QFrame::Sunken</enum>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
+        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="5,5,5,5,5,0">
          <property name="spacing">
-          <number>0</number>
+          <number>2</number>
          </property>
          <property name="leftMargin">
           <number>2</number>
@@ -1149,13 +1223,13 @@ des lieux d'activité</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>50</height>
+             <height>45</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>190</width>
-             <height>50</height>
+             <width>245</width>
+             <height>45</height>
             </size>
            </property>
            <property name="contextMenuPolicy">
@@ -1177,11 +1251,43 @@ des lieux d'activité</string>
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="CotationsgroupBox">
+          <widget class="UpPushButton" name="ExportImagespushButton">
            <property name="minimumSize">
             <size>
-             <width>350</width>
-             <height>40</height>
+             <width>0</width>
+             <height>45</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>245</width>
+             <height>45</height>
+            </size>
+           </property>
+           <property name="contextMenuPolicy">
+            <enum>Qt::NoContextMenu</enum>
+           </property>
+           <property name="text">
+            <string>Exporter les donnéees</string>
+           </property>
+           <property name="icon">
+            <iconset resource="assets/Images/images.qrc">
+             <normaloff>:/Valide.png</normaloff>:/Valide.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>30</height>
             </size>
            </property>
            <property name="title">
@@ -1191,32 +1297,23 @@ des lieux d'activité</string>
             <property name="geometry">
              <rect>
               <x>5</x>
-              <y>10</y>
-              <width>340</width>
-              <height>20</height>
+              <y>5</y>
+              <width>351</width>
+              <height>23</height>
              </rect>
             </property>
             <property name="text">
-             <string>Utiliser les cotations d'actes françaises</string>
-            </property>
-            <property name="autoExclusive">
-             <bool>true</bool>
+             <string>Utiliser le système français de cotation des actes</string>
             </property>
            </widget>
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="VillesgroupBox">
-           <property name="minimumSize">
-            <size>
-             <width>350</width>
-             <height>60</height>
-            </size>
-           </property>
+          <widget class="QGroupBox" name="groupBox">
            <property name="maximumSize">
             <size>
-             <width>393</width>
-             <height>16777215</height>
+             <width>16777215</width>
+             <height>46</height>
             </size>
            </property>
            <property name="title">
@@ -1226,14 +1323,20 @@ des lieux d'activité</string>
             <property name="geometry">
              <rect>
               <x>5</x>
-              <y>10</y>
-              <width>340</width>
-              <height>20</height>
+              <y>5</y>
+              <width>375</width>
+              <height>15</height>
              </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>375</width>
+              <height>0</height>
+             </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>340</width>
+              <width>375</width>
               <height>16777215</height>
              </size>
             </property>
@@ -1248,14 +1351,20 @@ des lieux d'activité</string>
             <property name="geometry">
              <rect>
               <x>5</x>
-              <y>30</y>
-              <width>340</width>
-              <height>20</height>
+              <y>25</y>
+              <width>375</width>
+              <height>15</height>
              </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>375</width>
+              <height>0</height>
+             </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>340</width>
+              <width>375</width>
               <height>16777215</height>
              </size>
             </property>
@@ -1269,19 +1378,32 @@ des lieux d'activité</string>
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="UpPushButton" name="ModifListVillesupPushButton">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="ModifListVillesupPushButton">
              <property name="minimumSize">
               <size>
-               <width>190</width>
-               <height>50</height>
+               <width>245</width>
+               <height>45</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>16777215</width>
-               <height>50</height>
+               <width>245</width>
+               <height>45</height>
               </size>
              </property>
              <property name="text">
@@ -1300,19 +1422,6 @@ liste des villes</string>
              </property>
             </widget>
            </item>
-           <item>
-            <spacer name="horizontalSpacer_8">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
           </layout>
          </item>
          <item>
@@ -1322,8 +1431,8 @@ liste des villes</string>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>13</width>
-             <height>23</height>
+             <width>20</width>
+             <height>0</height>
             </size>
            </property>
           </spacer>
@@ -1336,69 +1445,9 @@ liste des villes</string>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="UpLabel" name="MessageupLabel">
-        <property name="minimumSize">
-         <size>
-          <width>700</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer_5">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="UpLabel" name="LockParamPosteupLabel">
-        <property name="minimumSize">
-         <size>
-          <width>48</width>
-          <height>48</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>48</width>
-          <height>48</height>
-         </size>
-        </property>
-        <property name="cursor">
-         <cursorShape>PointingHandCursor</cursorShape>
-        </property>
-        <property name="contextMenuPolicy">
-         <enum>Qt::NoContextMenu</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Preferred</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -1456,46 +1505,23 @@ liste des villes</string>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>960</width>
-     <height>24</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>UpLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>uplineedit.h</header>
-  </customwidget>
   <customwidget>
    <class>UpPushButton</class>
    <extends>QPushButton</extends>
    <header>uppushbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>UpComboBox</class>
-   <extends>QComboBox</extends>
-   <header>upcombobox.h</header>
-  </customwidget>
-  <customwidget>
    <class>UpTableWidget</class>
    <extends>QTableWidget</extends>
    <header>uptablewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>uplineedit.h</header>
   </customwidget>
   <customwidget>
    <class>UpSmallButton</class>
@@ -1506,6 +1532,11 @@ liste des villes</string>
    <class>UpLabel</class>
    <extends>QLabel</extends>
    <header>uplabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UpComboBox</class>
+   <extends>QComboBox</extends>
+   <header>upcombobox.h</header>
   </customwidget>
   <customwidget>
    <class>UpRadioButton</class>
