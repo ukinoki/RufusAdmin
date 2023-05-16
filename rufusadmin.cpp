@@ -2339,7 +2339,7 @@ void RufusAdmin::RestaureBase()
                     else
                     {
                         QString Msg = (tr("Restauration des fichiers d'imagerie\n")
-                                     + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base d'images"));
+                                       + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base d'images"));
                         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         QString dirrestaureimagerie    = rootimg.absolutePath() + NOM_DIR_IMAGES;
                         int t = 0;
@@ -2348,7 +2348,8 @@ void RufusAdmin::RestaureBase()
                         progdial->show();
                         int n = 0;
                         Utils::copyfolderrecursively(dirrestaureimagerie, dirdestinationimg, n, tr("Copie des fichiers d'imagerie"), progdial);
-                        delete progdial;                            msg += tr("Fichiers d'imagerie restaurés\n");
+                        delete progdial;
+                        msg += tr("Fichiers d'imagerie restaurés\n");
                         UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers d'imagerie restaurés"), Icons::icSunglasses(), 3000);
                     }
                 }
@@ -2371,7 +2372,7 @@ void RufusAdmin::RestaureBase()
                     else
                     {
                         QString Msg = (tr("Restauration des factures\n")
-                                    + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de factures"));
+                                       + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de factures"));
                         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
                         QString dirrestaurefactures    = rootimg.absolutePath() + NOM_DIR_FACTURES;
                         int t = 0;
@@ -2380,13 +2381,14 @@ void RufusAdmin::RestaureBase()
                         progdial->show();
                         int n = 0;
                         Utils::copyfolderrecursively(dirrestaurefactures, dirdestinationfact, n, tr("Copie des factures"), progdial);
-                        delete progdial;                            msg += tr("Fichiers factures restaurés\n");
+                        delete progdial;
+                        msg += tr("Fichiers factures restaurés\n");
                         UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers factures restaurés"), Icons::icSunglasses(), 3000);
                     }
                 }
             }
             /*! 4e - restauration des videos */
-            else if (chk->accessibleDescription() == "videos")
+            if (chk->accessibleDescription() == "videos")
             {
                 if (chk->isChecked())
                 {
@@ -2414,7 +2416,7 @@ void RufusAdmin::RestaureBase()
                         Utils::copyfolderrecursively(dirrestaurevideo, dirdestinationvid, n, tr("Copie des videos"), progdial);
                         delete progdial;
                         msg += tr("Fichiers videos restaurés\n");
-                        UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Fichiers videos restaurés"), Icons::icSunglasses(), 3000);
+                        UpSystemTrayIcon::I()->showMessage(tr("Messages"),tr("Fichiers videos restaurés"), Icons::icSunglasses(), 3000);
                     }
                 }
             }
@@ -2953,7 +2955,6 @@ void RufusAdmin::DefinitScriptBackup(QString pathbackupbase)
     QString executabledump = QDir::toNativeSeparators(dirSQLExecutable() + "/mysqldump");
     QString scriptbackup= "#!/bin/bash";
     scriptbackup += CRLF;
-    // élaboration du script de backup
     // Sauvegarde des 4 bases de Rufus
     scriptbackup += executabledump + " --force --opt --user=\"" LOGIN_SQL "\" -p\"" MDP_SQL "\" --skip-lock-tables --events --databases " DB_CONSULTS " > \"" + QDir::toNativeSeparators(pathbackupbase + "/" DB_CONSULTS ".sql") + "\"";
     scriptbackup += CRLF;
@@ -3253,7 +3254,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
             delete progdial;
         }
     }
-    else
+     else
     {
         result(handledlg, this);
         return false;
