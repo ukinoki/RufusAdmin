@@ -48,7 +48,6 @@ SOURCES += \
     flags.cpp
 
 HEADERS += \
-    ostask.h \
     rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \
@@ -89,12 +88,8 @@ ICON = Sunglasses.icns
 OSX {
 INCLUDEPATH += /usr/local/opt/poppler-qt5/include/poppler/qt5
 LIBS += -L/usr/local/opt/poppler-qt5/lib/ -lpoppler-qt5
-# la ligne qui suit impose un fichier info.plist préconfiguré dans le package
-# en inserant les 2 lignes qui suivent dans ce fichier, l'application est réduite à une icone dans la barre des taches
-#   elle ne figure pas dans le dock et le menu est supprimé
-#	<key>LSUIElement</key>
-#	<string>1</string>
-#QMAKE_INFO_PLIST = info.plist
+INCLUDEPATH += /usr/local/opt/poppler-qt5/include/poppler/qt5
+LIBS += -L/usr/local/opt/poppler-qt5/lib/ -lpoppler-qt5
 }
 LINUX {
 INCLUDEPATH += /usr/include/poppler/qt5

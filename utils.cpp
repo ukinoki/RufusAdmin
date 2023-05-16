@@ -47,7 +47,7 @@ QRegExp const Utils::rgx_NNI = QRegExp("[12][0-9]{14}");
 
 QRegExp const Utils::rgx_adresse = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -]*");
 QRegExp const Utils::rgx_intitulecompta = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -/%]*");
-QRegExp const Utils::rgx_CP = QRegExp("[0-9]{5}");
+QRegExp const Utils::rgx_CP = QRegExp(cp());
 QRegExp const Utils::rgx_ville = QRegExp("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ -]*");
 QRegExp const Utils::rgx_telephone = QRegExp("[0-9 ]*");
 
@@ -217,7 +217,7 @@ QString Utils::retirecaracteresaccentues(QString nom)
  */
 bool Utils::convertHTML(QString &text)
 {
-    UpTextEdit textprov;
+    QTextEdit textprov;
     textprov.setText( text );
     text = textprov.toHtml();
     return retirelignevidefinhtml(text);
@@ -231,7 +231,7 @@ bool Utils::convertHTML(QString &text)
  */
 void Utils::convertPlainText(QString &text)
 {
-    UpTextEdit textprov;
+    QTextEdit textprov;
     textprov.setText( text );
     text = textprov.toPlainText();
     text  = trim(text, true, true);
@@ -292,6 +292,92 @@ bool Utils::retirelignevidefinhtml(QString &txthtml)
     }
     return ligneretiree;
 }
+
+bool Utils::epureFontFamily(QString &text)
+{
+    QString txt= text;
+    QRegExp rx("font-family:'([a-zA-Z0-9 ,-]+)");
+    int pos = 0;
+    while (pos != -1) {
+        pos = rx.indexIn(text, pos);
+        QStringList list = rx.capturedTexts();
+        if (list.size() >0)
+        {
+            QString replacmt = list.at(0).split(",").at(0);
+            text.replace(list.at(0), replacmt);
+            pos += replacmt.length();
+        }
+    }
+    return (txt != text);
+}
+
+/*!
+    * \brief Utils::corrigeErreurHtmlEntete
+    * \param text
+    * \param ALD
+    * \return
+    *  L'entête de chaque texte émis est constitué de 2 blocs contigus:
+      * un bloc gauche dans lequel sont rassemblés les concernant l'émetteur du document
+         * docteur Bidule
+         * adresse
+         * .etc...
+      * un bloc droit rassemblant
+         * la date
+         * le nom du patient dans les ordonnances
+         * ...etc...
+    * il y a donc 2 tables dont la largeur est dééterminée par les macros
+      * pour les ordonnances ALD
+         * HTML_LARGEUR_ENTETE_GAUCHE_ALD
+         * HTML_LARGEUR_ENTETE_DROITE_ALD
+      * pour les autres documents
+         * HTML_LARGEUR_ENTETE_GAUCHE
+         * HTML_LARGEUR_ENTETE_GAUCHE
+    * Sur d'anciennes versions de Rufus, il y avait des erreurs dans ces largeurs et elles ne s'affichent pas convenablement.
+    * Cette fonction sert à corriger ces erreurs
+*/
+bool Utils::corrigeErreurHtmlEntete(QString &text, bool ALD)
+{
+    QString txt = text;
+    QString largeurALDG = "float: left;\" cellpadding=\"5\"><tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE_ALD "\">";
+    QString largeurALDD = "float: right;\"><tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE "\">";
+    QString largeurG = "float: left;\"><tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE "\">";
+    QString largeurD = "float: right;\"><tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE "\">";
+    QRegExp rx;
+    QString patternALDG = "float: left;\" cellpadding=\"5\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    QString patternALDD = "float: right;\" cellpadding=\"6\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    QString patternG    = "float: left;\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    QString patternD    = "float: right;\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    rx.setPattern(ALD? patternALDG : patternG);
+    rx.indexIn(text);
+    QStringList list = rx.capturedTexts();
+    if (list.size() >0)
+    {
+        if (list.at(0) !="")
+        {
+            patternALDG = "float: left;\" cellpadding=\"5\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE_ALD "\">";
+            patternG    = "float: left;\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE "\">";
+            rx.setPattern(ALD? patternALDG : patternG);
+            if (rx.indexIn(list.at(0)) == -1)
+                text.replace(list.at(0), ALD? largeurALDG : largeurG);
+        }
+    }
+    rx.setPattern(ALD? patternALDD : patternD);
+    rx.indexIn(text);
+    list = rx.capturedTexts();
+    if (list.size() >0)
+    {
+        if (list.at(0) !="")
+        {
+            patternALDD = "float: right;\" cellpadding=\"6\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE_ALD "\">";
+            patternD    = "float: right;\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE "\">";
+            rx.setPattern(ALD? patternALDG : patternG);
+            if (rx.indexIn(list.at(0)) == -1)
+                text.replace(list.at(0), ALD? largeurALDD : largeurD);
+        }
+    }
+    return (txt != text);
+}
+
 
 /*!
  * \brief Utils::CalcSize(QString txt)
@@ -707,6 +793,99 @@ void Utils::cleanfolder(const QString DirPath)
     }
 }
 
+void Utils::countFilesInDirRecursively(const QString dirpath, int &tot)
+{
+    QDir dir(dirpath);
+    if (!dir.exists())
+    return;
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList list = dir.entryInfoList();
+    for(int i = 0; i < list.size(); ++i)
+    {
+    QFileInfo fileInfo = list.at(i);
+    if (fileInfo.isDir())
+        countFilesInDirRecursively(fileInfo.absoluteFilePath(), tot);
+    else
+        tot++;
+    }
+}
+
+void Utils::copyfolderrecursively(const QString origindirpath, const QString destdirpath, int &n, QString firstline, QProgressDialog *progress, QFileDevice::Permissions permissions)
+{
+    cleanfolder(origindirpath);
+    cleanfolder(destdirpath);
+    QDir dir(origindirpath);
+    if (!dir.exists())
+    return;
+    QDir dirdest(destdirpath);
+    if (!dirdest.exists())
+    mkpath(destdirpath);
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList list = dir.entryInfoList();
+    for(int i = 0; i < list.size(); ++i)
+    {
+        QFileInfo fileInfo = list.at(i);
+        if (fileInfo.isDir())
+            copyfolderrecursively(fileInfo.absoluteFilePath(), destdirpath + "/" + fileInfo.fileName(), n, firstline, progress);
+        else
+        {
+            QFile file(fileInfo.absoluteFilePath());
+            if (progress)
+            {
+                n ++;
+                QString text = firstline;
+                if (text != QString())
+                    text += "\n";
+                text += QString::number(n) + "/" + QString::number(progress->maximum()) + " " + QFileInfo(file).fileName();
+                progress->setLabelText(text);
+                progress->setValue(n);
+            }
+            if (file.open(QIODevice::ReadOnly))
+            {
+                QString filedestpath = destdirpath + "/" + QFileInfo(file).fileName();
+                file.copy(filedestpath);
+                QFile(filedestpath).setPermissions(permissions);
+            }
+        }
+    }
+}
+
+void Utils::setDirPermissions(QString dirpath, QFileDevice::Permissions permissions)
+{
+    QDir dir(dirpath);
+    if (!dir.exists())
+    return;
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList list = dir.entryInfoList();
+    for(int i = 0; i < list.size(); ++i)
+    {
+        QFileInfo fileInfo = list.at(i);
+        if (fileInfo.isDir())
+            setDirPermissions(fileInfo.absoluteFilePath(), permissions);
+        else
+        {
+            QFile file(fileInfo.absoluteFilePath());
+            file.setPermissions(permissions);
+        }
+    }
+}
+
+void Utils::copyWithPermissions(QFile &file, QString path, QFileDevice::Permissions permissions)
+{
+    file.copy(path);
+    QFile CO(path);
+    CO.setPermissions(permissions);
+}
+
+bool Utils::removeWithoutPermissions(QFile &file)
+{
+    file.setPermissions(QFileDevice::ReadOther | QFileDevice::WriteOther
+                        | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
+                        | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                        | QFileDevice::ReadUser   | QFileDevice::WriteUser);
+    return file.remove();
+}
+
 double Utils::mmToInches(double mm )  { return mm * 0.039370147; }
 
 QUrl   Utils::getExistingDirectoryUrl(QWidget *parent, QString title, QUrl Dirdefaut, QStringList listnomsaeliminer, bool ExclureNomAvecEspace)
@@ -771,20 +950,28 @@ QStringList Utils::DecomposeScriptSQL(QString nomficscript)
     }
     QString queryStr(file.readAll());
     file.close();
+    QRegularExpression re;
     // On retire tous les commentaires, les tabulations, les espaces ou les retours à la ligne multiples
     //        queryStr = queryStr.replace(QRegularExpression("(\\/\\*(.|\\n)*?\\*\\/|^--.*\\n|\\t|\\n)", QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("(\\/\\*(.|\\n)*?\\*\\/)",   QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("(^;\\n)",                   QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("(--.*\\n)",                 QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
-    queryStr = queryStr.replace(QRegularExpression("( +)",                      QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), " ");
-    queryStr = queryStr.replace(QRegularExpression("((\\t)+)",                  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), " ");
-    queryStr = queryStr.replace(QRegularExpression("(^ *)",                     QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    queryStr = queryStr.replace(QRegularExpression("((\\n)+)",                  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
+    re.setPattern("(\\/\\*(.|\\n)*?\\*\\/)");
+    queryStr = queryStr.replace(re, "");
+    re.setPattern("(^;\\n)");
+    queryStr = queryStr.replace(re, "");
+    re.setPattern("(--.*\\n)");
+    queryStr = queryStr.replace(re, "\n");
+    re.setPattern("( +)");
+    queryStr = queryStr.replace(re, " ");
+    re.setPattern("((\\t)+)");
+    queryStr = queryStr.replace(re, " ");
+    re.setPattern("(^ *)");
+    queryStr = queryStr.replace(re, "");
+    re.setPattern("((\\n)+)");
+    queryStr = queryStr.replace(re, "\n");
     //Retire les espaces en début et fin de string
     queryStr = queryStr.trimmed();
 
     QString matched, delimiter, Atraiter;
-    QRegularExpression re("^(\\s|\\n)*DELIMITER\\s*(.|\\n)*END\\s*.\\n"); //isole les créations de procédure SQL dans le script
+    re.setPattern("^(\\s|\\n)*DELIMITER\\s*(.|\\n)*END\\s*.\\n"); //isole les créations de procédure SQL dans le script
 
     while (queryStr.size()>0 && queryStr.contains(";"))
     {
@@ -792,27 +979,35 @@ QStringList Utils::DecomposeScriptSQL(QString nomficscript)
         QRegularExpressionMatch match = re.match(queryStr);
         if (match.hasMatch())  // --> c'est une procédure à créer
         {
-            matched     = match.capturedTexts().at(0);
-            Atraiter    = matched.trimmed();
-            //Edit(Atraiter);
-            delimiter   = Atraiter.data()[Atraiter.size()-1];
-            //Edit(delimiter);
-            Atraiter.replace(QRegularExpression("DELIMITER\\s*"),"");
-            Atraiter.replace(delimiter,"");
-            Atraiter = Atraiter.replace(QRegularExpression("(^ *)",     QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-            Atraiter = Atraiter.replace(QRegularExpression("(^(\\n)+)", QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-            Atraiter = Atraiter.replace(QRegularExpression("((\\n)+)",  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
-            //Edit(Atraiter);
-            queryStr.replace(0,matched.size(),"");
+                matched     = match.capturedTexts().at(0);
+                Atraiter    = matched.trimmed();
+                //Edit(Atraiter);
+                delimiter   = Atraiter.data()[Atraiter.size()-1];
+                //Edit(delimiter);
+                re.setPatternOptions(QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption);
+                re.setPattern("DELIMITER\\s*");
+                Atraiter.replace(re,"");
+                Atraiter.replace(delimiter,"");
+                re.setPattern("^ *)");
+                Atraiter.replace(re,"");
+                re.setPattern("(^(\\n)+)");
+                Atraiter.replace(re,"");
+                re.setPattern("((\\n)+)");
+                Atraiter.replace(re,"\n");
+
+                //Edit(Atraiter);
+                queryStr.replace(0,matched.size(),"");
         }
         else                    // -- c'est une requête SQL
         {
-            matched = queryStr.split(";\n", QString::SkipEmptyParts).at(0);
-            Atraiter = matched.trimmed()+ ";";
-            queryStr.replace(0,matched.size()+2,"");
-            queryStr = queryStr.replace(QRegularExpression("((\\n)+)",  QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "\n");
+                matched = queryStr.split(";\n").at(0);
+                Atraiter = matched.trimmed()+ ";";
+                queryStr.replace(0,matched.size()+2,"");
+                re.setPattern("((\\n)+)");
+                queryStr = queryStr.replace(re, "\n");
         }
-        queryStr = queryStr.replace(QRegularExpression("(^(\\n)*)",     QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
+        re.setPattern("(^(\\n)*)");
+        queryStr = queryStr.replace(re, "");
         listinstruct << Atraiter;
     }
     return listinstruct;

@@ -21,6 +21,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QPushButton>
 #include <QKeyEvent>
 #include <QToolTip>
+#include "macros.h"
 
 class UpPushButton : public QPushButton
 {

@@ -75,7 +75,6 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "database.h"
 #include <QTimer>
 #include "flags.h"
-#include "ostask.h"
 #include "timerthread.h"
 #include "cls_appareilimagerie.h"
 
@@ -96,7 +95,6 @@ public:
 
 private:
     Ui::RufusAdmin              *ui;
-    Controller                  m_controller;
     Flags                       *flags;
     bool                        m_ok;
     int                         m_flagcorrespondants;
@@ -271,6 +269,9 @@ private:
     UpDialog                *dlg_buprestore;
     UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
     QDate                   m_lastbackupdate = QDate::currentDate().addDays(-1);
+    QString                 m_executable;
+    QString                 m_dumpexecutable;
+    QString                 m_dirSQLExecutable = "";                                    //! le chemin vers les éxécutables mysql et mysqldump
                             /*! la variable m_lastbackupdate est utilisée parce que les Qtimer ont parfois une imprécision énorme
                              *  et peuvent se lancer à plusieurs reprises dans le même intervalle ou ne pas se lancer aubout du même intervalle.
                              * Cela évite de lancer 2 fois la sauvegarde */
@@ -314,6 +315,8 @@ private:
                             */
     void                    RestaureBase();
     void                    BackupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
+    void                    setDirSQLExecutable();                                      /*! fixe le chemin vers le dossier contenant les fichier mysql et mysqldump  */
+    QString                 dirSQLExecutable();                                         /*! le chemin vers le dossier contenant les fichier mysql et mysqldump  */
 signals:
     void                    backupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
     //--------------------------------------------------------------------------------------------------------

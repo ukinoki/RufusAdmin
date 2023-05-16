@@ -37,14 +37,15 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "uplineedit.h"
 #include "uplabel.h"
-#include "uptextedit.h"
 #include "upmessagebox.h"
 #include "dlg_message.h"
 #include "poppler-qt5.h"
+#include "upprogressdialog.h"
 
 #include <QInputDialog>
 #include <QCoreApplication>
 #include <QEventLoop>
+#include <QProgressDialog>
 #include <QSerialPort>
 #include <QTime>
 
@@ -53,6 +54,12 @@ class Utils : public QObject
     Q_OBJECT
 private:
     static Utils*      instance;
+    static QString cp() {
+        QString mcp = "[0-9]{5}" ;
+        if (QLocale().country() == QLocale::Madagascar)
+            mcp = "[0-9]{3}";
+        return mcp;
+    }
 public:
     enum Day {
                 Lundi       = 0x1,
@@ -71,6 +78,7 @@ public:
     enum ModeAcces { Poste = 0x1, ReseauLocal = 0x2, Distant = 0x4};     Q_ENUM(ModeAcces)
     enum Cote {Droit, Gauche, Les2, NoLoSo};
     enum Period {Debut, Fin};
+
 
     static Utils   *I();
 
@@ -107,6 +115,14 @@ public:
     static void convertPlainText(QString &text);
     static void nettoieHTML(QString &text, bool supprimeLesLignesVidesDuMilieu = false);
     static bool retirelignevidefinhtml(QString &txthtml);
+    static bool epureFontFamily(QString &text);  /*! >il y eut un temps où on entrait dans les html de Qt la font-family avec tous ses attributs
+                                                 * ce qui donnait -> font-family:'Comic Sans MS,13,-1,5,50,0,0,0,0,0' dans le html
+                                                 * depuis Qt 5.10 cela ne marche plus et il faut enlever tous les attributs sinon Qt s'emmêle les pinceaux dans l'interprétation du html
+                                                 * il faut donc p.e. remplacer font-family:'Comic Sans MS,13,-1,5,50,0,0,0,0,0' par font-family:'Comic Sans MS'
+                                                 * c'est le rôle de cette fonction */
+    static bool corrigeErreurHtmlEntete(QString &text, bool ALD= false);
+                                                /*! > idem que la fonction précédente, corrige une erreur sur les anciennes largeurs d'entête */
+
 
     //! QString
     static QSize                    CalcSize(QString txt, QFont fm = qApp->font());
@@ -128,6 +144,24 @@ public:
     static QString                  getExpressionSize(qint64 size);                 //! concertit en Go, To la taille en Mo du qint64 passé en paramètre
     static bool                     mkpath(QString path);
     static void                     cleanfolder(QString path);
+    static void                     countFilesInDirRecursively(const QString dirpath, int &tot); // compte le nombre de fichiers présents dans un dossier et ses sous-dossiers
+    static void                     copyfolderrecursively(const QString origindirpath, const QString destdirpath,
+                                      int &n,
+                                      QString firstline = QString(),
+                                      QProgressDialog *progress = Q_NULLPTR,
+                                      QFileDevice::Permissions permissions = QFileDevice::ReadOther
+                                                                             | QFileDevice::ReadGroup
+                                                                             | QFileDevice::ReadOwner  | QFileDevice::WriteOwner | QFileDevice::ExeOwner
+                                                                             | QFileDevice::ReadUser);
+    static void                     setDirPermissions(QString dirpath, QFileDevice::Permissions permissions = QFileDevice::ReadOther | QFileDevice::WriteOther
+                                                                                          | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
+                                                                                          | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                                                                                          | QFileDevice::ReadUser   | QFileDevice::WriteUser);      // attribue recursivement les permissions énumérées par le flag permissions à tous les fichiers du dossier Dir
+    static void                     copyWithPermissions(QFile &file, QString path, QFileDevice::Permissions permissions = QFileDevice::ReadOther | QFileDevice::WriteOther
+                                                                                                      | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
+                                                                                                      | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                                                                                                      | QFileDevice::ReadUser   | QFileDevice::WriteUser);      // copie le fichier file vers la destination path avec les permissions énumérées par le flag permissions
+    static bool                     removeWithoutPermissions(QFile &file);      // efface le fichier file vers la destination path même s'il est enlecture seule
     static double                   mmToInches(double mm);
     static QUrl                     getExistingDirectoryUrl(QWidget *parent = Q_NULLPTR, QString title = "", QUrl Dirdefaut = QUrl::fromLocalFile(PATH_DIR_RUFUS), QStringList listnomsaeliminer = QStringList(), bool ExclureNomAvecEspace = true);
 

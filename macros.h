@@ -19,7 +19,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define MACROS_H
 
 // Les versions de la base et des ressources
-#define VERSION_BASE                                75  // version de la base de données
+#define VERSION_BASE                                76  // version de la base de données
 #define VERSION_RESSOURCES                          35  // version des fichiers de ressources
 
 // Les bases
@@ -379,7 +379,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_DROITS_USR                                   "UserDroits"
 #define CP_LOGIN_USR                                    "UserLogin"
 #define CP_MDP_USR                                      "UserMDP"
-#define CP_TEL_USR                                      "UserTelephone"   //!> pas utilisé
 #define CP_PORTABLE_USR                                 "UserPortable"
 #define CP_MAIL_USR                                     "UserMail"
 #define CP_MEMO_USR                                     "UserMemo"       //!> pas utilisé
@@ -397,6 +396,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_ISAGA_USR                                    "UserAGA"
 #define CP_SECTEUR_USR                                  "UserSecteur"
 #define CP_ISOPTAM_USR                                  "OPTAM"
+#define CP_COTATION_USR                                     "UserCCAM"
 #define CP_CCAM_USR                                     "UserCCAM"
 #define CP_SIGNATURE_USR                                "Signature"   //!> pas utilisé
 #define CP_ISORDOSIGNE_USR                              "OrdoSigne"   //!> pas utilisé
@@ -969,13 +969,22 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define PLVMT               "P"
 #define CB                  "B"
 
-// ancres et comentaires html
-#define HTMLCOMMENT_LINUX           "<!LINUX>"
-#define HTMLCOMMENT_MAC             "<!MAC>"
-#define HTMLANCHOR_BODEBUT          "<BOdebut>"
-#define HTMLANCHOR_BOFIN            "<BOfin>"
-#define HTML_FINPARAGRAPH           "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px;\"></p>"
-#define HTML_RETOURLIGNE            "<p style = \"margin-top:0px; margin-bottom:0px;\" >"
+// divers, ancres et comentaires html
+#define HTMLCOMMENT_LINUX               "<!LINUX>"
+#define HTMLCOMMENT_MAC                 "<!MAC>"
+#define HTMLANCHOR_BODEBUT              "<BOdebut>"
+#define HTMLANCHOR_BOFIN                "<BOfin>"
+#define HTMLANCHOR_PACHYDEBUT           "pachydebut"
+#define HTMLANCHOR_PACHYFIN             "pachyfin"
+#define HTMLANCHOR_TODEBUT              "TOdebut"
+#define HTMLANCHOR_TOFIN                "TOfin"
+#define HTML_FINPARAGRAPH               "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px;\"></p>"
+#define HTML_RETOURLIGNE                "<p style = \"margin-top:0px; margin-bottom:0px;\">"
+#define HTML_LARGEUR_ENTETE_GAUCHE      "280"
+#define HTML_LARGEUR_ENTETE_DROITE      "180"
+#define HTML_LARGEUR_ENTETE_GAUCHE_ALD  "230"
+#define HTML_LARGEUR_ENTETE_DROITE_ALD  "230"
+
 
 // valeurs extrêmes de kératométrie
 #define MinK                        5
@@ -1067,6 +1076,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define Dossier_DocsScannes                             "/DossiersDocsScannes"
 #define Dossier_Videos                                  "/DossiersVideos"
 #define Dossier_Documents                               "/DossiersDocuments/"
+#define Param_SQLExecutable                             "Param_Poste/DirSQLExecutable"
 
 #define Param_SSL                                       "/SSL"
 #define Param_Serveur                                   "/Serveur"
@@ -1085,8 +1095,10 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #define Ville_Defaut                                    "Param_Poste/VilleParDefaut"
 #define CodePostal_Defaut                               "Param_Poste/CodePostalParDefaut"
+#define Utilise_BDD_Villes                              "Param_Poste/Utilise_BasedeDonnees_Villes"
 
 #define Poste_VersionRessources                         "Param_Poste/VersionRessources"
+
 #define Position_Fiche                                  "PositionsFiches/Position"
 
 #endif // MACROS_H

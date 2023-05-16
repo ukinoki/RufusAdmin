@@ -820,7 +820,7 @@ QJsonObject DataBase::loadUserData(int idUser)
             CP_NOM_USR ", " CP_PRENOM_USR ", " CP_MAIL_USR ", " CP_NUMPS_USR ", " CP_SPECIALITE_USR ", "                                                // 5,6,7,8,9
             CP_IDSPECIALITE_USR ", " CP_NUMCO_USR ", " CP_IDCOMPTEPARDEFAUT_USR ", " CP_ENREGHONORAIRES_USR ", " CP_MDP_USR ", "                        // 10,11,12,13,14
             CP_PORTABLE_USR ", " CP_MEMO_USR ", " CP_ISDESACTIVE_USR "," CP_POLICEECRAN_USR ", " CP_POLICEATTRIBUT_USR ", "                             // 15,16,17,18,19
-            CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", " CP_CCAM_USR ", " CP_IDEMPLOYEUR_USR ", "                        // 20,21,22,23,24
+            CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", " CP_COTATION_USR ", " CP_IDEMPLOYEUR_USR ", "                        // 20,21,22,23,24
             CP_DATEDERNIERECONNEXION_USR ", " CP_ISMEDECIN_USR ", " CP_ISOPTAM_USR ", " CP_ID_USR ", " CP_DATECREATIONMDP_USR ", "                      // 25,26,27,28,29
             CP_AFFICHEDOCSPUBLICS_USR ", " CP_AFFICHECOMMENTSPUBLICS_USR                                                                                // 30,31
             " from " TBL_UTILISATEURS
@@ -861,7 +861,7 @@ QJsonObject DataBase::loadUserData(int idUser)
     userData[CP_SECTEUR_USR]                        = usrdata.at(20).toInt();
     userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(21).toInt();
     userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(22).toInt();
-    userData[CP_CCAM_USR]                           = (usrdata.at(23).toInt() == 1);
+    userData[CP_COTATION_USR]                           = (usrdata.at(23).toInt() == 1);
     userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(24).toInt();
     userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(25).toDate(), usrdata.at(25).toTime()).toMSecsSinceEpoch();
     userData[CP_ISMEDECIN_USR]                      = usrdata.at(26).toInt();
@@ -895,7 +895,7 @@ QList<User*> DataBase::loadUsers()
             CP_NOM_USR ", " CP_PRENOM_USR ", " CP_MAIL_USR ", " CP_NUMPS_USR ", " CP_SPECIALITE_USR ", "                                                // 5,6,7,8,9
             CP_IDSPECIALITE_USR ", " CP_NUMCO_USR ", " CP_IDCOMPTEPARDEFAUT_USR ", " CP_ENREGHONORAIRES_USR ", " CP_MDP_USR ", "                        // 10,11,12,13,14
             CP_PORTABLE_USR ", " CP_MEMO_USR ", " CP_ISDESACTIVE_USR "," CP_POLICEECRAN_USR ", " CP_POLICEATTRIBUT_USR ", "                             // 15,16,17,18,19
-            CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", " CP_CCAM_USR ", " CP_IDEMPLOYEUR_USR ", "                        // 20,21,22,23,24
+            CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", " CP_COTATION_USR ", " CP_IDEMPLOYEUR_USR ", "                        // 20,21,22,23,24
             CP_DATEDERNIERECONNEXION_USR ", " CP_ISMEDECIN_USR ", " CP_ISOPTAM_USR ", " CP_ID_USR ", " CP_DATECREATIONMDP_USR ", "                      // 25,26,27,28,29
             CP_AFFICHEDOCSPUBLICS_USR ", " CP_AFFICHECOMMENTSPUBLICS_USR                                                                                // 30,31
             " from " TBL_UTILISATEURS;
@@ -906,6 +906,16 @@ QList<User*> DataBase::loadUsers()
     for (int i=0; i<usrlist.size(); ++i)
     {
         QVariantList usrdata = usrlist.at(i);
+
+        //! > La petite manip qui suit sert à corriger une erreur de programmation des premières versions de Rufus
+        QString policeusr = usrdata.at(18).toString();
+        if (policeusr.contains(","))
+        {
+            policeusr = policeusr.split(",").at(0);
+            QString requpd = "update " TBL_UTILISATEURS " set " CP_POLICEECRAN_USR " = '" + Utils::correctquoteSQL(policeusr) + "' where " CP_ID_USR " = " + usrdata.at(28).toString();
+            StandardSQL(requpd);
+        }
+
         QJsonObject userData{};
         userData[CP_ID_USR]                             = usrdata.at(28).toInt();
         userData[CP_DROITS_USR]                         = usrdata.at(0).isNull() ? "" : usrdata.at(0).toString();
@@ -926,12 +936,12 @@ QList<User*> DataBase::loadUsers()
         userData[CP_PORTABLE_USR]                       = usrdata.at(15).isNull() ? "" : usrdata.at(15).toString();
         userData[CP_MEMO_USR]                           = usrdata.at(16).isNull() ? "" : usrdata.at(16).toString();
         userData[CP_ISDESACTIVE_USR]                    = (usrdata.at(17).toInt() == 1);
-        userData[CP_POLICEECRAN_USR]                    = usrdata.at(18).isNull() ? "" : usrdata.at(18).toString();
+        userData[CP_POLICEECRAN_USR]                    = usrdata.at(18).isNull() ? "" : policeusr;
         userData[CP_POLICEATTRIBUT_USR]                 = usrdata.at(19).isNull() ? "" : usrdata.at(19).toString();
         userData[CP_SECTEUR_USR]                        = usrdata.at(20).toInt();
         userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(21).toInt();
         userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(22).toInt();
-        userData[CP_CCAM_USR]                           = (usrdata.at(23).toInt() == 1);
+        userData[CP_COTATION_USR]                           = (usrdata.at(23).toInt() == 1);
         userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(24).toInt();
         userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(25).toDate(), usrdata.at(25).toTime()).toMSecsSinceEpoch();
         userData[CP_ISMEDECIN_USR]                      = usrdata.at(26).toInt();
@@ -1225,9 +1235,16 @@ QJsonObject DataBase::loadDocExterneData(int idDoc)
 */
 QJsonObject DataBase::loadImpressionData(QVariantList impressionlist)
 {
+    //! > La manip qui suit sert à corriger une erreur de programmation des premières versions de Rufus
+    QString corps = impressionlist.at(1).toString();
+    if (Utils::epureFontFamily(corps))
+    {
+        QString requpd = "update " TBL_IMPRESSIONS " set " CP_TEXTE_IMPRESSIONS " = '" + Utils::correctquoteSQL(corps) + "' where " CP_ID_IMPRESSIONS " = " + impressionlist.at(0).toString();
+        StandardSQL(requpd);
+    }
     QJsonObject data{};
     data[CP_ID_IMPRESSIONS]            = impressionlist.at(0).toInt();
-    data[CP_TEXTE_IMPRESSIONS]         = impressionlist.at(1).toString();
+    data[CP_TEXTE_IMPRESSIONS]         = corps;
     data[CP_RESUME_IMPRESSIONS]        = impressionlist.at(2).toString();
     data[CP_CONCLUSION_IMPRESSIONS]    = impressionlist.at(3).toString();
     data[CP_IDUSER_IMPRESSIONS]        = impressionlist.at(4).toInt();
@@ -2069,17 +2086,17 @@ QList<Cotation*> DataBase::loadCotationsByUser(User *usr)
     {
         ++k;
         QJsonObject jcotation{};
-        jcotation["id"]                 = k;
-        jcotation["idcotation"]         = cotlist.at(i).at(0).toInt();
-        jcotation["typeacte"]           = cotlist.at(i).at(1).toString();
-        jcotation["montantconventionnel"] = ((secteur > 1) && optam? cotlist.at(i).at(2).toDouble() : cotlist.at(i).at(3).toDouble());
-        jcotation["montantoptam"]       = cotlist.at(i).at(2).toDouble();
-        jcotation["montantnonoptam"]    = cotlist.at(i).at(3).toDouble();
-        jcotation["montantpratique"]    = (secteur < 2? cotlist.at(i).at(2).toDouble() :cotlist.at(i).at(4).toDouble());
-        jcotation["ccam"]               = (cotlist.at(i).at(5).toInt()==1);
-        jcotation["iduser"]             = usr->id();
-        jcotation["frequence"]          = cotlist.at(i).at(6).toInt();
-        jcotation["descriptif"]         = cotlist.at(i).at(7).toString();
+        jcotation["id"]                     = k;
+        jcotation["idcotation"]             = cotlist.at(i).at(0).toInt();
+        jcotation["typeacte"]               = cotlist.at(i).at(1).toString();
+        jcotation["montantconventionnel"]   = ((secteur > 1) && optam? cotlist.at(i).at(2).toDouble() : cotlist.at(i).at(3).toDouble());
+        jcotation["montantoptam"]           = cotlist.at(i).at(2).toDouble();
+        jcotation["montantnonoptam"]        = cotlist.at(i).at(3).toDouble();
+        jcotation["montantpratique"]        = (secteur < 2? cotlist.at(i).at(2).toDouble() :cotlist.at(i).at(4).toDouble());
+        jcotation["ccam"]                   = (cotlist.at(i).at(5).toInt()==1);
+        jcotation["iduser"]                 = usr->id();
+        jcotation["frequence"]              = cotlist.at(i).at(6).toInt();
+        jcotation["descriptif"]             = cotlist.at(i).at(7).toString();
         Cotation *cotation = new Cotation(jcotation);
          if (cotation != Q_NULLPTR)
             cotations << cotation;

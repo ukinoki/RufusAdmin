@@ -82,7 +82,8 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     m_ancMDP                = "anc";
     m_confirmMDP            = "confirm";
     Utils::mkpath(PATH_DIR_RUFUS);
-
+    if (m_settings->value(Utilise_BDD_Villes).toBool() != false || m_settings->value(Utilise_BDD_Villes) == QVariant())
+        m_settings->setValue(Utilise_BDD_Villes, true);
     RestoreFontAppli(); // les polices doivent être appliquées après la définition des styles
     setMapIcons();
 
@@ -2755,24 +2756,6 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
         const QString task = "cp -R " + m_parametres->dirimagerieserveur() + NOM_DIR_FACTURES + " " + dirdestination;
         const QString msgOK = tr("Fichiers factures sauvegardés!");
-        m_controller.disconnect(SIGNAL(result(const int &)));
-        connect(&m_controller,
-                &Controller::result,
-                this,
-                [=, &factures](int a) {
-            UpSystemTrayIcon::I()->showMessage(tr("Messages"), (a == 0? msgOK : msgEchec), Icons::icSunglasses(), 3000);
-            Utils::cleanfolder(dirdestination + NOM_DIR_FACTURES);
-            factures = false;
-            //qDebug() << "factures" << factures << images << videos;
-            if (!images && !videos)
-            {
-                result(handledlg, this);
-                return;
-            }
-            else
-                emit backupDossiers(dirdestination, handledlg, false, images, videos);
-        });
-        m_controller.execute(task);
         return;
     }
     else if (images) {
@@ -2781,24 +2764,6 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
         const QString task = "cp -R " + m_parametres->dirimagerieserveur() + NOM_DIR_IMAGES + " " + dirdestination;
         const QString msgOK = tr("Fichiers d'imagerie sauvegardés!");
-        m_controller.disconnect(SIGNAL(result(const int &)));
-        connect(&m_controller,
-                &Controller::result,
-                this,
-                [=, &images](int a) {
-            UpSystemTrayIcon::I()->showMessage(tr("Messages"), (a == 0? msgOK : msgEchec), Icons::icSunglasses(), 3000);
-            Utils::cleanfolder(dirdestination + NOM_DIR_IMAGES);
-            images = false;
-            //qDebug() << "images" << factures << images << videos;
-            if (!factures && !videos)
-            {
-                result(handledlg, this);
-                return;
-            }
-            else
-                emit backupDossiers(dirdestination, handledlg, factures, false, videos);
-        });
-        m_controller.execute(task);
         return;
     }
     else if (videos) {
@@ -2807,24 +2772,6 @@ void RufusAdmin::BackupDossiers(QString dirdestination, qintptr handledlg, bool 
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
         const QString task = "cp -R " + m_parametres->dirimagerieserveur() + NOM_DIR_VIDEOS + " " + dirdestination;
         const QString msgOK = tr("Fichiers videos sauvegardés!");
-        m_controller.disconnect(SIGNAL(result(const int &)));
-        connect(&m_controller,
-                &Controller::result,
-                this,
-                [=, &videos](int a) {
-            UpSystemTrayIcon::I()->showMessage(tr("Messages"), (a == 0? msgOK : msgEchec), Icons::icSunglasses(), 3000);
-            Utils::cleanfolder(dirdestination + NOM_DIR_VIDEOS);
-            //qDebug() << "videos" << factures << images << videos;
-            videos = false;
-            if (!images && !factures)
-            {
-                result(handledlg, this);
-                return;
-            }
-            else
-                emit backupDossiers(dirdestination, handledlg, factures, images, false);
-        });
-        m_controller.execute(task);
        return;
     }
     result(handledlg, this);
@@ -3351,20 +3298,6 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
         const QString task = "sh " + PATH_FILE_SCRIPTBACKUP;
         const QString msgOK = tr("Base de données sauvegardée!");
-        m_controller.disconnect(SIGNAL(result(const int &)));
-        connect(&m_controller, &Controller::result, this, [=](int a) {
-            UpSystemTrayIcon::I()->showMessage(tr("Messages"), (a == 0? msgOK : msgEchec), Icons::icSunglasses(), 3000);
-            if (OKImages)
-                Utils::cleanfolder(pathdirdestination + NOM_DIR_IMAGES);
-            if (OKFactures)
-                Utils::cleanfolder(pathdirdestination + NOM_DIR_FACTURES);
-            if (OKVideos)
-                Utils::cleanfolder(pathdirdestination + NOM_DIR_VIDEOS);
-            result(handledlg, this);
-            QFile::remove(PATH_FILE_SCRIPTBACKUP);
-            return true;
-        });
-        m_controller.execute(task);
     }
     else if (OKImages || OKVideos || OKFactures) //! si on a choisi de ne pas sauvegarder la base mais seulement des fcihiers d'imagerie ou les videos, la copie se fait directement depuis Qt
     {
@@ -3379,6 +3312,120 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         return false;
     }
     return true;
+}
+
+/*!
+ * \brief RufusAdmin::sqlExecutable
+ * \return le chemin vers les éxécutable mysql et mysqldump
+ * Le chemin est stocké dans Rufus.ini au format Unix avec des "/"
+ * Pour le retrouver au format natif, on lui applique la fonction QDir::toNativeSeparators()
+ */
+QString RufusAdmin::dirSQLExecutable()
+{
+    if (m_dirSQLExecutable == "")
+        setDirSQLExecutable();
+    return m_dirSQLExecutable;
+}
+
+/*!
+ * \brief RufusAdmin::setDirSQLExecutable
+ * La fonction recherche les éxécutables SQL: mysql et mysqldump
+ * Elle les recherche d'abord dans le package logiciel
+ * puis dans Rufus.ini
+ * puis dans les standardpaths du système
+ * Si elle ne les trouve dans aucun de ces 3 endroits, elle interroge l'utilisateur
+ * et si l'utilisateur l'informe qu'il ne peut pas trouver les executables
+ * le programme est quand même lancé en informant l'utilisateur qu'il ne pourra faire aucune opération de restauration, sauvegarde ou mise à jour de la base
+*/
+void RufusAdmin::setDirSQLExecutable()
+{
+    QString dirdefaultsqlexecutable = "";
+    QString dirsqlexecutable ("");
+    m_executable = db->version().contains("MariaDB")? "/mariadb": "/mysql";
+    m_dumpexecutable = db->version().contains("MariaDB")? "/mariadb-dump": "/mysqldump";
+    bool a = false;
+
+/*! 1. On recherche dans le package logiciel */
+#ifdef Q_OS_MACX
+    QDir mysqldir = QDir(QCoreApplication::applicationDirPath());
+    mysqldir.cdUp();
+    dirdefaultsqlexecutable = mysqldir.absolutePath() + "/Applications";
+    a = QFile(dirdefaultsqlexecutable + m_executable).exists();
+#endif
+    if (a)
+    {
+        if (dirdefaultsqlexecutable != "")
+            m_settings->setValue(Param_SQLExecutable, dirdefaultsqlexecutable);
+        m_dirSQLExecutable = dirdefaultsqlexecutable;
+        return;
+    }
+
+    /*! 2. on recherche dans les chemins habituels du système */
+#ifdef Q_OS_MACX
+    dirsqlexecutable = "/usr/local/mysql/bin";
+    if (!QFile(dirsqlexecutable + "/mysql").exists())
+    {
+        dirsqlexecutable = "/usr/local/bin";
+        if (!QFile(dirsqlexecutable + "/mysql").exists())
+            dirsqlexecutable = "/opt/homebrew/opt/mariadb/bin";
+    }
+    a = (QFile(dirsqlexecutable + "/mysql").exists());
+#endif
+#ifdef Q_OS_LINUX
+    dirsqlexecutable = "/usr/bin";
+    a = (QFile(dirsqlexecutable + m_executable).exists());
+#endif
+
+    if (a)
+    {
+        m_settings->setValue(Param_SQLExecutable, dirsqlexecutable);
+        m_dirSQLExecutable = dirsqlexecutable;
+        return;
+    }
+
+/*! 3. On n'a rien trouvé - on teste la valeur enregistrée dans rufus.ini */
+
+    dirsqlexecutable = m_settings->value(Param_SQLExecutable).toString();
+    if (QFile(dirsqlexecutable + m_executable).exists())
+    {
+        m_dirSQLExecutable = dirsqlexecutable;
+        return;
+    }
+
+    /*! 4. On n'a rien trouvé - on interroge l'utilisateur */
+
+    UpMessageBox::Information(Q_NULLPTR,
+                              tr("le chemin des programmes mysql et mysqldump (") + dirsqlexecutable + ") n'est pas valide"),
+                              tr("Choisissez un dossier valide dans la boîte de dialogue suivante");
+        while (!a)
+    {
+        QUrl urlexecutable = QUrl();
+        urlexecutable = QFileDialog::getExistingDirectory(Q_NULLPTR,
+                                                          tr("Choisissez le dossier dans lequel se trouvent les executables mysql et mysqldump"),
+                                                          (QDir::rootPath()));
+        QString path = urlexecutable.path() + m_executable;
+        if (urlexecutable == QUrl() || !QFile(path).exists())
+        {
+            if (UpMessageBox::Question(Q_NULLPTR,
+                                       tr("le chemin choisi (") + urlexecutable.path() + tr(") n'est pas valide"),
+                                       tr("Voulez vous annuler?") + "\n" +tr("Si vous annulez, la fonction demandée ne pourra pas s'éxécuter!"),
+                                       UpDialog::ButtonCancel | UpDialog::ButtonOK,
+                                       QStringList() << tr("Annuler") << tr("Reprendre"))
+                != UpSmallButton::STARTBUTTON)
+            {
+                m_settings->remove(Param_SQLExecutable);
+                return;
+            }
+        }
+        else
+        {
+            dirsqlexecutable = urlexecutable.path();
+            a = true;
+        }
+    }
+    if (dirsqlexecutable != m_settings->value(Param_SQLExecutable).toString())
+        m_settings->setValue(Param_SQLExecutable, dirsqlexecutable);
+    m_dirSQLExecutable = dirsqlexecutable;
 }
 
 void RufusAdmin::ResumeTCPSocketStatut(QString listidposteconnectes)

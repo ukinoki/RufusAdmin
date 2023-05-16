@@ -20,12 +20,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "uptableview.h"
 #include "updelegate.h"
-#include "gbl_datas.h"
 #include "upstandarditemmodel.h"
 #include "widgetbuttonframe.h"
-#include <QCompleter>
 #include <QSortFilterProxyModel>
+#include "cls_villes.h"
+#include "gbl_datas.h"
 #include <QStringListModel>
+#include <QCompleter>
 #include <QHeaderView>
 
 class dlg_listevilles : public UpDialog
