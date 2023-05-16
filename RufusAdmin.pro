@@ -88,8 +88,8 @@ ICON = Sunglasses.icns
 OSX {
 INCLUDEPATH += /usr/local/opt/poppler-qt5/include/poppler/qt5
 LIBS += -L/usr/local/opt/poppler-qt5/lib/ -lpoppler-qt5
-INCLUDEPATH += /usr/local/opt/poppler-qt5/include/poppler/qt5
-LIBS += -L/usr/local/opt/poppler-qt5/lib/ -lpoppler-qt5
+INCLUDEPATH += /usr/local/include/poppler/qt5
+LIBS += -L/usr/local/lib/ -lpoppler-qt5
 }
 LINUX {
 INCLUDEPATH += /usr/include/poppler/qt5

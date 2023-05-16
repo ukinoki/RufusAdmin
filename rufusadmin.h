@@ -286,7 +286,7 @@ private:
                             /*! calcule le volume de la base */
     void                    CalcTimeBupRestore();
                             /*! calcule la durée approximative du backup */
-    void                    DefinitScriptBackup(QString pathdirdestination, bool AvecImages= true, bool AvecVideos = true, bool AvecFactures = true);
+    void                    DefinitScriptBackup(QString pathbackupbase);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
     int                     ExecuteSQLScript(QStringList ListScripts);
                             /*! Exécute une liste de scripts SQL (restauration de la base MySQL p.e.) */
@@ -314,11 +314,8 @@ private:
                              * sous Linux, lance le timer t_timerbackup
                             */
     void                    RestaureBase();
-    void                    BackupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
     void                    setDirSQLExecutable();                                      /*! fixe le chemin vers le dossier contenant les fichier mysql et mysqldump  */
     QString                 dirSQLExecutable();                                         /*! le chemin vers le dossier contenant les fichier mysql et mysqldump  */
-signals:
-    void                    backupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
     //--------------------------------------------------------------------------------------------------------
     // fin sauvegardes
     //--------------------------------------------------------------------------------------------------------
