@@ -3137,6 +3137,9 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     auto result = [] (qintptr handle, RufusAdmin *radm)
     {
         ShowMessage::I()->ClosePriorityMessage(handle);
+        QFile fbackup(PATH_FILE_SCRIPTBACKUP);
+        if (fbackup.exists())
+            Utils::removeWithoutPermissions(fbackup);
         radm->ConnectTimerInactive();
     };
     if (QDir(m_parametres->dirimagerieserveur()).exists())
