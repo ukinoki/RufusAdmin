@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("05-04-2023/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("05-01-2024/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1501,7 +1501,7 @@ void RufusAdmin::ExporteDocs()
                     + "-" + listexportjpg.at(i).at(0).toString();
             QString CheminOKTransfrDoc  = CheminOKTransfrDirImg + "/" + NomFileDoc + "." JPG;
             QString CheminOKTransfrProv = CheminOKTransfrDirImg + "/" + NomFileDoc + "prov." JPG;
-            QByteArray ba = listexportjpg.at(i).at(6).toByteArray();
+            QByteArray ba = listexportjpg.at(i).at(4).toByteArray();
             QPixmap pix;
             pix.loadFromData(ba);
         /*!
@@ -1534,7 +1534,7 @@ void RufusAdmin::ExporteDocs()
                 return;
             db->StandardSQL("update " TBL_DOCSEXTERNES " set "
                             CP_JPG_DOCSEXTERNES " = null,"
-                            CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
+                            CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) + "." JPG
                             "' where " CP_ID_DOCSEXTERNES " = " + listexportjpg.at(i).at(0).toString());
             faits ++;
             int nsec = debut.secsTo(QTime::currentTime());
@@ -3137,9 +3137,6 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     auto result = [] (qintptr handle, RufusAdmin *radm)
     {
         ShowMessage::I()->ClosePriorityMessage(handle);
-        QFile fbackup(PATH_FILE_SCRIPTBACKUP);
-        if (fbackup.exists())
-            Utils::removeWithoutPermissions(fbackup);
         radm->ConnectTimerInactive();
     };
     if (QDir(m_parametres->dirimagerieserveur()).exists())
