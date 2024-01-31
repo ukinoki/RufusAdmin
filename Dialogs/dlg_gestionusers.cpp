@@ -798,6 +798,7 @@ void dlg_gestionusers::EnregistreNouvUser()
     wdg_buttonframe                 ->setEnabled(false);
     ui->ListUserstableWidget        ->setEnabled(false);
     ui->Principalframe              ->setEnabled(true);
+    ui->ModeExercicegroupBox        ->setEnabled(true);
     ui->ComptagroupBox              ->setEnabled(true);
     setDataCurrentUser(idUser);
     ui->OPHupRadioButton            ->setChecked(true);
@@ -1156,7 +1157,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
 
     bool assistant      = m_userencours->isAssistant();
     bool responsable    = m_userencours->isResponsable();
-    bool responsableles2= m_userencours->isResponsableOuAssistant();
+    bool responsableles2= m_userencours->isAlterneResponsableEtAssistant();
 
     bool liberal        = m_userencours->isLiberal();
     bool liberalSEL     = m_userencours->isLiberalSEL();

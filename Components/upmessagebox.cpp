@@ -63,7 +63,7 @@ void UpMessageBox::removeButton(UpSmallButton *button)
 {
     for (int i=0; i<buttonslayout()->count();i++)
     {
-        UpSmallButton *buttonARetirer =  dynamic_cast<UpSmallButton*>(buttonslayout()->itemAt(i)->widget());
+        UpSmallButton *buttonARetirer =  qobject_cast<UpSmallButton*>(buttonslayout()->itemAt(i)->widget());
         if (buttonARetirer!=Q_NULLPTR)
             if (buttonARetirer == button)
             {
@@ -75,11 +75,11 @@ void UpMessageBox::removeButton(UpSmallButton *button)
 
 void UpMessageBox::Repons(QPushButton *button)
 {
-    UpSmallButton *but = dynamic_cast<UpSmallButton*>(button);
+    UpSmallButton *but = qobject_cast<UpSmallButton*>(button);
     if (but != Q_NULLPTR)
         wdg_ReponsSmallButton = but;
     else
-        wdg_ReponsPushButton = static_cast<UpPushButton*>(button);
+        wdg_ReponsPushButton = qobject_cast<UpPushButton*>(button);
     accept();
 }
 
@@ -93,27 +93,69 @@ UpPushButton* UpMessageBox::clickedpushbutton() const
     return wdg_ReponsPushButton;
 }
 
-void UpMessageBox::setIcon(enum Icon icn)
+void UpMessageBox::setIcon(enum Icon icn, bool animatedIcon)
 {
+    bool resize = true;
     switch (icn) {
     case Warning:
-        wdg_iconlbl     ->setPixmap(QPixmap("://damn-icon.png").scaled(80,80));
+        if (animatedIcon)
+        {
+            setAnimatedIcon(WarningGif);
+            resize = false;
+        }
+        else
+            wdg_iconlbl     ->setPixmap(QPixmap("://damn-icon.png").scaled(80,80));
         break;
     case Quest:
-        wdg_iconlbl     ->setPixmap(QPixmap("://question.png").scaled(80,80));
+        if (animatedIcon)
+        {
+            setAnimatedIcon(QuestionGif);
+            resize = false;
+        }
+        else
+            wdg_iconlbl ->setPixmap(QPixmap("://question.png").scaled(80,80));
         break;
     case Info:
-        wdg_iconlbl     ->setPixmap(QPixmap("://information.png").scaled(80,80));
+        if (animatedIcon)
+        {
+            setAnimatedIcon(InfoGif);
+            resize = false;
+        }
+        else
+            wdg_iconlbl     ->setPixmap(QPixmap("://information.png").scaled(80,80));
         break;
     case Critical:
         wdg_iconlbl     ->setPixmap(QPixmap("://cancel.png").scaled(80,80));
-        break;
-    case Print:
         wdg_iconlbl     ->setPixmap(QPixmap("://11865.png").scaled(80,80));
         break;
+    default:
+        break;
     }
+    if (!resize)
+        return;
     wdg_iconlbl     ->setFixedSize(80,80);
+    wdg_infolayout  ->insertWidget(0,wdg_iconlbl);}
+
+void UpMessageBox::setAnimatedIcon(enum Movie movie)
+{
+    switch (movie) {
+    case WarningGif:
+        m_movie         = new QMovie(":/warning.gif");
+        m_movie         ->setScaledSize(QSize(80,80));
+        break;
+    case InfoGif:
+        m_movie         = new QMovie(":/info.gif");
+        m_movie         ->setScaledSize(QSize(80,80));
+        break;
+    case QuestionGif:
+        m_movie         = new QMovie(":/question.gif");
+        m_movie         ->setScaledSize(QSize(100,100));
+        m_movie         ->setSpeed(400);
+        break;
+    }
+    wdg_iconlbl     ->setMovie(m_movie);
     wdg_infolayout  ->insertWidget(0,wdg_iconlbl);
+    m_movie         ->start();
 }
 
 void UpMessageBox::setIconPixmap(QPixmap pix)
@@ -142,7 +184,7 @@ void UpMessageBox::setInformativeText(QString Text)
     wdg_infolbl     ->setText(Text);
     wdg_infolbl     ->setWordWrap(true);
     int position = 1;
-    if (dynamic_cast<QLabel*>(wdg_textlayout->itemAt(1)->widget()) != Q_NULLPTR)
+    if (qobject_cast<QLabel*>(wdg_textlayout->itemAt(1)->widget()) != Q_NULLPTR)
         position += 1;
     wdg_infolbl     ->setFixedSize(Utils::CalcSize(Text));
     wdg_textlayout      ->insertWidget(position,wdg_infolbl);
@@ -169,7 +211,7 @@ void UpMessageBox::Show(QWidget *parent, QString Text, QString InfoText)
 
     for (int i=0; i<msgbox->buttonslayout()->count();i++)
     {
-        UpSmallButton *butt =  dynamic_cast<UpSmallButton*>(msgbox->buttonslayout()->itemAt(i)->widget());
+        UpSmallButton *butt =  qobject_cast<UpSmallButton*>(msgbox->buttonslayout()->itemAt(i)->widget());
         if (butt!=Q_NULLPTR)
             connect(butt, &QPushButton::clicked, msgbox, &UpMessageBox::accept);
     }
@@ -177,23 +219,18 @@ void UpMessageBox::Show(QWidget *parent, QString Text, QString InfoText)
     delete msgbox;
 }
 
-UpSmallButton::StyleBouton UpMessageBox::Watch(QWidget *parent, QString Text, QString InfoText, Buttons Butts)
+UpSmallButton::StyleBouton UpMessageBox::Watch(QWidget *parent, QString Text, QString InfoText, Buttons Butts, QString link)
 {
     UpMessageBox*msgbox     = new UpMessageBox(parent);
-//    QMovie movie("://forbidden.gif");
-//    msgbox->lblIcon->setMovie (&movie);
-//    msgbox->lblIcon     ->setFixedSize(80,80);
-//    msgbox->infolayout  ->insertWidget(0,msgbox->lblIcon);
-//    movie.start ();
+    msgbox->setIcon(Warning);
     msgbox  ->setText(Text);
     UpTextEdit text(InfoText.replace("\n","<br>"));
     msgbox  ->setInformativeText(text.toHtml());
-    msgbox  ->setIcon(UpMessageBox::Quest);
     msgbox  ->AjouteLayButtons(Butts);
 
     for (int i=0; i<msgbox->buttonslayout()->count();i++)
     {
-        UpSmallButton *butt =  dynamic_cast<UpSmallButton*>(msgbox->buttonslayout()->itemAt(i)->widget());
+        UpSmallButton *butt =  qobject_cast<UpSmallButton*>(msgbox->buttonslayout()->itemAt(i)->widget());
         if (butt!=Q_NULLPTR)
         {
             if (butt->ButtonStyle() == UpSmallButton::CANCELBUTTON)
@@ -207,6 +244,14 @@ UpSmallButton::StyleBouton UpMessageBox::Watch(QWidget *parent, QString Text, QS
     msgbox  ->buttonslayout()   ->setSpacing(50);
     msgbox  ->wdg_texteditlbl   ->setFixedSize(Utils::CalcSize(Text));
     msgbox  ->wdg_infolbl       ->setFixedSize(Utils::CalcSize(InfoText));
+    if (link != "")
+    {
+        msgbox  ->wdg_infolbl             ->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        msgbox  ->wdg_infolbl             ->setOpenExternalLinks(true);
+        connect (msgbox->wdg_infolbl,
+                    &QLabel::linkActivated, /*! bug Qt - Impossible to open URL with linkActivated in a QMessageBox - However linkHovered works */                msgbox,
+                    [=] { QDesktopServices::openUrl(QUrl(link)); }
+                );    }
     UpSmallButton::StyleBouton repons = UpSmallButton::CANCELBUTTON;
     if (msgbox  ->exec() == QDialog::Accepted)
         repons = msgbox->clickedButton()->ButtonStyle();
@@ -218,14 +263,14 @@ UpSmallButton::StyleBouton UpMessageBox::Watch(QWidget *parent, QString Text, QS
 UpSmallButton::StyleBouton UpMessageBox::Question(QWidget *parent, QString Text, QString InfoText, Buttons Butts, QStringList titresboutonslist)
 {
     UpMessageBox*msgbox     = new UpMessageBox(parent);
+    msgbox->setIcon(Quest);
     msgbox  ->setText(Text);
     msgbox  ->setInformativeText(InfoText);
-    msgbox  ->setIcon(UpMessageBox::Quest);
     msgbox  ->AjouteLayButtons(Butts);
     int k = 0;
     for (int i=0; i<msgbox->buttonslayout()->count();i++)
     {
-        UpSmallButton *butt =  dynamic_cast<UpSmallButton*>(msgbox->buttonslayout()->itemAt(i)->widget());
+        UpSmallButton *butt =  qobject_cast<UpSmallButton*>(msgbox->buttonslayout()->itemAt(i)->widget());
         if (butt!=Q_NULLPTR)
         {
             if (titresboutonslist.size()>k)
