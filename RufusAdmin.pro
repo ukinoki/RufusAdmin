@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 
-QT       += sql core gui network multimedia serialport
+QT       += sql core gui network multimedia serialport xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -88,6 +88,8 @@ ICON = Sunglasses.icns
 OSX {
 INCLUDEPATH += /usr/local/opt/poppler-qt5/include/poppler/qt5
 LIBS += -L/usr/local/opt/poppler-qt5/lib/ -lpoppler-qt5
+INCLUDEPATH += /usr/local/include/poppler/qt5
+LIBS += -L/usr/local/lib/ -lpoppler-qt5
 }
 LINUX {
 INCLUDEPATH += /usr/include/poppler/qt5

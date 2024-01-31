@@ -54,6 +54,8 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include <QGroupBox>
 #include <QHostInfo>
 #include <QMainWindow>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QStorageInfo>
 #include <QSplashScreen>
 #include <QSystemTrayIcon>
@@ -177,6 +179,13 @@ private:
     bool                        VerifBase();
     void                        VerifDocsDossiersEchanges();                               /*! utilisé à la place du QFileSystemWatcher dont le signal directorychanged bugue trop
                                                                                              * importe les fichiers d'imagerie quand on utilise le QTimer t_timerfilewatcher */
+    QString     m_os = "";
+    QString     m_UPDLastVersion ="";
+    QString     m_UPDComment ="";
+    bool        m_UPDBase = false;
+    bool        m_UPDCcompatibiltyWithPrec = true;
+    bool        m_UPDRessources = false;
+    void                        VerifLastVersion();                                         /*! Vérifie si une nouvelle version de Rufus est disponible */
     void                        VerifPosteImport();
     void                        VerifVersionBase();
 

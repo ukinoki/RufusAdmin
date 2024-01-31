@@ -373,7 +373,7 @@ void dlg_listevilles::SupprimmVille(Ville* ville)
             if (listville.size() >0)
                 ville = listville.at(0);
             RemplirTableView();
-            QStringListModel *model = dynamic_cast<QStringListModel*> (m_complListVilles->completionModel());
+            QStringListModel *model = qobject_cast<QStringListModel*> (m_complListVilles->completionModel());
             if (model)
                 model->setStringList(Datas::I()->villes->ListeNomsVilles());
             if (ville != Q_NULLPTR)
@@ -393,7 +393,7 @@ void dlg_listevilles::ModifieVille(Ville *ville)
                                                                             Datas::I()->villes->ReinitMaps();
                                                                             dlg_ask->close();
                                                                             RemplirTableView();
-                                                                            QStringListModel *model = dynamic_cast<QStringListModel*> (m_complListVilles->model());
+                                                                            QStringListModel *model = qobject_cast<QStringListModel*> (m_complListVilles->model());
                                                                             if (model)
                                                                                 model->setStringList(Datas::I()->villes->ListeNomsVilles());
                                                                             selectcurrentVille(ville);
@@ -413,7 +413,7 @@ void dlg_listevilles::EnregistreNouvelleVille()
                                                                         if (ville != Q_NULLPTR)
                                                                         {
                                                                             RemplirTableView();
-                                                                            QStringListModel *model = dynamic_cast<QStringListModel*> (m_complListVilles->model());
+                                                                            QStringListModel *model = qobject_cast<QStringListModel*> (m_complListVilles->model());
                                                                             if (model)
                                                                                 model->setStringList(Datas::I()->villes->ListeNomsVilles());
                                                                             selectcurrentVille(ville);

@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("05-01-2024/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("31-01-2024/1");       // doit impérativement être composé de date version / n°version);
 // achieved = 25/05/23
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -1623,8 +1623,8 @@ void RufusAdmin::ExporteDocs()
             CC.close();
             db->StandardSQL ("update " TBL_DOCSEXTERNES " set "
                              CP_PDF_DOCSEXTERNES " = null, compression = null,"
-                             CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc)  + "'"
-                             " where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString());
+                             CP_LIENFICHIER_DOCSEXTERNES " = '/" + datetransfer.toString("yyyy-MM-dd") + "/" + Utils::correctquoteSQL(NomFileDoc) +
+                             "' where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString());
             faits ++;
             int nsec = debut.secsTo(QTime::currentTime());
             int min = nsec/60;
@@ -2343,7 +2343,7 @@ void RufusAdmin::RestaureBase()
                         QString dirrestaureimagerie    = rootimg.absolutePath() + NOM_DIR_IMAGES;
                         int t = 0;
                         Utils::countFilesInDirRecursively(dirrestaureimagerie, t);
-                        QProgressDialog *progdial = new QProgressDialog(this);
+                        UpProgressDialog *progdial = new UpProgressDialog(0,0,this);
                         QLabel *label = new QLabel();
                         label->setAlignment(Qt::AlignLeft);
                         progdial->setLabel(label);
@@ -2382,7 +2382,7 @@ void RufusAdmin::RestaureBase()
                         QString dirrestaurefactures    = rootimg.absolutePath() + NOM_DIR_FACTURES;
                         int t = 0;
                         Utils::countFilesInDirRecursively(dirrestaurefactures, t);
-                        QProgressDialog *progdial = new QProgressDialog(this);
+                        UpProgressDialog *progdial = new UpProgressDialog(0,0,this);
                         QLabel *label = new QLabel();
                         label->setAlignment(Qt::AlignLeft);
                         progdial->setLabel(label);
@@ -2421,7 +2421,7 @@ void RufusAdmin::RestaureBase()
                         QString dirrestaurevideo = rootimg.absolutePath() + NOM_DIR_VIDEOS;
                         int t = 0;
                         Utils::countFilesInDirRecursively(dirrestaurevideo, t);
-                        QProgressDialog *progdial = new QProgressDialog(this);
+                        UpProgressDialog *progdial = new UpProgressDialog(0,0,this);
                         QLabel *label = new QLabel();
                         label->setAlignment(Qt::AlignLeft);
                         progdial->setLabel(label);
@@ -2621,12 +2621,9 @@ bool RufusAdmin::VerifBase()
 {
     int Versionencours  = 37; //correspond aux premières versions de MAJ de la base
     int Version         = VERSION_BASE;
-    bool b              = false;
     Versionencours = m_parametres->versionbase();
-    if (Versionencours < Version)
-        b = true;
     bool BupDone = false;
-    if (b)
+    if (Versionencours < Version)
     {
         int nbreMAJ = Version - Versionencours;
         for (int i=1; i< nbreMAJ+1; i++)
@@ -2710,6 +2707,15 @@ bool RufusAdmin::VerifBase()
                 }
             }
         }
+    }
+    else if (Versionencours > Version)
+    {
+        QString text = QObject::tr("Vous utilisez sur ce poste une version de Rufus prévue pour la version") + " " + QString::number(Version) + " " + QObject::tr("de la base de données");
+        text += "<br/>" + QObject::tr("Cette version est peut-être incompatible avec la version") + " " + QString::number(Versionencours) + " " + tr("actuellement installée sur ce poste");
+        text += "<br/>" + QObject::tr("Il est fortement conseillé de faire une mise à jour de Rufus");
+        text += "<br/>" + QObject::tr("pour éviter des dysfonctionnements ou une altération de votre base de données Rufus");
+        text += "<br/>" + QObject::tr("Vous pouvez télécharger la nouvelle version sur la page Téléchargements du site") + " <a href=\"https://www.rufusvision.org\">www.rufusvision.org</a>";
+        UpMessageBox::Watch(Q_NULLPTR, tr("Version de Rufus trop ancienne"), text, UpDialog::ButtonOK, "https://www.rufusvision.org");
     }
     return true;
 }
@@ -3156,9 +3162,6 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
     auto result = [] (qintptr handle, RufusAdmin *radm)
     {
         ShowMessage::I()->ClosePriorityMessage(handle);
-        QFile fbackup(PATH_FILE_SCRIPTBACKUP);
-        if (fbackup.exists())
-            Utils::removeWithoutPermissions(fbackup);
         radm->ConnectTimerInactive();
     };
     if (QDir(m_parametres->dirimagerieserveur()).exists())
@@ -3198,7 +3201,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         const QString task = "sh " + PATH_FILE_SCRIPTBACKUP;
         const QString msgOK = tr("Base de données sauvegardée!");
         QProcess backupProcess;
-        backupProcess.start(task, QStringList());
+        backupProcess.start(task);
         backupProcess.waitForFinished(2000000000);
         result(handledlg, this);
         if (backupProcess.exitStatus() != QProcess::NormalExit)
@@ -3500,6 +3503,88 @@ void RufusAdmin::Edit(QString txt, int delaieffacement)
     m_settings->setValue("PositionsFiches/PositionEdit",gAsk->saveGeometry());
     delete gAsk;
 }
+
+
+void RufusAdmin::VerifLastVersion()
+{
+    auto comparelastversion = [&] {
+        QString actversion = qApp->applicationVersion().split("/").at(0);
+        QDate dateactversion = QDate::fromString(actversion,"dd-MM-yyyy");
+        QDate datenewversion = QDate::fromString(m_UPDLastVersion, "yyyy/MM/dd");
+        if (dateactversion < datenewversion)
+        {
+            QString text = QObject::tr("La nouvelle version est datée du ") + QLocale::system().toString(datenewversion, "d MMM yyyy") + "<br/>"
+                       + QObject::tr("Vous utilisez la version du ") + QLocale::system().toString(dateactversion, "d MMM yyyy");
+            if (m_UPDBase)
+            {
+                text += "<br/>" + QObject::tr("Cette nouvelle version impose une mise à jour de la base de données");
+                if (!m_UPDCcompatibiltyWithPrec)
+                    text += "<br/>" + QObject::tr("Après cette mise à jour, tous les postes utilisant Rufus sur cette base devront aussi évoluer vers la nouvelle versionr");
+                else
+                    text += "<br/>" + QObject::tr("Cette mise à jour de la base de données reste compatible avec votre version actuelle de Rufus");
+            }
+            else
+                text += "<br/>" + QObject::tr("Cette nouvelle version n'impose pas de mise à jour de la base de données et est compatible avec la précédente version de Rufus");
+            text += "<br/>" + QObject::tr("Vous pouvez télécharger la nouvelle version sur la page Téléchargements du site") + " <a href=\"https://www.rufusvision.org\">www.rufusvision.org</a>";
+            UpMessageBox::Watch(this, QObject::tr("Une nouvelle version de Rufus est en ligne"), text, UpDialog::ButtonOK, "https://www.rufusvision.org");
+        }
+        qDebug() << "OS = " << m_os;
+    };
+
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QNetworkRequest request;
+    request.setUrl(QUrl(LIEN_XML_RUFUSLASTVERSION));
+    QNetworkReply *reply = manager->get(request);
+
+    connect(manager, &QNetworkAccessManager::finished,
+            this, [=]
+    {
+        QByteArray data;
+        if(reply->error() == QNetworkReply::NoError)
+        {
+            m_os = QSysInfo::productType();
+            if (m_os == "osx")
+                m_os  = "macos";
+            else if (m_os == "" )
+                m_os = "linux";
+            reply->deleteLater();
+            data = reply->readAll();
+            QDomDocument docxml;
+            docxml.setContent(data);
+            QDomElement xml = docxml.documentElement();
+            for (int i=0; i<xml.childNodes().size(); i++)
+            {
+                QDomElement system = xml.childNodes().at(i).toElement();
+                if (m_os != system.tagName())
+                    continue;
+                for (int j=0; j<system.childNodes().size(); j++)
+                {
+                    QDomElement child = system.childNodes().at(j).toElement();
+                    if (child.tagName() == "Date")
+                        m_UPDLastVersion = child.text();
+                    else if (child.tagName() == "Base")
+                    {
+                        for (int k=0; k<child.childNodes().size(); k++)
+                        {
+                            QDomElement basechild = child.childNodes().at(k).toElement();
+                            if (basechild.tagName() == "UPDBase")
+                                m_UPDBase = (basechild.text() == "Yes");
+                            else if (basechild.tagName() == "CompatibleWithPrecedent")
+                                m_UPDCcompatibiltyWithPrec = (basechild.text() == "Yes");
+                        }
+                    }
+                    else if (child.tagName() == "UPDRessources")
+                        m_UPDRessources = (child.text() == "Yes");
+                    else if (child.tagName() == "Comment")
+                        m_UPDComment = child.text();
+                }
+                i = xml.childNodes().size();
+            }
+        }
+        comparelastversion();
+    });
+}
+
 
 void RufusAdmin::VerifModifsFlags()
 /*! Utilisé pour vérifier

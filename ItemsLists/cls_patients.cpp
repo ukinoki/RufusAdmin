@@ -85,8 +85,12 @@ Patient* Patients::getById(int id, Item::LOADDETAILS loadDetails)
     }
     else
     {
-        pat = itpat.value();
-        if (loadDetails == Item::LoadDetails)
+        pat = itpat.value();        
+        if (pat == Q_NULLPTR)
+        {
+            pat = new Patient;
+            map_patients->insert(id, pat);
+        }       if (loadDetails == Item::LoadDetails)
         {
             QJsonObject jsonPatient = DataBase::I()->loadPatientAllData(id);
             if( jsonPatient.isEmpty() )

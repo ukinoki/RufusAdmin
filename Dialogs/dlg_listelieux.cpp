@@ -26,6 +26,8 @@ dlg_listelieux::dlg_listelieux(QWidget *parent)
     connect(CloseButton, &QPushButton::clicked, this, &QDialog::reject);
 
     wdg_tblview = new QTableView(this);
+    wdg_tblview->setFixedWidth(240);
+    wdg_tblview->setMouseTracking(true);
     wdg_adressuplbl = new UpLabel();
     wdg_adressuplbl->setFixedWidth(240);
     wdg_couleurpushbutt = new UpPushButton();
@@ -89,7 +91,7 @@ Site* dlg_listelieux::getSiteFromIndex(QModelIndex idx)
     UpStandardItem *upitem = dynamic_cast<UpStandardItem *>(m_model->itemFromIndex(idx));
     if (upitem == Q_NULLPTR)
         return Q_NULLPTR;
-    Site *sit = dynamic_cast<Site *>(upitem->item());
+    Site *sit = qobject_cast<Site *>(upitem->item());
     return sit;
 }
 
@@ -101,7 +103,7 @@ int dlg_listelieux::getRowFromSite(Site *sit)
         UpStandardItem *itm = dynamic_cast<UpStandardItem*>(m_model->item(i));
         if(itm)
         {
-            Site* sits = dynamic_cast<Site*>(itm->item());
+            Site* sits = qobject_cast<Site*>(itm->item());
             if (sit->id() == sits->id())
             {
                 row = i;
@@ -210,7 +212,7 @@ void dlg_listelieux::ModifLieuxDialog(Mode mode)
     QVBoxLayout *laylbl = new QVBoxLayout();
     QVBoxLayout *layledit = new QVBoxLayout();
     QHBoxLayout *laycom = new QHBoxLayout();
-    QVBoxLayout *lay = dynamic_cast<QVBoxLayout*>(dlg_lieu->layout());
+    QVBoxLayout *lay = qobject_cast<QVBoxLayout*>(dlg_lieu->layout());
 
     UpLabel *lblnom = new UpLabel(dlg_lieu, tr("Nom de la structure"));
     UpLabel *lbladr1 = new UpLabel(dlg_lieu, tr("Adresse1"));
@@ -418,7 +420,9 @@ void dlg_listelieux::ReconstruitModel()
         m_model->appendRow(QList<QStandardItem*>() << pitem0);
     }
     m_model->sort(0);
+    QItemSelectionModel *m = wdg_tblview->selectionModel(); // il faut détruire le selectionModel pour éviter des bugs d'affichage quand on réinitialise le modèle
     wdg_tblview->setModel(m_model);
+    delete m;
 
     m_model->setHeaderData(0, Qt::Horizontal, tr("Structure de soins"));
     wdg_tblview->setColumnWidth(0,240);       // NomLieu
@@ -442,6 +446,11 @@ void dlg_listelieux::ReconstruitModel()
         wdg_tblview->setRowHeight(i, h);
     m_idlieuserveur = -1;
     m_idlieuserveur = db->parametres()->idlieupardefaut();
-    connect(wdg_tblview->selectionModel(),   &QItemSelectionModel::currentRowChanged, this,  &dlg_listelieux::AfficheDetails);
+    connect(wdg_tblview->selectionModel(),   &QItemSelectionModel::currentRowChanged, this,  &dlg_listelieux::AfficheDetails);    
+    connect(wdg_tblview,    &QAbstractItemView::entered,       this,   [=] (QModelIndex idx) {
+            Site *sit = getSiteFromIndex(idx);
+            if (sit)
+                QToolTip::showText(cursor().pos(), sit->coordonnees());
+    } );
 }
 

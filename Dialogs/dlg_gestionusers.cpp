@@ -65,7 +65,7 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     ui->AutreFonctionuplineEdit ->setValidator(new QRegExpValidator(Utils::rgx_rx,this));
     ui->MailuplineEdit          ->setValidator(new QRegExpValidator(Utils::rgx_mail,this));
     ui->PortableuplineEdit      ->setValidator(new QRegExpValidator(Utils::rgx_telephone,this));
-    ui->RPPSupLineEdit          ->setValidator(new QRegExpValidator(Utils::rgx_telephone,this));
+    ui->RPPSupLineEdit          ->setValidator(new QRegExpValidator(QRegExp("[0-9]{14}"),this));
     ui->NumCOupLineEdit         ->setValidator(new QRegExpValidator(Utils::rgx_telephone,this));
 
     QStringList ListTitres;
@@ -677,7 +677,7 @@ void dlg_gestionusers::EnregistreUser()
     if (!m_neutre)
         for(int i=0; i< ui->AdressupTableWidget->rowCount(); i++)
         {
-            UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+            UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
             if (butt->isChecked())
             {
                 idlieu = butt->iD();
@@ -901,7 +901,7 @@ void dlg_gestionusers::GestLieux()
         idlieuxlist << listlieux.at(k).at(0).toInt();
     for (int i=0; i<ui->AdressupTableWidget->rowCount(); ++i)
     {
-        UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+        UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
         butt->setChecked(idlieuxlist.contains(butt->iD()));
     }
 }
@@ -1208,7 +1208,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
         idlieuxlist << listlieux.at(k).at(0).toInt();
     for (int i=0; i<ui->AdressupTableWidget->rowCount(); ++i)
     {
-        UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+        UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
         butt->setChecked(idlieuxlist.contains(butt->iD()));
     }
     ui->PortableuplineEdit          ->setText(m_userencours->portable());
@@ -1373,7 +1373,7 @@ void dlg_gestionusers::Inactifs()
         {
             UpStandardItem * item = dynamic_cast<UpStandardItem*>(model->item(i));
             if (item->checkState() == Qt::Checked)
-                listuser << dynamic_cast<User*>(item->item());
+                listuser << qobject_cast<User*>(item->item());
         }
         if (listuser.size() > 0)
         {
@@ -1510,7 +1510,7 @@ void dlg_gestionusers::ReconstruitListeLieuxExercice()
             db->SupprRecordFromTable(ui->idUseruplineEdit->text().toInt(), "idUser", TBL_JOINTURESLIEUX);
             for(int i=0; i< ui->AdressupTableWidget->rowCount(); i++)
             {
-                UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+                UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
                 if (butt->isChecked())
                 {
                     idlieu = butt->iD();
@@ -1708,7 +1708,7 @@ bool dlg_gestionusers::VerifFiche()
         this->ui->RPPSupLineEdit->setFocus();
         return false;
     }
-    if (m_medecin && m_cotation && db->parametres()->cotationsfrance())
+    if (m_medecin && m_cotation && db->parametres()->cotationsfrance() && !ui->ComptaRemplaupRadioButton->isChecked())
     {
         QList<QRadioButton*> listb = ui->SecteurgroupBox->findChildren<QRadioButton*>();
         bool a = false;
