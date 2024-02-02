@@ -24,7 +24,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
     qApp->setApplicationVersion("02-02-2024/1");       // doit impérativement être composé de date version / n°version);
-// achieved = 25/05/23
+
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
 
