@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("31-01-2024/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("02-02-2024/1");       // doit impérativement être composé de date version / n°version);
 // achieved = 25/05/23
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -926,7 +926,7 @@ void RufusAdmin::ConnexionBase()
     QString error = "";
     db->setModeacces(Utils::Poste);
     db->initParametresConnexionSQL("localhost", 3306);
-    error = db->connectToDataBase(DB_CONSULTS);
+    error = db->connectToDataBase(DB_RUFUS);
 
     if( error.size() )
     {
@@ -1180,15 +1180,15 @@ void RufusAdmin::setPosteImportDocs(bool a)
     // si a = false, on retire le poste en cours et on met NULL à la place.
 
     QString IpAdress("NULL");
-    QString req = "USE `" DB_CONSULTS "`;";
+    QString req = "USE `" DB_RUFUS "`;";
     db->StandardSQL(req);
 
-    req = "DROP PROCEDURE IF EXISTS " NOM_POSTEIMPORTDOCS ";";
+    req = "DROP PROCEDURE IF EXISTS " MYSQL_PROC_POSTEIMPORTDOCS ";";
     db->StandardSQL(req);
 
     if (a)
         IpAdress = QHostInfo::localHostName() + " - " NOM_ADMINISTRATEUR;
-    req = "CREATE PROCEDURE " NOM_POSTEIMPORTDOCS "()\n\
+    req = "CREATE PROCEDURE " MYSQL_PROC_POSTEIMPORTDOCS "()\n\
           BEGIN\n\
           SELECT '" + IpAdress + "';\n\
           END ;";
@@ -2547,11 +2547,28 @@ void RufusAdmin::VerifPosteImport()
 
     //On recherche si le poste défini comme importateur des docs externes n'est pas celui sur lequel s'éxécute cette session de RufusAdmin et on prend sa place dans ce cas
     QString A, PostImport;    // l'importateur des docs externes
-    QString req = "SELECT name FROM mysql.proc p WHERE db = '" DB_CONSULTS "' AND name = '" NOM_POSTEIMPORTDOCS "'";
+    QString rep = "";
+    QString req = "";
+    bool isMysql8 = false;
+    if (db->version().split(".").size() > 0)
+        isMysql8 = (db->version().split(".").at(0).toInt() == 8);
+    //qDebug() << "Mysql = " << db->version() << " - Mysql version = " << db->version().split(".").at(0).toInt();
+
+    /*! Il n'y pas de variables utilisateur globale dans MySQL, on est donc obligé de passer par une procédure stockée pour en simuler une
+     * pour créer une procédure avec Qt, séparer le drop du create, ne pas utiliser les délimiteurs et utiliser les retours à la ligne \n\.......
+     * if (gsettingsIni->value(Utils::getBaseFromMode(Utils::ReseauLocal) + PrioritaireGestionDocs).toString() ==  "YES")
+
+     * si a = true, on se met en poste importateur +/_ prioritaire à la fin suivant le contenu de rufus.ini
+     * si a = false, on retire le poste en cours et on met NULL à la place. */
+
+    if (isMysql8)
+        req = "SELECT ROUTINE_SCHEMA, ROUTINE_NAME FROM information_schema.routines WHERE ROUTINE_SCHEMA = '" DB_RUFUS "' AND ROUTINE_NAME = '" MYSQL_PROC_POSTEIMPORTDOCS "'";
+    else
+        req = "SELECT name FROM mysql.proc p WHERE db = '" DB_RUFUS "' AND name = '" MYSQL_PROC_POSTEIMPORTDOCS "'";
     QVariantList imptdata = db->getFirstRecordFromStandardSelectSQL(req, m_ok);
     if (m_ok && imptdata.size()>0)
     {
-        QVariantList procdata = db->getFirstRecordFromStandardSelectSQL("CALL " DB_CONSULTS "." NOM_POSTEIMPORTDOCS, m_ok);
+        QVariantList procdata = db->getFirstRecordFromStandardSelectSQL("CALL " DB_RUFUS "." MYSQL_PROC_POSTEIMPORTDOCS, m_ok);
         if(!m_ok || procdata.size()==0)
         {
             ui->PosteImportDocslabel->setText(tr("Pas de poste paramétré"));
@@ -2981,7 +2998,7 @@ void RufusAdmin::DefinitScriptBackup(QString pathbackupbase)
     QString scriptbackup= "#!/bin/bash";
     scriptbackup += CRLF;
     // Sauvegarde des 4 bases de Rufus
-    scriptbackup += executabledump + " --force --opt --user=\"" LOGIN_SQL "\" -p\"" MDP_SQL "\" --skip-lock-tables --events --databases " DB_CONSULTS " > \"" + QDir::toNativeSeparators(pathbackupbase + "/" DB_CONSULTS ".sql") + "\"";
+    scriptbackup += executabledump + " --force --opt --user=\"" LOGIN_SQL "\" -p\"" MDP_SQL "\" --skip-lock-tables --events --databases " DB_RUFUS " > \"" + QDir::toNativeSeparators(pathbackupbase + "/" DB_RUFUS ".sql") + "\"";
     scriptbackup += CRLF;
     scriptbackup += executabledump + " --force --opt --user=\"" LOGIN_SQL "\" -p\"" MDP_SQL "\" --skip-lock-tables --events --databases " DB_COMPTA " > \"" + QDir::toNativeSeparators(pathbackupbase + "/" DB_COMPTA ".sql") + "\"";
     scriptbackup += CRLF;
