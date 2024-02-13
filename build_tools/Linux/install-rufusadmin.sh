@@ -1,23 +1,14 @@
 # FROM https://markuspeitl.github.io/my-linux-scripts/install-appimage.html
 
-
 START_DIR=$(pwd)
-APP_IMG_PATH=$1
-echo "Selected AppImage path to install to: "$APP_IMG_PATH
-APP_IMG_NAME=$(basename $1)
-echo "Name of the AppImage: "$APP_IMG_NAME
-NEW_NAME=$2
-echo "New name to be installed as: "$NEW_NAME
+APP_IMG_PATH=~/RufusAdmin.AppImage
+APP_IMG_NAME=$(basename $APP_IMG_PATH)
+NEW_NAME=RufusAdmin
 
-if [ -z $APP_IMG_PATH ]; then
-    echo "Please pass a path to the appimage as argument! - exiting"
-    exit 1
-fi
-if [ -z $NEW_NAME ]; then
-    echo "Please pass an installation name as argument! - exiting"
-    exit 1
-fi
-printf "\n"
+#Clean up extracted application temporary directory and go back to start dir
+echo "Cleaning up"
+rm -r /tmp/squashfs-root
+cd ~
 
 #Making the appimage executable
 echo "Executing: chmod +x $APP_IMG_PATH"
@@ -61,16 +52,16 @@ printf "\n"
 
 #Create path for the icon
 ICONPATH=~/.local/share/icons/hicolor/256x256/apps
-ICONAPPIMAGEPATH=/tmp/squashfs-root/usr/share/icons/hicolor/256x256/apps/rufus.png
-ICONNAME=rufus.png
+ICONAPPIMAGEPATH=/tmp/squashfs-root/usr/share/icons/hicolor/256x256/apps/rufusadmin.png
+ICONNAME=rufusadmin.png
 echo "mkdir ~/.local/share/icons/hicolor/256x256/apps"
 mkdir $ICONPATH
-echo "cp /tmp/squashfs-root/usr/share/icons/hicolor/256x256/apps/rufus.png ~/.local/share/icons/hicolor/256x256/apps"
+echo "cp /tmp/squashfs-root/usr/share/icons/hicolor/256x256/apps/rufusadmin.png ~/.local/share/icons/hicolor/256x256/apps"
 echo "cp " $ICONAPPIMAGEPATH $ICONPATH
 cp $ICONAPPIMAGEPATH $ICONPATH
 
 #Use sed to replace the path of the Icon in the desktop file
-echo "sed -i -E s:Icon=.+\n:Icon=/tmp/squashfs-root/usr/share/icons/hicolor/256x256/apps/rufus.png: ~/.local/share/icons/hicolor/256x256/apps/rufus.png"
+echo "sed -i -E s:Icon=.+\n:Icon=/tmp/squashfs-root/usr/share/icons/hicolor/256x256/apps/rufusadmin.png: ~/.local/share/icons/hicolor/256x256/apps/rufusadmin.png"
 sed -i -E s:Icon=.+:Icon=$ICONPATH/$ICONNAME:  $DESKTOP_INSTALLED
 
 printf "\n"

@@ -1,0 +1,30 @@
+Pour utiliser linuxdeployqt
+Dans un dossier perso genre home/rintintin/test
+Créer l'arborisation
+└── usr
+    ├── bin
+    │   └── RufusApp
+    └── share
+        ├── applications
+        │   └── rufusadmindesktop.desktop
+        └── icons
+            └── hicolor
+                └── 256x256 
+                    └── apps 
+                        └── rufus.png
+Coller dans le sous-dossier /bin le RufusApp qui vient d'être compilé par Qt
+Puis, lancer la commande
+~/linuxdeployqt(nom de la version installée) chemin-vers-usr/usr/share/applications/rufusadmin.desktop -appimage
+
+
+
+Sinon, plus simplement:
+Pour créer une appimage RufusAdmin automatiquement
+	copier le script create-rufusadmin-appimage.sh et le RufusAdminApp dans le dossier utilisateur
+	lancer le script create-rufusadmin-appimage.sh
+	le script va créer l'arborisation de l'appimage, puis l'appimage, puis détruira les fichiers temporaires
+	
+Pour installer Rufus sur un poste à partir de l'appimage produite,
+	copier le script install-rufusadmin.sh et l'appimage dans le dossier utilisateur
+	lancer le script installadmin-rufus.sh
+

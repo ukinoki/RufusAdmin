@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("02-02-2024/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("13-02-2024/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -501,7 +501,7 @@ void RufusAdmin::DeconnexionPoste(QString stringid)
             }
         }
         if (usernotconnectedever)
-            db->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where PosePar = " + QString::number(iduserposte));
+            db->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where " CP_POSEPAR_VERROUCOMPTA " = " + QString::number(iduserposte));
     }
 }
 
@@ -599,7 +599,7 @@ void RufusAdmin::AskAppareil()
     DisconnectTimerInactive();
     dlg_askAppareil = new UpDialog(this);
     dlg_askAppareil->setWindowModality(Qt::WindowModal);
-    dlg_askAppareil->setFixedWidth(400);
+    dlg_askAppareil->setFixedSize(400,100);
     QHBoxLayout *lay = new QHBoxLayout;
     UpLabel *label = new UpLabel();
     label->setText("Nom de l'appareil");
@@ -612,7 +612,6 @@ void RufusAdmin::AskAppareil()
     upCombo->setchamp("NomAppareil");
     lay->addWidget(upCombo);
     dlg_askAppareil->dlglayout()->insertLayout(0,lay);
-    dlg_askAppareil->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
     dlg_askAppareil->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
     connect(dlg_askAppareil->OKButton,    &QPushButton::clicked, this, &RufusAdmin::EnregistreAppareil);
     dlg_askAppareil->exec();
