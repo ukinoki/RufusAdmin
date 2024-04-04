@@ -89,10 +89,10 @@ bool Users::addUser(User *user)
     if( user == Q_NULLPTR)
         return false;
     int iduser = user->id();
-    add(map_all, user, Item::Update);
+    add(map_all,user, Item::Update);
     auto itusr = map_all->constFind(iduser);
     User *usr = itusr.value();
-    if (usr)
+    if(usr)
     {
         mapsclean(usr);
         if (!usr->isDesactive())
@@ -101,7 +101,7 @@ bool Users::addUser(User *user)
             map_actifs->insert(usr->id(), usr);
             if( usr->isResponsable() || usr->isAlterneResponsableEtAssistant())
                 map_superviseurs->insert(usr->id(), usr);
-            if( usr->isLiberal() || usr->isLiberalSEL() )
+            if( usr->isLiberal() || usr->isLiberalSEL())
                 map_liberaux->insert(usr->id(), usr);
             if( usr->isSoignant() && !usr->isRemplacant() )
                 map_parents->insert(usr->id(), usr);
@@ -121,7 +121,7 @@ bool Users::addUser(User *user)
 void Users::addList(QList<User*> listusr)
 {
     foreach (User *usr, listusr)
-        if(usr != Q_NULLPTR)
+        if (usr != Q_NULLPTR)
             addUser(usr);
 }
 
@@ -221,9 +221,9 @@ void Users::initListe()
 }
 
 /*!
- * \brief Users::CalcCompteEncaissementActes
+ *  \brief Users::CalcCompteEncaissementActes
  * Détermine le compte bancaire sur lequel seront encissés les paiements pour ce user
- */
+*/
 void Users::CalcCompteEncaissementActes(User *usr)
 {
     usr->setidcompteencaissementhonoraires(0);
@@ -235,8 +235,8 @@ void Users::CalcCompteEncaissementActes(User *usr)
             usr->setidcompteencaissementhonoraires(usr->idcomptepardefaut());
         else if (usr->isLiberalSEL() || usr->isSoignantSalarie())
         {
-            auto it = map_comptablesactes->find(usr->idemployeur());
-            if (it != map_comptablesactes->end())
+            auto it = map_comptablesactes->constFind(usr->idemployeur());
+            if (it != map_comptablesactes->cend())
             {
                 User *usrcpt = it.value();
                 if (usrcpt)
@@ -245,7 +245,6 @@ void Users::CalcCompteEncaissementActes(User *usr)
         }
     }
 }
-
 
 void Users::SupprimeUser(User *usr)
 {
@@ -261,14 +260,14 @@ void Users::mapsclean(User *usr)
 {
     if (usr == Q_NULLPTR)
     {
-        map_actifs          ->clear();
-        map_inactifs        ->clear();
-        map_superviseurs    ->clear();
-        map_liberaux        ->clear();
-        map_parents         ->clear();
-        map_comptablesactes ->clear();
+        map_actifs              ->clear();
+        map_inactifs            ->clear();
+        map_superviseurs        ->clear();
+        map_liberaux            ->clear();
+        map_parents             ->clear();
+        map_comptablesactes     ->clear();
         map_comptablessaufactes ->clear();
-        map_medecins        ->clear();
+        map_medecins            ->clear();
     }
     else
     {
@@ -296,7 +295,8 @@ void Users::mapsclean(User *usr)
             delete user;
         user = qobject_cast<User*>(map_medecins->take(usr->id()));
         if (user != usr)
-            delete user;    }
+            delete user;
+    }
 }
 
 

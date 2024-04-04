@@ -162,7 +162,7 @@ public:
 
 class TypeIntervention : public Item
 {
-    Q_OBJECT
+Q_OBJECT
 public:
     explicit TypeIntervention(QJsonObject data = {}, QObject *parent = Q_NULLPTR);
     void setData(QJsonObject data = QJsonObject{});

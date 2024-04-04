@@ -435,7 +435,7 @@ void dlg_listevilles::dialogville(QString cp, QString nom)
 
     QHBoxLayout *cplay      = new QHBoxLayout;
     cpline                  = new UpLineEdit();
-    cpline                  ->setValidator(new QRegExpValidator(Utils::rgx_CP,this));
+    cpline                  ->setValidator(new QRegularExpressionValidator(Utils::rgx_CP,this));
     cpline                  ->setAlignment(Qt::AlignCenter);
     cpline                  ->setMaxLength(10);
     cpline                  ->setText(cp);
@@ -452,7 +452,7 @@ void dlg_listevilles::dialogville(QString cp, QString nom)
 
     QHBoxLayout *nomlay     = new QHBoxLayout;
     nomline                 = new UpLineEdit();
-    nomline                 ->setValidator(new QRegExpValidator(Utils::rgx_ville,this));
+    nomline                 ->setValidator(new QRegularExpressionValidator(Utils::rgx_ville,this));
     nomline                 ->setAlignment(Qt::AlignCenter);
     nomline                 ->setMaxLength(45);
     nomline                 ->setText(nom);

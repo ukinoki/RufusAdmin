@@ -15,12 +15,12 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "qglobal.h"
 #ifndef MACROS_H
 #define MACROS_H
 
 // Les versions de la base et des ressources
-#define VERSION_BASE                                77  // version de la base de données
-#define VERSION_RESSOURCES                          36  // version des fichiers de ressources
+#define VERSION_BASE                          77  // version de la base de données
 #define LIEN_XML_RUFUSLASTVERSION             "https://www.rufusvision.org/uploads/9/8/0/3/98038824/rufuslastversion.xml"
 
 // Les bases
@@ -50,7 +50,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TBL_DOCSASUPPRIMER                    "Images.DocsASupprimer"
 #define TBL_FACTURESASUPPRIMER                "Images.FacturesASupprimer"
 
-#define TBL_BILANORTHO                        "Ophtalmologie.bilanortho"
+#define TBL_BILANORTHO                        "Ophtalmologie.bilanortho"                         /*! pas fait */
 #define TBL_BIOMETRIES                        "Ophtalmologie.biometries"
 #define TBL_COMMENTAIRESLUNETTES              "Ophtalmologie.commentaireslunettes"
 #define TBL_DONNEES_OPHTA_PATIENTS            "Ophtalmologie.DonneesOphtaPatients"
@@ -83,8 +83,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define TBL_MESSAGES                          "rufus.Messagerie"
 #define TBL_MESSAGESJOINTURES                 "rufus.MessagerieJointures"
 #define TBL_MOTIFSRDV                         "rufus.MotifsRDV"
-#define TBL_MOTSCLES                          "rufus.MotsCles"
-#define TBL_MOTSCLESJOINTURES                 "rufus.MotsClesJointures"
+#define TBL_MOTSCLES                          "rufus.MotsCles"                                  /*! pas fait */
+#define TBL_MOTSCLESJOINTURES                 "rufus.MotsClesJointures"                         /*! pas fait */
 #define TBL_PARAMSYSTEME                      "rufus.ParametresSysteme"
 #define TBL_PATIENTS                          "rufus.Patients"
 #define TBL_RENSEIGNEMENTSMEDICAUXPATIENTS    "rufus.renseignementsmedicauxpatients"
@@ -148,7 +148,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDCORNONMED_RMP                              "idCorNonMed"
 #define CP_TABAC_RMP                                    "Tabac"
 
-
                             //! Table Rufus.Actes
 #define CP_ID_ACTES                                     "idActe"
 #define CP_IDPAT_ACTES                                  "idPat"
@@ -188,12 +187,13 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_EDITABLE_IMPRESSIONS                         "Editable"
 #define CP_MEDICAL_IMPRESSIONS                          "Medical"
 
-                            //! Table Rufus.flagss
+                            //! Table Rufus.flags
 #define CP_MAJFLAGSALDAT_FLAGS                          "MAJflagSalDat"
 #define CP_MAJFLAGCORRESPONDANTS_FLAGS                  "MAJflagMG"
 #define CP_MAJFLAGMESSAGES_FLAGS                        "MAJflagMessages"
 #define CP_MAJFLAGUSERDISTANT_FLAGS                     "flagUserDistant"
 #define CP_MAJFLAGIMPRESSIONS_FLAGS                     "MAJflagImpressions"
+
 
                             //! Table Rufus.ccam
 #define CP_ID_CCAM                                      "idccam"
@@ -294,12 +294,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDLIEU_DOCSEXTERNES                          "idLieu"
 #define CP_IMPORTANCE_DOCSEXTERNES                      "Importance"
 
-
                             //! Table rufus.listeappareils
 #define CP_ID_APPAREIL                                  "idAppareil"
 #define CP_TITREEXAMEN_APPAREIL                         "TitreExamen"
 #define CP_NOMAPPAREIL_APPAREIL                         "NomAppareil"
 #define CP_FORMAT_APPAREIL                              "Format"
+
                             //! Table rufus.MotsCles
 #define CP_ID_MOTCLE                                    "idMotCle"
 #define CP_TEXT_MOTCLE                                  "MotCle"
@@ -309,7 +309,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDPATIENT_JOINTURESMOTSCLES                  "idPat"
 #define CP_IDMOTCLE_JOINTURESMOTSCLES                   "idMotCle"
 
-                             //! Table Rufus.ParametresSysteme
+                            //! Table Rufus.ParametresSysteme
 #define CP_MDPADMIN_PARAMSYSTEME                        "MDPAdmin"
 #define CP_NUMCENTRE_PARAMSYSTEME                       "NumCentre"
 #define CP_IDLIEUPARDEFAUT_PARAMSYSTEME                 "idLieuParDefaut"
@@ -331,7 +331,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_VILLES_PARAMSYSTEME                          "VillesFrance"
 #define CP_COTATIONS_PARAMSYSTEME                       "CotationsFrance"
 #define CP_COMPTA_PARAMSYSTEME                          "ComptaFrance"
-
                             //! Table Rufus.salledattente
 #define CP_IDPAT_SALDAT                                 "idPat"
 #define CP_IDUSER_SALDAT                                "idUser"
@@ -380,9 +379,10 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_DROITS_USR                                   "UserDroits"
 #define CP_LOGIN_USR                                    "UserLogin"
 #define CP_MDP_USR                                      "UserMDP"
+#define CP_TEL_USR                                      "UserTelephone"   //!> pas utilisé
 #define CP_PORTABLE_USR                                 "UserPortable"
 #define CP_MAIL_USR                                     "UserMail"
-#define CP_MEMO_USR                                     "UserMemo"       //!> pas utilisé
+#define CP_MEMO_USR                                     "UserMemo"        //!> pas utilisé
 #define CP_IDCOMPTEPARDEFAUT_USR                        "IdCompteParDefaut"
 #define CP_NUMPS_USR                                    "UserNumPS"
 #define CP_NUMCO_USR                                    "UserNumCO"
@@ -397,8 +397,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_ISAGA_USR                                    "UserAGA"
 #define CP_SECTEUR_USR                                  "UserSecteur"
 #define CP_ISOPTAM_USR                                  "OPTAM"
-#define CP_COTATION_USR                                     "UserCCAM"
-#define CP_CCAM_USR                                     "UserCCAM"
+#define CP_COTATION_USR                                 "UserCCAM"
 #define CP_SIGNATURE_USR                                "Signature"   //!> pas utilisé
 #define CP_ISORDOSIGNE_USR                              "OrdoSigne"   //!> pas utilisé
 #define CP_DATEDERNIERECONNEXION_USR                    "DateDerniereConnexion"
@@ -454,7 +453,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_CP_AUTRESVILLES                              "CodePostal"
 #define CP_NOM_AUTRESVILLES                             "Nom"
 
-
                             //! Table Images.EchangeImages
 #define CP_ID_ECHGIMAGES                                "idImpression"
 #define CP_PDF_ECHGIMAGES                               "pdf"
@@ -475,6 +473,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_NOMABREGE_BANQUES                            "idBanqueAbrege"
 #define CP_NOMBANQUE_BANQUES                            "NomBanque"
 #define CP_CODE_BANQUES                                 "CodeBanque"
+
 
                             //! Table ComptaMedicale.Comptes
 #define CP_ID_COMPTES                                   "idCompte"
@@ -604,8 +603,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
                             //! Table ComptaMedicale.verrouscomptaactes
 #define CP_IDACTE_VERROUCOMPTA                          "idActe"
-#define CP_DATEVERROU_VERROUCOMPTA                      "DateTimeVerrou"
-#define CP_POSEPAR_VERROUCOMPTA                         "PosePar"
+#define CP_DATEVERROU_VERROUCOMPTA                       "DateTimeVerrou"
+#define CP_POSEPAR_VERROUCOMPTA                          "PosePar"
 
                             //! Table ComptaMedicale.rubriques2035
 #define CP_ID_2035                                      "idRubrique"
@@ -731,7 +730,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_IDUSER_COMLUN                                "idUser"
 #define CP_PUBLIC_COMLUN                                "ComPublic"
 
-                            //! Table Ophtalmologie.tonometries
+                        //! Table Ophtalmologie.tonometries
 #define CP_ID_TONO                                      "idTono"
 #define CP_IDPAT_TONO                                   "idPat"
 #define CP_TOD_TONO                                     "TOOD"
@@ -739,7 +738,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_TODATE_TONO                                  "TODate"
 #define CP_TOTYPE_TONO                                  "TOType"
 
-                            //! Table Ophtalmologie.pachymetries
+                        //! Table Ophtalmologie.pachymetries
 #define CP_ID_PACHY                                     "idPachy"
 #define CP_IDPAT_PACHY                                  "idPat"
 #define CP_PACHYOD_PACHY                                "pachyOD"
@@ -785,20 +784,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define JPG                                         "jpg"
 #define PNG                                         "png"
 
-#define BILANORTHOPTIQUE                            "BO"
-#define CORRECTION                                  "Correction"
-#define COURRIER                                    "Courrier"
-#define DOCUMENTRECU                                "DocRecu"
 #define IMAGERIE                                    "Imagerie"
-#define ORHTOPTIE                                   "Orthoptie"
-#define PRESCRIPTION                                "Prescription"
-#define PRESCRIPTIONLUNETTES                        "PrescrLun"
-#define COURRIERADMINISTRATIF                       "DocAdmin"
 #define VIDEO                                       "Video"
 #define FACTURE                                     "Facture"
 #define ECHEANCIER                                  "Echéancier"
 
-                                //! les types d'IOLS
+                        //! les types d'IOLS
 #define IOL_CP                                      "Chambre postérieure"
 #define IOL_CA                                      "Chambre antérieure"
 #define IOL_ADDON                                   "Add-on"
@@ -806,15 +797,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define IOL_CAREFRACTIF                             "Refractif CA"
 #define IOL_AUTRE                                   "Autre"
 
-#define NOM_APPLI                                   "Rufus"
-
 #define LOGIN_SQL                                   "adminrufus"
 #define MDP_SQL                                     "gaxt78iy"
 
-#define MYSQL_PROC_POSTEIMPORTDOCS                         "posteimportdocs"
+#define MYSQL_PROC_POSTEIMPORTDOCS                  "posteimportdocs"
 
 #define NOM_ADMINISTRATEUR                          "Admin"
 #define MDP_ADMINISTRATEUR                          "bob"
+
 
 //les TCP
 #define NOM_PORT_TCPSERVEUR                         "50885"
@@ -841,15 +831,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define ENCOURSEXAMEN                           tr("En cours de consultation avec ")
 
 // Les fichiers et répertoires divers
-#define NOM_DIR_RUFUSADMIN                      "/Documents/RufusAdmin"
 #define NOM_DIR_RUFUS                           "/Documents/Rufus"
+#define NOM_DIR_RUFUSADMIN                      "/Documents/RufusAdmin"
+#define NOM_DIR_IMAGERIE                        "/Imagerie"
 #define NOM_DIR_RESSOURCES                      "/Ressources"
 #define NOM_DIR_FACTURES                        "/Factures"
 #define NOM_DIR_ORIGINAUX                       "/Originaux"
 #define NOM_DIR_FACTURESSANSLIEN                "/FacturesSansLien"
 #define NOM_DIR_DOSSIERECHANGE                  "/DossierEchange"
-#define NOM_DIR_CRDOSSIERS                      "/CRDossiers"
-#define NOM_DIR_IMAGERIE                        "/Imagerie"
 #define NOM_DIR_IMAGES                          "/Images"
 #define NOM_DIR_VIDEOS                          "/Videos"
 #define NOM_DIR_PROV                            "/Prov"
@@ -861,19 +850,21 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define NOM_FILE_SCRIPTBACKUP                   "/RufusScriptBackup.sh"
 #define NOM_FILE_SCRIPT_MACOS_PLIST             "/rufus.bup.plist"
 
-#define PATH_DIR_RUFUSADMIN                     QDir::homePath() + NOM_DIR_RUFUSADMIN
+#ifdef Q_OS_WIN
+    #define NOM_FILE_SCRIPTBACKUP               "/RufusScriptBackup.bat"
+#else
+    #define NOM_FILE_SCRIPTBACKUP               "/RufusScriptBackup.sh"
+#endif
+#define NOM_FILE_SCRIPT_MACOS_PLIST             "/rufus.bup.plist"
+
 #define PATH_DIR_RUFUS                          QDir::homePath() + NOM_DIR_RUFUS
+#define PATH_DIR_RUFUSADMIN                     QDir::homePath() + NOM_DIR_RUFUSADMIN
 #define PATH_DIR_IMAGERIE                       PATH_DIR_RUFUS NOM_DIR_IMAGERIE
 #define PATH_DIR_RESSOURCES                     PATH_DIR_RUFUS NOM_DIR_RESSOURCES
 
 #define PATH_DIR_IMAGES                         PATH_DIR_IMAGERIE NOM_DIR_IMAGES
 #define PATH_DIR_FACTURES                       PATH_DIR_IMAGERIE NOM_DIR_FACTURES
-#define PATH_DIR_ORIGINAUX                      PATH_DIR_IMAGERIE NOM_DIR_ORIGINAUX
-#define PATH_DIR_FACTURESSANSLIEN               PATH_DIR_IMAGERIE NOM_DIR_FACTURESSANSLIEN
-#define PATH_DIR_DOSSIERECHANGE                 PATH_DIR_IMAGERIE NOM_DIR_DOSSIERECHANGE
-#define PATH_DIR_VIDEOS                         PATH_DIR_IMAGERIE NOM_DIR_VIDEOS
-#define PATH_DIR_PROV                           PATH_DIR_IMAGERIE NOM_DIR_PROV
-#define PATH_DIR_ECHECSTRANSFERTS               PATH_DIR_IMAGERIE NOM_DIR_ECHECSTRANSFERTS
+
 #define PATH_DIR_LOGS                           PATH_DIR_RUFUSADMIN NOM_DIR_LOGS
 
 #define PATH_FILE_INI                           PATH_DIR_RUFUSADMIN NOM_ADMINFILE_INI
@@ -881,73 +872,47 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define PATH_FILE_SCRIPTBACKUP                  PATH_DIR_RUFUSADMIN NOM_FILE_SCRIPTBACKUP
 #define PATH_FILE_SCRIPT_MACOS_PLIST            "/Library/LaunchAgents" NOM_FILE_SCRIPT_MACOS_PLIST
 
-// Variables mysql
-#define MAX_ALLOWED_PACKET                          "16"
 
-// Durée mise en veille
-#define MISE_EN_VEILLE                              "120000"
+// Variables mysql
+#define MAX_ALLOWED_PACKET                      "16"
 
 // le son d'alarme
-#define NOM_ALARME                                  "://goutte.wav"
-
-// la largeur de la formule de réfraction dans le champ ActeTexte
-#define LARGEUR_FORMULE                             "310"
-
-// le lien vers la CCAM
-#define LIEN_CCAM                                   "https://www.ameli.fr/accueil-de-la-ccam/trouver-un-acte/consultation-par-chapitre.php?chap=a%3A0%3A%7B%7D&add=2#chapitre_2"
+#define NOM_ALARME                              "://goutte.wav"
 
 // la taille maximale des images
-#define TAILLEMAXIIMAGES                            262144
+#define TAILLEMAXIIMAGES                        262144
+
+// la police d'écran par défaut et le facteur de correction des td width html en impression qui varie entre Linux et OSX (???)
+#define POLICEPARDEFAUT         "Comic Sans MS"
+#define POLICEATTRIBUTPARDEFAUT "Regular"
 
 // définit les styles de l'application
 
 #define STYLE_UPGROUBOXINACTIVE     "UpGroupBox {font: bold; border: 1px solid rgb(164,164,164); border-radius: 10px;}"
 #define STYLE_UPGROUBOXACTIVE       "UpGroupBox {border: 2px solid rgb(164, 205, 255); border-radius: 10px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E0E0E0, stop: 1 #FFFFFF);}"
 #define STYLE_UPSMALLBUTTON         "UpSmallButton {border: 1px none black; padding-left: 8px; padding-top: 3px; padding-right: 8px; padding-bottom: 3px;}UpSmallButton:pressed {background-color: rgb(205, 205, 205);}UpSmallButton:focus {color : #000000; border: 1px solid rgb(164, 205, 255); border-radius: 5px;}"
-#define STYLE_UPPUSHBUTTON          "UpPushButton {border: 1px solid gray; border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px; padding-left: 8px; padding-right: 8px; padding-top: 3px; padding-bottom: 3px; qproperty-iconSize: 35px 35px; qproperty-flat: false; color : #000000; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);} UpPushButton:focus {color : #000000; border: 2px solid rgb(164, 205, 255); border-radius: 5px;} UpPushButton:pressed {color : gray; background-color: rgb(175, 175, 175);} UpPushButton:!enabled {color : gray;}"
-#define STYLE_UPSWITCH              "UpSwitch {border-radius: 10px; background-color:rgba(50,200,105,145);}"
-
-// la police d'écran par défaut et le facteur de correction des td width html en impression qui varie entre Linux et OSX (???)
-#define POLICEPARDEFAUT         "Comic Sans MS"
-#define POLICEATTRIBUTPARDEFAUT "Regular"
-#ifdef Q_OS_MACX
-#define CORRECTION_td_width     1
-#endif
-#ifdef Q_OS_LINUX
-#define CORRECTION_td_width     1.3
-#endif
+#define STYLE_UPPUSHBUTTON          "UpPushButton {border: 1px solid gray; border-radius: 5px; margin-left: 5px; margin-right: 5px;  margin-top: 3px; margin-bottom: 3px; padding-left: 8px; padding-right: 8px; padding-top: 3px; padding-bottom: 3px; qproperty-iconSize: 30px 30px; qproperty-flat: false; color : #000000; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);} UpPushButton:focus {color : #000000; border: 2px solid rgb(164, 205, 255); border-radius: 5px;} UpPushButton:pressed {color : gray; background-color: rgb(175, 175, 175);} UpPushButton:!enabled {color : gray;}"
+#define STYLE_UPSWITCH              "UpSwitch {border-radius: 10px; background-color:rgb(50,200,105,145);}"
 
 #define OPHTALIBERAL            "ophlib"
 #define OPHTAREMPLACANT         "ophrmp"
 #define OPHTASALARIE            "ophsal"
 #define OPHTASEL                "ophsel"
-#define OPHTANOCOMPTA           "ophnocompta"
 #define OPHTAASSISTANT          "ophassistant"
 #define ORTHOLIBERAL            "ortholib"
 #define ORTHOREMPLACANT         "orthormp"
 #define ORTHOSALARIE            "orthosal"
 #define ORTHOSEL                "orthosel"
-#define ORTHONOCOMPTA           "orthonocompta"
 #define ORTHOASSISTANT          "orthoassistant"
 #define AUTRESOIGNANTLIBERAL    "autresoignantlib"
 #define AUTRESOIGNANTREMPLACANT "autresoignantrmp"
 #define AUTRESOIGNANTSALARIE    "autresoignantsal"
 #define AUTRESOIGNANTSEL        "autresoignantsel"
-#define AUTRESOIGNANTNOCOMPTA   "autrenocompta"
 #define AUTRESOIGNANTASSISTANT  "autreassistant"
 #define AUTREFONCTION           "a"
 #define SECRETAIRE              "s"
 #define SOCIETECOMPTABLE        "SEL"
 #define NEUTRE                  "neutre"
-
-#define HAUTEUR_SANS_ORDONNANCE_MINI                    191                 // Hauteur du formulaire Refraction sans la partie ordonnance sans detail sans observ
-#define HAUTEUR_SANS_ORDONNANCE_AVEC_DETAIL             335                 // Hauteur du formulaire Refraction sans la partie ordonnance avec detail sans observ
-#define HAUTEUR_AVEC_ORDONNANCE_SANS_DETAIL             450                 // Hauteur du formulaire Refraction avec partie ordonnance sans detail
-#define HAUTEUR_AVEC_ORDONNANCE_AVEC_DETAIL             590                 // Hauteur du formulaire Refraction avec partie ordonnance avec detail
-#define LARGEURLISTE                                    1300
-#define LARGEURNORMALE                                  1260
-#define HAUTEUR_MINI                                    280
-#define HAUTEUR_NORMALE                                 970
 
 //Opérations bancaires
 #define VIREMENT            "Virement"
@@ -970,41 +935,23 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define PLVMT               "P"
 #define CB                  "B"
 
-// divers, ancres et comentaires html
-#define HTMLCOMMENT_LINUX               "<!LINUX>"
-#define HTMLCOMMENT_MAC                 "<!MAC>"
-#define HTMLANCHOR_BODEBUT              "<BOdebut>"
-#define HTMLANCHOR_BOFIN                "<BOfin>"
-#define HTMLANCHOR_PACHYDEBUT           "pachydebut"
-#define HTMLANCHOR_PACHYFIN             "pachyfin"
-#define HTMLANCHOR_TODEBUT              "TOdebut"
-#define HTMLANCHOR_TOFIN                "TOfin"
+// divers, ancres et comemntaires html
+
+#if defined(Q_OS_LINUX)
+#define HTMLCOMMENT                 "<!LINUX>"
+#elif defined(Q_OS_MACOS)
+#define HTMLCOMMENT                 "<!MAC>"
+#elif defined(Q_OS_WIN)
+#define HTMLCOMMENT                 "<!WIN>"
+#else
+#define HTMLCOMMENT                 "<!COMMENT>"
+#endif
 #define HTML_FINPARAGRAPH               "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px;\"></p>"
 #define HTML_RETOURLIGNE                "<p style = \"margin-top:0px; margin-bottom:0px;\">"
-#define HTML_LARGEUR_ENTETE_GAUCHE      "280"
-#define HTML_LARGEUR_ENTETE_DROITE      "180"
-#define HTML_LARGEUR_ENTETE_GAUCHE_ALD  "230"
-#define HTML_LARGEUR_ENTETE_DROITE_ALD  "230"
-
-
-// valeurs extrêmes de kératométrie
-#define MinK                        5
-#define MaxK                        9.5
-
-//modes de mesure tonométrie
-#define AIR_TO                      "Air"
-#define APLANATION_TO               "Aplanation"
-#define AUTRE_TO                    "Autre"
-
-//modes de mesure pachymétrie
-#define OPTIQUE_PACHY               "O"
-#define OCT_PACHY                   "T"
-#define ECHO_PACHY                  "E"
-
-//modes de mesure biométrie
-#define OPTIQUE_BIOMETRIE           "OBM"
-#define ECHO_BIOMETRIE              "EBM"
-#define AUTRE_BIOMETRIE             "ABM"
+#define HTML_LARGEUR_ENTETE_GAUCHE      "49%"
+#define HTML_LARGEUR_ENTETE_DROITE      "49%"
+#define HTML_LARGEUR_ENTETE_GAUCHE_ALD  "49%"
+#define HTML_LARGEUR_ENTETE_DROITE_ALD  "49%"
 
 //modes de mesure appareils refraction
 #define COM1                        "COM1"
@@ -1015,91 +962,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define COM6                        "COM6"
 #define COM7                        "COM7"
 #define COM8                        "COM8"
-#define BOX                         "Box"
-#define DOSSIER_ECHANGE             "Dossier Echange"
-#define N_NULL                      "-"
-
-//mots utilisés en macros dans les documents à imprimer
-#define STR_TITRUSER            "TITREUSER"
-#define STR_NOMPAT              "NOM PATIENT"
-#define STR_DATEDOC             "DATE"
-#define STR_DDNPAT              "DDN"
-#define STR_TITREPAT            "TITRE PATIENT"
-#define STR_AGEPAT              "AGE PATIENT"
-#define STR_PRENOMPAT           "PRENOM PATIENT"
-#define STR_SEXEPAT             "SEXE PATIENT"
-#define STR_MGPAT               "MEDECIN PATIENT"
-#define STR_MGPATTITRE          "TITRE MEDECIN PATIENT"
-#define STR_POLITESSEMG         "FORMULE POLITESSE MEDECIN"
-#define STR_PRENOMMG            "PRENOM MEDECIN"
-#define STR_NOMMG               "NOM MEDECIN"
-#define STR_REFRACT             "REFRACTION"
-#define STR_KERATO              "KERATOMETRIE"
-#define STR_POLITESSECOR        "FORMULE POLITESSE CORRESPONDANT"
-#define STR_CORPAT              "CORRESPONDANT PATIENT"
-#define STR_PRENOMCOR           "PRENOM CORRESPONDANT"
-#define STR_NOMCOR              "NOM CORRESPONDANT"
-#define STR_PRENOMUSER          "PRENOM RESPONSABLE"
-#define STR_NOMUSER             "NOM RESPONSABLE"
-#define STR_TELEPHONE           "TELEPHONE PATIENT"
-
-#define STR_PROVENANCE          "PROVENANCE"
-#define STR_TYPESEJOUR          "SEJOUR"
-#define STR_COTE                "COTE"
-#define STR_SITE                "SITE"
-#define STR_ANESTHINTERVENTION  "ANESTHINTERVENTION"
-#define STR_DATEINTERVENTION    "DATEINTERVENTION"
-#define STR_HEUREINTERVENTION   "HEUREINTERVENTION"
-#define STR_COTEINTERVENTION    "COTEINTERVENTION"
-#define STR_SITEINTERVENTION    "SITEINTERVENTION"
-#define STR_TYPEINTERVENTION    "TYPEINTERVENTION"
-
-#define STR_NOCOR               "PAS DE CORRESPONDANT RÉFÉRENCÉ POUR CE PATIENT"
 
 //QSettings
-#define Param_Poste_PortFronto                          "Param_Poste/PortFronto"
-#define Param_Poste_PortAutoref                         "Param_Poste/PortAutoref"
-#define Param_Poste_PortTono                            "Param_Poste/PortTonometre"
-#define Param_Poste_PortRefracteur                      "Param_Poste/PortRefracteur"
-#define Param_Poste_PortFronto_Reseau                   Param_Poste_PortFronto "/Reseau"
-#define Param_Poste_PortAutoref_Reseau                  Param_Poste_PortAutoref "/Reseau"
-#define Param_Poste_PortTono_Reseau                     Param_Poste_PortTono "/Reseau"
-#define Param_Poste_PortRefracteur_Reseau               Param_Poste_PortRefracteur "/Reseau"
-#define Param_Poste_PortRefracteur_Reseau_AdressAutoref Param_Poste_PortRefracteur_Reseau "AdressAutoref"
-#define Param_Poste_PortRefracteur_Reseau_AdressFronto  Param_Poste_PortRefracteur_Reseau "/AdressFronto"
-#define Param_Poste_Fronto                              "Param_Poste/Fronto"
-#define Param_Poste_Autoref                             "Param_Poste/Autoref"
-#define Param_Poste_Tono                                "Param_Poste/Tonometre"
-#define Param_Poste_Refracteur                          "Param_Poste/Refracteur"
-
 #define Dossier_ClesSSL                                 "/DossierClesSSL"
-#define Dossier_Imagerie                                "/DossierImagerie"
-#define Dossier_DocsScannes                             "/DossiersDocsScannes"
-#define Dossier_Videos                                  "/DossiersVideos"
-#define Dossier_Documents                               "/DossiersDocuments/"
-#define Param_SQLExecutable                             "Param_Poste/DirSQLExecutable"
 
 #define Param_SSL                                       "/SSL"
 #define Param_Serveur                                   "/Serveur"
 #define Param_Port                                      "/Port"
-#define Param_Active                                     "/Active"
+#define Param_SQLExecutable                             "Param_Poste/DirSQLExecutable"
 
-#define Imprimante_TailleEnTete                         "Param_Imprimante/TailleEnTete"
-#define Imprimante_TailleEnTeteALD                      "Param_Imprimante/TailleEnTeteALD"
-#define Imprimante_TaillePieddePage                     "Param_Imprimante/TaillePieddePage"
-#define Imprimante_TaillePieddePageOrdoLunettes         "Param_Imprimante/TaillePieddePageOrdoLunettes"
-#define Imprimante_TailleTopMarge                       "Param_Imprimante/TailleTopMarge"
-#define Imprimante_ApercuAvantImpression                "Param_Imprimante/ApercuAvantImpression"
-#define Imprimante_OrdoAvecDupli                        "Param_Imprimante/OrdoAvecDupli"
-
-#define PrioritaireGestionDocs                          "/PrioritaireGestionDocs"
-
-#define Ville_Defaut                                    "Param_Poste/VilleParDefaut"
-#define CodePostal_Defaut                               "Param_Poste/CodePostalParDefaut"
-#define Utilise_BDD_Villes                              "Param_Poste/Utilise_BasedeDonnees_Villes"
-
-#define Poste_VersionRessources                         "Param_Poste/VersionRessources"
-
-#define Position_Fiche                                  "PositionsFiches/Position"
 
 #endif // MACROS_H

@@ -23,31 +23,38 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDir>
 #include <QFileDialog>
 #include <QJsonDocument>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QHostAddress>
 #include <QNetworkInterface>
 #include <QHostInfo>
 #include <QMetaEnum>
 #include <QProcess>
 #include <QJsonObject>
+#include <QProgressBar>
+#include <QProgressDialog>
 #include <QSerialPortInfo>
-#include <QTextCodec>
 #include <QUrl>
 #include <cmath>
+#include <QStandardPaths>
 
-#include "uplineedit.h"
-#include "uplabel.h"
+#include "uptextedit.h"
 #include "upmessagebox.h"
 #include "dlg_message.h"
-#include "poppler-qt5.h"
-#include "upprogressdialog.h"
+
+#include <QPdfDocument>
 
 #include <QInputDialog>
 #include <QCoreApplication>
 #include <QEventLoop>
-#include <QProgressDialog>
 #include <QSerialPort>
 #include <QTime>
+
+const unsigned char SOH = 01;  //0x01
+const unsigned char STX = 02;  //0x02
+const unsigned char EOT = 04;  //0x04
+const unsigned char ETB = 23; //0x17
+const unsigned char LF  = 10; //0x0A
+const unsigned char CR  = 13; //0x0D
 
 class Utils : public QObject
 {
@@ -56,12 +63,13 @@ private:
     static Utils*      instance;
     static QString cp() {
         QString mcp = "[0-9]{5}" ;
-        if (QLocale().country() == QLocale::Madagascar)
+        if (QLocale().territory() == QLocale::Madagascar)
             mcp = "[0-9]{3}";
         return mcp;
     }
 public:
     enum Day {
+                Aucun       = 0x0,
                 Lundi       = 0x1,
                 Mardi       = 0x2,
                 Mercredi    = 0x4,
@@ -79,33 +87,32 @@ public:
     enum Cote {Droit, Gauche, Les2, NoLoSo};
     enum Period {Debut, Fin};
 
-
     static Utils   *I();
 
-    static QRegExp const rgx_rx;
-    static QRegExp const rgx_AlphaNumeric;
-    static QRegExp const rgx_AlphaNumeric_3_12;
-    static QRegExp const rgx_AlphaNumeric_5_12;
-    static QRegExp const rgx_AlphaNumeric_5_15;
-    static QRegExp const rgx_MajusculeSeul;
-    static QRegExp const rgx_Question;
+    static QRegularExpression const rgx_rx;
+    static QRegularExpression const rgx_AlphaNumeric;
+    static QRegularExpression const rgx_AlphaNumeric_3_12;
+    static QRegularExpression const rgx_AlphaNumeric_5_12;
+    static QRegularExpression const rgx_AlphaNumeric_5_15;
+    static QRegularExpression const rgx_MajusculeSeul;
+    static QRegularExpression const rgx_Question;
 
-    static QRegExp const rgx_IPV4;
-    static QRegExp const rgx_IPV4_mask;
+    static QRegularExpression const rgx_IPV4;
+    static QRegularExpression const rgx_IPV4_mask;
 
-    static QRegExp const rgx_mail;
-    static QRegExp const rgx_NNI;
+    static QRegularExpression const rgx_mail;
+    static QRegularExpression const rgx_NNI;
 
-    static QRegExp const rgx_adresse;
-    static QRegExp const rgx_intitulecompta;
-    static QRegExp const rgx_CP;
-    static QRegExp const rgx_ville;
-    static QRegExp const rgx_telephone;
+    static QRegularExpression const rgx_adresse;
+    static QRegularExpression const rgx_intitulecompta;
+    static QRegularExpression const rgx_CP;
+    static QRegularExpression const rgx_ville;
+    static QRegularExpression const rgx_telephone;
 
-    static QRegExp const rgx_tabac;
-    static QRegExp const rgx_cotation;
+    static QRegularExpression const rgx_tabac;
+    static QRegularExpression const rgx_cotation;
 
-    static QRegExp const rgx_recherche;
+    static QRegularExpression const rgx_recherche;
 
 
     static void Pause(int msec = 1000);
@@ -113,20 +120,24 @@ public:
     //! html
     static bool convertHTML(QString &text);
     static void convertPlainText(QString &text);
-    static void nettoieHTML(QString &text, bool supprimeLesLignesVidesDuMilieu = false);
+    static void nettoieHTML(QString &text, int fontsize = 0, bool supprimeLesLignesVidesDuMilieu = false);
     static bool retirelignevidefinhtml(QString &txthtml);
     static bool epureFontFamily(QString &text);  /*! >il y eut un temps où on entrait dans les html de Qt la font-family avec tous ses attributs
                                                  * ce qui donnait -> font-family:'Comic Sans MS,13,-1,5,50,0,0,0,0,0' dans le html
-                                                 * depuis Qt 5.10 cela ne marche plus et il faut enlever tous les attributs sinon Qt s'emmêle les pinceaux dans l'interprétation du html
+                                                 * depuis Qt 5.10 cela ne marche plus et il faut enlever tous les attributs psinon Qt s'emmêle les pinceaux dans 'interprétation du html
+                                                 * depuis Qt 5.10 cela ne marche plus et il faut enlever tous les attributs psinon Qt s'emmêle les pinceaux dans l'interprétation du html
                                                  * il faut donc p.e. remplacer font-family:'Comic Sans MS,13,-1,5,50,0,0,0,0,0' par font-family:'Comic Sans MS'
                                                  * c'est le rôle de cette fonction */
+
     static bool corrigeErreurHtmlEntete(QString &text, bool ALD= false);
                                                 /*! > idem que la fonction précédente, corrige une erreur sur les anciennes largeurs d'entête */
-
 
     //! QString
     static QSize                    CalcSize(QString txt, QFont fm = qApp->font());
     static QString                  retirecaracteresaccentues(QString nom);
+    static bool                     IsCharSpecial( QChar c);
+    static bool                     IsCharNL( QChar c);
+    static bool                     IsCharCR( QChar c);
     static QString                  trim(QString text, bool end=true, bool removereturnend = false);
     static QString                  capitilize(QString text, bool onlyfirst = false);
     static QString                  trimcapitilize(QString, bool end = true, bool maj = true, bool lower = true);
@@ -134,9 +145,11 @@ public:
     static int                      MaxInt()    {return std::numeric_limits<int>::max();}
     static QByteArray               IntToArray(int source);
     static QString                  IPAdress();
+    static bool                     RegularExpressionMatches(QRegularExpression rgx, QString s, bool exact = true);
     static QString                  calcIP(QString IP, bool aveczero = false);
     static QString                  MACAdress();
     static QString                  getMacForIP(QString ipAddress);
+    static QByteArray               StringToArray(QString source);
 
     //! Fichiers
     static bool                     CompressFileJPG(QString pathfile, QString Dirprov, QDate datetransfert = QDate::currentDate());
@@ -146,21 +159,21 @@ public:
     static void                     cleanfolder(QString path);
     static void                     countFilesInDirRecursively(const QString dirpath, int &tot); // compte le nombre de fichiers présents dans un dossier et ses sous-dossiers
     static void                     copyfolderrecursively(const QString origindirpath, const QString destdirpath,
-                                      int &n,
-                                      QString firstline = QString(),
-                                      QProgressDialog *progress = Q_NULLPTR,
-                                      QFileDevice::Permissions permissions = QFileDevice::ReadOther
-                                                                             | QFileDevice::ReadGroup
-                                                                             | QFileDevice::ReadOwner  | QFileDevice::WriteOwner | QFileDevice::ExeOwner
-                                                                             | QFileDevice::ReadUser);
+                                                                int &n,
+                                                                QString firstline = QString(),
+                                                                QProgressDialog *progress = Q_NULLPTR,
+                                                                QFileDevice::Permissions permissions = QFileDevice::ReadOther
+                                                                                                       | QFileDevice::ReadGroup
+                                                                                                       | QFileDevice::ReadOwner  | QFileDevice::WriteOwner | QFileDevice::ExeOwner
+                                                                                                       | QFileDevice::ReadUser);
     static void                     setDirPermissions(QString dirpath, QFileDevice::Permissions permissions = QFileDevice::ReadOther | QFileDevice::WriteOther
-                                                                                          | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
-                                                                                          | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
-                                                                                          | QFileDevice::ReadUser   | QFileDevice::WriteUser);      // attribue recursivement les permissions énumérées par le flag permissions à tous les fichiers du dossier Dir
+                                                                                                 | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
+                                                                                                 | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                                                                                                 | QFileDevice::ReadUser   | QFileDevice::WriteUser);      // attribue recursivement les permissions énumérées par le flag permissions à tous les fichiers du dossier Dir
     static void                     copyWithPermissions(QFile &file, QString path, QFileDevice::Permissions permissions = QFileDevice::ReadOther | QFileDevice::WriteOther
-                                                                                                      | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
-                                                                                                      | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
-                                                                                                      | QFileDevice::ReadUser   | QFileDevice::WriteUser);      // copie le fichier file vers la destination path avec les permissions énumérées par le flag permissions
+                                                                                                 | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
+                                                                                                 | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                                                                                                 | QFileDevice::ReadUser   | QFileDevice::WriteUser);      // copie le fichier file vers la destination path avec les permissions énumérées par le flag permissions
     static bool                     removeWithoutPermissions(QFile &file);      // efface le fichier file vers la destination path même s'il est enlecture seule
     static double                   mmToInches(double mm);
     static QUrl                     getExistingDirectoryUrl(QWidget *parent = Q_NULLPTR, QString title = "", QUrl Dirdefaut = QUrl::fromLocalFile(PATH_DIR_RUFUS), QStringList listnomsaeliminer = QStringList(), bool ExclureNomAvecEspace = true);
@@ -170,7 +183,6 @@ public:
 
     //! SQL
     static QString                  correctquoteSQL(QString text);
-    static QStringList              DecomposeScriptSQL(QString nomficscript);       //! plus utilisé - imparfait - on passe par les QProcess pour éxécuter un script SQL - voir Procedures:: DefinitScriptRestore(QStringList ListNomFiles);
     static QString                  ConvertitModePaiement(QString mode);            // convertit en clair les abréviations utilisées dans la compta pour les modes de paiement (B= carte de crédit, E = Espèces...etc...)
     static void                     CalcBlobValueSQL(QVariant &newvalue);           // convertit un Qvariant en valeur blob SQL équivalente
     static void                     CalcStringValueSQL(QVariant &newvalue);         // convertit un Qvariant en valeur string SQL équivalente
@@ -186,9 +198,7 @@ public:
     static bool                     VerifMDP(QString MDP, QString Msg, QString &mdp, bool mdpverified = false, QWidget *parent = Q_NULLPTR);
 
     //! Calcule âge
-    static QMap<QString,QVariant> CalculAge(QDate datedenaissance);
-    static QMap<QString,QVariant> CalculAge(QDate datedenaissance, QDate datedujour);
-    static QMap<QString,QVariant> CalculAge(QDate datedenaissance, QString Sexe, QDate datedujour = QDate::currentDate());
+    static QMap<QString,QVariant> CalculAge(QDate datedenaissance, QDate datedujour = QDate::currentDate(), QString Sexe = "");
 
     //! renvoie la valeur littérale d'un enum (à condition d'avoir placé la macro Q_ENUM(nomdelenum) dans la définition de l'enum
     static QString EnumDescription(QMetaEnum metaEnum, int val);
@@ -233,23 +243,33 @@ public:
 
     //! renvoie chaque page d'un pdf comme une image
     static QList<QImage> calcImagefromPdf(QByteArray pdf);
-
-    //! gestion des images en QJsonValue
-    static QJsonValue jsonValFromImage(const QImage &p);
-    static QImage imagemapFrom(const QJsonValue &val);
+    static QList<QImage> calcImagefromPdf(QString filename);
     static void AfficheImage(QImage img);
+
 
     //! reconstruit la map des ports COM disponibles sur le système sous la forme (COMxx,nomgeneriqueduport)
     static QMap<QString, QString> ReconstruitMapPortsCOM();
 
+    //! gestion des images en QJsonValue
+    static QJsonValue jsonValFromImage(const QImage &p);
+    static QImage imagemapFrom(const QJsonValue &val);
+
     //! écriture sur un port série d'un qByteArray
     static void writeDatasSerialPort (QSerialPort *port, QByteArray datas, QString msgdebug, int timetowaitms = 0);
+    static void writeDataToFileDateTime (QByteArray datas, QString file, QString path);
+    static void writeBinaryFile (QByteArray data, QString fileName);
+
+    //! Savoir si un port es serial
+    static bool isSerialPort( QString name );
+
+    //! Sound Alarme
+    static void playAlarm(QString sound = NOM_ALARME);
 
     //! récupérer l'index d'une valeur dans un QMetaEnum
     static int getindexFromValue(const QMetaEnum & e, int value);
 
-
-};
+    //! Removes control characters from byteArray
+    static QByteArray cleanByteArray( QByteArray byteArray );};
 Q_DECLARE_OPERATORS_FOR_FLAGS(Utils::Days)
 
 #endif // UTILS_H

@@ -51,6 +51,7 @@ public:
 
 class Archives
 {
+
 private:
     QMap<int, Archive*>* m_archives = Q_NULLPTR; //!< la liste des archives
 public:
