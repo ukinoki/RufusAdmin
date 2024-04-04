@@ -38,17 +38,37 @@ bool TypesTiers::add(TypeTiers *typetiers)
     return true;
 }
 
-void TypesTiers::addList(QList<TypeTiers*> listTypesTiers)
+void TypesTiers::addList(QList<TypeTiers*> list)
 {
-    foreach (TypeTiers* trs, listTypesTiers)
-        if (trs != Q_NULLPTR)
+    foreach (TypeTiers* trs, list)
+        if(trs != Q_NULLPTR)
             add( trs );
 }
 
+void TypesTiers::remove(TypeTiers* typetiers)
+{
+    if (typetiers == Q_NULLPTR)
+        return;
+    m_typestiers->removeOne(typetiers);
+    delete  typetiers;
+}
+
+void TypesTiers::clearAll()
+{
+    while (m_typestiers->size() >0)
+        remove(m_typestiers->at(0));
+    m_typestiers->clear();
+}
+
+/*!
+ * \brief TypesTiers::initListe
+ * Charge l'ensemble des types de tiers payants
+ * et les ajoute à la classe TypesTiers
+ */
 void TypesTiers::initListe()
 {
-    qDeleteAll(*m_typestiers);
-    m_typestiers->clear();
-    addList(DataBase::I()->loadTypesTiers());
+    clearAll();
+    QList<TypeTiers*> list = DataBase::I()->loadTypesTiers();
+    addList(list);
 }
 

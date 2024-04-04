@@ -102,7 +102,7 @@ bool UpComboBox::eventFilter(QObject *obj, QEvent *event)
                 {
                     //QString ab = lineEdit()->text();
                     setCurrentText(valeuravant());
-                    //QRegularExpressionValidator const * reg = static_cast<QRegularExpressionValidator const*>(lineEdit()->validator());
+                    //QRegExpValidator const * reg = static_cast<QRegExpValidator const*>(lineEdit()->validator());
                     //UpMessageBox::Watch(this,reg->regExp().pattern() + "\n'" + ab + "'");
                 }
             }

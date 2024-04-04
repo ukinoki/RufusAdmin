@@ -44,8 +44,7 @@ public:
                 ButtonClose             = 0x10,
                 ButtonEdit              = 0x20,
                 ButtonRecord            = 0x40,
-                ButtonOups              = 0x80,
-                ButtonPdf               = 0x100
+                ButtonOups              = 0x80
                 };
     Q_DECLARE_FLAGS(Buttons, Button)
     Q_ENUM(Button)
@@ -67,13 +66,13 @@ private:
     UpLineEdit      *wdg_chercheuplineedit;
 
 public:
-    UpSmallButton   *OKButton, *CancelButton, *PrintButton, *SupprButton, *CloseButton, *EditButton, *RecordButton, *PdfButton;
+    UpSmallButton   *OKButton, *CancelButton, *PrintButton, *SupprButton, *CloseButton, *EditButton, *RecordButton;
     void            setEnregPosition(bool);
     void            addSearchLine();
     void            AjouteLayButtons(Buttons Button=ButtonOK);
     void            AjouteWidgetLayButtons(QWidget *widg, bool ALaFin = true);
     void            setMode(Mode mode);
-    void            TuneSize(bool fixh = true, bool fixw = true);
+    void            TuneSize(bool fix = true);
     Mode            mode() const;
     QVBoxLayout*    dlglayout();
     QHBoxLayout*    buttonslayout() const;
@@ -82,6 +81,7 @@ public:
     void            setStageCount(double stage =  0);
     QObject*        data() const { return obj_data; }
     void            setdata(QObject* data) { obj_data = data; }
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(UpDialog::Buttons)

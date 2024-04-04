@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
     dirloc = QCoreApplication::applicationDirPath();
     dirloc += "/rufusadmin" + locale;
     QTranslator translator;
-    if( translator.load(dirloc) )
-        app.installTranslator(&translator);
+    translator.load(dirloc);
+    app.installTranslator(&translator);
 
     QPixmap pixmap("://rufusadmin.jpg");
     QSplashScreen *splash = new QSplashScreen(pixmap);

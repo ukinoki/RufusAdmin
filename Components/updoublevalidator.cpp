@@ -29,7 +29,7 @@ QValidator::State upDoubleValidator::validate(QString &s, int &) const {
         return QValidator::Intermediate;
     }
     // check length of decimal places
-    QString point = locale().decimalPoint();
+    QChar point = locale().decimalPoint();
     if(s.indexOf(point) != -1) {
         int lengthDecimals = s.length() - s.indexOf(point) - 1;
         if (lengthDecimals > decimals()) {

@@ -1,35 +1,35 @@
 Pour utiliser linuxdeployqt
 Dans un dossier perso genre home/rintintin/test
-Créer l'arborisation
+Créer l'arborisation (elle est déjà existante dans le dossier Ubuntu-builb-tools et il suffit de la recopier)
 └── usr
     ├── bin
-    │   └── RufusAdminApp
+    │   └── RufusApp
     └── share
         ├── applications
-        │   └── rufusadmin.desktop
+        │   └── rufusdesktop.desktop
         └── icons
             └── hicolor
                 └── 256x256 
                     └── apps 
-                        └── rufusadmin.png
-Coller dans le sous-dossier /bin le RufusAdminApp qui vient d'être compilé par Qt
+                        └── rufus.png
+Coller dans le sous-dossier /bin le RufusApp qui vient d'être compilé par Qt
 Puis, lancer la commande
-~/linuxdeployqt(nom de la version installée) chemin-vers-usr/usr/share/applications/RufusAdmin.desktop -appimage
+~/linuxdeployqt(nom de la version installée) chemin-vers-usr/usr/share/applications/rufus.desktop -appimage
 
-Pour créer une appimage RufusAdmin automatiquement
+Pour créer une appimage Rufus automatiquement
 	copier 
-		le script create-rufusadmin-appimage.sh
-		le script install-rufusadmin.sh
-		le fichier RufusAdminQt6App
+		le script create-rufus-appimage.sh
+		le script install-rufus.sh
+		le fichier RufusQt6App
 		le programme linuxdeployqt
 	dans le dossier utilisateur
 Clic droit sur les 2 scripts, onglet permissions, cocher autoriser l'éxécution comme un programme	
 	
-lancer le script create-RufusAdmin-appimage.sh
-dans le terminal, entrer ./create-rufusadmin-appimage.sh
+lancer le script create-rufus-appimage.sh
+dans le terminal, entrer ./create-rufus-appimage.sh
 	le script va créer l'arborisation de l'appimage, puis l'appimage, puis détruira les fichiers temporaires
 	
-Pour installer RufusAdmin sur un poste à partir de l'appimage produite,
-	lancer le script install-rufusadmin.sh
-	dans le terminal, entrer ./install-eufusadmin.sh
+Pour installer Rufus sur un poste à partir de l'appimage produite,
+	lancer le script install-rufus.sh
+	dans le terminal, entrer ./install-rufus.sh
 

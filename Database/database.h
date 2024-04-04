@@ -353,8 +353,8 @@ public:
     /*
      * Mots de passe
     */
+    //Pas normal, les mots de passes doivent etre chiffrés
     QString                 getMDPAdmin();                                      //! retrouve le mdp de l'administratuer
-    void                    updateSHA1MdpAdmin(QString mdp);                    //! convertit le mdp admin en SHA1
 
     /*
      * Actes

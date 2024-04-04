@@ -79,7 +79,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 doc->settexteentete(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
-            else
+             else
                 ok = false;
             break;
         }

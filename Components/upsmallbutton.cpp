@@ -16,6 +16,8 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upsmallbutton.h"
+#include "icons.h"
+
 
 UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
 {
@@ -71,7 +73,6 @@ void UpSmallButton::setUpButtonStyle(enum StyleBouton Style)
     case RECORDBUTTON:          setIcon( Icons::icSauvegarder() );  break;
     case STARTBUTTON:           setIcon( Icons::icOK() );           break;
     case SUPPRBUTTON:           setIcon( Icons::icPoubelle() );     break;
-    case PDFBUTTON:             setIcon( Icons::icPdf() );          break;
     default:                                                        break;
     }
     m_style = Style;
@@ -132,17 +133,17 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
     {
         if (ButtonStyle() == STARTBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             Button->setIcon( Icons::icOKpushed() );
         }
         if (ButtonStyle() == CANCELBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             Button->setIcon( Icons::icAnnulerAppuye() );
         }
         if (ButtonStyle() == CLOSEBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             Button->setIcon( Icons::icFermeAppuye() );
         }
     }
@@ -151,7 +152,7 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
     {
         if (ButtonStyle() == STARTBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             QRect rect = QRect(Button->pos(),Button->size());
             QPoint pos = mapFromParent(cursor().pos());
             if (rect.contains(pos))
@@ -161,7 +162,7 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
         }
         if (ButtonStyle() == CANCELBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             QRect rect = QRect(Button->pos(),Button->size());
             QPoint pos = mapFromParent(cursor().pos());
             if (rect.contains(pos))
@@ -171,7 +172,7 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
         }
         if (ButtonStyle() == CLOSEBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             QRect rect = QRect(Button->pos(),Button->size());
             QPoint pos = mapFromParent(cursor().pos());
             if (rect.contains(pos))
@@ -185,17 +186,17 @@ bool UpSmallButton::eventFilter(QObject *obj, QEvent *event)
     {
         if (ButtonStyle() == STARTBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             Button->setIcon( Icons::icOK() );
         }
         if (ButtonStyle() == CANCELBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             Button->setIcon( Icons::icAnnuler() );
         }
         if (ButtonStyle() == CLOSEBUTTON)
         {
-            QPushButton* Button = qobject_cast<QPushButton*>(obj);
+            QPushButton* Button = static_cast<QPushButton*>(obj);
             Button->setIcon( Icons::icFerme() );
         }
         if (isEnabled())

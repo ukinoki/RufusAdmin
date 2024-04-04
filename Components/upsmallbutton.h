@@ -23,7 +23,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QToolTip>
 #include <QDebug>
 #include "macros.h"
-#include "icons.h"
 
 class UpSmallButton : public QPushButton
 {
@@ -34,7 +33,7 @@ public:
     explicit    UpSmallButton(QWidget *parent = Q_NULLPTR);
     ~UpSmallButton();
     enum        StyleBouton {BACKBUTTON, CALENDARBUTTON, CANCELBUTTON, CLOSEBUTTON, COPYBUTTON,
-                             DONOTRECORDBUTTON, EDITBUTTON, HOMEBUTTON, LOUPEBUTTON, NOBUTTON, OUPSBUTTON, QWANTBUTTON, PRINTBUTTON ,RECEPTIONBUTTON, RECORDBUTTON, STARTBUTTON, SUPPRBUTTON,PDFBUTTON};
+                             DONOTRECORDBUTTON, EDITBUTTON, HOMEBUTTON, LOUPEBUTTON, NOBUTTON, OUPSBUTTON, QWANTBUTTON, PRINTBUTTON ,RECEPTIONBUTTON, RECORDBUTTON, STARTBUTTON, SUPPRBUTTON};
                 Q_ENUM(StyleBouton)
     void        setUpButtonStyle(enum StyleBouton);
     StyleBouton ButtonStyle() const;

@@ -36,7 +36,6 @@ public:
     void                        addList(QList<DocExterne*> listdocs);
     void                        initListeByPatient(Patient *pat);
     void                        actualise();
-    void                        reset();
 
     bool                        NouveauDocumentExterne();
     void                        setNouveauDocumentExterneFalse();
