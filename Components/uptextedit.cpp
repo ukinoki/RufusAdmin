@@ -178,7 +178,7 @@ bool UpTextEdit::eventFilter(QObject *obj, QEvent *event)
             // Ctrl-Return ou Ctrl-Enter ou Ctrl-Tab sur un TextEdit- On va sur la tabulation suivante -------------
             if (keyEvent->modifiers() == Qt::MetaModifier)
             {
-                UpTextEdit *textnext = qobject_cast<UpTextEdit*>(nextInFocusChain());
+                UpTextEdit *textnext = dynamic_cast<UpTextEdit*>(nextInFocusChain());
                 if (textnext){
                     textnext->setFocus();
                     textnext->moveCursor(QTextCursor::End);
@@ -191,7 +191,7 @@ bool UpTextEdit::eventFilter(QObject *obj, QEvent *event)
             if (keyEvent->modifiers() == Qt::ShiftModifier)
             {
                 {
-                    UpTextEdit *textprev = qobject_cast<UpTextEdit*>(previousInFocusChain());
+                    UpTextEdit *textprev = dynamic_cast<UpTextEdit*>(previousInFocusChain());
                     if (textprev)
                     {
                         textprev->setFocus();
@@ -340,23 +340,22 @@ QString UpTextEdit::table() const
 
 void UpTextEdit::setText(const QString &text)
 {
-    QString txt = text;
     if (text.contains("<!DOCTYPE HTML PUBLIC"))
     {
+        QString txt = text;
 #ifdef Q_OS_LINUX
         if (!text.contains(HTMLCOMMENT_LINUX))
-            txt.replace(QRegExp("font-size( *: *[\\d]{1,2} *)pt"),"font-size:" + QString::number(qApp->font().pointSize()) + "pt");
+            txt.replace(QRegularExpression("font-size( *: *[\\d]{1,2} *)pt"),"font-size:" + QString::number(qApp->font().pointSize()) + "pt");
 #endif
 #ifdef Q_OS_MACOS
-        if (text.contains(HTMLCOMMENT_LINUX))
-            txt.replace(QRegExp("font-size( *: *[\\d]{1,2} *)pt"),"font-size:" + QString::number(qApp->font().pointSize()) + "pt");
+        if (text.contains(HTMLCOMMENT))
+            txt.replace(QRegularExpression("font-size( *: *[\\d]{1,2} *)pt"),"font-size:" + QString::number(qApp->font().pointSize()) + "pt");
 #endif
-        Utils::epureFontFamily(txt);
+        txt.replace(QRegularExpression("font-family:'([a-zA-Z -]*)'"),"font-family:'" + qApp->font().family() + "'");
         QTextEdit::setText(txt);
     }
     else
         QTextEdit::setText(text);
-    m_modified = (txt != text);
 }
 
 /*!

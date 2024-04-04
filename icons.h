@@ -123,6 +123,7 @@ public:
 
     static QPixmap pxSalleAttente() { return foundPX("pxSalleAttente", "://waiting_room.png"); }
     static QPixmap pxSplash() { return foundPX("pxSplash", "://rufus3.jpg"); }
+    static QPixmap pxSplashNoel() { return foundPX("pxSplashNoel", "://rufus3Noel.jpg"); }
     static QPixmap pxSuicide() { return foundPX("pxSuicide", "://suicide.png"); }
     static QPixmap pxSwitchLeft() { return foundPX("pxSwitchLeft", "://switch-left.png"); }
     static QPixmap pxSwitchRight() { return foundPX("pxSwitchRight", "://switch-right.png"); }
@@ -252,6 +253,7 @@ public:
     static QIcon icPageHome() { return foundIC("icPageHome", "://home.png"); }
     static QIcon icPageRefresh() { return foundIC("icPageRefresh", "://button_blue_refresh.png"); }
     static QIcon icPassword() { return foundIC("icPassword", "://password.ico"); }
+    static QIcon icPdf() { return foundIC("icPdf", "://pdf.png"); }
     static QIcon icPhoto() { return foundIC("icPhoto", "://camera.png"); }
     static QIcon icPostit(QSize size = QSize()) { return foundIC("icPostit", "://Post-it.png", size); } //25
     static QIcon icPoubelle(QSize size = QSize()) { return foundIC("icPoubelle", pxPoubelle(), size); } //25
@@ -272,8 +274,8 @@ public:
     static QIcon icStetho() { return foundIC("icStetho", "://stetho.png"); }
 
     static QIcon icTampon() { return foundIC("icTampon", "://stamp.png"); }
-    static QIcon icTownn() { return foundIC("icTown", "://nature.png"); }
     static QIcon icText() { return foundIC("icText", "://text.png"); }
+    static QIcon icTownn() { return foundIC("icTown", "://nature.png"); }
     static QIcon icTri() { return foundIC("icTri", "://tri.png"); }
 
     static QIcon icValide(QSize size = QSize()) { return foundIC("icValide", "://Valide2.jpg", size); } //25
@@ -283,11 +285,11 @@ public:
     static bool CompareQIcon(const QIcon icon1, const QIcon icon2)
     {
       QByteArray a1;
-      QDataStream stream1(&a1, QIODevice::WriteOnly);
+      QDataStream stream1(&a1, QIODeviceBase::WriteOnly );
       stream1 << icon1;
 
       QByteArray a2;
-      QDataStream stream2(&a2, QIODevice::WriteOnly);
+      QDataStream stream2(&a2, QIODeviceBase::WriteOnly);
       stream2 << icon2;
 
       return a1 == a2;

@@ -48,7 +48,7 @@ TcpSocket::TcpSocket(qintptr ID, QObject *parent) : QTcpSocket (parent)
     //        This makes the slot to be invoked immediately, when the signal is emitted.
     connect(this,     &QTcpSocket::readyRead,                                                 this,   &TcpSocket::TraiteDonneesRecues, Qt::DirectConnection);
     connect(this,     &QTcpSocket::disconnected,                                              this,   &TcpSocket::Deconnexion);
-    connect(this,     QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),   this,   &TcpSocket::erreurSocket);
+    connect(this,     &QAbstractSocket::errorOccurred,                                        this,   &TcpSocket::erreurSocket);
 }
 
 TcpSocket::~TcpSocket()

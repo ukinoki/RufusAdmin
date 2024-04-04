@@ -272,14 +272,14 @@ void dlg_listelieux::ModifLieuxDialog(Mode mode)
     wdg_tellineedit    ->setMaxLength(17);
     wdg_faxlineedit    ->setMaxLength(17);
 
-    wdg_nomlineedit    ->setValidator(new QRegExpValidator(Utils::rgx_ville));
-    wdg_adress1lineedit   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
-    wdg_adress2lineedit   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
-    wdg_adress3lineedit   ->setValidator(new QRegExpValidator(Utils::rgx_adresse));
-    wdg_CPlineedit     ->setValidator(new QRegExpValidator(Utils::rgx_CP));
-    wdg_villelineedit  ->setValidator(new QRegExpValidator(Utils::rgx_ville));
-    wdg_tellineedit    ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
-    wdg_faxlineedit    ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
+    wdg_nomlineedit    ->setValidator(new QRegularExpressionValidator(Utils::rgx_ville));
+    wdg_adress1lineedit   ->setValidator(new QRegularExpressionValidator(Utils::rgx_adresse));
+    wdg_adress2lineedit   ->setValidator(new QRegularExpressionValidator(Utils::rgx_adresse));
+    wdg_adress3lineedit   ->setValidator(new QRegularExpressionValidator(Utils::rgx_adresse));
+    wdg_CPlineedit     ->setValidator(new QRegularExpressionValidator(Utils::rgx_CP));
+    wdg_villelineedit  ->setValidator(new QRegularExpressionValidator(Utils::rgx_ville));
+    wdg_tellineedit    ->setValidator(new QRegularExpressionValidator(Utils::rgx_telephone));
+    wdg_faxlineedit    ->setValidator(new QRegularExpressionValidator(Utils::rgx_telephone));
 
     layledit->addWidget(wdg_nomlineedit);
     layledit->addWidget(wdg_adress1lineedit);
@@ -405,8 +405,6 @@ bool dlg_listelieux::ValidationFiche()
 
 void dlg_listelieux::ReconstruitModel()
 {
-    if (m_model == Q_NULLPTR)
-        delete m_model;
     wdg_tblview->selectionModel()->disconnect();
     if (m_model)
         delete m_model;
