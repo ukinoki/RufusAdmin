@@ -27,10 +27,9 @@ UpDialog::UpDialog(QString NomSettings, QString NomPosition, QWidget *parent) : 
     restoreGeometry(m_settings->value(m_position).toByteArray());
     AjouteLay();
     setStageCount(0);
-    m_mode           = NullMode;
+    m_mode           = NullMode;    
     connect(this, &QDialog::finished, this, [=]{if (m_enregistreposition)
-                                                          m_settings->setValue(m_position, saveGeometry());});
-}
+                                                          m_settings->setValue(m_position, saveGeometry());});}
 
 UpDialog::UpDialog(QWidget *parent) : QDialog(parent)
 {
@@ -47,7 +46,8 @@ void UpDialog::AjouteLay()
     wdg_buttonslayout   ->setContentsMargins(0,10,0,10);
     wdg_buttonslayout   ->setSpacing(10);
     wdg_buttonswidget   ->setLayout(wdg_buttonslayout);
-    dlglayout()         ->addWidget(wdg_buttonswidget);
+    int n               = dlglayout()->count();
+    dlglayout()         ->insertWidget(n,wdg_buttonswidget);
 }
 
 void UpDialog::addSearchLine()
@@ -68,6 +68,12 @@ void UpDialog::AjouteLayButtons(Buttons Button)
 {
     // le Button Cancel est toujours le plus à gauche
     // Close le plus à droite et OK juste avant Close
+    if (Button.testFlag(ButtonPdf))
+    {
+        PdfButton         = new UpSmallButton();
+        PdfButton         ->setUpButtonStyle(UpSmallButton::PDFBUTTON);
+        wdg_buttonslayout ->addWidget(PdfButton);
+    }
     if (Button.testFlag(ButtonRecord))
     {
         RecordButton        = new UpSmallButton();
@@ -127,7 +133,7 @@ void UpDialog::AjouteLayButtons(Buttons Button)
 
 QVBoxLayout* UpDialog::dlglayout()
 {
-    QVBoxLayout *globallay = dynamic_cast<QVBoxLayout*>(this->layout());
+    QVBoxLayout *globallay = qobject_cast<QVBoxLayout*>(this->layout());
     if (globallay == Q_NULLPTR)
     {
         globallay   = new QVBoxLayout(this);
@@ -175,7 +181,7 @@ void UpDialog::AjouteWidgetLayButtons(QWidget *widg, bool ALaFin)
         wdg_buttonslayout->addWidget(widg);
     else
         wdg_buttonslayout->insertWidget(0,widg);
-    UpSmallButton *but = dynamic_cast<UpSmallButton*>(widg);
+    UpSmallButton *but = qobject_cast<UpSmallButton*>(widg);
     if (but != Q_NULLPTR)
     {
         if (but->ButtonStyle() == UpSmallButton::CANCELBUTTON)
@@ -205,7 +211,7 @@ void UpDialog::setEnregPosition(bool a)
     m_enregistreposition = a;
 }
 
-void UpDialog::TuneSize(bool fix)
+void UpDialog::TuneSize(bool fixh, bool fixw)
 {
     int larg    = 0;
     int haut    = 0;
@@ -216,16 +222,16 @@ void UpDialog::TuneSize(bool fix)
     {
         for (int i=0; i<listwidg.size(); i++)
         {
-            if (dynamic_cast<UpSmallButton*>(listwidg.at(i)) == Q_NULLPTR && dynamic_cast<UpPushButton*>(listwidg.at(i)))
+            if (qobject_cast<UpSmallButton*>(listwidg.at(i)) == Q_NULLPTR && qobject_cast<UpPushButton*>(listwidg.at(i)))
             {
                 stages = 0.0;
                 break;
             }
-            if (dynamic_cast<UpPushButton*>(listwidg.at(i)) != Q_NULLPTR)
+            if (qobject_cast<UpPushButton*>(listwidg.at(i)) != Q_NULLPTR)
                 stages = 1;
-            if (dynamic_cast<UpSmallButton*>(listwidg.at(i)) != Q_NULLPTR && stages < 1)
+            if (qobject_cast<UpSmallButton*>(listwidg.at(i)) != Q_NULLPTR && stages < 1)
             {
-                if (dynamic_cast<UpSmallButton*>(listwidg.at(i))->text() =="")
+                if (qobject_cast<UpSmallButton*>(listwidg.at(i))->text() =="")
                     stages = 0.7;
                 else
                     stages = 1;
@@ -244,8 +250,12 @@ void UpDialog::TuneSize(bool fix)
         haut += layout()->itemAt(i)->sizeHint().height();
     }
     haut += (layout()->count()-1) * layout()->spacing();
-    if (fix)
-        setFixedSize(larg,haut);
+    if (fixh && fixw)
+        setFixedSize(larg, haut);
+    else if (fixh && ! fixw)
+        setFixedHeight(haut);
+    else if (fixw && ! fixh)
+        setFixedWidth(larg);
     else
         resize(larg, haut);
 }

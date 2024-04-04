@@ -132,7 +132,6 @@
         <file>align-right.png</file>
         <file>edit.png</file>
         <file>Sunglasses.png</file>
-        <file>sunglassesmeca_1.png</file>
         <file>Test.ico</file>
         <file>help.png</file>
         <file>reset.png</file>
@@ -190,5 +189,14 @@
         <file>clinic.png</file>
         <file>3DcursorOFF.png</file>
         <file>3DcursorOn.png</file>
+        <file>factory.png</file>
+        <file>IOL.png</file>
+        <file>Notepad.png</file>
+        <file>icon.ico</file>
+        <file>nature.png</file>
+        <file>info.gif</file>
+        <file>question.gif</file>
+        <file>warning.gif</file>
+        <file>pdf.png</file>
     </qresource>
 </RCC>

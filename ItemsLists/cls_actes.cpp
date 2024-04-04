@@ -94,7 +94,7 @@ Acte* Actes::getActeFromIndex(QModelIndex idx)
     QModelIndex pindx       = m_heuresortmodel->mapToSource(heureindx);               //  -> m_actesmodel
     UpStandardItem *item = dynamic_cast<UpStandardItem *>(m_actesmodel->itemFromIndex(pindx));
     if (item != Q_NULLPTR)
-        return dynamic_cast<Acte *>(item->item());
+        return qobject_cast<Acte *>(item->item());
     else
         return Q_NULLPTR;
 }
@@ -130,18 +130,14 @@ QMap<int, Acte*>::const_iterator Actes::getAt(int idx)
     return actes()->constFind(actes()->keys().at(idx) );
 }
 
-QMap<int, Acte *> *Actes::listCourriersByUser(int iduser)
+QList<int> Actes::listCourriersByUser(int iduser)
 {
-    QMap<int, Acte *> *listactes = new QMap<int, Acte *>;
+    QList<int> listactes;
     QString req = "select " CP_ID_ACTES " from " TBL_ACTES " where " CP_COURRIERAFAIRE_ACTES " = 'T' and " CP_IDUSER_ACTES " = " + QString::number(iduser);
     QList<QVariantList> acts  = DataBase::I()->StandardSelectSQL(req, m_ok);
     if (m_ok)
         for (int i=0; i<acts.size(); i++)
-        {
-            Acte *act = getById(acts.at(i).at(0).toInt());
-            if (act)
-                listactes->insert(act->id(), act);
-        }
+            listactes << acts.at(i).at(0).toInt();
     return listactes;
 }
 
@@ -162,8 +158,8 @@ Acte* Actes::CreationActe(Patient *pat, User* usr, int idcentre, int idlieu)
     if (pat == Q_NULLPTR)
         return Q_NULLPTR;
     Acte *act = Q_NULLPTR;
-    QString rempla = (usr->modeenregistrementhonoraires() == User::Retrocession? "1" : "null");
-    QString comptable = (usr->idcomptable() > 0? QString::number(usr->idcomptable()) : "null");
+    QString rempla = (usr->isRemplacant()? "1" : "null");
+    QString comptable = (usr->idcomptableactes() > 0? QString::number(usr->idcomptableactes()) : "null");
     QString creerrequete =
             "INSERT INTO " TBL_ACTES
             " (" CP_IDPAT_ACTES ", " CP_IDUSER_ACTES ", " CP_DATE_ACTES ", " CP_HEURE_ACTES ", " CP_IDUSERCREATEUR_ACTES ", "
@@ -198,7 +194,7 @@ Acte* Actes::CreationActe(Patient *pat, User* usr, int idcentre, int idlieu)
     act->setdate(dt.date());
     act->setheure(dt.time());
     act->setidcreateur(usr->id());
-    act->setidcomptable(usr->idcomptable());
+    act->setidcomptable(usr->idcomptableactes());
     act->setidparent(usr->idparent());
     act->seteffectueparremplacant(rempla == "1");
     act->setnumcentre(idcentre);

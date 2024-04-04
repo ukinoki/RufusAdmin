@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=RufusAdmin
+Exec=/home/serge/Deploy/usr/bin/RufusAdminApp
+Icon=/usr/share/icons/hicolor/256x256/apps/rufusadmin
+Comment=Administration de Rufus
+Categories=System;

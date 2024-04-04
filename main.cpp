@@ -46,10 +46,10 @@ int main(int argc, char *argv[])
     dirloc = QCoreApplication::applicationDirPath();
     dirloc += "/rufusadmin" + locale;
     QTranslator translator;
-    if (translator.load(dirloc))
+    if( translator.load(dirloc) )
         app.installTranslator(&translator);
 
-    QPixmap pixmap("://rufus3.jpg");
+    QPixmap pixmap("://rufusadmin.jpg");
     QSplashScreen *splash = new QSplashScreen(pixmap);
     splash->show();
     Utils::Pause(1500);

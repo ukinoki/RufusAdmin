@@ -18,13 +18,11 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DLG_GESTIONUSERS_H
 #define DLG_GESTIONUSERS_H
 
-
-#include <QInputDialog>
-#include <QNetworkInterface>
-#include <QTableWidgetItem>
-
+#include "database.h"
 #include "dlg_gestioncomptes.h"
 #include "dlg_listelieux.h"
+#include "icons.h"
+#include "utils.h"
 #include "upheaderview.h"
 
 /* sert à gérer les comptes utilisateurs
@@ -37,9 +35,9 @@ class dlg_gestionusers;
 class dlg_gestionusers : public UpDialog
 {
     Q_OBJECT
-
 public:
-    enum                    UserMode {PREMIERUSER, ADMIN, MODIFUSER};     Q_ENUM(UserMode)
+    enum                    UserMode {PREMIERUSER, ADMIN, MODIFUSER}; Q_ENUM(UserMode)
+    enum                    Mode {Creer, Modifier, PremierUsr};       Q_ENUM(Mode)
     /* correspond aux 3 façons dont la fiche a été appelée
      * PREMIERUSER -> la fiche est appelée au premier lancement du programme pour créer le premier utilisateur -> on peut tout modifier
      * MODIFUSER   -> appelé par l'utilisateur dans le premier onglet de la fiche dlg_param -> on ne peut modifier que les données d'identité, geographiques et bancaires
@@ -52,12 +50,14 @@ public:
      */
     ~dlg_gestionusers();
     Ui::dlg_gestionusers    *ui;
-    enum                    Mode {Creer, Modifier, PremierUsr};
     void                    setConfig(UserMode mode);
-    bool                    isMDPverified();
+    bool                    isMDPverified() const;
 
 private:
-    DataBase                *db;
+    DataBase                *db = DataBase::I();
+    QBrush                  m_color = QBrush(QColor(Qt::magenta));
+    Mode                    m_mode = Modifier;
+
     bool                    m_MDPverified;
     UserMode                m_usermode;
     bool                    m_ophtalmo;
@@ -69,6 +69,7 @@ private:
     bool                    m_soccomptable;
     bool                    m_assistant;
     bool                    m_liberal;
+    bool                    m_liberalSEL;
     bool                    m_pasliberal;
     bool                    m_retrocession;
     bool                    m_cotation;
@@ -76,45 +77,43 @@ private:
     bool                    m_responsable;
     bool                    m_respsalarie;
     bool                    m_respliberal;
-    bool                    m_soigntnonrplct;
+    bool                    m_respliberalSEL;
+    bool                    m_soignantnonremplacant;
 
     bool                    m_ok;
 
     UpDialog                *dlg_ask;
-    QBrush                  m_color;
-    Mode                    m_mode;
     int                     m_idlieu;
     User                    *m_userencours;
-    QString                 m_loginledit, m_MDPledit, m_confirmMDPledit;
-    QString                 m_nouvMDP, m_ancMDP, m_confirmMDP;
+    QString                 gLoginupLineEdit, gMDPupLineEdit, gConfirmMDPupLineEdit;
+    QString                 gLibActiv, gNoLibActiv;
+    QString                 gNouvMDP, gAncMDP, gConfirmMDP;
     QStringList             gListBanques;
     UpDialog                *gAskMDP;
-    void                    ActualiseRsgnmtBanque(bool soccomptable);
-    void                    Annulation();
     bool                    AfficheParamUser(int idUser);
-    void                    CalcListitemsCompteActescomboBox(User *usr);
-    void                    CalcListitemsCompteComptacomboBox(User *usr, bool soccomptable);
-    void                    CalcListitemsEmployeurcomboBox(int iduser);
+    void                    CalcListitemsCompteComptacomboBox(User *usr, bool m_soccomptable);
+    void                    CalcListitemsEmployeurcomboBox(User* usr);
+    void                    ChoixButtonFrame();
     void                    DefinitLesVariables();
-    void                    EnregistreNouvMDP();
-    void                    EnregistreNouvUser();
-    void                    EnregistreUser();
     bool                    ExisteEmployeur(int iduser);
-    void                    FermeFiche();
-    void                    GestionComptes();
-    void                    GestionLieux();
     void                    Inactifs();
-    void                    ModifMDP();
-    void                    RegleAffichage();
-    void                    RemplirTableWidget();
+    void                    RemplirTableWidget(int iduser);
     void                    ReconstruitListeLieuxExercice();
     bool                    VerifFiche();
 
     void                    setDataCurrentUser(int id);
     WidgetButtonFrame       *wdg_buttonframe;
-    void                    ChoixButtonFrame();
+    void                    Annulation();
     void                    CreerUser();
+    void                    EnregistreNouvMDP();
+    void                    EnregistreNouvUser();
+    void                    EnregistreUser();
+    void                    FermeFiche();
+    void                    GestionComptes();
+    void                    GestLieux();
+    void                    ModifMDP();
     void                    ModifUser();
+    void                    RegleAffichage();
     void                    SupprUser();
 };
 

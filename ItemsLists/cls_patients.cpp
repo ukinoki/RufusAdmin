@@ -86,6 +86,11 @@ Patient* Patients::getById(int id, Item::LOADDETAILS loadDetails)
     else
     {
         pat = itpat.value();
+        if (pat == Q_NULLPTR)
+        {
+            pat = new Patient;
+            map_patients->insert(id, pat);
+        }
         if (loadDetails == Item::LoadDetails)
         {
             QJsonObject jsonPatient = DataBase::I()->loadPatientAllData(id);
@@ -313,9 +318,9 @@ Patient* Patients::CreationPatient(QHash<QString, QVariant> sets)
         else if (champ == CP_COMMENTAIRE_PATIENTS)      data[champ] = itset.value().toString();
     }
     pat = new Patient(data);
-    QString req = "INSERT INTO " TBL_DONNEESSOCIALESPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
+    QString req = "INSERT INTO " TBL_DONNEESSOCIALESPATIENTS " (" CP_IDPAT_DSP ") VALUES ('" + QString::number(pat->id()) + "')";
     DataBase::I()->StandardSQL(req,tr("Impossible de créer les données sociales"));
-    req = "INSERT INTO " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " (idPat) VALUES ('" + QString::number(pat->id()) + "')";
+    req = "INSERT INTO " TBL_RENSEIGNEMENTSMEDICAUXPATIENTS " (" CP_IDPAT_RMP ") VALUES ('" + QString::number(pat->id()) + "')";
     DataBase::I()->StandardSQL(req,tr("Impossible de créer les renseignements médicaux"));
     DataBase::I()->unlocktables();
     return pat;

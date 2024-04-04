@@ -66,22 +66,7 @@ void ShowMessage::SplashMessage(QString msg, int duree)
 
     int yy              = QGuiApplication::primaryScreen()->availableGeometry().height();
     int xx              = QGuiApplication::primaryScreen()->availableGeometry().width();
-//    dlg                 ->move(xx - w - 45 - (marge*2) - lay->spacing()-15, yy - (int(hauteurligne)*nlignes) - marge*2);
-
-    // Calculate the size of dlg
-    int tx = w - 45 - (marge*2) - lay->spacing()-15;
-    int ty =(int(hauteurligne)*nlignes) - marge*2;
-
-    // Calculate the size of dlg (from lay) IF isValid()
-    QSize sz =dlg->sizeHint();
-    if( sz.isValid() )
-    {
-        tx= sz.width();
-        ty= sz.height();
-    }
-
-    dlg                 ->move(xx - tx, yy - ty);
-    dlg                 ->show();
+    dlg                 ->move(xx - w - 45 - (marge*2) - lay->spacing()-15, yy - (int(hauteurligne)*nlignes) - marge*2);
     QTimer::singleShot(duree, dlg, &QDialog::close);
 }
 
@@ -91,6 +76,7 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     idmessage           = idprioritymessage;
     QDialog             *prioritydlg = new QDialog(parent);
     prioritydlg         ->setAttribute(Qt::WA_DeleteOnClose);
+    //prioritydlg->setModal(true);
     prioritydlg         ->setSizeGripEnabled(false);
 
     UpLabel *imglbl     = new UpLabel(prioritydlg);
@@ -122,16 +108,16 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     prioritydlg         ->setLayout(lay);
     prioritydlg         ->setWindowFlags(Qt::SplashScreen);
 
-
     int yy              = QGuiApplication::primaryScreen()->availableGeometry().height();
     int xx              = QGuiApplication::primaryScreen()->availableGeometry().width();
     prioritydlg         ->move(xx/2 - w/2 - marge - lay->spacing()-15, yy/2 - (int(hauteurligne)*nlignes)/2 - marge);
     prioritydlg         ->show();
     if (parent != Q_NULLPTR)
         parent->setEnabled(false);
+    //Utils::Pause(500);
     connect(this,   &ShowMessage::closeprioiritydlg, prioritydlg, [=](qintptr a) { if (idmessage == a) {
             if (prioritydlg->parent() != Q_NULLPTR)
-                static_cast<QWidget*>(prioritydlg->parent())->setEnabled(true);
+                qobject_cast<QWidget*>(prioritydlg->parent())->setEnabled(true);
             prioritydlg->reject();
         }
         });

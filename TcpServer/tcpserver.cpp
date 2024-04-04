@@ -71,7 +71,7 @@ void TcpServer::Deconnexion(qintptr descriptor)
     QString adress  = post->nomposte();
     User *usr = Datas::I()->users->getById(post->id());
     QString login = ( usr != Q_NULLPTR? usr->login() : tr("utilisateur inconnu"));
-    UpSystemTrayIcon::showMessage(login + " " +  tr("vient de se déconnecter sur") + " " + adress, 3000);
+    UpSystemTrayIcon::I()->showMessage(tr("Messages"), login + " " +  tr("vient de se déconnecter sur") + " " + adress, Icons::icSunglasses(), 3000);
 
     map_socketdescriptors   .remove(descriptor);
     envoyerATous(post->stringid() + TCPMSG_DeconnexionPoste, descriptor);
@@ -148,7 +148,7 @@ void TcpServer::TraiteMessageRecu(qintptr descriptor, QString msg)
         // qDebug() << resume;
         Logs::LogSktMessage("TcpServer::TraiteMessageRecu() - msg.contains(TCPMSG_StringidPoste)\n\t"
                             "data = " + msg + " -----------------------------------------> " + resume);
-        UpSystemTrayIcon::showMessage(resume, 3000);
+        UpSystemTrayIcon::I()->showMessage(tr("Messages"), resume, Icons::icSunglasses(), 3000);
         envoieListeSockets();
     }
     else if (msg == TCPMSG_EnvoieListSocket)          // un client a demandé la liste mise à jour des sockets

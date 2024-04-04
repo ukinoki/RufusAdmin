@@ -123,6 +123,7 @@ public:
 
     static QPixmap pxSalleAttente() { return foundPX("pxSalleAttente", "://waiting_room.png"); }
     static QPixmap pxSplash() { return foundPX("pxSplash", "://rufus3.jpg"); }
+    static QPixmap pxSplashNoel() { return foundPX("pxSplashNoel", "://rufus3Noel.jpg"); }
     static QPixmap pxSuicide() { return foundPX("pxSuicide", "://suicide.png"); }
     static QPixmap pxSwitchLeft() { return foundPX("pxSwitchLeft", "://switch-left.png"); }
     static QPixmap pxSwitchRight() { return foundPX("pxSwitchRight", "://switch-right.png"); }
@@ -252,6 +253,7 @@ public:
     static QIcon icPageHome() { return foundIC("icPageHome", "://home.png"); }
     static QIcon icPageRefresh() { return foundIC("icPageRefresh", "://button_blue_refresh.png"); }
     static QIcon icPassword() { return foundIC("icPassword", "://password.ico"); }
+    static QIcon icPdf() { return foundIC("icPdf", "://pdf.png"); }
     static QIcon icPhoto() { return foundIC("icPhoto", "://camera.png"); }
     static QIcon icPostit(QSize size = QSize()) { return foundIC("icPostit", "://Post-it.png", size); } //25
     static QIcon icPoubelle(QSize size = QSize()) { return foundIC("icPoubelle", pxPoubelle(), size); } //25
@@ -266,7 +268,6 @@ public:
     static QIcon icSauvegarder(QSize size = QSize()) { return foundIC("icSauvegarder", "://save.png", size); }
     static QIcon icSide() { return foundIC("icSide", "://right_left.png"); }
     static QIcon icSunglasses() { return foundIC("icSunglasses", "://Sunglasses.png"); }
-    static QIcon icSunglassesMeca() { return foundIC("icSunglasses", "://sunglassesmeca_1.png"); }
     static QIcon icSupprimer() { return foundIC("icSmoking", "://Supprime.png", QSize(30,30)); }
     static QIcon icSmoking() { return foundIC("icSmoking", "://No_smoking.png"); }
     static QIcon icSortirDossier() { return foundIC("icSortirDossier", "://metadoc.png", QSize(25,25)); }
@@ -274,18 +275,17 @@ public:
 
     static QIcon icTampon() { return foundIC("icTampon", "://stamp.png"); }
     static QIcon icText() { return foundIC("icText", "://text.png"); }
+    static QIcon icTownn() { return foundIC("icTown", "://nature.png"); }
     static QIcon icTri() { return foundIC("icTri", "://tri.png"); }
 
     static QIcon icValide(QSize size = QSize()) { return foundIC("icValide", "://Valide2.jpg", size); } //25
     static QIcon icVitale(QSize size = QSize()) { return foundIC("icVitale", "://Vitale.jpg", size); }
     static QIcon icUpdate(QSize size = QSize()) { return foundIC("icUpdate", "://update.png", size); } //20
 
-    static QIcon icAppIcon() { return icSunglassesMeca(); }
-
     static bool CompareQIcon(const QIcon icon1, const QIcon icon2)
     {
       QByteArray a1;
-      QDataStream stream1(&a1, QIODeviceBase::WriteOnly);
+      QDataStream stream1(&a1, QIODeviceBase::WriteOnly );
       stream1 << icon1;
 
       QByteArray a2;

@@ -126,7 +126,7 @@ void PostesConnectes::SupprimePosteConnecte(PosteConnecte *post)
             break;
         }
     if (canremoveverrouactes)
-        DataBase::I()->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where PosePar = " + QString::number(post->id()));
+        DataBase::I()->StandardSQL("delete from " TBL_VERROUCOMPTAACTES " where " CP_POSEPAR_VERROUCOMPTA " = " + QString::number(post->id()));
     if (post->isadmin()) {
         adminset = true;
         if (m_admin != Q_NULLPTR)
@@ -154,7 +154,7 @@ PosteConnecte* PostesConnectes::CreationPosteConnecte(User* usr, int idsite)
                                " VALUES (NOW()," +
                                QString::number(usr->id()) + "," +
                                QString::number(usr->idsuperviseur()) + "," +
-                               QString::number(usr->idcomptable()) + "," +
+                               QString::number(usr->idcomptableactes()) + "," +
                                QString::number(usr->idparent()) +",'" +
                                QHostInfo::localHostName().left(60) + "', '" +
                                macadress + "', '" +
@@ -169,7 +169,7 @@ PosteConnecte* PostesConnectes::CreationPosteConnecte(User* usr, int idsite)
     post->setstringid(macadressid);
     post->setid(usr->id());
     post->setidsuperviseur(usr->idsuperviseur());
-    post->setidcomptable(usr->idcomptable());
+    post->setidcomptable(usr->idcomptableactes());
     post->setidparent(usr->idparent());
     post->setdateheurederniereconnexion(DataBase::I()->ServerDateTime());
     post->setnomposte(QHostInfo::localHostName().left(60));

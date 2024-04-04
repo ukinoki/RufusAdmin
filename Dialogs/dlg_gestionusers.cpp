@@ -26,20 +26,17 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     setWindowTitle(tr("Gestion des utilisateurs"));
 
-    db                  = DataBase::I();
-    m_mode              = Modifier;
-    m_MDPverified       = mdpverified;
+    m_MDPverified            = mdpverified;
 
-    m_idlieu            = idlieu;
+    m_idlieu                 = idlieu;
 
-    m_nouvMDP           = "nouv";
-    m_ancMDP            = "anc";
-    m_confirmMDP        = "confirm";
+    gNouvMDP        = "nouv";
+    gAncMDP         = "anc";
+    gConfirmMDP     = "confirm";
 
-    m_loginledit        = "LoginupLineEdit";
-    m_MDPledit          = "MDPupLineEdit";
-    m_confirmMDPledit   = "ConfirmMDPupLineEdit";
-    m_color             = QBrush(QColor(Qt::magenta));
+    gLoginupLineEdit        = "LoginupLineEdit";
+    gMDPupLineEdit          = "MDPupLineEdit";
+    gConfirmMDPupLineEdit   = "ConfirmMDPupLineEdit";
 
     AjouteLayButtons(UpDialog::ButtonClose);
 
@@ -59,13 +56,16 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
 
     ReconstruitListeLieuxExercice();
 
+    gLibActiv               = tr("Activité libérale");
+    gNoLibActiv             = tr("Activité non libérale");
+
     ui->NomuplineEdit           ->setValidator(new QRegularExpressionValidator(Utils::rgx_rx,this));
     ui->PrenomuplineEdit        ->setValidator(new QRegularExpressionValidator(Utils::rgx_rx,this));
     ui->AutreSoignantupLineEdit ->setValidator(new QRegularExpressionValidator(Utils::rgx_rx,this));
     ui->AutreFonctionuplineEdit ->setValidator(new QRegularExpressionValidator(Utils::rgx_rx,this));
     ui->MailuplineEdit          ->setValidator(new QRegularExpressionValidator(Utils::rgx_mail,this));
     ui->PortableuplineEdit      ->setValidator(new QRegularExpressionValidator(Utils::rgx_telephone,this));
-    ui->RPPSupLineEdit          ->setValidator(new QRegularExpressionValidator(Utils::rgx_telephone,this));
+    ui->RPPSupLineEdit          ->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{14}"),this));
     ui->NumCOupLineEdit         ->setValidator(new QRegularExpressionValidator(Utils::rgx_telephone,this));
 
     QStringList ListTitres;
@@ -78,49 +78,49 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
     ui->AnnulupSmallButton          ->setText(tr("Annuler"));
     ui->OKupSmallButton             ->setUpButtonStyle(UpSmallButton::RECORDBUTTON);
     ui->OKupSmallButton             ->setText(tr("Enregistrer"));
+    ui->InactifspushButton          ->setEnabled(Datas::I()->users->inactifs()->size()>0);
 
     ui->ModifMDPUserupLabel->setToolTip(tr("Modifier le mot de passe"));
 
-    connect(ui->AnnulupSmallButton,             &QPushButton::clicked,      this,   &dlg_gestionusers::Annulation);
-    connect(ui->OKupSmallButton,                &QPushButton::clicked,      this,   &dlg_gestionusers::EnregistreUser);
-    connect(ui->OPHupRadioButton,               &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->OrthoptistupRadioButton,        &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->AutreSoignantupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->AutreFonctionupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->SecretaireupRadioButton,        &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->NeutreupRadioButton,            &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->ComptaLiberalupRadioButton,     &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->ComptaNoLiberalupRadioButton,   &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->ComptaRemplaupRadioButton,      &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->NoComptaupRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->OPTAMupRadioButton,             &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->ResponsableupRadioButton,       &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->ResponsableLes2upRadioButton,   &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->AssistantupRadioButton,         &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->SocieteComptableupRadioButton,  &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->GererCompteuppushButton,        &QPushButton::clicked,      this,   &dlg_gestionusers::GestionComptes);
-    connect(ui->InactivUsercheckBox,            &QCheckBox::clicked,        this,   [=] {ui->OKupSmallButton->setEnabled(true);});
-    connect(ui->InactifspushButton,             &QPushButton::clicked,      this,   &dlg_gestionusers::Inactifs);
-    connect(ui->CotationupRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->AGAupRadioButton,               &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->MedecincheckBox,                &QCheckBox::clicked,        this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->ModifMDPUserupLabel,            &UpLabel::clicked,          this,   &dlg_gestionusers::ModifMDP);
-    connect(ui->Secteur1upRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->Secteur2upRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->Secteur3upRadioButton,          &QRadioButton::clicked,     this,   &dlg_gestionusers::RegleAffichage);
-    connect(ui->GestLieuxpushButton,            &QPushButton::clicked,      this,   &dlg_gestionusers::GestionLieux);
+    connect(ui->AnnulupSmallButton,             &QPushButton::clicked,                  this,   &dlg_gestionusers::Annulation);
+    connect(ui->OKupSmallButton,                &QPushButton::clicked,                  this,   &dlg_gestionusers::EnregistreUser);
+    connect(ui->OPHupRadioButton,               &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->OrthoptistupRadioButton,        &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AutreSoignantupRadioButton,     &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AutreFonctionupRadioButton,     &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->SecretaireupRadioButton,        &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ComptaLiberalupRadioButton,     &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ComptaLiberalSELupRadioButton,  &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ComptaNoLiberalupRadioButton,   &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ComptaRemplaupRadioButton,      &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->OPTAMupRadioButton,             &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ResponsableupRadioButton,       &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ResponsableLes2upRadioButton,   &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AssistantupRadioButton,         &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->SocieteComptableupRadioButton,  &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->NeutreupRadioButton,            &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->GererCompteuppushButton,        &QPushButton::clicked,                  this,   &dlg_gestionusers::GestionComptes);
+    connect(ui->InactivUsercheckBox,            &QCheckBox::clicked,                    this,   [=] {ui->OKupSmallButton->setEnabled(true);});
+    connect(ui->InactifspushButton,             &QPushButton::clicked,                  this,   &dlg_gestionusers::Inactifs);
+    connect(ui->CotationupRadioButton,          &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->AGAupRadioButton,               &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->MedecincheckBox,                &QCheckBox::clicked,                    this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->ModifMDPUserupLabel,            QOverload<int>::of(&UpLabel::clicked),  this,   &dlg_gestionusers::ModifMDP);
+    connect(ui->Secteur1upRadioButton,          &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->Secteur2upRadioButton,          &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->Secteur3upRadioButton,          &QRadioButton::clicked,                 this,   &dlg_gestionusers::RegleAffichage);
+    connect(ui->GestLieuxpushButton,            &QPushButton::clicked,                  this,   &dlg_gestionusers::GestLieux);
 
-    connect(CloseButton,                        &QPushButton::clicked,      this,   &dlg_gestionusers::FermeFiche);
-    connect(wdg_buttonframe,                    &WidgetButtonFrame::choix,  this,   &dlg_gestionusers::ChoixButtonFrame);
+    connect(CloseButton,                        &QPushButton::clicked,                  this,   &dlg_gestionusers::FermeFiche);
+    connect(wdg_buttonframe,                    &WidgetButtonFrame::choix,              this,   &dlg_gestionusers::ChoixButtonFrame);
     QList<UpLineEdit*> listline  = findChildren<UpLineEdit*>();
     for (int i=0; i<listline.size(); i++)
-        connect(listline.at(i),                 &QLineEdit::textEdited,     this,   [=] {ui->OKupSmallButton->setEnabled(true);});
+        connect(listline.at(i),                 &QLineEdit::textEdited,                 this,   [=] {ui->OKupSmallButton->setEnabled(true);});
     QList<UpComboBox*> listcombo     = findChildren<UpComboBox*>();
     for (int i=0; i<listcombo.size(); i++)
         connect(listcombo.at(i),                QOverload<int>::of(&QComboBox::currentIndexChanged),
-                                                                            this,   [=] {ui->OKupSmallButton->setEnabled(true);});
-    QList<UpRadioButton*> listbutton = findChildren<UpRadioButton*>();
-    for (int i=0; i<listbutton.size(); i++)
+                                                                                        this,   [=] {ui->OKupSmallButton->setEnabled(true);});
+    foreach (UpRadioButton* butt, findChildren<UpRadioButton*>())
     {
 
         /* on a un pb de bug avec Qt 5.10 et les clicks sur les Qradiobutton et le slot qu'ils déclenchent Slot_RegleAffichage()
@@ -133,20 +133,18 @@ dlg_gestionusers::dlg_gestionusers(int idlieu, UserMode mode, bool mdpverified, 
         */
         //qDebug() << listbutton.at(i)->objectName();
         //listbutton.at(i)->setToggleable(false); // pour contourner un bug d'affichage de Qt...
-        connect(listbutton.at(i),               &QPushButton::clicked,      this,   [=] {ui->OKupSmallButton->setEnabled(true);});
+        connect(butt,                           &QPushButton::clicked,                  this,   [=] {ui->OKupSmallButton->setEnabled(true);});
     }
 
-    RemplirTableWidget();
+    RemplirTableWidget(Datas::I()->users->userconnected()->id());
 
     RegleAffichage();
 
     dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
 
-    ui->NoComptaupRadioButton       ->setCheckable(false);
     ui->CotationupRadioButton       ->setChecked(true);
-    ui->CotationupRadioButton       ->setEnabled(false);
+    ui->CotationupRadioButton       ->setToggleable(false);
     ui->CotationupRadioButton       ->setImmediateToolTip(tr("Fonction indisponible\npour le moment"));
-    ui->NoComptaupRadioButton       ->setImmediateToolTip(tr("Fonction indisponible\npour le moment"));
     ui->OKupSmallButton             ->setEnabled(false);
     setConfig(mode);
 }
@@ -163,18 +161,17 @@ void dlg_gestionusers::setConfig(enum UserMode mode)
     switch (mode) {
     case PREMIERUSER:
         ui->SecretaireupRadioButton         ->setEnabled(false);
-        ui->AutreFonctionupRadioButton   ->setEnabled(false);
+        ui->AutreFonctionupRadioButton      ->setEnabled(false);
         ui->AutreSoignantupRadioButton      ->setEnabled(false);
         ui->AutreSoignantupLineEdit         ->setVisible(false);
         ui->AutreFonctionuplineEdit         ->setVisible(false);
-        ui->NeutreupRadioButton             ->setEnabled(false);
         ui->SocieteComptableupRadioButton   ->setEnabled(false);
+        ui->NeutreupRadioButton             ->setEnabled(false);
         ui->AssistantupRadioButton          ->setEnabled(false);
         ui->ResponsableLes2upRadioButton    ->setEnabled(false);
         ui->ComptaLiberalupRadioButton      ->setChecked(true);
         ui->ComptaRemplaupRadioButton       ->setEnabled(false);
         ui->ComptaNoLiberalupRadioButton    ->setEnabled(false);
-        ui->NoComptaupRadioButton           ->setEnabled(false);
         ui->InactivUsercheckBox             ->setVisible(false);
         ui->Principalframe                  ->setEnabled(true);
         ui->AnnulupSmallButton              ->setVisible(false);
@@ -224,7 +221,7 @@ void dlg_gestionusers::Annulation()
             int idcompteasupprimer = Datas::I()->comptes->initListeComptesByIdUser(id).firstKey();
             Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(idcompteasupprimer));
         }
-        RemplirTableWidget();
+        RemplirTableWidget(Datas::I()->users->userconnected()->id());
         ui->Principalframe->setEnabled(false);
         wdg_buttonframe->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
@@ -239,7 +236,11 @@ void dlg_gestionusers::Annulation()
             int idUser = ui->ListUserstableWidget->item(ui->ListUserstableWidget->selectedItems().at(0)->row(),0)->text().toInt();
             AfficheParamUser(idUser);
         }
-        else ui->ListUserstableWidget->setCurrentItem(ui->ListUserstableWidget->item(0,1));
+        else if (AfficheParamUser(Datas::I()->users->userconnected()->id()))
+        {
+            int row = ui->ListUserstableWidget->findItems(QString::number(Datas::I()->users->userconnected()->id()), Qt::MatchExactly).at(0)->row();
+            ui->ListUserstableWidget->selectRow(row);
+        }
         ui->Principalframe->setEnabled(false);
         wdg_buttonframe->setEnabled(true);
         ui->ListUserstableWidget->setEnabled(true);
@@ -277,9 +278,9 @@ void dlg_gestionusers::CreerUser()
     dlg_ask                        ->setFixedSize(300,300);
     dlg_ask                        ->setWindowTitle("");
 
-    Line                        ->setObjectName(m_loginledit);
-    Line2                       ->setObjectName(m_MDPledit);
-    Line3                       ->setObjectName(m_confirmMDPledit);
+    Line                        ->setObjectName(gLoginupLineEdit);
+    Line2                       ->setObjectName(gMDPupLineEdit);
+    Line3                       ->setObjectName(gConfirmMDPupLineEdit);
     Line                        ->setValidator(new QRegularExpressionValidator(Utils::rgx_AlphaNumeric_5_15));
     Line2                       ->setValidator(new QRegularExpressionValidator(Utils::rgx_AlphaNumeric_5_12));
     Line3                       ->setValidator(new QRegularExpressionValidator(Utils::rgx_AlphaNumeric_5_12));
@@ -307,8 +308,8 @@ void dlg_gestionusers::CreerUser()
     label2                      ->setText(tr("Choisissez un mot de passe\n- mini 5 maxi 12 caractères -\n- pas de caractères spéciaux ou accentués -"));
     label3                      ->setText(tr("Confirmez le mot de passe"));
 
-    dlg_ask                        ->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
-    connect(dlg_ask->OKButton,     &QPushButton::clicked,  this,   &dlg_gestionusers::EnregistreNouvUser);
+    dlg_ask                     ->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
+    connect(dlg_ask->OKButton,  &QPushButton::clicked,  this,   &dlg_gestionusers::EnregistreNouvUser);
 
     lay                         ->addWidget(label);
     lay                         ->addWidget(Line);
@@ -340,15 +341,15 @@ void dlg_gestionusers::EnregistreNouvMDP()
         msgbox.setIcon(UpMessageBox::Warning);
         UpSmallButton OKBouton("OK");
         msgbox.addButton(&OKBouton, UpSmallButton::STARTBUTTON);
-        anc         = gAskMDP->findChild<UpLineEdit*>(m_ancMDP)->text();
-        nouv        = gAskMDP->findChild<UpLineEdit*>(m_nouvMDP)->text();
-        confirm     = gAskMDP->findChild<UpLineEdit*>(m_confirmMDP)->text();
+        anc         = gAskMDP->findChild<UpLineEdit*>(gAncMDP)->text();
+        nouv        = gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->text();
+        confirm     = gAskMDP->findChild<UpLineEdit*>(gConfirmMDP)->text();
 
         if (anc == "")
         {
             Utils::playAlarm();
             msgbox.setInformativeText(tr("Ancien mot de passe requis"));
-            gAskMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(gAncMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -356,7 +357,7 @@ void dlg_gestionusers::EnregistreNouvMDP()
         {
             Utils::playAlarm();
             msgbox.setInformativeText(tr("Le mot de passe que vous voulez modifier n'est pas bon\n"));
-            gAskMDP->findChild<UpLineEdit*>(m_ancMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(gAncMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -364,7 +365,7 @@ void dlg_gestionusers::EnregistreNouvMDP()
         {
             Utils::playAlarm();
             msgbox.setInformativeText(tr("Le nouveau mot de passe n'est pas conforme\n(au moins 5 caractères - chiffres ou lettres non accentuées -\n"));
-            gAskMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -372,7 +373,7 @@ void dlg_gestionusers::EnregistreNouvMDP()
         {
             Utils::playAlarm();
             msgbox.setInformativeText("Les mots de passe ne correspondent pas\n");
-            gAskMDP->findChild<UpLineEdit*>(m_nouvMDP)->setFocus();
+            gAskMDP->findChild<UpLineEdit*>(gNouvMDP)->setFocus();
             msgbox.exec();
             return;
         }
@@ -394,23 +395,23 @@ void dlg_gestionusers::EnregistreUser()
     QString titre = (ui->OPHupRadioButton->isChecked()?       "'" + Utils::correctquoteSQL(ui->TitreupcomboBox->currentText()) + "'" : "null");
     QString actif = (ui->InactivUsercheckBox->isChecked()?  "1" : "null");
     QString req = "update " TBL_UTILISATEURS " set "
-            CP_NOM_USR " = '"          + Utils::correctquoteSQL(Utils::trimcapitilize(ui->NomuplineEdit->text()))        + "',\n"
+            CP_NOM_USR " = '"           + Utils::correctquoteSQL(Utils::trimcapitilize(ui->NomuplineEdit->text()))        + "',\n"
             CP_PRENOM_USR " = "         + ((ui->SocieteComptableupRadioButton->isChecked() || ui->NeutreupRadioButton->isChecked())? "null" : "'" + Utils::correctquoteSQL(Utils::trimcapitilize(ui->PrenomuplineEdit->text())) + "'") + ",\n"
-            CP_PORTABLE_USR " = '"     + ui->PortableuplineEdit->text()   + "',\n"
-            CP_MAIL_USR " = '"         + ui->MailuplineEdit->text()       + "',\n"
-            CP_POLICEECRAN_USR " = '" POLICEPARDEFAUT "',\n"
+            CP_PORTABLE_USR " = '"      + ui->PortableuplineEdit->text()   + "',\n"
+            CP_MAIL_USR " = '"          + ui->MailuplineEdit->text()       + "',\n"
+            CP_POLICEECRAN_USR " = '"   POLICEPARDEFAUT "',\n"
             CP_POLICEATTRIBUT_USR " = 'Regular',\n"
-            CP_TITRE_USR " = "         + titre + ",\n"
-            CP_ISDESACTIVE_USR " = "   + actif + ",\n";
+            CP_TITRE_USR " = "          + titre + ",\n"
+            CP_ISDESACTIVE_USR " = "    + actif + ",\n";
     if (ui->OPHupRadioButton->isChecked())
     {
-        req += CP_FONCTION_USR " = '" + tr("Médecin") + "',\n"
+        req += CP_FONCTION_USR " = '"   + tr("Médecin") + "',\n"
                CP_SPECIALITE_USR " = '" + tr("Ophtalmologiste") + "',\n"
                CP_IDSPECIALITE_USR " = 15,\n"
                CP_SOIGNANTSTATUS_USR " = 1,\n"
                CP_ISMEDECIN_USR " = 1,\n"
-               CP_NUMCO_USR " = '" + Utils::correctquoteSQL(ui->NumCOupLineEdit->text()) +"',\n "
-               CP_NUMPS_USR " = '" + Utils::correctquoteSQL(ui->RPPSupLineEdit->text()) +"',\n "
+               CP_NUMCO_USR " = '"      + Utils::correctquoteSQL(ui->NumCOupLineEdit->text()) +"',\n "
+               CP_NUMPS_USR " = "       + ((ui->RPPSupLineEdit->text().toInt()==0 || !db->parametres()->cotationsfrance())? "null" : QString::number(ui->RPPSupLineEdit->text().toInt())) + ",\n"
                CP_RESPONSABLEACTES_USR " = ";
         if (ui->ResponsableupRadioButton->isChecked())
             req += "1,\n";
@@ -422,7 +423,6 @@ void dlg_gestionusers::EnregistreUser()
         {
             req += CP_DROITS_USR " = '" OPHTAASSISTANT "', \n"
                    CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                   CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                    CP_IDEMPLOYEUR_USR " = null,\n"
                    CP_ENREGHONORAIRES_USR " = null,\n"
                    CP_ISAGA_USR " = null,\n";
@@ -432,10 +432,20 @@ void dlg_gestionusers::EnregistreUser()
             if (ui->ComptaLiberalupRadioButton->isChecked())
             {
                 req += CP_DROITS_USR " = '" OPHTALIBERAL "', \n"
-                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteComptacomboBox->currentData().toString() + ",\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = " + ui->CompteActescomboBox->currentData().toString() + ",\n"
+                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteParDefautcomboBox->currentData().toString() + ",\n"
                        CP_ENREGHONORAIRES_USR " = 1,\n"
                        CP_IDEMPLOYEUR_USR " = null,\n";
+                if (ui->AGAupRadioButton->isChecked())
+                    req += CP_ISAGA_USR " = 1,\n";
+                else
+                    req += CP_ISAGA_USR " = null,\n";
+            }
+            else if (ui->ComptaLiberalSELupRadioButton->isChecked())
+            {
+                req += CP_DROITS_USR " = '" OPHTASEL "', \n"
+                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteParDefautcomboBox->currentData().toString() + ",\n"
+                       CP_ENREGHONORAIRES_USR " = 5,\n"
+                       CP_IDEMPLOYEUR_USR " = " + ui->EmployeurcomboBox->currentData().toString() + ",\n";
                 if (ui->AGAupRadioButton->isChecked())
                     req += CP_ISAGA_USR " = 1,\n";
                 else
@@ -444,26 +454,17 @@ void dlg_gestionusers::EnregistreUser()
             else if (ui->ComptaNoLiberalupRadioButton->isChecked())
                 req += CP_DROITS_USR " = '" OPHTASALARIE "', \n"
                        CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                        CP_IDEMPLOYEUR_USR " = " + ui->EmployeurcomboBox->currentData().toString() + ",\n"
                        CP_ENREGHONORAIRES_USR " = 2,\n"
                        CP_ISAGA_USR " = null,\n";
             else if (ui->ComptaRemplaupRadioButton->isChecked())
                 req += CP_DROITS_USR " = '" OPHTAREMPLACANT "', \n"
                        CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                        CP_ENREGHONORAIRES_USR " = 3,\n"
                        CP_IDEMPLOYEUR_USR " = null,\n"
                        CP_ISAGA_USR " = null,\n";
-            else if (ui->NoComptaupRadioButton->isChecked())
-                req += CP_DROITS_USR " = '" OPHTANOCOMPTA "', \n"
-                       CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
-                       CP_ENREGHONORAIRES_USR " = 4,\n"
-                       CP_IDEMPLOYEUR_USR " = null,\n"
-                       CP_ISAGA_USR " = null,\n";
         }
-        req += ((ui->CotationupRadioButton->isVisible() && ui->CotationupRadioButton->isChecked())?   CP_CCAM_USR " = 1,\n" : CP_CCAM_USR " = null,\n");
+        req += ((ui->CotationupRadioButton->isVisible() && ui->CotationupRadioButton->isChecked())?   CP_COTATION_USR " = 1,\n" : CP_COTATION_USR " = null,\n");
     }
     else if (ui->OrthoptistupRadioButton->isChecked())
     {
@@ -473,7 +474,7 @@ void dlg_gestionusers::EnregistreUser()
                CP_SOIGNANTSTATUS_USR " = 2,\n"
                CP_ISMEDECIN_USR " = null,\n"
                CP_NUMCO_USR " = null,\n "
-               CP_NUMPS_USR " = '" + Utils::correctquoteSQL(ui->RPPSupLineEdit->text()) +"',\n"
+               CP_NUMPS_USR " = "       + ((ui->RPPSupLineEdit->text().toInt()==0 || !db->parametres()->cotationsfrance())? "null" : QString::number(ui->RPPSupLineEdit->text().toInt())) + ",\n"
                CP_RESPONSABLEACTES_USR " = ";
         if (ui->ResponsableupRadioButton->isChecked())
             req += "1,\n";
@@ -485,7 +486,6 @@ void dlg_gestionusers::EnregistreUser()
         {
             req += CP_DROITS_USR " = '" ORTHOASSISTANT "', \n"
                    CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                   CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                    CP_ENREGHONORAIRES_USR " = null,\n"
                    CP_IDEMPLOYEUR_USR " = null,\n"
                    CP_ISAGA_USR " = null,\n";
@@ -495,10 +495,20 @@ void dlg_gestionusers::EnregistreUser()
             if (ui->ComptaLiberalupRadioButton->isChecked())
             {
                 req += CP_DROITS_USR " = '" ORTHOLIBERAL "', \n"
-                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteComptacomboBox->currentData().toString() + ",\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = " + ui->CompteActescomboBox->currentData().toString() + ",\n"
+                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteParDefautcomboBox->currentData().toString() + ",\n"
                        CP_ENREGHONORAIRES_USR " = 1,\n"
                        CP_IDEMPLOYEUR_USR " = null,\n";
+                if (ui->AGAupRadioButton->isChecked())
+                    req += CP_ISAGA_USR " = 1,\n";
+                else
+                    req += CP_ISAGA_USR " = null,\n";
+            }
+            else if (ui->ComptaLiberalSELupRadioButton->isChecked())
+            {
+                req += CP_DROITS_USR " = '" ORTHOLIBERAL "', \n"
+                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteParDefautcomboBox->currentData().toString() + ",\n"
+                       CP_ENREGHONORAIRES_USR " = 5,\n"
+                       CP_IDEMPLOYEUR_USR " = " + ui->EmployeurcomboBox->currentData().toString() + ",\n";
                 if (ui->AGAupRadioButton->isChecked())
                     req += CP_ISAGA_USR " = 1,\n";
                 else
@@ -507,26 +517,17 @@ void dlg_gestionusers::EnregistreUser()
             else if (ui->ComptaNoLiberalupRadioButton->isChecked())
                 req += CP_DROITS_USR " = '" ORTHOSALARIE "', \n"
                        CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                        CP_IDEMPLOYEUR_USR " = " + ui->EmployeurcomboBox->currentData().toString() + ",\n"
                        CP_ENREGHONORAIRES_USR " = 2,\n"
                        CP_ISAGA_USR " = null,\n";
             else if (ui->ComptaRemplaupRadioButton->isChecked())
                 req += CP_DROITS_USR " = '" ORTHOREMPLACANT "', \n"
                        CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                        CP_ENREGHONORAIRES_USR " = 3,\n"
                        CP_IDEMPLOYEUR_USR " = null,\n"
                        CP_ISAGA_USR " = null,\n";
-            else if (ui->NoComptaupRadioButton->isChecked())
-                req += CP_DROITS_USR " = '" ORTHONOCOMPTA "', \n"
-                       CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
-                       CP_ENREGHONORAIRES_USR " = 4,\n"
-                       CP_IDEMPLOYEUR_USR " = null,\n"
-                       CP_ISAGA_USR " = null,\n";
         }
-        req += ((ui->CotationupRadioButton->isVisible() && ui->CotationupRadioButton->isChecked())?   CP_CCAM_USR " = 1,\n" : CP_CCAM_USR " = null,\n");
+        req += ((ui->CotationupRadioButton->isVisible() && ui->CotationupRadioButton->isChecked())?   CP_COTATION_USR " = 1,\n" : CP_COTATION_USR " = null,\n");
     }
     else if (ui->AutreSoignantupRadioButton->isChecked())
     {
@@ -536,7 +537,7 @@ void dlg_gestionusers::EnregistreUser()
                CP_SOIGNANTSTATUS_USR " = 3,\n"
                CP_ISMEDECIN_USR " = " + (ui->MedecincheckBox->isChecked()? "1" : "null") + ",\n"
                CP_NUMCO_USR " = " + (ui->MedecincheckBox->isChecked()? (ui->NumCOupLineEdit->text()==""? "null" : "'" + ui->NumCOupLineEdit->text() + "'") : "null") + ",\n "
-               CP_NUMPS_USR " = " + (ui->RPPSupLineEdit->text()==""? "null" : "'" + ui->RPPSupLineEdit->text() + "'") + ",\n"
+               CP_NUMPS_USR " = " + ((ui->RPPSupLineEdit->text().toInt()==0 || !db->parametres()->cotationsfrance())? "null" : QString::number(ui->RPPSupLineEdit->text().toInt())) + ",\n"
                CP_RESPONSABLEACTES_USR " = ";
         if (ui->ResponsableupRadioButton->isChecked())
             req += "1,\n";
@@ -548,7 +549,6 @@ void dlg_gestionusers::EnregistreUser()
         {
             req += CP_DROITS_USR " = '" AUTRESOIGNANTASSISTANT "', \n"
                    CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                   CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                    CP_ENREGHONORAIRES_USR " = null,\n"
                    CP_IDEMPLOYEUR_USR " = null,\n"
                    CP_ISAGA_USR " = null,\n";
@@ -558,10 +558,20 @@ void dlg_gestionusers::EnregistreUser()
             if (ui->ComptaLiberalupRadioButton->isChecked())
             {
                 req += CP_DROITS_USR " = '" AUTRESOIGNANTLIBERAL "', \n"
-                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteComptacomboBox->currentData().toString() + ",\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = " + ui->CompteActescomboBox->currentData().toString() + ",\n"
+                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteParDefautcomboBox->currentData().toString() + ",\n"
                        CP_ENREGHONORAIRES_USR " = 1,\n"
                        CP_IDEMPLOYEUR_USR " = null,\n";
+                if (ui->AGAupRadioButton->isChecked())
+                    req += CP_ISAGA_USR " = 1,\n";
+                else
+                    req += CP_ISAGA_USR " = null,\n";
+            }
+            else if (ui->ComptaLiberalSELupRadioButton->isChecked())
+            {
+                req += CP_DROITS_USR " = '" AUTRESOIGNANTLIBERAL "', \n"
+                       CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteParDefautcomboBox->currentData().toString() + ",\n"
+                       CP_ENREGHONORAIRES_USR " = 5,\n"
+                       CP_IDEMPLOYEUR_USR " = " + ui->EmployeurcomboBox->currentData().toString() + ",\n";
                 if (ui->AGAupRadioButton->isChecked())
                     req += CP_ISAGA_USR " = 1,\n";
                 else
@@ -570,26 +580,17 @@ void dlg_gestionusers::EnregistreUser()
             else if (ui->ComptaNoLiberalupRadioButton->isChecked())
                 req += CP_DROITS_USR " = '" AUTRESOIGNANTSALARIE "', \n"
                        CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                        CP_IDEMPLOYEUR_USR " = " + ui->EmployeurcomboBox->currentData().toString() + ",\n"
                        CP_ENREGHONORAIRES_USR " = 2,\n"
                        CP_ISAGA_USR " = null,\n";
             else if (ui->ComptaRemplaupRadioButton->isChecked())
                 req += CP_DROITS_USR " = '" AUTRESOIGNANTREMPLACANT "', \n"
                        CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
                        CP_ENREGHONORAIRES_USR " = 3,\n"
                        CP_IDEMPLOYEUR_USR " = null,\n"
                        CP_ISAGA_USR " = null,\n";
-            else if (ui->NoComptaupRadioButton->isChecked())
-                req += CP_DROITS_USR " = '" AUTRESOIGNANTNOCOMPTA "', \n"
-                       CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                       CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
-                       CP_ENREGHONORAIRES_USR " = 4,\n"
-                       CP_IDEMPLOYEUR_USR " = null,\n"
-                       CP_ISAGA_USR " = null,\n";
         }
-        req += ((ui->CotationupRadioButton->isVisible() && ui->CotationupRadioButton->isChecked())?   CP_CCAM_USR " = 1,\n" : CP_CCAM_USR " = null,\n");
+        req += ((ui->CotationupRadioButton->isVisible() && ui->CotationupRadioButton->isChecked())?   CP_COTATION_USR " = 1,\n" : CP_COTATION_USR " = null,\n");
     }
     else if (ui->AutreFonctionupRadioButton->isChecked())
         req += CP_FONCTION_USR " = '" + Utils::correctquoteSQL(ui->AutreFonctionuplineEdit->text()) + "',\n"
@@ -600,8 +601,7 @@ void dlg_gestionusers::EnregistreUser()
                CP_ISAGA_USR " = null,\n"
                CP_RESPONSABLEACTES_USR " = null,\n"
                CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-               CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
-               CP_CCAM_USR " = null,\n"
+               CP_COTATION_USR " = null,\n"
                CP_ENREGHONORAIRES_USR " = null,\n"
                CP_IDEMPLOYEUR_USR " = null,\n"
                CP_NUMCO_USR " = null,\n "
@@ -616,8 +616,7 @@ void dlg_gestionusers::EnregistreUser()
                CP_ISAGA_USR " = null,\n"
                CP_RESPONSABLEACTES_USR " = null,\n"
                CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-               CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
-               CP_CCAM_USR " = null,\n"
+               CP_COTATION_USR " = null,\n"
                CP_ENREGHONORAIRES_USR " = null,\n"
                CP_IDEMPLOYEUR_USR " = null,\n"
                CP_NUMCO_USR " = null,\n "
@@ -631,69 +630,67 @@ void dlg_gestionusers::EnregistreUser()
                CP_ISMEDECIN_USR " = null,\n"
                CP_ISAGA_USR " = null,\n"
                CP_RESPONSABLEACTES_USR " = null,\n"
-               CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteComptacomboBox->currentData().toString() + ",\n"
-               CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
-               CP_CCAM_USR " = null,\n"
+               CP_IDCOMPTEPARDEFAUT_USR " = " + ui->CompteParDefautcomboBox->currentData().toString() + ",\n"
+               CP_COTATION_USR " = null,\n"
                CP_ENREGHONORAIRES_USR " = null,\n"
                CP_IDEMPLOYEUR_USR " = null,\n"
                CP_NUMCO_USR " = null,\n "
                CP_NUMPS_USR " = null,\n "
                CP_DROITS_USR " = '" SOCIETECOMPTABLE "',\n";
     else if (ui->NeutreupRadioButton->isChecked())
-         req += CP_FONCTION_USR " = null,\n"
-                CP_SPECIALITE_USR " = null,\n"
-                CP_IDSPECIALITE_USR " = null,\n"
-                CP_SOIGNANTSTATUS_USR " = 6,\n"
-                CP_ISMEDECIN_USR " = null,\n"
-                CP_ISAGA_USR " = null,\n"
-                CP_RESPONSABLEACTES_USR " = null,\n"
-                CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
-                CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR " = null,\n"
-                CP_CCAM_USR " = null,\n"
-                CP_ENREGHONORAIRES_USR " = null,\n"
-                CP_IDEMPLOYEUR_USR " = null,\n"
-                CP_NUMCO_USR " = null,\n "
-                CP_NUMPS_USR " = null,\n "
-                CP_DROITS_USR " = '" NEUTRE "',\n";
-    if (ui->OPHupRadioButton->isChecked() && !ui->AssistantupRadioButton->isChecked() && !ui->ComptaRemplaupRadioButton->isChecked() && ui->CotationupRadioButton->isChecked())
+        req += CP_FONCTION_USR " = null,\n"
+               CP_SPECIALITE_USR " = null,\n"
+               CP_IDSPECIALITE_USR " = null,\n"
+               CP_SOIGNANTSTATUS_USR " = 6,\n"
+               CP_ISMEDECIN_USR " = null,\n"
+               CP_ISAGA_USR " = null,\n"
+               CP_RESPONSABLEACTES_USR " = null,\n"
+               CP_IDCOMPTEPARDEFAUT_USR " = null,\n"
+               CP_COTATION_USR " = null,\n"
+               CP_ENREGHONORAIRES_USR " = null,\n"
+               CP_IDEMPLOYEUR_USR " = null,\n"
+               CP_NUMCO_USR " = null,\n "
+               CP_NUMPS_USR " = null,\n "
+               CP_DROITS_USR " = '" NEUTRE "',\n";
+    QString secteur = "null";
+    QString Optam   = "null";
+    if ((ui->OPHupRadioButton->isChecked() ||(ui->AutreSoignantupRadioButton->isChecked() && ui->MedecincheckBox->isChecked()))
+        && !ui->AssistantupRadioButton->isChecked() && !ui->ComptaRemplaupRadioButton->isChecked() && ui->CotationupRadioButton->isChecked())
     {
-        QString secteur = "null";
-        if (ui->Secteur1upRadioButton       ->isChecked())      secteur = "1";
-        if (ui->Secteur2upRadioButton       ->isChecked())      secteur = "2";
-        if (ui->Secteur3upRadioButton       ->isChecked())      secteur = "3";
-        req += CP_SECTEUR_USR " = " + secteur + ",\n";
-        QString Optam = ((ui->OPTAMupRadioButton->isChecked() && (ui->Secteur1upRadioButton->isChecked() || ui->Secteur2upRadioButton->isChecked()))? "1" : "null");
-        req += CP_ISOPTAM_USR " = " + Optam + "\n";
+        if (db->parametres()->cotationsfrance())
+        {
+            if (ui->Secteur1upRadioButton       ->isChecked())      secteur = "1";
+            else if (ui->Secteur2upRadioButton  ->isChecked())      secteur = "2";
+            else if (ui->Secteur3upRadioButton  ->isChecked())      secteur = "3";
+            if (ui->OPTAMupRadioButton->isChecked() && (ui->Secteur1upRadioButton->isChecked() || ui->Secteur2upRadioButton->isChecked()))
+                Optam = "1";
+        }
     }
-    else
-    {
-        req += CP_SECTEUR_USR " = null,\n";
-        req += CP_ISOPTAM_USR " = null\n";
-    }
+    req += CP_SECTEUR_USR " = " + secteur + ",\n";
+    req += CP_ISOPTAM_USR " = " + Optam + "\n";
+
     req +=  " where " CP_ID_USR " = " + ui->idUseruplineEdit->text();
-    //Edit(req);
+    //qDebug()<<req;
     db->StandardSQL(req);
     int idlieu=-1;
     db->SupprRecordFromTable(ui->idUseruplineEdit->text().toInt(), "idUser", TBL_JOINTURESLIEUX);
     if (!m_neutre)
-    {
         for(int i=0; i< ui->AdressupTableWidget->rowCount(); i++)
         {
-            UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+            UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
             if (butt->isChecked())
             {
                 idlieu = butt->iD();
                 db->StandardSQL("insert into " TBL_JOINTURESLIEUX "(iduser, idlieu) values (" + ui->idUseruplineEdit->text() + ", " + QString::number(idlieu) + ")");
             }
         }
-    }
 
     req = "update " TBL_COMPTES " set " CP_PARTAGE_COMPTES " = ";
     db->StandardSQL(req + (ui->SocieteComptableupRadioButton->isChecked()? "1" : "null") + " where " CP_IDUSER_COMPTES " = " +  ui->idUseruplineEdit->text());
     setDataCurrentUser(ui->idUseruplineEdit->text().toInt()); // reactualise l'item user correspondant
-    RemplirTableWidget();
+    RemplirTableWidget(ui->idUseruplineEdit->text().toInt());
 
-    if (m_usermode==PREMIERUSER)
+    if (m_usermode == PREMIERUSER)
     {
         done(ui->idUseruplineEdit->text().toInt());
         return;
@@ -726,12 +723,11 @@ void dlg_gestionusers::EnregistreNouvUser()
 {
     if (!dlg_ask) return;
     QString msg = "";
-    UpLineEdit *Loginline       = dlg_ask->findChild<UpLineEdit*>(m_loginledit);
-    UpLineEdit *MDPline         = dlg_ask->findChild<UpLineEdit*>(m_MDPledit);
-    UpLineEdit *ConfirmMDPline  = dlg_ask->findChild<UpLineEdit*>(m_confirmMDPledit);
+    UpLineEdit *Loginline       = dlg_ask->findChild<UpLineEdit*>(gLoginupLineEdit);
+    UpLineEdit *MDPline         = dlg_ask->findChild<UpLineEdit*>(gMDPupLineEdit);
+    UpLineEdit *ConfirmMDPline  = dlg_ask->findChild<UpLineEdit*>(gConfirmMDPupLineEdit);
     QString login               = Loginline->text();
     QString mdp                 = MDPline->text();
-
     bool a = true;
     while (a) {
         a = false;
@@ -772,7 +768,7 @@ void dlg_gestionusers::EnregistreNouvUser()
         if (!Utils::RegularExpressionMatches(Utils::rgx_AlphaNumeric_5_12,mdp))
         {
             msg = tr("Le mot de passe n'est pas conforme.") + "\n" +
-                    tr("Au moins 5 caractères - uniquement des chifres ou des lettres - max. 12 caractères.");
+                  tr("Au moins 5 caractères - uniquement des chifres ou des lettres - max. 12 caractères.");
             MDPline->setFocus();
             continue;
         }
@@ -798,13 +794,13 @@ void dlg_gestionusers::EnregistreNouvUser()
     int idUser = db->getFirstRecordFromStandardSelectSQL(req,m_ok).at(0).toInt();
     db->unlocktables();
     Datas::I()->users->initListe();
-    RemplirTableWidget();
+    RemplirTableWidget(idUser);
     wdg_buttonframe                 ->setEnabled(false);
     ui->ListUserstableWidget        ->setEnabled(false);
     ui->Principalframe              ->setEnabled(true);
+    ui->ModeExercicegroupBox        ->setEnabled(true);
     ui->ComptagroupBox              ->setEnabled(true);
     setDataCurrentUser(idUser);
-    ui->ListUserstableWidget        ->setCurrentItem(ui->ListUserstableWidget->findItems(QString::number(idUser), Qt::MatchExactly).at(0));
     ui->OPHupRadioButton            ->setChecked(true);
     ui->ResponsableupRadioButton    ->setChecked(true);
     ui->ComptaLiberalupRadioButton  ->setChecked(true);
@@ -848,37 +844,28 @@ void dlg_gestionusers::FermeFiche()
 // ----------------------------------------------------------------------------------
 void dlg_gestionusers::GestionComptes()
 {
-    if (!m_userencours)
-        return;
     bool modif      = false;
     bool verifempl  = ui->Employeurwidget->isVisible();
     QString empl    = ui->EmployeurcomboBox->currentText();
-    bool verifact   = ui->CompteActeswidget->isVisible();
-    QString cptact  = ui->CompteActescomboBox->currentText();
     bool verifcpta  = ui->CompteComptawidget->isVisible();
-    QString cptcpta = ui->CompteComptacomboBox->currentText();
+    QString cptcpta = ui->CompteParDefautcomboBox->currentText();
+
     dlg_gestioncomptes *Dlg_GestComptes = new dlg_gestioncomptes(m_userencours, this);
     Dlg_GestComptes ->exec();
     delete Dlg_GestComptes;
     if (verifempl)
         if (ui->EmployeurcomboBox->currentText() != empl)
             modif   = true;
-    if (verifact)
-    {
-        CalcListitemsCompteActescomboBox(m_userencours);
-        if (ui->CompteActescomboBox->currentText() != cptact)
-            modif   = true;
-    }
     if (verifcpta)
     {
         CalcListitemsCompteComptacomboBox(m_userencours, ui->SocieteComptableupRadioButton->isChecked());
-        if (ui->CompteComptacomboBox->currentText() != cptcpta)
+        if (ui->CompteParDefautcomboBox->currentText() != cptcpta)
             modif   = true;
     }
     ui->OKupSmallButton->setEnabled(modif);
 }
 
-bool dlg_gestionusers::isMDPverified()
+bool dlg_gestionusers::isMDPverified() const
 {
     return m_MDPverified;
 }
@@ -886,24 +873,23 @@ bool dlg_gestionusers::isMDPverified()
 void dlg_gestionusers::ModifUser()
 {
     ui->ListUserstableWidget        ->setEnabled(false);
-    wdg_buttonframe                     ->setEnabled(false);
+    wdg_buttonframe                 ->setEnabled(false);
     ui->Principalframe              ->setEnabled(true);
     ui->ModeExercicegroupBox        ->setEnabled(true);
     ui->SecteurgroupBox             ->setEnabled(true);
     ui->OPTAMupRadioButton          ->setEnabled(true);
     ui->OKupSmallButton             ->setEnabled(false);
     ui->AGAupRadioButton            ->setEnabled(true);
-    ui->CompteActeswidget           ->setEnabled(true);
-    m_mode                           = Modifier;
+    m_mode                          = Modifier;
 }
 
-void dlg_gestionusers::GestionLieux()
+void dlg_gestionusers::GestLieux()
 {
-    QString mdp ("");
+    QString mdp("");
     m_MDPverified = Utils::VerifMDP(DataBase::I()->getMDPAdmin(), tr("Saisissez le mot de passe Administrateur"), mdp, m_MDPverified, this);
     if (!m_MDPverified)
             return;
-    dlg_listelieux *gestLieux = new dlg_listelieux();
+    dlg_listelieux *gestLieux = new dlg_listelieux(this);
     gestLieux->exec();
     ReconstruitListeLieuxExercice();
     delete gestLieux;
@@ -915,7 +901,7 @@ void dlg_gestionusers::GestionLieux()
         idlieuxlist << listlieux.at(k).at(0).toInt();
     for (int i=0; i<ui->AdressupTableWidget->rowCount(); ++i)
     {
-        UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+        UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
         butt->setChecked(idlieuxlist.contains(butt->iD()));
     }
 }
@@ -923,12 +909,12 @@ void dlg_gestionusers::GestionLieux()
 void dlg_gestionusers::ModifMDP()
 {
     gAskMDP    = new UpDialog(this);
-    gAskMDP    ->setModal(true);
+    gAskMDP    ->setWindowModality(Qt::WindowModal);
     gAskMDP    ->move(QPoint(x()+width()/2,y()+height()/2));
 
     UpLineEdit *ConfirmMDP = new UpLineEdit(gAskMDP);
     ConfirmMDP->setEchoMode(QLineEdit::Password);
-    ConfirmMDP->setObjectName(m_confirmMDP);
+    ConfirmMDP->setObjectName(gConfirmMDP);
     ConfirmMDP->setValidator(new QRegularExpressionValidator(Utils::rgx_AlphaNumeric_5_12,this));
     ConfirmMDP->setAlignment(Qt::AlignCenter);
     ConfirmMDP->setMaxLength(12);
@@ -938,7 +924,7 @@ void dlg_gestionusers::ModifMDP()
     gAskMDP->dlglayout()->insertWidget(0,labelConfirmMDP);
     UpLineEdit *NouvMDP = new UpLineEdit(gAskMDP);
     NouvMDP->setEchoMode(QLineEdit::Password);
-    NouvMDP->setObjectName(m_nouvMDP);
+    NouvMDP->setObjectName(gNouvMDP);
     NouvMDP->setValidator(new QRegularExpressionValidator(Utils::rgx_AlphaNumeric_5_12,this));
     NouvMDP->setAlignment(Qt::AlignCenter);
     NouvMDP->setMaxLength(12);
@@ -950,7 +936,7 @@ void dlg_gestionusers::ModifMDP()
     AncMDP->setEchoMode(QLineEdit::Password);
     AncMDP->setAlignment(Qt::AlignCenter);
     AncMDP->setValidator(new QRegularExpressionValidator(Utils::rgx_AlphaNumeric_3_12,this));
-    AncMDP->setObjectName(m_ancMDP);
+    AncMDP->setObjectName(gAncMDP);
     AncMDP->setMaxLength(12);
     gAskMDP->dlglayout()->insertWidget(0,AncMDP);
     UpLabel *labelOldMDP = new UpLabel();
@@ -979,15 +965,15 @@ void dlg_gestionusers::RegleAffichage()
      * 4 = non soignant
      * 5 = societe comptable
      * 6 = neutre
-    */
+     */
     DefinitLesVariables();
 
-    ui->RPPSlabel                   ->setVisible(m_responsable);
-    ui->RPPSupLineEdit              ->setVisible(m_responsable);
+    ui->RPPSlabel                   ->setVisible(m_responsable && db->parametres()->cotationsfrance());
+    ui->RPPSupLineEdit              ->setVisible(m_responsable && db->parametres()->cotationsfrance());
     ui->ModeExercicegroupBox        ->setVisible(m_soignant);
-    ui->CotationupRadioButton       ->setVisible(m_soigntnonrplct);
-    ui->SecteurgroupBox             ->setVisible(m_medecin && m_soigntnonrplct);
-    ui->OPTAMupRadioButton          ->setVisible(m_medecin && m_soigntnonrplct && (ui->Secteur1upRadioButton->isChecked() || ui->Secteur2upRadioButton->isChecked()));
+    ui->CotationupRadioButton       ->setVisible(m_soignantnonremplacant);
+    ui->SecteurgroupBox             ->setVisible(m_medecin && m_soignantnonremplacant && db->parametres()->cotationsfrance());
+    ui->OPTAMupRadioButton          ->setVisible(m_medecin && m_soignantnonremplacant && (ui->Secteur1upRadioButton->isChecked() || ui->Secteur2upRadioButton->isChecked()) && db->parametres()->cotationsfrance());
     ui->NumCOlabel                  ->setVisible(m_medecin);
     ui->NumCOupLineEdit             ->setVisible(m_medecin);
     ui->TitreupcomboBox             ->setVisible(m_medecin);
@@ -1010,23 +996,23 @@ void dlg_gestionusers::RegleAffichage()
         ui->ComptaNoLiberalupRadioButton  ->setImmediateToolTip(avert);
         ui->ComptaNoLiberalupRadioButton  ->setEnabled(u);
     }
-    ui->GererCompteuppushButton     ->setVisible(m_respliberal || m_soccomptable);
-    ui->Employeurwidget             ->setVisible(m_respsalarie);
-    ui->CompteActeswidget           ->setVisible(m_respliberal);
-    ui->CompteComptawidget          ->setVisible(m_respliberal || m_soccomptable);
-    ui->AGAupRadioButton            ->setVisible(m_respliberal);
+    ui->GererCompteuppushButton     ->setVisible(m_respliberal || m_soccomptable || m_respliberalSEL);
+    ui->Employeurwidget             ->setVisible(m_respsalarie || m_respliberalSEL);
+    ui->CompteComptawidget          ->setVisible(m_respliberal || m_soccomptable || m_respliberalSEL);
+    ui->AGAupRadioButton            ->setVisible(m_respliberal || m_respliberalSEL);
 
     ui->Prenomlabel                 ->setVisible(!m_soccomptable && !m_neutre);
     ui->PrenomuplineEdit            ->setVisible(!m_soccomptable && !m_neutre);
-    ui->AdressupTableWidget         ->setVisible(!m_soccomptable && !m_neutre);
-    ui->GestLieuxpushButton         ->setVisible(!m_soccomptable && !m_neutre);
+    ui->AdressupTableWidget         ->setVisible(true);
+    ui->GestLieuxpushButton         ->setVisible(true);
 
-    if (m_respliberal || m_soccomptable)
-        ActualiseRsgnmtBanque(m_soccomptable);
-    if (m_respsalarie)
+    if (m_respliberal || m_soccomptable || m_respliberalSEL)
+        CalcListitemsCompteComptacomboBox(m_userencours, m_soccomptable);
+    if (m_respsalarie || m_respliberalSEL)
     {
-        CalcListitemsEmployeurcomboBox(ui->idUseruplineEdit->text().toInt());
-        ui->EmployeurcomboBox->setCurrentIndex(0);
+        User *usr = Datas::I()->users->getById(ui->idUseruplineEdit->text().toInt());
+        if (usr)
+        CalcListitemsEmployeurcomboBox(usr);
     }
     ui->OKupSmallButton->setEnabled(true);
 }
@@ -1036,8 +1022,8 @@ void dlg_gestionusers::SupprUser()
     int idUser = m_userencours->id();
     if (db->StandardSelectSQL("select " CP_ID_USR " from " TBL_UTILISATEURS
                   " where " CP_ID_USR " <> " + QString::number(idUser) +
-                  " and ( " CP_SOIGNANTSTATUS_USR " = 1 or  " CP_SOIGNANTSTATUS_USR " = 2 or  " CP_SOIGNANTSTATUS_USR " = 3)"
-                  " and ( " CP_ENREGHONORAIRES_USR " = 1 or  " CP_ENREGHONORAIRES_USR " = 2 or  " CP_ENREGHONORAIRES_USR " = 4)", m_ok).size()==0)
+                  " and (" CP_SOIGNANTSTATUS_USR " = 1 or " CP_SOIGNANTSTATUS_USR " = 2 or " CP_SOIGNANTSTATUS_USR " = 3)"
+                  " and (" CP_ENREGHONORAIRES_USR " = 1 or " CP_ENREGHONORAIRES_USR " = 2 or " CP_ENREGHONORAIRES_USR " = 4)", m_ok).size()==0)
     {
         UpMessageBox::Watch(this,tr("Impossible de supprimer ") + ui->ListUserstableWidget->selectedItems().at(1)->text() +
                                      tr(" parce que c'est le seul soignant enregistré dans la base."
@@ -1047,7 +1033,7 @@ void dlg_gestionusers::SupprUser()
     }
     // si l'utilisateur est une société comptable ou s'il est employeur, on vérifie s'il a des employés et on bloque la suppression du compte si c'est le cas
     if (m_userencours->isSocComptable() || m_userencours->isLiberal())
-        if (db->StandardSelectSQL("select " CP_ID_USR " from " TBL_UTILISATEURS " where  " CP_IDEMPLOYEUR_USR " = " + QString::number(m_userencours->id()), m_ok).size()>0)
+        if (db->StandardSelectSQL("select " CP_ID_USR " from " TBL_UTILISATEURS " where " CP_IDEMPLOYEUR_USR " = " + QString::number(m_userencours->id()), m_ok).size()>0)
         {
             UpMessageBox::Watch(this, tr("Impossible de supprimer ce compte d'utilisateur!"), tr("cet utilisateur est enregistré comme employeur d'autres utilisateurs"));
             return;
@@ -1056,7 +1042,7 @@ void dlg_gestionusers::SupprUser()
     UpPushButton OKBouton;
     UpPushButton AnnulBouton;
     QString vamourir = ui->ListUserstableWidget->selectedItems().at(1)->text();
-    if (m_userencours == Datas::I()->users->Admin())
+    if (m_userencours == Datas::I()->users->userconnected())
     {
         msgbox.setText("Tentative de suicide");
         msgbox.setInformativeText("Hum " + vamourir
@@ -1091,50 +1077,27 @@ void dlg_gestionusers::SupprUser()
                             if (db->StandardSelectSQL("select " CP_ID_LIGNCOMPTES " from " TBL_LIGNESCOMPTES " where " CP_IDCOMPTE_LIGNCOMPTES " = " + icpt, m_ok).size()==0)
                                 Datas::I()->comptes->SupprimeCompte(Datas::I()->comptes->getById(idcpt));
         }
-        db->SupprRecordFromTable(idUser, CP_IDUSER_COTATIONS, TBL_COTATIONS);
+        db->SupprRecordFromTable(idUser, CP_IDUSER_COTATIONS , TBL_COTATIONS);
         db->StandardSQL("delete from " TBL_JOINTURESLIEUX " where iduser not in (select " CP_ID_USR " from " TBL_UTILISATEURS ")");
 
-        QString req = "select user, host from mysql.user where user like '" + ui->ListUserstableWidget->selectedItems().at(1)->text() + "%'";
-        QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok);
-        if (listusr.size()>0)
-            for (int i=0; i<listusr.size(); i++)
-                db->StandardSQL("drop user '" + listusr.at(i).at(0).toString() + "'@'" + listusr.at(i).at(1).toString() + "'");
-        if (m_userencours == Datas::I()->users->Admin())
+//        QString req = "select user, host from mysql.user where user like '" + ui->ListUserstableWidget->selectedItems().at(1)->text() + "%'";
+//        QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok);
+//        if (listusr.size()>0)
+//            for (int i=0; i<listusr.size(); i++)
+//                db->StandardSQL("drop user '" + listusr.at(i).at(0).toString() + "'@'" + listusr.at(i).at(1).toString() + "'");
+        if (m_userencours == Datas::I()->users->userconnected())
         {
             UpMessageBox::Watch(this, tr("Cool ") + vamourir + "...", tr("Votre suicide s'est parfaitement déroulé et le programme va maintenant se fermer"));
-            //Datas::I()->postesconnectes->SupprimePosteConnecte()
             Datas::I()->users->SupprimeUser(m_userencours);
             exit(0);
         }
         Datas::I()->users->SupprimeUser(m_userencours);
-        RemplirTableWidget();
+        RemplirTableWidget(Datas::I()->users->userconnected()->id());
     }
-}
-
-void dlg_gestionusers::ActualiseRsgnmtBanque(bool soccomptable)
-{
-    CalcListitemsCompteActescomboBox(m_userencours);
-    CalcListitemsCompteComptacomboBox(m_userencours, soccomptable);
-}
-
-void dlg_gestionusers::CalcListitemsCompteActescomboBox(User *usr)
-{
-    //! tous les comptes non désactivés de l'utilisateur et tous les comptes partagés
-    //qDebug() << "usr->idcompteencaissementhonoraires()" << usr->idcompteencaissementhonoraires();
-    QList<Compte*> listcomptes;
-    foreach (Compte *cpt, *Datas::I()->comptes->comptes())
-        if ((cpt->idUser() == usr->id() || cpt->isPartage()) && !cpt->isDesactive())
-            listcomptes << cpt;
-    ui->CompteActescomboBox->clear();
-    foreach (Compte *cpt, listcomptes)
-        ui->CompteActescomboBox->insertItem(0, cpt->intitulecompte() + " - " + cpt->nomabrege(), cpt->id());
-    if (usr->idcompteencaissementhonoraires() > 0)
-        ui->CompteActescomboBox->setCurrentIndex(ui->CompteActescomboBox->findData(usr->idcompteencaissementhonoraires()));
 }
 
 void dlg_gestionusers::CalcListitemsCompteComptacomboBox(User *usr, bool soccomptable)
 {
-    //qDebug() << "usr->idcomptepardefaut()" << usr->idcomptepardefaut();
     QList<Compte*> listcomptes;
     foreach (Compte *cpt, *Datas::I()->comptes->comptes())
         if (cpt->idUser() == usr->id() && !cpt->isDesactive())
@@ -1147,31 +1110,28 @@ void dlg_gestionusers::CalcListitemsCompteComptacomboBox(User *usr, bool soccomp
             else
                 listcomptes << cpt;
         }
-    ui->CompteComptacomboBox->clear();
+    ui->CompteParDefautcomboBox->clear();
     foreach (Compte *cpt, listcomptes)
-        ui->CompteComptacomboBox->insertItem(0, cpt->intitulecompte() + " - " + cpt->nomabrege(), cpt->id());
+        ui->CompteParDefautcomboBox->insertItem(0, cpt->intitulecompte() + " - " + cpt->nomabrege(), cpt->id());
     if (usr->idcomptepardefaut() > 0)
-        ui->CompteComptacomboBox->setCurrentIndex(ui->CompteComptacomboBox->findData(usr->idcomptepardefaut()));
+        ui->CompteParDefautcomboBox->setCurrentIndex(ui->CompteParDefautcomboBox->findData(usr->idcomptepardefaut()));
 }
 
-void dlg_gestionusers::CalcListitemsEmployeurcomboBox(int iduser)
+void dlg_gestionusers::CalcListitemsEmployeurcomboBox(User *usr)
 {
-    QString user = QString::number(iduser);
-    QString req = "select " CP_ID_USR ",  " CP_PRENOM_USR ",  " CP_NOM_USR " from " TBL_UTILISATEURS
-                  " where ( " CP_SOIGNANTSTATUS_USR " = 5"
-                  " or ( " CP_SOIGNANTSTATUS_USR " < 4 and  " CP_ENREGHONORAIRES_USR " = 1))"
-                  " and " CP_ID_USR " <> " + user +
-                  " and  " CP_ISDESACTIVE_USR " is null";
-    //qDebug() << req;
-    QList<QVariantList> listusr = db->StandardSelectSQL(req, m_ok, tr("Impossible de retrouver la liste des employeurs"));
-    if (!m_ok)
-        return;
     ui->EmployeurcomboBox->clear();
-    for (int i=0; i<listusr.size(); i++)
-        ui->EmployeurcomboBox->insertItem(0, (listusr.at(i).at(1).toString() != ""? listusr.at(i).at(1).toString() + " " + listusr.at(i).at(2).toString() : listusr.at(i).at(2).toString()), listusr.at(i).at(0).toInt());
-    QVariantList idusrlst = db->getFirstRecordFromStandardSelectSQL("select  " CP_IDEMPLOYEUR_USR " from " TBL_UTILISATEURS " where " CP_ID_USR " = " + user, m_ok);
-    if (m_ok && idusrlst.size()>0)
-        ui->EmployeurcomboBox->setCurrentIndex(ui->EmployeurcomboBox->findData(idusrlst.at(0)));
+    for (auto it = Datas::I()->users->comptablesActes()->begin(); it != Datas::I()->users->comptablesActes()->end(); ++it)
+    {
+        User* usrcpt = it.value();
+        if (usrcpt)
+            ui->EmployeurcomboBox->insertItem(0, usrcpt->grandnom(), usrcpt->id());
+    }
+    User* usremployer = Datas::I()->users->getById(usr->idemployeur());
+    if (usremployer)
+    {
+        int idx = ui->EmployeurcomboBox->findData(usremployer->id());
+        ui->EmployeurcomboBox->setCurrentIndex(idx);
+    }
 }
 
 bool  dlg_gestionusers::AfficheParamUser(int idUser)
@@ -1197,23 +1157,23 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
 
     bool assistant      = m_userencours->isAssistant();
     bool responsable    = m_userencours->isResponsable();
-    bool responsableles2= m_userencours->isResponsableOuAssistant();
+    bool responsableles2= m_userencours->isAlterneResponsableEtAssistant();
 
     bool liberal        = m_userencours->isLiberal();
-    bool pasliberal     = m_userencours->isSalarie();
-    bool retrocession   = m_userencours->isRemplacant();
-    bool pasdecompta    = m_userencours->isSansCompta();
+    bool liberalSEL     = m_userencours->isLiberalSEL();
+    bool pasliberal     = m_userencours->isSoignantSalarie() || m_userencours->isLiberalSEL();
+    bool remplacant     = m_userencours->isRemplacant();
 
-    bool cotation       = m_userencours->useCCAM();
+    bool cotation       = m_userencours->useCotationsActes();
 
-    ui->RPPSlabel                   ->setVisible(soignant && !assistant);
-    ui->RPPSupLineEdit              ->setVisible(soignant && !assistant);
+    ui->RPPSlabel                   ->setVisible(soignant && !assistant && db->parametres()->cotationsfrance());
+    ui->RPPSupLineEdit              ->setVisible(soignant && !assistant && db->parametres()->cotationsfrance());
     ui->ModeExercicegroupBox        ->setVisible(soignant);
-    ui->CotationupRadioButton       ->setVisible(soignant && !assistant && !retrocession);
+    ui->CotationupRadioButton       ->setVisible(soignant && !assistant && !remplacant);
     ui->NumCOlabel                  ->setVisible(medecin);
     ui->NumCOupLineEdit             ->setVisible(medecin);
-    ui->SecteurgroupBox             ->setVisible(ophtalmo && !assistant && !retrocession && cotation);
-    ui->OPTAMupRadioButton          ->setVisible(ophtalmo && !assistant && !retrocession && cotation && (m_userencours->secteurconventionnel() == 1 || m_userencours->secteurconventionnel() == 2));
+    ui->SecteurgroupBox             ->setVisible(medecin && !assistant && !remplacant && cotation && db->parametres()->cotationsfrance());
+    ui->OPTAMupRadioButton          ->setVisible(medecin && !assistant && !remplacant && cotation && (m_userencours->secteurconventionnel() == 1 || m_userencours->secteurconventionnel() == 2) && db->parametres()->cotationsfrance());
     ui->TitreupcomboBox             ->setVisible(medecin);
     ui->Titrelabel                  ->setVisible(medecin);
     ui->AutreSoignantupLineEdit     ->setVisible(autresoignant);
@@ -1224,24 +1184,21 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     ui->ComptagroupBox              ->setVisible(soignant && !assistant);
     ui->ComptaNoLiberalupRadioButton->setEnabled(ExisteEmployeur(idUser));
     ui->GererCompteuppushButton     ->setVisible((soignant && !assistant && liberal) || soccomptable);
-    ui->Employeurwidget             ->setVisible(soignant && !assistant && pasliberal);
-    ui->CompteActeswidget           ->setVisible(soignant && !assistant && liberal);
+    ui->Employeurwidget             ->setVisible(m_userencours->isSoignantSalarie() || m_userencours->isLiberalSEL());
     ui->CompteComptawidget          ->setVisible((soignant && !assistant && liberal) || soccomptable);
     ui->AGAupRadioButton            ->setVisible(soignant && !assistant && liberal);
 
-    ui->Prenomlabel                 ->setVisible(!soccomptable);
-    ui->PrenomuplineEdit            ->setVisible(!soccomptable);
+    ui->Prenomlabel                 ->setVisible(!soccomptable && !neutre);
+    ui->PrenomuplineEdit            ->setVisible(!soccomptable && !neutre);
 
-    if ((soignant && !assistant && liberal) || soccomptable)
-        ActualiseRsgnmtBanque(soccomptable);
-    if (soignant && !assistant && pasliberal)
-        CalcListitemsEmployeurcomboBox(idUser);
+    if ((soignant && !assistant && (liberal || liberalSEL)) || soccomptable)
+        CalcListitemsCompteComptacomboBox(m_userencours, soccomptable);
+    if (m_userencours->isSoignantSalarie() || m_userencours->isLiberalSEL())
+        CalcListitemsEmployeurcomboBox(m_userencours);
 
     ui->idUseruplineEdit            ->setText(QString::number(m_userencours->id()));
     ui->LoginuplineEdit             ->setText(m_userencours->login());
     ui->MDPuplineEdit               ->setText(m_userencours->password());
-    if (medecin)
-        ui->TitreupcomboBox         ->setCurrentText(m_userencours->titre());
     ui->NomuplineEdit               ->setText(m_userencours->nom());
     ui->PrenomuplineEdit            ->setText(m_userencours->prenom());
 
@@ -1251,7 +1208,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
         idlieuxlist << listlieux.at(k).at(0).toInt();
     for (int i=0; i<ui->AdressupTableWidget->rowCount(); ++i)
     {
-        UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+        UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
         butt->setChecked(idlieuxlist.contains(butt->iD()));
     }
     ui->PortableuplineEdit          ->setText(m_userencours->portable());
@@ -1261,47 +1218,62 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
     ui->InactivUsercheckBox         ->setChecked(m_userencours->isDesactive());
 
     ui->CotationupRadioButton         ->setChecked(true);
-    //ui->CotationupRadioButton         ->setChecked(OtherUser.isCotation());
 
     ui->ComptaLiberalupRadioButton    ->setChecked(liberal);
     ui->ComptaNoLiberalupRadioButton  ->setChecked(pasliberal);
-    ui->ComptaRemplaupRadioButton     ->setChecked(retrocession);
-    ui->NoComptaupRadioButton         ->setChecked(pasdecompta);
+    ui->ComptaRemplaupRadioButton     ->setChecked(remplacant);
 
     ui->AGAupRadioButton              ->setChecked(ophtalmo && m_userencours->isAGA());
 
     ui->ResponsableupRadioButton      ->setChecked(responsable);
     ui->ResponsableLes2upRadioButton  ->setChecked(responsableles2);
     ui->AssistantupRadioButton        ->setChecked(assistant);
-
+    if (medecin)
+    {
+        ui->Secteur1upRadioButton   ->setChecked(false);
+        ui->Secteur2upRadioButton   ->setChecked(false);
+        ui->Secteur3upRadioButton   ->setChecked(false);
+        if  (db->parametres()->cotationsfrance())
+        {
+            ui->RPPSupLineEdit      ->setText(QString::number(m_userencours->NumPS()));
+            switch (m_userencours->secteurconventionnel()) {
+            case 1:     ui->Secteur1upRadioButton         ->setChecked(true);     break;
+            case 2:     ui->Secteur2upRadioButton         ->setChecked(true);     break;
+            case 3:     ui->Secteur3upRadioButton         ->setChecked(true);     break;
+            default:
+                break;
+            }
+        }
+        else
+            ui->RPPSupLineEdit      ->clear();
+        ui->TitreupcomboBox         ->setCurrentText(m_userencours->titre());
+        ui->OPTAMupRadioButton      ->setChecked(m_userencours->isOPTAM());
+    }
     if (ophtalmo)
     {
         ui->NumCOupLineEdit             ->setText(m_userencours->numOrdre());
-        ui->RPPSupLineEdit              ->setText(QString::number(m_userencours->NumPS()));
         ui->OPHupRadioButton            ->setChecked(true);
         ui->AutreSoignantupLineEdit     ->clear();
         ui->AutreFonctionuplineEdit     ->clear();
-        switch (m_userencours->secteurconventionnel()) {
-        case 1:     ui->Secteur1upRadioButton         ->setChecked(true);     break;
-        case 2:     ui->Secteur2upRadioButton         ->setChecked(true);     break;
-        case 3:     ui->Secteur3upRadioButton         ->setChecked(true);     break;
-        default:
-            break;
-        }
-        ui->OPTAMupRadioButton->setChecked(m_userencours->isOPTAM());
     }
     else if (orthoptist)
     {
         ui->NumCOupLineEdit             ->clear();
-        ui->RPPSupLineEdit              ->setText(QString::number(m_userencours->NumPS()));
-        ui->OrthoptistupRadioButton       ->setChecked(true);
+        if  (db->parametres()->cotationsfrance())
+            ui->RPPSupLineEdit          ->setText(QString::number(m_userencours->NumPS()));
+        else
+            ui->RPPSupLineEdit          ->clear();
+        ui->OrthoptistupRadioButton     ->setChecked(true);
         ui->AutreSoignantupLineEdit     ->clear();
         ui->AutreFonctionuplineEdit     ->clear();
     }
     else if (autresoignant)
     {
         ui->NumCOupLineEdit             ->clear();
-        ui->RPPSupLineEdit              ->clear();
+        if  (db->parametres()->cotationsfrance())
+            ui->RPPSupLineEdit          ->setText(QString::number(m_userencours->NumPS()));
+        else
+            ui->RPPSupLineEdit          ->clear();
         ui->AutreSoignantupRadioButton  ->setChecked(true);
         ui->AutreSoignantupLineEdit     ->setText(m_userencours->fonction());
         ui->MedecincheckBox             ->setChecked(medecin);
@@ -1316,13 +1288,13 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
         ui->SocieteComptableupRadioButton  ->setChecked(true);
     }
     else if (neutre)
-     {
-         ui->NumCOupLineEdit             ->clear();
-         ui->RPPSupLineEdit              ->clear();
-         ui->AutreSoignantupLineEdit     ->clear();
-         ui->AutreFonctionuplineEdit     ->clear();
-         ui->NeutreupRadioButton         ->setChecked(true);
-     }
+    {
+        ui->NumCOupLineEdit             ->clear();
+        ui->RPPSupLineEdit              ->clear();
+        ui->AutreSoignantupLineEdit     ->clear();
+        ui->AutreFonctionuplineEdit     ->clear();
+        ui->NeutreupRadioButton         ->setChecked(true);
+    }
     else if (!soignant)
     {
         ui->NumCOupLineEdit             ->clear();
@@ -1334,7 +1306,7 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
         }
         else
         {
-            ui->AutreFonctionupRadioButton ->setChecked(true);
+            ui->AutreFonctionupRadioButton  ->setChecked(true);
             ui->AutreFonctionuplineEdit     ->setText(m_userencours->fonction());
         }
         ui->AutreSoignantupLineEdit     ->setVisible(false);
@@ -1346,24 +1318,14 @@ bool  dlg_gestionusers::AfficheParamUser(int idUser)
         ui->ModeExercicegroupBox        ->setVisible(true);
         ui->AGAupRadioButton            ->setVisible(true);
         ui->AGAupRadioButton            ->setChecked(m_userencours->isAGA());
-        ui->SecteurgroupBox             ->setVisible(true);
-        ui->RPPSlabel                   ->setVisible(true);
-        ui->RPPSupLineEdit              ->setVisible(true);
+        ui->SecteurgroupBox             ->setVisible(db->parametres()->cotationsfrance());
+        ui->RPPSlabel                   ->setVisible(db->parametres()->cotationsfrance());
+        ui->RPPSupLineEdit              ->setVisible(db->parametres()->cotationsfrance());
         ui->AutreSoignantupLineEdit     ->setVisible(false);
         ui->AutreFonctionuplineEdit     ->setVisible(false);
-        ui->SecteurgroupBox             ->setVisible(true);
-        if (m_userencours->useCCAM())
-        {
-            switch (m_userencours->secteurconventionnel()) {
-            case 1:     ui->Secteur1upRadioButton       ->setChecked(true); break;
-            case 2:     ui->Secteur2upRadioButton       ->setChecked(true); break;
-            case 3:     ui->Secteur3upRadioButton       ->setChecked(true); break;
-            default:    break;
-            }
-        }
     }
     wdg_buttonframe->wdg_moinsBouton->setEnabled(ui->ListUserstableWidget->findItems(QString::number(idUser),Qt::MatchExactly).at(0)->foreground() != m_color
-                                               && ui->ListUserstableWidget->rowCount()>1);
+                                                 && ui->ListUserstableWidget->rowCount()>1);
     RegleAffichage();
     return true;
 }
@@ -1382,6 +1344,7 @@ void   dlg_gestionusers::DefinitLesVariables()
     m_assistant      = ui->AssistantupRadioButton          ->isChecked();
 
     m_liberal        = ui->ComptaLiberalupRadioButton      ->isChecked();
+    m_liberalSEL     = ui->ComptaLiberalSELupRadioButton   ->isChecked();
     m_pasliberal     = ui->ComptaNoLiberalupRadioButton    ->isChecked();
     m_retrocession   = ui->ComptaRemplaupRadioButton       ->isChecked();
 
@@ -1390,14 +1353,15 @@ void   dlg_gestionusers::DefinitLesVariables()
     m_responsable    = m_soignant && !m_assistant;
     m_respsalarie    = m_responsable && m_pasliberal;
     m_respliberal    = m_responsable && m_liberal;
-    m_soigntnonrplct = m_responsable && !m_retrocession;
+    m_respliberalSEL = m_responsable && m_liberalSEL;
+    m_soignantnonremplacant = m_responsable && !m_retrocession;
 }
 
 bool dlg_gestionusers::ExisteEmployeur(int iduser)
 {
     return (db->StandardSelectSQL("select " CP_ID_USR " from " TBL_UTILISATEURS
-                      " where ((( " CP_SOIGNANTSTATUS_USR " = 1 or  " CP_SOIGNANTSTATUS_USR " = 2 or  " CP_SOIGNANTSTATUS_USR " = 3) and  " CP_ENREGHONORAIRES_USR " = 1) or Soignant = 5)"
-                      " and " CP_ID_USR " <> " + QString::number(iduser), m_ok).size()>0);
+                      " where (((" CP_SOIGNANTSTATUS_USR " = 1 or " CP_SOIGNANTSTATUS_USR " = 2 or " CP_SOIGNANTSTATUS_USR " = 3) and " CP_ENREGHONORAIRES_USR " = 1) or " CP_SOIGNANTSTATUS_USR " = 5)"
+                                                                                                                                                                                                 " and " CP_ID_USR " <> " + QString::number(iduser), m_ok).size()>0);
 }
 
 void dlg_gestionusers::Inactifs()
@@ -1409,7 +1373,7 @@ void dlg_gestionusers::Inactifs()
         {
             UpStandardItem * item = dynamic_cast<UpStandardItem*>(model->item(i));
             if (item->checkState() == Qt::Checked)
-                listuser << dynamic_cast<User*>(item->item());
+                listuser << qobject_cast<User*>(item->item());
         }
         if (listuser.size() > 0)
         {
@@ -1470,14 +1434,12 @@ void dlg_gestionusers::Inactifs()
     label->setText(tr("Cochez les utilisateurs\nque vous souhaitez réactiver"));
     dlg_listinactifs->AjouteWidgetLayButtons(label, false);
     dlg_listinactifs->setFixedWidth(wdg_bigtable->width() + dlglayout()->contentsMargins().left()*2);
-    dlg_listinactifs->setModal(true);
-    dlg_listinactifs->setSizeGripEnabled(false);
+
     dlg_listinactifs->setWindowTitle(tr("Utilisateurs inactifs"));
 
     connect(dlg_listinactifs->OKButton, &QPushButton::clicked, dlg_listinactifs, [=] {  calclistusers(m_model);
                                                                                         dlg_listinactifs->accept();
-                                                                                        RemplirTableWidget(); });
-
+                                                                                        RemplirTableWidget(m_userencours->id()); });
     dlg_listinactifs->exec();
     delete dlg_listinactifs;
 }
@@ -1485,15 +1447,10 @@ void dlg_gestionusers::Inactifs()
 void dlg_gestionusers::setDataCurrentUser(int id)
 {
     m_userencours = Datas::I()->users->getById(id, Item::Update);
-    if (!m_userencours)
+    if (m_userencours == Q_NULLPTR)
         return;
     m_userencours->setlistecomptesbancaires(Datas::I()->comptes->initListeComptesByIdUser(id));
-    if (m_userencours->isSalarie())
-    {
-        User * usercpt = Datas::I()->users->getById(m_userencours->idemployeur());
-        if (usercpt)
-            m_userencours->setidcompteencaissementhonoraires(usercpt->idcompteencaissementhonoraires());
-    }
+    Datas::I()->users->CalcCompteEncaissementActes(m_userencours);
 }
 
 void dlg_gestionusers::ReconstruitListeLieuxExercice()
@@ -1553,11 +1510,11 @@ void dlg_gestionusers::ReconstruitListeLieuxExercice()
             db->SupprRecordFromTable(ui->idUseruplineEdit->text().toInt(), "idUser", TBL_JOINTURESLIEUX);
             for(int i=0; i< ui->AdressupTableWidget->rowCount(); i++)
             {
-                UpRadioButton *butt = static_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
+                UpRadioButton *butt = qobject_cast<UpRadioButton*>(ui->AdressupTableWidget->cellWidget(i,0));
                 if (butt->isChecked())
                 {
                     idlieu = butt->iD();
-                    db->StandardSQL("insert into " TBL_JOINTURESLIEUX "(" CP_IDUSER_JOINTSITE " , " CP_IDLIEU_JOINTSITE ") values (" + ui->idUseruplineEdit->text() + ", " + QString::number(idlieu) + ")");
+                    db->StandardSQL("insert into " TBL_JOINTURESLIEUX "(iduser, idlieu) values (" + ui->idUseruplineEdit->text() + ", " + QString::number(idlieu) + ")");
                 }
             }
             ui->OKupSmallButton->setEnabled(true);
@@ -1587,7 +1544,7 @@ void dlg_gestionusers::ReconstruitListeLieuxExercice()
     }
 }
 
-void dlg_gestionusers::RemplirTableWidget()
+void dlg_gestionusers::RemplirTableWidget(int iduser)
 {
     ui->ListUserstableWidget->disconnect();
     QTableWidgetItem *pitem0, *pitem1;
@@ -1606,6 +1563,8 @@ void dlg_gestionusers::RemplirTableWidget()
         if (usr->login() != NOM_ADMINISTRATEUR)
             usrlist << usr;
     }
+    if (usrlist.size() == 0)
+        return;
     ui->ListUserstableWidget->setRowCount(usrlist.size());
     ui->InactivUsercheckBox ->setVisible(usrlist.size() > 1);
     int i = 0;
@@ -1633,8 +1592,10 @@ void dlg_gestionusers::RemplirTableWidget()
         ++i;
     }
     connect(ui->ListUserstableWidget, &QTableWidget::currentItemChanged , this, [=](QTableWidgetItem *pitem) {AfficheParamUser(ui->ListUserstableWidget->item(pitem->row(),0)->text().toInt());});
-    if (ui->ListUserstableWidget->rowCount() > 0)
+    if (iduser < 0 || ui->ListUserstableWidget->findItems(QString::number(iduser), Qt::MatchExactly).size() == 0)
         ui->ListUserstableWidget->setCurrentItem(ui->ListUserstableWidget->item(0,1));
+    else
+        ui->ListUserstableWidget->setCurrentItem(ui->ListUserstableWidget->findItems(QString::number(iduser), Qt::MatchExactly).at(0));
 }
 
 bool dlg_gestionusers::VerifFiche()
@@ -1729,7 +1690,7 @@ bool dlg_gestionusers::VerifFiche()
             return false;
         }
     }
-    if (m_medecin && ui->NumCOupLineEdit->text().isEmpty())
+    if (m_medecin && ui->NumCOupLineEdit->text().isEmpty() && db->parametres()->cotationsfrance())
     {
         UpMessageBox::Watch(this,tr("Vous n'avez pas spécifié le n° de l'Ordre!"));
         this->ui->NumCOupLineEdit->setFocus();
@@ -1741,13 +1702,13 @@ bool dlg_gestionusers::VerifFiche()
         this->ui->AutreFonctionuplineEdit->setFocus();
         return false;
     }
-    if (m_responsable && ui->RPPSupLineEdit->text().isEmpty())
+    if (m_responsable && ui->RPPSupLineEdit->text().isEmpty() && db->parametres()->cotationsfrance())
     {
         UpMessageBox::Watch(this,tr("Vous n'avez pas spécifié le RPPS!"));
         this->ui->RPPSupLineEdit->setFocus();
         return false;
     }
-    if (m_medecin && m_cotation)
+    if (m_medecin && m_cotation && db->parametres()->cotationsfrance() && !ui->ComptaRemplaupRadioButton->isChecked())
     {
         QList<QRadioButton*> listb = ui->SecteurgroupBox->findChildren<QRadioButton*>();
         bool a = false;
@@ -1763,14 +1724,8 @@ bool dlg_gestionusers::VerifFiche()
             return false;
         }
     }
-    if (m_respliberal)
-        if (ui->CompteActescomboBox->currentIndex()==-1)
-        {
-            UpMessageBox::Watch(this,tr("Vous avez oublié de spécifier un compte bancaire pour l'encaissement des honoraires!"));
-            return false;
-        }
-    if (m_respliberal || m_soccomptable)
-        if (ui->CompteComptacomboBox->currentIndex()==-1)
+    if (m_respliberal || m_soccomptable || m_respliberalSEL)
+        if (ui->CompteParDefautcomboBox->currentIndex()==-1)
         {
             UpMessageBox::Watch(this,tr("Vous avez oublié de spécifier un compte bancaire pour l'enregistrement de la comptabilité!"));
             return false;

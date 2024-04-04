@@ -33,11 +33,12 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
     Impression *impr            = Q_NULLPTR;
     DossierImpression *dossier  = Q_NULLPTR;
     Message *msg                = Q_NULLPTR;
+    Ville *ville                = Q_NULLPTR;
     bool ok = false;
     bool loop = false;
     while (!loop)
     {
-        doc = dynamic_cast<DocExterne*>(item);
+        doc = qobject_cast<DocExterne*>(item);
         if (doc)
         {
             table = TBL_DOCSEXTERNES;
@@ -63,11 +64,26 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 doc->setidrefraction(newvalue.toInt());
                 Utils::CalcintValueSQL(newvalue);
             }
+            else if (field == CP_TEXTCORPS_DOCSEXTERNES)
+            {
+                doc->settextecorps(newvalue.toString());
+                Utils::CalcStringValueSQL(newvalue);
+            }
+            else if (field == CP_TEXTPIED_DOCSEXTERNES)
+            {
+                doc->settextepied(newvalue.toString());
+                Utils::CalcStringValueSQL(newvalue);
+            }
+            else if (field == CP_TEXTENTETE_DOCSEXTERNES)
+            {
+                doc->settexteentete(newvalue.toString());
+                Utils::CalcStringValueSQL(newvalue);
+            }
             else
                 ok = false;
             break;
         }
-        act = dynamic_cast<Acte*>(item);
+        act = qobject_cast<Acte*>(item);
         if (act)
         {
             table = TBL_ACTES;
@@ -129,7 +145,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 ok = false;
             break;
         }
-        patcrs = dynamic_cast<PatientEnCours*>(item);
+        patcrs = qobject_cast<PatientEnCours*>(item);
         if (patcrs)
         {
             table = TBL_SALLEDATTENTE;
@@ -199,7 +215,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 ok = false;
             break;
         }
-        pat = dynamic_cast<Patient*>(item);
+        pat = qobject_cast<Patient*>(item);
         if (pat)
         {
             if (field == CP_NOM_PATIENTS
@@ -408,9 +424,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 else
                     ok = false;
             }
+            else
+                ok = false;
             break;
         }
-        post = dynamic_cast<PosteConnecte*>(item);
+        post = qobject_cast<PosteConnecte*>(item);
         if (post)
         {
             table = TBL_USERSCONNECTES;
@@ -471,9 +489,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 post->setidpatencours(newvalue.toInt());
                 Utils::CalcintValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        bq = dynamic_cast<Banque*>(item);
+        bq = qobject_cast<Banque*>(item);
         if (bq)
         {
             table = TBL_BANQUES;
@@ -493,7 +513,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 ok = false;
             break;
         }
-        dep =  dynamic_cast<Depense*>(item);
+        dep =  qobject_cast<Depense*>(item);
         if (dep)
         {
             table = TBL_DEPENSES;
@@ -564,7 +584,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 ok = false;
             break;
         }
-        usr = dynamic_cast<User*>(item);
+        usr = qobject_cast<User*>(item);
         if (usr)
         {
             table = TBL_UTILISATEURS;
@@ -575,12 +595,12 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 usr->setdesactive(newvalue.toBool());
                 newvalue = (newvalue.toBool()? "1" : "null");
             }
-            if (field == CP_AFFICHEDOCSPUBLICS_USR )
+            else if (field == CP_AFFICHEDOCSPUBLICS_USR )
             {
                 usr->setaffichedocspublics(newvalue.toBool());
                 newvalue = (newvalue.toBool()? "1" : "null");
             }
-            if (field == CP_AFFICHECOMMENTSPUBLICS_USR )
+            else if (field == CP_AFFICHECOMMENTSPUBLICS_USR )
             {
                 usr->setaffichecommentslunettespublics(newvalue.toBool());
                 newvalue = (newvalue.toBool()? "1" : "null");
@@ -589,7 +609,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 ok = false;
             break;
         }
-        sessionop = dynamic_cast<SessionOperatoire*>(item);
+        sessionop = qobject_cast<SessionOperatoire*>(item);
         if (sessionop)
         {
             table = TBL_SESSIONSOPERATOIRES;
@@ -620,9 +640,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 sessionop->setincident(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        sit = dynamic_cast<Site*>(item);
+        sit = qobject_cast<Site*>(item);
         if (sit)
         {
             table = TBL_LIEUXEXERCICE;
@@ -650,8 +672,8 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
             }
             else if (field == CP_CODEPOSTAL_SITE )
             {
-                sit->setcodepostal(newvalue.toInt());
-                Utils::CalcintValueSQL(newvalue);
+                sit->setcodepostal(newvalue.toString());
+                Utils::CalcStringValueSQL(newvalue);
             }
             else if (field == CP_VILLE_SITE)
             {
@@ -673,9 +695,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 sit->setcouleur(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        man = dynamic_cast<Manufacturer*>(item);
+        man = qobject_cast<Manufacturer*>(item);
         if (man)
         {
             table = TBL_MANUFACTURERS;
@@ -736,9 +760,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 man->setmail(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        typinterv = dynamic_cast<TypeIntervention*>(item);
+        typinterv = qobject_cast<TypeIntervention*>(item);
         if (typinterv)
         {
             table = TBL_TYPESINTERVENTIONS;
@@ -759,9 +785,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 typinterv->setduree(newvalue.toTime());
                 Utils::CalcTimeValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        iol = dynamic_cast<IOL*>(item);
+        iol = qobject_cast<IOL*>(item);
         if (iol)
         {
             table = TBL_IOLS;
@@ -871,7 +899,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
             }
             else if (field == CP_TYPIMG_IOLS)
             {
-                iol->setTypeImage(newvalue.toString());
+                iol->setimageformat(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
             else if (field == CP_MATERIAU_IOLS)
@@ -919,9 +947,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 iol->setType(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        interv = dynamic_cast<Intervention*>(item);
+        interv = qobject_cast<Intervention*>(item);
         if (interv)
         {
             table = TBL_LIGNESPRGOPERATOIRES;
@@ -987,9 +1017,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 interv->setincident(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        tiers = dynamic_cast<Tiers*>(item);
+        tiers = qobject_cast<Tiers*>(item);
         if (tiers)
         {
             ok = true;
@@ -1045,9 +1077,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 tiers->setWebsite(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        com = dynamic_cast<Commercial*>(item);
+        com = qobject_cast<Commercial*>(item);
         if (com)
         {
             ok = true;
@@ -1083,9 +1117,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 com->setidmanufactureur(newvalue.toInt());
                 Utils::CalcintValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        comment = dynamic_cast<CommentLunet*>(item);
+        comment = qobject_cast<CommentLunet*>(item);
         if (comment)
         {
             ok = true;
@@ -1118,9 +1154,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 comment->setpublic(a);
                 newvalue = (a? "1" : "null");
             }
+            else
+                ok = false;
             break;
         }
-        motcle = dynamic_cast<MotCle*>(item);
+        motcle = qobject_cast<MotCle*>(item);
         if (motcle)
         {
             ok = true;
@@ -1131,9 +1169,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 motcle->setmotcle(newvalue.toString());
                 Utils::CalcStringValueSQL(newvalue);
             }
+            else
+                ok = false;
             break;
         }
-        impr = dynamic_cast<Impression*>(item);
+        impr = qobject_cast<Impression*>(item);
         if (impr)
         {
             ok = true;
@@ -1183,9 +1223,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 impr->setmedical(a);
                 newvalue = (a? "1" : "null");
             }
+            else
+                ok = false;
             break;
         }
-        dossier = dynamic_cast<DossierImpression*>(item);
+        dossier = qobject_cast<DossierImpression*>(item);
         if (dossier)
         {
             ok = true;
@@ -1207,9 +1249,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 dossier->setpublic(a);
                 newvalue = (a? "1" : "null");
             }
+            else
+                ok = false;
             break;
         }
-        msg = dynamic_cast<Message*>(item);
+        msg = qobject_cast<Message*>(item);
         if (msg)
         {
             ok = true;
@@ -1236,12 +1280,12 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 msg->settache(a);
                 newvalue = (a? "1" : "null");
             }
-            if (field == CP_DATELIMITE_MSG )
+            else if (field == CP_DATELIMITE_MSG )
             {
                 msg->setdatelimite(newvalue.toDate());
                 Utils::CalcDateValueSQL(newvalue);
             }
-            if (field == CP_DATECREATION_MSG )
+            else if (field == CP_DATECREATION_MSG )
             {
                 msg->setdatecreation(newvalue.toDateTime());
                 Utils::CalcDateTimeValueSQL(newvalue);
@@ -1263,9 +1307,11 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 msg->setasupprimer(a);
                 newvalue = (a? "1" : "null");
             }
+            else
+                ok = false;
             break;
         }
-        session = dynamic_cast<Session*>(item);
+        session = qobject_cast<Session*>(item);
         if (session)
         {
             table = TBL_SESSIONS;
@@ -1306,6 +1352,28 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 session->setidcomptable(newvalue.toInt());
                 Utils::CalcintValueSQL(newvalue);
             }
+            else
+                ok = false;
+            break;
+        }
+        ville = qobject_cast<Ville*>(item);
+        if (ville)
+        {
+            table = TBL_AUTRESVILLES;
+            ok = true;
+            clause = CP_ID_AUTRESVILLES " = " + QString::number(item->id());
+            if (field == CP_CP_AUTRESVILLES )
+            {
+                ville->setcodepostal(newvalue.toString());
+                Utils::CalcStringValueSQL(newvalue);
+            }
+            else if (field == CP_NOM_AUTRESVILLES )
+            {
+                ville->setnom(newvalue.toString());
+                Utils::CalcStringValueSQL(newvalue);
+            }
+            else
+                ok = false;
             break;
         }
         return false;

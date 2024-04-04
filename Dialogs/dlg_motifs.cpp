@@ -55,7 +55,7 @@ dlg_motifs::dlg_motifs(QWidget *parent) :
     ui->MotifsupTableWidget ->setColumnWidth(6,80);      // Par Defaut
     ui->MotifsupTableWidget ->setColumnWidth(7,20);      // Couleur
     ui->MotifsupTableWidget ->setColumnWidth(8,0);       // NoOrdre
-    ui->MotifsupTableWidget ->setStyleSheet("QTableView {selection-color: rgb(0,0,0); selection-background-color: rgb(164, 205, 255);}");
+    ui->MotifsupTableWidget ->setStyleSheet("QTableView {selection-color: rgba(0,0,0); selection-background-color: rgba(164, 205, 255);}");
     ui->MotifsupTableWidget ->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->MotifsupTableWidget ->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
     ui->MotifsupTableWidget ->setHorizontalHeaderItem(0, new QTableWidgetItem(""));
@@ -345,7 +345,7 @@ void dlg_motifs::RecalculeLesRows()
     {
         UpchkFromTableW(ui->MotifsupTableWidget,i,0)->setRowTable(i);
         UpchkFromTableW(ui->MotifsupTableWidget,i,6)->setRowTable(i);
-        QWidget *w = dynamic_cast<QWidget*>(ui->MotifsupTableWidget->cellWidget(i,7));
+        QWidget *w = qobject_cast<QWidget*>(ui->MotifsupTableWidget->cellWidget(i,7));
         if (w)
         {
             QList<UpLabel*> listlbl = w->findChildren<UpLabel*>();
@@ -387,7 +387,7 @@ void dlg_motifs::ModifCouleur()
     QString couleur = colorfin.name();
     QString background = "background:" + couleur;
     ui->MotifupLineEdit->setStyleSheet(background);
-    QWidget *w = dynamic_cast<QWidget*>(ui->MotifsupTableWidget->cellWidget(row,7));
+    QWidget *w = qobject_cast<QWidget*>(ui->MotifsupTableWidget->cellWidget(row,7));
     if (w)
     {
         QList<UpLabel*> listlbl = w->findChildren<UpLabel*>();
@@ -595,7 +595,7 @@ void dlg_motifs::RemplirTableWidget()
 
 UpCheckBox* dlg_motifs::UpchkFromTableW(QTableWidget *Table, int row, int col) const
 {
-    QWidget *w = dynamic_cast<QWidget*>(Table->cellWidget(row,col));
+    QWidget *w = qobject_cast<QWidget*>(Table->cellWidget(row,col));
     if (w)
     {
         QList<UpCheckBox*> listcheckBox = w->findChildren<UpCheckBox*>();

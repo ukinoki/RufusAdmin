@@ -52,7 +52,7 @@ public:
 
 private:
     QString     m_tooltipmsg;
-    bool        eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
+    bool        eventFilter(QObject *obj, QEvent *event)  ;
     int         m_row, m_col, m_id;
     QString     m_valeuravant, m_valeurapres, m_champ, m_table;
     QVariant    m_datas;
@@ -65,10 +65,10 @@ signals:
     void        mouseDoubleClick(int row);
 
 protected:
-    using QLineEdit::enterEvent;
+    using       QWidget::enterEvent;
     void        enterEvent(QEvent *e);
-    void        mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void        mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void        mouseReleaseEvent(QMouseEvent *e);
+    void        mouseDoubleClickEvent(QMouseEvent *e);
 
 };
 

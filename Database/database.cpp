@@ -57,6 +57,7 @@ int DataBase::port() const
     return m_port;
 }
 
+
 void DataBase::InfosConnexionSQL()
 {
     UpMessageBox::Watch(Q_NULLPTR,
@@ -78,11 +79,20 @@ bool DataBase::erreurRequete(QSqlError erreur, QString requete, QString ErrorMes
     return false;
 }
 
+QString DataBase::version()
+{
+    bool ok;
+    QString version = "";
+    version = StandardSelectSQL("show variables like 'version'", ok).at(0).at(1).toString();
+    return version;
+}
+
 QString DataBase::connectToDataBase(QString basename, QString login, QString password)
 {
     m_db = QSqlDatabase::addDatabase("QMYSQL",basename);
     m_db.setHostName( m_server );
     m_db.setPort( m_port );
+    //qDebug() << m_server << m_port << m_db.hostName() << m_db.port();
     bool useSSL = (m_modeacces == Utils::Distant);
     QString connectSSLoptions = "";
     if (useSSL)
@@ -93,8 +103,9 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
             dirkey = m_settings.value(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL).toString();
         else
             m_settings.setValue(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL,dirkey);
-        QDir dirtorestore(dirkey);
-        //qDebug() << dirtorestore.absolutePath();
+        QDir dirtorestore(QDir::toNativeSeparators(dirkey));
+        if (!dirtorestore.exists())
+            return ("");
         QStringList listfichiers = dirtorestore.entryList(QStringList() << "*.pem");
         for (int t=0; t<listfichiers.size(); t++)
         {
@@ -112,6 +123,7 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
 
     m_db.setUserName(login + (useSSL ? "SSL" : ""));
     m_db.setPassword(password);
+    //qDebug() << m_db.hostName() << m_db.port() << m_db.userName() << m_db.password();
     Logs::LogSQL("Serveur      - " + m_db.hostName());
     Logs::LogSQL("databaseName - " + m_db.databaseName());
     Logs::LogSQL("Login        - " + m_db.userName());
@@ -120,6 +132,7 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
 
     if( m_db.open() )
         return QString();
+
     QString error = m_db.lastError().text();
     Logs::ERROR(error);
     return error;
@@ -250,7 +263,9 @@ bool DataBase::UpdateTable(QString nomtable,
     while (itset.hasNext())
     {
         itset.next();
-        QString clause  = " " + itset.key() + " = " + (itset.value().toString().toLower()=="null" || itset.value() == QVariant() || itset.value().toString() == ""? "null," : "'" + Utils::correctquoteSQL(itset.value().toString()) + "',");
+        QString clause  = " " + itset.key() + " = " + (itset.value().toString().toLower()=="null" || itset.value() == QVariant() || itset.value().toString() == ""?
+                                                           "null," :
+                                                           "'" + Utils::correctquoteSQL(itset.value().toString()) + "',");
         //qDebug() << "itset.value().toString() = " << itset.value().toString();
         //qDebug() << "clause = " << clause;
         req += clause;
@@ -379,10 +394,10 @@ QVariantList DataBase::getFirstRecordFromStandardSelectSQL(QString req , bool &O
 
 void DataBase::VideDatabases()
 {
-    UpSystemTrayIcon::showMessage(tr("Suppression de l'ancienne base Rufus en cours"), 3000);
+    UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Suppression de l'ancienne base Rufus en cours"), Icons::icSunglasses(), 3000);
     StandardSQL ("drop database if exists " DB_COMPTA );
     StandardSQL ("drop database if exists " DB_OPHTA );
-    StandardSQL ("drop database if exists " DB_CONSULTS );
+    StandardSQL ("drop database if exists " DB_RUFUS );
     StandardSQL ("drop database if exists " DB_IMAGES );
 }
 
@@ -425,7 +440,18 @@ void DataBase::initParametresSysteme()
     paramData[CP_HEUREBKUP_PARAMSYSTEME]              = paramdata.at(16).toTime().toString("HH:mm:ss");
     paramData[CP_DIRBKUP_PARAMSYSTEME]                = paramdata.at(17).toString();
     m_parametres->setData(paramData);
-    return;
+    if (m_parametres->versionbase()>73)
+    {
+        req = "select " CP_VILLES_PARAMSYSTEME ", " CP_COTATIONS_PARAMSYSTEME ", " CP_COMPTA_PARAMSYSTEME
+                " from " TBL_PARAMSYSTEME;
+        QVariantList paramdata = getFirstRecordFromStandardSelectSQL(req, ok, tr("Impossible de retrouver les paramètres du système"));
+        if(!ok || paramdata.size() == 0)
+            return ;
+        paramData[CP_VILLES_PARAMSYSTEME]                 = (paramdata.at(0).toInt() == 1);
+        paramData[CP_COTATIONS_PARAMSYSTEME]              = (paramdata.at(1).toInt() == 1);
+        paramData[CP_COMPTA_PARAMSYSTEME]                 = (paramdata.at(2).toInt() == 1);
+        m_parametres->setData(paramData);
+    }
 }
 
 ParametresSysteme* DataBase::parametres()
@@ -546,6 +572,30 @@ void DataBase::setdirbkup(QString adress)
     QString value = (adress != ""? "'" + Utils::correctquoteSQL(adress) + "'" : "null");
     StandardSQL("update " TBL_PARAMSYSTEME " set " CP_DIRBKUP_PARAMSYSTEME " = " + value);
     parametres()->setdirbkup(adress);
+}
+void DataBase::setvillesfrance(bool one)
+{
+    if (!m_db.isOpen())
+        return;
+    QString a = (one? "'1'" : "null");
+    StandardSQL("update " TBL_PARAMSYSTEME " set " CP_VILLES_PARAMSYSTEME " = " + a);
+    parametres()->setvillesfrance(one);
+}
+void DataBase::setcotationsfrance(bool one)
+{
+    if (!m_db.isOpen())
+        return;
+    QString a = (one? "'1'" : "null");
+    StandardSQL("update " TBL_PARAMSYSTEME " set " CP_COTATIONS_PARAMSYSTEME " = " + a);
+    parametres()->setcotationsfrance(one);
+}
+void DataBase::setcomptafrance(bool one)
+{
+    if (!m_db.isOpen())
+        return;
+    QString a = (one? "'1'" : "null");
+    StandardSQL("update " TBL_PARAMSYSTEME " set " CP_COMPTA_PARAMSYSTEME " = " + a);
+    parametres()->setcomptafrance(one);
 }
 
 /*
@@ -769,10 +819,10 @@ QJsonObject DataBase::loadUserData(int idUser)
     QString req = "select " CP_DROITS_USR ", " CP_ISAGA_USR ", " CP_LOGIN_USR ", " CP_FONCTION_USR ", " CP_TITRE_USR ", "                               // 0,1,2,3,4
             CP_NOM_USR ", " CP_PRENOM_USR ", " CP_MAIL_USR ", " CP_NUMPS_USR ", " CP_SPECIALITE_USR ", "                                                // 5,6,7,8,9
             CP_IDSPECIALITE_USR ", " CP_NUMCO_USR ", " CP_IDCOMPTEPARDEFAUT_USR ", " CP_ENREGHONORAIRES_USR ", " CP_MDP_USR ", "                        // 10,11,12,13,14
-            CP_PORTABLE_USR ", " CP_POSTE_USR ", " CP_WEBSITE_USR ", " CP_MEMO_USR ", " CP_ISDESACTIVE_USR ","                                          // 15,16,17,18,19
-            CP_POLICEECRAN_USR ", " CP_POLICEATTRIBUT_USR ", " CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", "              // 20,21,22,23,24
-            CP_CCAM_USR ", " CP_IDEMPLOYEUR_USR ", " CP_DATEDERNIERECONNEXION_USR ", " CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR ", " CP_ISMEDECIN_USR ", " // 25,26,27,28,29
-            CP_ISOPTAM_USR ", " CP_ID_USR ", " CP_DATECREATIONMDP_USR ", " CP_AFFICHEDOCSPUBLICS_USR ", " CP_AFFICHECOMMENTSPUBLICS_USR                 // 30,31,32,33,34
+            CP_PORTABLE_USR ", " CP_MEMO_USR ", " CP_ISDESACTIVE_USR "," CP_POLICEECRAN_USR ", " CP_POLICEATTRIBUT_USR ", "                             // 15,16,17,18,19
+            CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", " CP_COTATION_USR ", " CP_IDEMPLOYEUR_USR ", "                        // 20,21,22,23,24
+            CP_DATEDERNIERECONNEXION_USR ", " CP_ISMEDECIN_USR ", " CP_ISOPTAM_USR ", " CP_ID_USR ", " CP_DATECREATIONMDP_USR ", "                      // 25,26,27,28,29
+            CP_AFFICHEDOCSPUBLICS_USR ", " CP_AFFICHECOMMENTSPUBLICS_USR                                                                                // 30,31
             " from " TBL_UTILISATEURS
             " where " CP_ID_USR " = " + QString::number(idUser);
 
@@ -804,24 +854,21 @@ QJsonObject DataBase::loadUserData(int idUser)
     userData[CP_ENREGHONORAIRES_USR]                = usrdata.at(13).toInt();
     userData[CP_MDP_USR]                            = usrdata.at(14).toString();
     userData[CP_PORTABLE_USR]                       = usrdata.at(15).isNull() ? "" : usrdata.at(15).toString();
-    userData[CP_POSTE_USR]                          = usrdata.at(16).toInt();
-    userData[CP_WEBSITE_USR]                        = usrdata.at(17).isNull() ? "" : usrdata.at(17).toString();
-    userData[CP_MEMO_USR]                           = usrdata.at(18).isNull() ? "" : usrdata.at(18).toString();
-    userData[CP_ISDESACTIVE_USR]                    = (usrdata.at(19).toInt() == 1);
-    userData[CP_POLICEECRAN_USR]                    = usrdata.at(20).isNull() ? "" : usrdata.at(20).toString();
-    userData[CP_POLICEATTRIBUT_USR]                 = usrdata.at(21).isNull() ? "" : usrdata.at(21).toString();
-    userData[CP_SECTEUR_USR]                        = usrdata.at(22).toInt();
-    userData[CP_ISOPTAM_USR]                        = (usrdata.at(30).toInt() == 1);
-    userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(23).toInt();
-    userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(24).toInt();
-    userData[CP_CCAM_USR]                           = (usrdata.at(25).toInt() == 1);
-    userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(26).toInt();
-    userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(27).toDate(), usrdata.at(27).toTime()).toMSecsSinceEpoch();
-    userData[CP_ISMEDECIN_USR]                      = usrdata.at(29).toInt();
-    userData[CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR] = (usrdata.at(28).isNull()? -1 : usrdata.at(28).toInt());
-    userData[CP_DATECREATIONMDP_USR]                = usrdata.at(31).toDate().toString("yyyy-MM-dd");
-    userData[CP_AFFICHEDOCSPUBLICS_USR]             = (usrdata.at(33).toInt() == 1);
-    userData[CP_AFFICHECOMMENTSPUBLICS_USR]         = (usrdata.at(34).toInt() == 1);
+    userData[CP_MEMO_USR]                           = usrdata.at(16).isNull() ? "" : usrdata.at(16).toString();
+    userData[CP_ISDESACTIVE_USR]                    = (usrdata.at(17).toInt() == 1);
+    userData[CP_POLICEECRAN_USR]                    = usrdata.at(18).isNull() ? "" : usrdata.at(18).toString();
+    userData[CP_POLICEATTRIBUT_USR]                 = usrdata.at(19).isNull() ? "" : usrdata.at(19).toString();
+    userData[CP_SECTEUR_USR]                        = usrdata.at(20).toInt();
+    userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(21).toInt();
+    userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(22).toInt();
+    userData[CP_COTATION_USR]                       = (usrdata.at(23).toInt() == 1);
+    userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(24).toInt();
+    userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(25).toDate(), usrdata.at(25).toTime()).toMSecsSinceEpoch();
+    userData[CP_ISMEDECIN_USR]                      = (usrdata.at(26).toInt() ==1);
+    userData[CP_ISOPTAM_USR]                        = (usrdata.at(27).toInt() == 1);
+    userData[CP_DATECREATIONMDP_USR]                = usrdata.at(29).toDate().toString("yyyy-MM-dd");
+    userData[CP_AFFICHEDOCSPUBLICS_USR]             = (usrdata.at(30).toInt() == 1);
+    userData[CP_AFFICHECOMMENTSPUBLICS_USR]         = (usrdata.at(31).toInt() == 1);
     return userData;
 }
 
@@ -839,26 +886,8 @@ void DataBase::NettoieTableUsers()
 {
     QString req = "delete from " TBL_UTILISATEURS " where " CP_LOGIN_USR " is null or " CP_NOM_USR " is null";
     StandardSQL(req);
-}
-
-QList<User*> DataBase::loadUsersShortListe()
-{
-    QList<User*> users;
-    QString req = "select " CP_ID_USR ", " CP_LOGIN_USR  " from " TBL_UTILISATEURS;
-
-    QList<QVariantList> usrlist = StandardSelectSQL(req, ok);
-    if( !ok || usrlist.size()==0 )
-        return users;
-    for (int i=0; i<usrlist.size(); ++i)
-    {
-        QVariantList usrdata = usrlist.at(i);
-        QJsonObject userData{};
-        userData[CP_ID_USR]                             = usrdata.at(0).toInt();
-        userData[CP_LOGIN_USR]                          = usrdata.at(1).toString();
-        User *usr = new User(userData);
-        users << usr;
-    }
-    return users;
+    req = "update " TBL_UTILISATEURS " set " CP_RESPONSABLEACTES_USR " = 1 where " CP_ISMEDECIN_USR " = 1";
+    StandardSQL(req);
 }
 
 QList<User*> DataBase::loadUsers()
@@ -867,20 +896,30 @@ QList<User*> DataBase::loadUsers()
     QString req = "select " CP_DROITS_USR ", " CP_ISAGA_USR ", " CP_LOGIN_USR ", " CP_FONCTION_USR ", " CP_TITRE_USR ", "                               // 0,1,2,3,4
             CP_NOM_USR ", " CP_PRENOM_USR ", " CP_MAIL_USR ", " CP_NUMPS_USR ", " CP_SPECIALITE_USR ", "                                                // 5,6,7,8,9
             CP_IDSPECIALITE_USR ", " CP_NUMCO_USR ", " CP_IDCOMPTEPARDEFAUT_USR ", " CP_ENREGHONORAIRES_USR ", " CP_MDP_USR ", "                        // 10,11,12,13,14
-            CP_PORTABLE_USR ", " CP_POSTE_USR ", " CP_WEBSITE_USR ", " CP_MEMO_USR ", " CP_ISDESACTIVE_USR ","                                          // 15,16,17,18,19
-            CP_POLICEECRAN_USR ", " CP_POLICEATTRIBUT_USR ", " CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", "              // 20,21,22,23,24
-            CP_CCAM_USR ", " CP_IDEMPLOYEUR_USR ", " CP_DATEDERNIERECONNEXION_USR ", " CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR ", " CP_ISMEDECIN_USR ", " // 25,26,27,28,29
-            CP_ISOPTAM_USR ", " CP_ID_USR ", " CP_DATECREATIONMDP_USR ", " CP_AFFICHEDOCSPUBLICS_USR ", " CP_AFFICHECOMMENTSPUBLICS_USR                 // 30,31,32,33,34
+            CP_PORTABLE_USR ", " CP_MEMO_USR ", " CP_ISDESACTIVE_USR "," CP_POLICEECRAN_USR ", " CP_POLICEATTRIBUT_USR ", "                             // 15,16,17,18,19
+            CP_SECTEUR_USR ", " CP_SOIGNANTSTATUS_USR ", " CP_RESPONSABLEACTES_USR ", " CP_COTATION_USR ", " CP_IDEMPLOYEUR_USR ", "                        // 20,21,22,23,24
+            CP_DATEDERNIERECONNEXION_USR ", " CP_ISMEDECIN_USR ", " CP_ISOPTAM_USR ", " CP_ID_USR ", " CP_DATECREATIONMDP_USR ", "                      // 25,26,27,28,29
+            CP_AFFICHEDOCSPUBLICS_USR ", " CP_AFFICHECOMMENTSPUBLICS_USR                                                                                // 30,31
             " from " TBL_UTILISATEURS;
-
+    //qDebug() << req;
     QList<QVariantList> usrlist = StandardSelectSQL(req, ok);
     if( !ok || usrlist.size()==0 )
         return users;
     for (int i=0; i<usrlist.size(); ++i)
     {
         QVariantList usrdata = usrlist.at(i);
+
+        //! > La petite manip qui suit sert à corriger une erreur de programmation des premières versions de Rufus
+        QString policeusr = usrdata.at(18).toString();
+        if (policeusr.contains(","))
+        {
+            policeusr = policeusr.split(",").at(0);
+            QString requpd = "update " TBL_UTILISATEURS " set " CP_POLICEECRAN_USR " = '" + Utils::correctquoteSQL(policeusr) + "' where " CP_ID_USR " = " + usrdata.at(28).toString();
+            StandardSQL(requpd);
+        }
+
         QJsonObject userData{};
-        userData[CP_ID_USR]                             = usrdata.at(31).toInt();
+        userData[CP_ID_USR]                             = usrdata.at(28).toInt();
         userData[CP_DROITS_USR]                         = usrdata.at(0).isNull() ? "" : usrdata.at(0).toString();
         userData[CP_ISAGA_USR]                          = (usrdata.at(1).toInt() == 1);
         userData[CP_LOGIN_USR]                          = usrdata.at(2).isNull() ? "" : usrdata.at(2).toString();
@@ -897,24 +936,21 @@ QList<User*> DataBase::loadUsers()
         userData[CP_ENREGHONORAIRES_USR]                = usrdata.at(13).toInt();
         userData[CP_MDP_USR]                            = usrdata.at(14).toString();
         userData[CP_PORTABLE_USR]                       = usrdata.at(15).isNull() ? "" : usrdata.at(15).toString();
-        userData[CP_POSTE_USR]                          = usrdata.at(16).toInt();
-        userData[CP_WEBSITE_USR]                        = usrdata.at(17).isNull() ? "" : usrdata.at(17).toString();
-        userData[CP_MEMO_USR]                           = usrdata.at(18).isNull() ? "" : usrdata.at(18).toString();
-        userData[CP_ISDESACTIVE_USR]                    = (usrdata.at(19).toInt() == 1);
-        userData[CP_POLICEECRAN_USR]                    = usrdata.at(20).isNull() ? "" : usrdata.at(20).toString();
-        userData[CP_POLICEATTRIBUT_USR]                 = usrdata.at(21).isNull() ? "" : usrdata.at(21).toString();
-        userData[CP_SECTEUR_USR]                        = usrdata.at(22).toInt();
-        userData[CP_ISOPTAM_USR]                        = (usrdata.at(30).toInt() == 1);
-        userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(23).toInt();
-        userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(24).toInt();
-        userData[CP_CCAM_USR]                           = (usrdata.at(25).toInt() == 1);
-        userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(26).toInt();
-        userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(27).toDate(), usrdata.at(27).toTime()).toMSecsSinceEpoch();
-        userData[CP_ISMEDECIN_USR]                      = usrdata.at(29).toInt();
-        userData[CP_IDCOMPTEENCAISSEMENTHONORAIRES_USR] = (usrdata.at(28).isNull()? -1 : usrdata.at(28).toInt());
-        userData[CP_DATECREATIONMDP_USR]                = usrdata.at(32).toDate().toString("yyyy-MM-dd");
-        userData[CP_AFFICHEDOCSPUBLICS_USR]             = (usrdata.at(33).toInt() == 1);
-        userData[CP_AFFICHECOMMENTSPUBLICS_USR]         = (usrdata.at(34).toInt() == 1);
+        userData[CP_MEMO_USR]                           = usrdata.at(16).isNull() ? "" : usrdata.at(16).toString();
+        userData[CP_ISDESACTIVE_USR]                    = (usrdata.at(17).toInt() == 1);
+        userData[CP_POLICEECRAN_USR]                    = usrdata.at(18).isNull() ? "" : policeusr;
+        userData[CP_POLICEATTRIBUT_USR]                 = usrdata.at(19).isNull() ? "" : usrdata.at(19).toString();
+        userData[CP_SECTEUR_USR]                        = usrdata.at(20).toInt();
+        userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(21).toInt();
+        userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(22).toInt();
+        userData[CP_COTATION_USR]                       = (usrdata.at(23).toInt() == 1);
+        userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(24).toInt();
+        userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(25).toDate(), usrdata.at(25).toTime()).toMSecsSinceEpoch();
+        userData[CP_ISMEDECIN_USR]                      = (usrdata.at(26).toInt() == 1);
+        userData[CP_ISOPTAM_USR]                        = (usrdata.at(27).toInt() == 1);
+        userData[CP_DATECREATIONMDP_USR]                = usrdata.at(29).toDate().toString("yyyy-MM-dd");
+        userData[CP_AFFICHEDOCSPUBLICS_USR]             = (usrdata.at(30).toInt() == 1);
+        userData[CP_AFFICHECOMMENTSPUBLICS_USR]         = (usrdata.at(31).toInt() == 1);
         User *usr = new User(userData);
         users << usr;
     }
@@ -1201,9 +1237,16 @@ QJsonObject DataBase::loadDocExterneData(int idDoc)
 */
 QJsonObject DataBase::loadImpressionData(QVariantList impressionlist)
 {
+    //! > La manip qui suit sert à corriger une erreur de programmation des premières versions de Rufus
+    QString corps = impressionlist.at(1).toString();
+    if (Utils::epureFontFamily(corps))
+    {
+        QString requpd = "update " TBL_IMPRESSIONS " set " CP_TEXTE_IMPRESSIONS " = '" + Utils::correctquoteSQL(corps) + "' where " CP_ID_IMPRESSIONS " = " + impressionlist.at(0).toString();
+        StandardSQL(requpd);
+    }
     QJsonObject data{};
     data[CP_ID_IMPRESSIONS]            = impressionlist.at(0).toInt();
-    data[CP_TEXTE_IMPRESSIONS]         = impressionlist.at(1).toString();
+    data[CP_TEXTE_IMPRESSIONS]         = corps;
     data[CP_RESUME_IMPRESSIONS]        = impressionlist.at(2).toString();
     data[CP_CONCLUSION_IMPRESSIONS]    = impressionlist.at(3).toString();
     data[CP_IDUSER_IMPRESSIONS]        = impressionlist.at(4).toInt();
@@ -2045,17 +2088,17 @@ QList<Cotation*> DataBase::loadCotationsByUser(User *usr)
     {
         ++k;
         QJsonObject jcotation{};
-        jcotation["id"]                 = k;
-        jcotation["idcotation"]         = cotlist.at(i).at(0).toInt();
-        jcotation["typeacte"]           = cotlist.at(i).at(1).toString();
-        jcotation["montantconventionnel"] = ((secteur > 1) && optam? cotlist.at(i).at(2).toDouble() : cotlist.at(i).at(3).toDouble());
-        jcotation["montantoptam"]       = cotlist.at(i).at(2).toDouble();
-        jcotation["montantnonoptam"]    = cotlist.at(i).at(3).toDouble();
-        jcotation["montantpratique"]    = (secteur < 2? cotlist.at(i).at(2).toDouble() :cotlist.at(i).at(4).toDouble());
-        jcotation["ccam"]               = (cotlist.at(i).at(5).toInt()==1);
-        jcotation["iduser"]             = usr->id();
-        jcotation["frequence"]          = cotlist.at(i).at(6).toInt();
-        jcotation["descriptif"]         = cotlist.at(i).at(7).toString();
+        jcotation["id"]                     = k;
+        jcotation["idcotation"]             = cotlist.at(i).at(0).toInt();
+        jcotation["typeacte"]               = cotlist.at(i).at(1).toString();
+        jcotation["montantconventionnel"]   = ((secteur > 1) && optam? cotlist.at(i).at(2).toDouble() : cotlist.at(i).at(3).toDouble());
+        jcotation["montantoptam"]           = cotlist.at(i).at(2).toDouble();
+        jcotation["montantnonoptam"]        = cotlist.at(i).at(3).toDouble();
+        jcotation["montantpratique"]        = (secteur < 2? cotlist.at(i).at(2).toDouble() :cotlist.at(i).at(4).toDouble());
+        jcotation["ccam"]                   = (cotlist.at(i).at(5).toInt()==1);
+        jcotation["iduser"]                 = usr->id();
+        jcotation["frequence"]              = cotlist.at(i).at(6).toInt();
+        jcotation["descriptif"]             = cotlist.at(i).at(7).toString();
         Cotation *cotation = new Cotation(jcotation);
          if (cotation != Q_NULLPTR)
             cotations << cotation;
@@ -2144,7 +2187,7 @@ QJsonObject DataBase::loadSiteData(QVariantList sitdata)         //! attribue la
     data[CP_ADRESSE1_SITE]     = sitdata.at(2).toString();
     data[CP_ADRESSE2_SITE]     = sitdata.at(3).toString();
     data[CP_ADRESSE3_SITE]     = sitdata.at(4).toString();
-    data[CP_CODEPOSTAL_SITE]   = sitdata.at(5).toInt();
+    data[CP_CODEPOSTAL_SITE]   = sitdata.at(5).toString();
     data[CP_VILLE_SITE]        = sitdata.at(6).toString();
     data[CP_TELEPHONE_SITE]    = sitdata.at(7).toString();
     data[CP_FAX_SITE]          = sitdata.at(8).toString();
@@ -2205,22 +2248,68 @@ QList<Ville*> DataBase::loadVilles()
 {
     QList<Ville*> villes;
 
-    QString req = "select ville_id, codePostal, ville "
-                  "from " TBL_VILLES;
+    QString req = "select " CP_ID_VILLES "," CP_CP_VILLES ", " CP_NOM_VILLES
+                  " from " TBL_VILLES;
     QList<QVariantList> villist = StandardSelectSQL(req,ok);
     if(!ok || villist.size()==0)
         return villes;
     for (int i=0; i<villist.size(); ++i)
     {
         QJsonObject jEtab{};
-        jEtab["ville_id"] = villist.at(i).at(0).toInt();
-        jEtab["codePostal"] = villist.at(i).at(1).toString();
-        jEtab["ville"] = villist.at(i).at(2).toString();
+        jEtab[CP_ID_VILLES] = villist.at(i).at(0).toInt();
+        jEtab[CP_CP_VILLES] = villist.at(i).at(1).toString();
+        jEtab[CP_NOM_VILLES] = Utils::trimcapitilize(villist.at(i).at(2).toString());
         Ville *ville = new Ville(jEtab);
         if (ville != Q_NULLPTR)
             villes << ville;
     }
     return villes;
+}
+
+QList<Ville*> DataBase::loadAutresVilles()
+{
+    QList<Ville*> villes;
+
+    QString req = "select " CP_ID_AUTRESVILLES "," CP_CP_AUTRESVILLES ", " CP_NOM_AUTRESVILLES
+                  " from " TBL_AUTRESVILLES;
+    QList<QVariantList> villist = StandardSelectSQL(req,ok);
+    if(!ok || villist.size()==0)
+        return villes;
+    for (int i=0; i<villist.size(); ++i)
+    {
+        QJsonObject jEtab{};
+        jEtab[CP_ID_VILLES] = villist.at(i).at(0).toInt();
+        jEtab[CP_CP_VILLES] = villist.at(i).at(1).toString();
+        jEtab[CP_NOM_VILLES] = Utils::trimcapitilize(villist.at(i).at(2).toString());
+        Ville *ville = new Ville(jEtab);
+        if (ville != Q_NULLPTR)
+            villes << ville;
+    }
+    return villes;
+}
+
+bool DataBase::EnregistreAutreVille(QString CP, QString ville, int &id)
+{
+    bool ok;
+    QString req = "select " CP_CP_AUTRESVILLES ", " CP_NOM_AUTRESVILLES
+            " from " TBL_AUTRESVILLES
+            " where LOWER(" CP_CP_AUTRESVILLES ") = LOWER('" + Utils::correctquoteSQL(CP) + "')"
+            " and LOWER(" + CP_NOM_AUTRESVILLES + ") = LOWER('" + Utils::correctquoteSQL(ville) + "')";
+    if (StandardSelectSQL(req,ok).size() > 0)
+    {
+        UpMessageBox::Watch(Q_NULLPTR, tr("Ville déjà enregistrée"),
+                            tr("La localité ") + ville + tr(" est déjà enregistrée dans la base avec le code postal ") + CP);
+        ok = false;
+    }
+    if(!ok)
+        return ok;
+    QHash<QString, QString> listsets;
+    listsets.insert(CP_CP_AUTRESVILLES,             CP);
+    listsets.insert(CP_NOM_AUTRESVILLES,            ville);
+    ok = InsertIntoTable(TBL_AUTRESVILLES, listsets);
+    if (ok)
+        id = selectMaxFromTable(CP_ID_AUTRESVILLES, TBL_AUTRESVILLES,ok);
+    return ok;
 }
 
 
@@ -2305,7 +2394,7 @@ void DataBase::loadSocialDataPatient(QJsonObject &jData, bool &ok)
     QString req = "SELECT PatAdresse1, PatAdresse2, PatAdresse3, PatCodePostal, PatVille,"
                   " PatTelephone, PatPortable, PatMail, PatNNI, PatALD,"
                   " PatCMU, PatProfession FROM " TBL_DONNEESSOCIALESPATIENTS
-                  " WHERE idPat = " + QString::number(jData[CP_IDPAT_PATIENTS].toInt());
+                  " WHERE " CP_IDPAT_DSP " = " + QString::number(jData[CP_IDPAT_PATIENTS].toInt());
     QVariantList patlist = getFirstRecordFromStandardSelectSQL(req, ok);
     if(!ok || patlist.size()==0)
     {
@@ -2534,14 +2623,18 @@ QList<Patient *> DataBase::loadPatientsByDDN(QDate DDN)
 */
 QString DataBase::getMDPAdmin()
 {
-    QVariantList mdpdata = getFirstRecordFromStandardSelectSQL("select mdpadmin from " TBL_PARAMSYSTEME,ok);
+    QVariantList mdpdata = getFirstRecordFromStandardSelectSQL("select " CP_MDPADMIN_PARAMSYSTEME " from " TBL_PARAMSYSTEME,ok);
     if( !ok || mdpdata.size()==0 )
-        StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
+        StandardSQL("update " TBL_PARAMSYSTEME " set " CP_MDPADMIN_PARAMSYSTEME " = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
     else if (mdpdata.at(0) == "")
-        StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
+        StandardSQL("update " TBL_PARAMSYSTEME " set " CP_MDPADMIN_PARAMSYSTEME " = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
     return (mdpdata.at(0).toString() != ""? mdpdata.at(0).toString() : Utils::calcSHA1(MDP_ADMINISTRATEUR));
 }
 
+void DataBase::updateSHA1MdpAdmin(QString mdp)
+{
+    StandardSQL("update " TBL_PARAMSYSTEME " set " CP_MDPADMIN_PARAMSYSTEME " = '" + Utils::calcSHA1(mdp) + "'");
+}
 
 /*
  * Actes

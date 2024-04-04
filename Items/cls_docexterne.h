@@ -30,7 +30,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 class DocExterne : public Item
 {
-
+    Q_OBJECT
 private:
     int m_iduser;                       //!> l'utilisateur qui est le supervisuer du user crétateur au moment de la création du document
     int m_importance;                   //!> l'importance du document - 0 sans importance , 1 = normal, 2 = important
@@ -64,7 +64,8 @@ private:
     QString m_formatdoc;                //!< le format du document quand il s'agit d'un document d'imagerie: jpg, pdf, video...etc...
     QString m_lienversfichier;          //!< le lien vers le fichier d'imagerie
     QByteArray m_blob = QByteArray();   //!< le contenu du fichier image
-    QString m_formatimage;              //!< le format du fichier image
+    QList<QImage> m_imagelist = QList<QImage>();          //!< page list ready to print
+    QString m_formatimage = "";         //!< le format du fichier image
 
     int m_idrefraction;                 //!> l'id de la refraction concernée quand il s'agit d'une prescription de verres correcteurs
 
@@ -88,6 +89,7 @@ public:
     QString format() const;
     int importance() const;
     int compression() const;
+    QList<QImage> pagelist() const;
     QByteArray imageblob() const;
     QString imageformat() const;
     QString imagelien() const;
@@ -97,10 +99,17 @@ public:
     void setdate(QDateTime date);
     void setimportance(int imptce);
     void setAllLoaded(bool allloaded);
+    void setALD(bool ald)               {m_ald = ald;}
     void setimageblob(QByteArray blob);
     void setimageformat(QString format);
-    void setidrefraction(int id)    {m_idrefraction = id;}
+    void setidrefraction(int id)        {m_idrefraction = id;}
+    void settexteentete(QString txt)    {m_textentete = txt;}
+    void settextecorps(QString txt)     {m_textcorps = txt;}
+    void settextepied(QString txt)      {m_textpied = txt;}
 
     void setsoustype(QString soustype)  { m_soustypedoc = soustype; }
+
+    bool isJPG()    {return m_formatimage == JPG;};
+    bool isPDF()    {return m_formatimage == PDF;};
 };
 #endif // CLS_DOCEXTERNE_H

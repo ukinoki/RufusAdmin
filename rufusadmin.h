@@ -49,21 +49,24 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #define RUFUSADMIN_H
 
 #include <QDebug>
+#include <QDomDocument>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
 #include <QGroupBox>
 #include <QHostInfo>
 #include <QMainWindow>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QStorageInfo>
 #include <QSplashScreen>
 #include <QSystemTrayIcon>
 
 #include <QTranslator>
 
-#include <QPdfDocument>
 #include "dlg_gestionbanques.h"
 #include "dlg_gestionusers.h"
 #include "dlg_listelieux.h"
+#include "dlg_listevilles.h"
 #include "dlg_message.h"
 #include "dlg_motifs.h"
 #include "importdocsexternesthread.h"
@@ -74,8 +77,8 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "database.h"
 #include <QTimer>
 #include "flags.h"
-#include "ostask.h"
 #include "timerthread.h"
+#include "upprogressdialog.h"
 #include "cls_appareilimagerie.h"
 
 
@@ -95,7 +98,6 @@ public:
 
 private:
     Ui::RufusAdmin              *ui;
-    OsTask                      m_ostask;
     Flags                       *flags;
     bool                        m_ok;
     int                         m_flagcorrespondants;
@@ -103,14 +105,14 @@ private:
     int                         m_flagmessages;
     int                         m_dureeVeille;
     QIcon                       ic_RufusAdmin;
-    QMenu                       *trayIconMenu = Q_NULLPTR;
+    QMenu                       *trayIconMenu       = Q_NULLPTR;
     QMap<QString,QIcon>         map_icons;
     QString                     m_nouvMDP, m_ancMDP, m_confirmMDP;
     QString                     m_domaine;
     QStringList                 m_listeAppareilsNonConnectes;
     QIcon                       ic_Backup, ic_Copy, ic_Erase, ic_Sunglasses, ic_SortirDossier, ic_OK, ic_Annul,
                                  ic_Euro,  ic_EuroCount,  ic_FermeAppuye,  ic_FermeRelache,  ic_Help,  ic_Null;
-    QSettings                   *m_settings = Q_NULLPTR;
+    QSettings                   *m_settings         = Q_NULLPTR;
     ParametresSysteme           *m_parametres;
     DataBase                    *db;
     QSystemTrayIcon             *ictray_RufusAdminTrayIcon;
@@ -119,10 +121,11 @@ private:
     QTimer                      t_timerfilewatcher;             /*! utilisé à la place du QfileSystemWatcher dont le signal directorychanged bugue trop */
     QFileSystemWatcher          m_filewatcher;                  /*! le QFilesystemwatcher surveille les dossiers où sont enregistrés les nouveaux documents d'imagerie */
     ImportDocsExternesThread    *m_importdocsexternesthread = Q_NULLPTR;
-    UpDialog                    *dlg_askAppareil, *dlg_askMDP;
+    UpDialog                    *dlg_askAppareil    = Q_NULLPTR;
+    UpDialog                    *dlg_askMDP         = Q_NULLPTR;
     WidgetButtonFrame           *wdg_buttonframe;
-    QDate m_currentdate;
-    QTime m_currenttime;
+    QDate                       m_currentdate;
+    QTime                       m_currenttime;
 
     void RecalcCurrentDateTime() {
         QDateTime dt = db->ServerDateTime();
@@ -146,7 +149,6 @@ private:
     void                        ChoixDossierStockageApp();
     void                        ChoixMenuSystemTray(QString txt);
     void                        ConnexionBase();
-    QStringList                 DecomposeScriptSQL(QString nomficscript);
     void                        Edit(QString txt, int delaieffacement=0);
     void                        EnregistreAppareil();
     void                        EnregistreEmplacementServeur(int);
@@ -164,6 +166,7 @@ private:
     void                        MasqueAppli();
     void                        MetAJourLaConnexion();
     void                        ModifDirImagerie();
+    void                        ModifBDDVilles(Villes::TownsFrom from);
     void                        ModifMDP();
     void                        NouvAppareil();
     void                        Remplir_Table();
@@ -177,6 +180,13 @@ private:
     bool                        VerifBase();
     void                        VerifDocsDossiersEchanges();                               /*! utilisé à la place du QFileSystemWatcher dont le signal directorychanged bugue trop
                                                                                              * importe les fichiers d'imagerie quand on utilise le QTimer t_timerfilewatcher */
+    QString                     m_os                        = "";
+    QString                     m_UPDLastVersion            ="";
+    QString                     m_UPDComment                ="";
+    bool                        m_UPDBase                   = false;
+    bool                        m_UPDCcompatibiltyWithPrec  = true;
+    bool                        m_UPDRessources             = false;
+    void                        VerifLastVersion();                                         /*! Vérifie si une nouvelle version de Rufus est disponible */
     void                        VerifPosteImport();
     void                        VerifVersionBase();
 
@@ -266,13 +276,17 @@ public:
 
 private:
     qint64                  m_basesize, m_imagessize, m_videossize, m_facturessize,  m_freespace;
-    UpDialog                *dlg_buprestore;
-    UpLabel                 *wdg_resumelbl, *wdg_volumelibrelbl;
-    QDate                   m_lastbackupdate = QDate::currentDate().addDays(-1);
+    UpDialog                *dlg_buprestore     = Q_NULLPTR;
+    UpLabel                 *wdg_resumelbl      = Q_NULLPTR;
+    UpLabel                 *wdg_volumelibrelbl = Q_NULLPTR;
+    QDate                   m_lastbackupdate    = QDate::currentDate().addDays(-1);
+    QString                 m_executable;
+    QString                 m_dumpexecutable;
+    QString                 m_dirSQLExecutable = "";                                    //! le chemin vers les éxécutables mysql et mysqldump
                             /*! la variable m_lastbackupdate est utilisée parce que les Qtimer ont parfois une imprécision énorme
                              *  et peuvent se lancer à plusieurs reprises dans le même intervalle ou ne pas se lancer aubout du même intervalle.
                              * Cela évite de lancer 2 fois la sauvegarde */
-    void                    AskBupRestore(BkupRestore op, QString pathorigin, QString pathdestination, bool OKini = true, bool OKRessces = true, bool OKimages = true, bool OKvideos = true, bool OKfactures = true);
+    void                    AskBupRestore(BkupRestore op, QString pathorigin, QString pathdestination, bool OKini = true, bool OKimages = true, bool OKvideos = true, bool OKfactures = true);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
     bool                    Backup(QString pathdirdestination, bool OKBase = true, bool OKImages = true, bool OKVideos = true, bool OKFactures = true);
                             /*! utilisée par ImmediateBackup() pour sauvegarder la base et/ou les fichiers d'imagerie suivant le choix fait dans AskBackupRestore()
@@ -283,7 +297,7 @@ private:
                             /*! calcule le volume de la base */
     void                    CalcTimeBupRestore();
                             /*! calcule la durée approximative du backup */
-    void                    DefinitScriptBackup(QString pathdirdestination, bool AvecImages= true, bool AvecVideos = true, bool AvecFactures = true);
+    void                    DefinitScriptBackup(QString pathbackupbase);
                             /*! crée le script RufusScriptBackup.sh qui va éxécuter la sauvegarde */
     int                     ExecuteSQLScript(QStringList ListScripts);
                             /*! Exécute une liste de scripts SQL (restauration de la base MySQL p.e.) */
@@ -311,9 +325,8 @@ private:
                              * sous Linux, lance le timer t_timerbackup
                             */
     void                    RestaureBase();
-    void                    BackupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
-signals:
-    void                    backupDossiers(QString dirdestination, qintptr handledlg, bool factures = true, bool images = true, bool videos = true);
+    void                    setDirSQLExecutable();                                      /*! fixe le chemin vers le dossier contenant les fichier mysql et mysqldump  */
+    QString                 dirSQLExecutable();                                         /*! le chemin vers le dossier contenant les fichier mysql et mysqldump  */
     //--------------------------------------------------------------------------------------------------------
     // fin sauvegardes
     //--------------------------------------------------------------------------------------------------------
@@ -348,7 +361,7 @@ public:
     bool                m_utiliseTCP;
     TcpServer           *TCPServer = Q_NULLPTR;
     quint16             m_portTCPserver;
-    QTimer              *t_timerSalDatCorrespMsg;
+    QTimer              *t_timerSalDatCorrespMsg = Q_NULLPTR;
     QString             m_IPadress, m_macAdress;
     QString             m_socketStatut;
     QDateTime           m_dateDernierMessage;

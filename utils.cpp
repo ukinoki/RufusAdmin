@@ -29,12 +29,13 @@ Utils* Utils::I()
 /*
  * Initialisation des variables static const
 */
-QRegularExpression const Utils::rgx_rx                  = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ -]*");
+QRegularExpression const Utils::rgx_rx                  = QRegularExpression("[\\w' \\-]*", QRegularExpression::UseUnicodePropertiesOption);
 QRegularExpression const Utils::rgx_AlphaNumeric        = QRegularExpression("[A-Za-z0-9]*");
 QRegularExpression const Utils::rgx_AlphaNumeric_3_12   = QRegularExpression("[A-Za-z0-9]{3,12}$");
 QRegularExpression const Utils::rgx_AlphaNumeric_5_15   = QRegularExpression("[A-Za-z0-9]{5,15}$");
 QRegularExpression const Utils::rgx_AlphaNumeric_5_12   = QRegularExpression("[A-Za-z0-9]{5,12}$");
 QRegularExpression const Utils::rgx_MajusculeSeul       = QRegularExpression("[A-Z]*");
+QRegularExpression const Utils::rgx_Question            = QRegularExpression("[\\w'°, \\-]*[?]*", QRegularExpression::UseUnicodePropertiesOption);
 QRegularExpression const Utils::rgx_IPV4                = QRegularExpression("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}");
 QRegularExpression const Utils::rgx_IPV4_mask           = QRegularExpression("(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
                                                                             "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\."
@@ -44,19 +45,16 @@ QRegularExpression const Utils::rgx_IPV4_mask           = QRegularExpression("(2
 QRegularExpression const Utils::rgx_mail                = QRegularExpression("^[A-Za-z0-9_-]+(.[A-Za-z0-9_-]+)+@[A-Za1-z0-9_-]+(.[A-Za1-z0-9_-]+).[A-Za-z0-9_-]{2,6}");
 QRegularExpression const Utils::rgx_NNI                 = QRegularExpression("[12][0-9]{14}");
 
-QRegularExpression const Utils::rgx_adresse             = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -]*");
-QRegularExpression const Utils::rgx_intitulecompta      = QRegularExpression("[/%éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -]*");
-/*! QRegularExpression const Utils::rgx_intitulecompta  = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ0-9°, -/%]*");
- *  ne marche pas sous Qt6 et laisse tout passer - il faut mettre le front slash et le % devant pour que ça marche
- *  bug ou c'est moi qui n'ai rien compris ????? */
-QRegularExpression const Utils::rgx_CP                  = QRegularExpression("[0-9]{5}");
-QRegularExpression const Utils::rgx_ville               = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-ZŒœ -]*");
+QRegularExpression const Utils::rgx_adresse             = QRegularExpression("[\\w'°, \\-]*", QRegularExpression::UseUnicodePropertiesOption);
+QRegularExpression const Utils::rgx_intitulecompta      = QRegularExpression("[\\w'°, \\-/%]*", QRegularExpression::UseUnicodePropertiesOption);
+QRegularExpression const Utils::rgx_CP                  = QRegularExpression(cp());
+QRegularExpression const Utils::rgx_ville               = QRegularExpression("[\\w' \\-]*", QRegularExpression::UseUnicodePropertiesOption);
 QRegularExpression const Utils::rgx_telephone           = QRegularExpression("[0-9 ]*");
 
 QRegularExpression const Utils::rgx_tabac               = QRegularExpression("[0-9]{2}");
 QRegularExpression const Utils::rgx_cotation            = QRegularExpression("[a-zA-Z0-9.+/ ]*");
 
-QRegularExpression const Utils::rgx_recherche           = QRegularExpression("[éêëèÉÈÊËàâÂÀîïÏÎôöÔÖùûÙçÇ'a-zA-Z %-]*");
+QRegularExpression const Utils::rgx_recherche           = QRegularExpression("[\\w' %\\-]*");
 
 
 /*!
@@ -273,14 +271,13 @@ void Utils::convertPlainText(QString &text)
  * \param supprimeLesLignesVidesDuMilieu - comme son nom l'indique
  *  placer les marqueurs Linux ou Mac
  */
-void Utils::nettoieHTML(QString &text, bool supprimeLesLignesVidesDuMilieu)
+void Utils::nettoieHTML(QString &text, int fontsize, bool supprimeLesLignesVidesDuMilieu)
 {
     QRegularExpression reg1;
     reg1.setPattern("<p style=\"-qt-paragraph-type:empty; "
                               "margin-top:[0-9]{1,2}px; margin-bottom:[0-9]{1,2}px; "
                               "margin-left:[0-9]{1,2}px; margin-right:[0-9]{1,2}px; "
                               "-qt-block-indent:0; text-indent:[0-9]{1,2}px;\"><br /></p>");
-    //reg1 = QRegExp("<p style=\"-qt-paragraph-type:empty;([\\.]*)<br /></p>");
     QRegularExpression reg2;
     reg2.setPattern("<p style=\" margin-top:0px; margin-bottom:0px; "
                               "margin-left:[0-9]{1,2}px; margin-right:[0-9]{1,2}px; "
@@ -294,6 +291,12 @@ void Utils::nettoieHTML(QString &text, bool supprimeLesLignesVidesDuMilieu)
     if (remetunelignealafin)
         text.append(HTML_FINPARAGRAPH);
     text.append(HTMLCOMMENT);
+    if (fontsize>0)
+    {
+        QRegularExpression rx;
+        rx.setPattern("font-size( *: *[\\d]{1,2} *)pt");
+        text.replace(rx,"font-size:" + QString::number(fontsize) + "pt");
+    }
 }
 
 /*!
@@ -319,6 +322,94 @@ bool Utils::retirelignevidefinhtml(QString &txthtml)
     }
     return ligneretiree;
 }
+
+bool Utils::epureFontFamily(QString &text)
+{
+    QString txt= text;
+    QRegularExpression rx;
+    rx.setPattern("font-family:'([a-zA-Z0-9 ,-]+)");
+    auto it = rx.globalMatch(text);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        QString txtaremplacer = match.captured(0);
+        if (txtaremplacer != "")
+        {
+            QString replacmt = txtaremplacer.split(",").at(0);
+            text.replace(txtaremplacer, replacmt);
+        }
+    }
+    return (txt != text);
+}
+
+/*!
+ * \brief Utils::corrigeErreurHtmlEntete
+ * \param text
+ * \param ALD
+ * \return
+ *  L'entête de chaque texte émis est constitué de 2 blocs contigus:
+      * un bloc gauche dans lequel sont rassemblés les concernant l'émetteur du document
+         * docteur Bidule
+         * adresse
+         * .etc...
+      * un bloc droit rassemblant
+         * la date
+         * le nom du patient dans les ordonnances
+         * ...etc...
+ * il y a donc 2 tables dont la largeur est déterminée par les macros
+      * pour les ordonnances ALD
+         * HTML_LARGEUR_ENTETE_GAUCHE_ALD
+         * HTML_LARGEUR_ENTETE_DROITE_ALD
+      * pour les autres documents
+         * HTML_LARGEUR_ENTETE_GAUCHE
+         * HTML_LARGEUR_ENTETE_GAUCHE
+ * Sur d'anciennes versions de Rufus, il y avait des erreurs dans ces largeurs et elles ne s'affichent pas convenablement.
+ * Cette fonction sert à corriger ces erreurs
+ */
+bool Utils::corrigeErreurHtmlEntete(QString &text, bool ALD)
+{
+    QString txt = text;
+    QString largeurALDG = "float: left;\" cellpadding=\"5\"><tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE_ALD "\">";
+    QString largeurALDD = "float: right;\"><tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE "\">";
+    QString largeurG = "float: left;\"><tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE "\">";
+    QString largeurD = "float: right;\"><tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE "\">";
+    QRegularExpression rx;
+    QString patternALDG = "float: left;\" cellpadding=\"5\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    QString patternALDD = "float: right;\" cellpadding=\"6\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    QString patternG    = "float: left;\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    QString patternD    = "float: right;\">([\\n ]*)<tr><td width=\"([\\d]{3})\">";
+    rx.setPattern(ALD? patternALDG : patternG);
+    auto it = rx.globalMatch(text);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        QString txtaremplacer = match.captured(0);
+        if (txtaremplacer != "")
+        {
+            patternALDG = "float: left;\" cellpadding=\"5\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE_ALD "\">";
+            patternG    = "float: left;\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_GAUCHE "\">";
+            rx.setPattern(ALD? patternALDG : patternG);
+            auto it2 = rx.globalMatch(txtaremplacer);
+            if (!it2.hasNext())
+                 text.replace(txtaremplacer, ALD? largeurALDG : largeurG);
+        }
+    }
+    rx.setPattern(ALD? patternALDD : patternD);
+    it = rx.globalMatch(text);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        QString txtaremplacer = match.captured(0);
+        if (txtaremplacer != "")
+        {
+            patternALDD = "float: right;\" cellpadding=\"6\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE_ALD "\">";
+            patternD    = "float: right;\">([\\n ]*)<tr><td width=\"" HTML_LARGEUR_ENTETE_DROITE "\">";
+            rx.setPattern(ALD? patternALDD : patternD);
+            auto it2 = rx.globalMatch(txtaremplacer);
+            if (!it2.hasNext())
+                 text.replace(txtaremplacer, ALD? largeurALDD : largeurD);
+        }
+    }
+    return (txt != text);
+}
+
 
 /*!
  * \brief Utils::CalcSize(QString txt)
@@ -383,7 +474,7 @@ bool Utils::CompressFileJPG(QString pathfile, QString Dirprov, QDate datetransfe
     QString nomfichresize = DirStockProvPath + "/" + filename;
     QFile fileresize(nomfichresize);
     if (fileresize.exists())
-        fileresize.remove();
+        removeWithoutPermissions(fileresize);
     QFile echectrsfer(CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfert.toString("yyyy-MM-dd") + ".txt");
     QPixmap pixmap;
     double w = img.width();
@@ -409,11 +500,11 @@ bool Utils::CompressFileJPG(QString pathfile, QString Dirprov, QDate datetransfe
             QTextStream out(&echectrsfer);
             out << CC.fileName() << "\n" ;
             echectrsfer.close();
-            CC.copy(CheminEchecTransfrDir + "/" + filename);
+            copyWithPermissions(CC, CheminEchecTransfrDir + "/" + filename);
         }
         return false;
     }
-    CC.remove();
+    removeWithoutPermissions(CC);
     /* on comprime*/
     int tauxcompress = 90;
     while (sz > TAILLEMAXIIMAGES && tauxcompress > 1)
@@ -422,9 +513,9 @@ bool Utils::CompressFileJPG(QString pathfile, QString Dirprov, QDate datetransfe
         sz = fileresize.size();
         tauxcompress -= 10;
     }
-    fileresize.copy(pathfile);
+    copyWithPermissions(fileresize, pathfile);
     fileresize.close();
-    fileresize.remove();
+    removeWithoutPermissions(fileresize);
     return true;
 }
 
@@ -667,66 +758,67 @@ QString Utils::calcSHA1(QString mdp)
   * \return
   */
  bool Utils::VerifMDP(QString MDP, QString Msg, QString &mdpval, bool mdpverified, QWidget *parent)
- {
-     if (mdpverified)
-         return true;
-     if (parent != Q_NULLPTR)
-     {
-         UpDialog *dlg_askMDP    = new UpDialog(parent);
-         dlg_askMDP      ->setWindowModality(Qt::WindowModal);
+{
+    if (mdpverified)
+        return true;
+    if (parent != Q_NULLPTR)
+    {
+        UpDialog *dlg_askMDP    = new UpDialog(parent);
+        dlg_askMDP      ->setWindowModality(Qt::WindowModal);
 
-         UpLineEdit *ConfirmMDP = new UpLineEdit(dlg_askMDP);
-         ConfirmMDP      ->setEchoMode(QLineEdit::Password);
-         ConfirmMDP      ->setAlignment(Qt::AlignCenter);
-         ConfirmMDP      ->setMaxLength(25);
-         dlg_askMDP      ->dlglayout()->insertWidget(0,ConfirmMDP);
+        UpLineEdit *ConfirmMDP = new UpLineEdit(dlg_askMDP);
+        ConfirmMDP      ->setEchoMode(QLineEdit::Password);
+        ConfirmMDP      ->setAlignment(Qt::AlignCenter);
+        ConfirmMDP      ->setMaxLength(25);
+        dlg_askMDP      ->dlglayout()->insertWidget(0,ConfirmMDP);
 
-         UpLabel *labelConfirmMDP = new UpLabel();
-         labelConfirmMDP ->setText(Msg);
-         labelConfirmMDP ->setAlignment(Qt::AlignCenter);
-         dlg_askMDP      ->dlglayout()->insertWidget(0,labelConfirmMDP);
+        UpLabel *labelConfirmMDP = new UpLabel();
+        labelConfirmMDP ->setText(Msg);
+        labelConfirmMDP ->setAlignment(Qt::AlignCenter);
+        dlg_askMDP      ->dlglayout()->insertWidget(0,labelConfirmMDP);
 
-         dlg_askMDP      ->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
-         connect(dlg_askMDP->OKButton,    &QPushButton::clicked, dlg_askMDP, [=] {
-             if (calcSHA1(ConfirmMDP->text()) == MDP)
-                 dlg_askMDP->accept();
-             else if (ConfirmMDP->text() == MDP)
-                 dlg_askMDP->accept();
-             else
-                 UpMessageBox::Watch(dlg_askMDP, QObject::tr("Mot de passe invalide!"));
-         });
-         dlg_askMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
-         dlg_askMDP->dlglayout()->setSpacing(8);
-         mdpval = ConfirmMDP->text();
-         mdpverified = (dlg_askMDP->exec() == QDialog::Accepted);
-          return mdpverified;
-     }
-     else
-     {
-         QInputDialog quest(parent);
-         quest.setCancelButtonText("Annuler");
-         quest.setLabelText(Msg);
-         quest.setInputMode(QInputDialog::TextInput);
-         quest.setTextEchoMode(QLineEdit::Password);
-         QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
-         for (int i=0;i<list.size();i++)
-             list.at(0)->setAlignment(Qt::AlignCenter);
-         QList<QLabel*> listlab = quest.findChildren<QLabel*>();
-         for (int i=0;i<listlab.size();i++)
-             listlab.at(0)->setAlignment(Qt::AlignCenter);
-         quest.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
-         if (quest.exec() == QDialog::Accepted)
-         {
-             mdpval = quest.textValue();
-             if (calcSHA1(quest.textValue()) == MDP)
-                 return true;
-             else if (quest.textValue() == MDP)
-                 return true;
-             else
-                 UpMessageBox::Watch(Q_NULLPTR, QObject::tr("Mot de passe invalide!"));
-         }
-         return false;
-     }
+        dlg_askMDP      ->AjouteLayButtons(UpDialog::ButtonCancel | UpDialog::ButtonOK);
+        connect(dlg_askMDP->OKButton,    &QPushButton::clicked, dlg_askMDP, [=] {
+            if (calcSHA1(ConfirmMDP->text()) == MDP)
+                dlg_askMDP->accept();
+            else if (ConfirmMDP->text() == MDP)
+                dlg_askMDP->accept();
+            else
+                UpMessageBox::Watch(dlg_askMDP, QObject::tr("Mot de passe invalide!"));
+        });
+        connect(ConfirmMDP, &UpLineEdit::returnPressed, dlg_askMDP->OKButton, &QPushButton::click);
+        dlg_askMDP->dlglayout()->setSizeConstraint(QLayout::SetFixedSize);
+        dlg_askMDP->dlglayout()->setSpacing(8);
+        mdpval = ConfirmMDP->text();
+        mdpverified = (dlg_askMDP->exec() == QDialog::Accepted);
+        return mdpverified;
+    }
+    else
+    {
+        QInputDialog quest(parent);
+        quest.setCancelButtonText("Annuler");
+        quest.setLabelText(Msg);
+        quest.setInputMode(QInputDialog::TextInput);
+        quest.setTextEchoMode(QLineEdit::Password);
+        QList<QLineEdit*> list = quest.findChildren<QLineEdit*>();
+        for (int i=0;i<list.size();i++)
+            list.at(0)->setAlignment(Qt::AlignCenter);
+        QList<QLabel*> listlab = quest.findChildren<QLabel*>();
+        for (int i=0;i<listlab.size();i++)
+            listlab.at(0)->setAlignment(Qt::AlignCenter);
+        quest.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+        if (quest.exec() == QDialog::Accepted)
+        {
+            mdpval = quest.textValue();
+            if (calcSHA1(quest.textValue()) == MDP)
+                return true;
+            else if (quest.textValue() == MDP)
+                return true;
+            else
+                UpMessageBox::Watch(Q_NULLPTR, QObject::tr("Mot de passe invalide!"));
+        }
+        return false;
+    }
 }
 
 /*---------------------------------------------------------------------------------------------------------------------
@@ -762,6 +854,102 @@ void Utils::cleanfolder(const QString DirPath)
             cleanfolder(fileInfo.absoluteFilePath());
     }
 }
+
+void Utils::countFilesInDirRecursively(const QString dirpath, int &tot)
+{
+    QDir dir(dirpath);
+    if (!dir.exists())
+    return;
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList list = dir.entryInfoList();
+    for(int i = 0; i < list.size(); ++i)
+    {
+        QFileInfo fileInfo = list.at(i);
+        if (fileInfo.isDir())
+            countFilesInDirRecursively(fileInfo.absoluteFilePath(), tot);
+        else
+            tot++;
+    }
+}
+
+void Utils::copyfolderrecursively(const QString origindirpath, const QString destdirpath, int &n, QString firstline, QProgressDialog *progress, QFileDevice::Permissions permissions)
+{
+    cleanfolder(origindirpath);
+    cleanfolder(destdirpath);
+    QDir dir(origindirpath);
+    if (!dir.exists())
+        return;
+    QDir dirdest(destdirpath);
+    if (!dirdest.exists())
+        mkpath(destdirpath);
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList list = dir.entryInfoList();
+    for(int i = 0; i < list.size(); ++i)
+    {
+        QFileInfo fileInfo = list.at(i);
+        if (fileInfo.isDir())
+            copyfolderrecursively(fileInfo.absoluteFilePath(), destdirpath + "/" + fileInfo.fileName(), n, firstline, progress);
+        else
+        {
+            QFile file(fileInfo.absoluteFilePath());
+            if (progress)
+            {
+                n ++;
+                QString text = firstline;
+                if (text != QString())
+                    text += "\n";
+                text += QString::number(n) + "/" + QString::number(progress->maximum()) + " " + QFileInfo(file).fileName();
+                progress->setLabelText(text);
+                progress->setValue(n);
+            }
+            if (file.open(QIODevice::ReadOnly))
+            {
+                QString filedestpath = destdirpath + "/" + QFileInfo(file).fileName();
+                file.copy(filedestpath);
+                QFile(filedestpath).setPermissions(permissions);
+            }
+        }
+    }
+
+}
+
+void Utils::setDirPermissions(QString dirpath, QFileDevice::Permissions permissions)
+{
+    QDir dir(dirpath);
+    if (!dir.exists())
+        return;
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList list = dir.entryInfoList();
+    for(int i = 0; i < list.size(); ++i)
+    {
+        QFileInfo fileInfo = list.at(i);
+        if (fileInfo.isDir())
+            setDirPermissions(fileInfo.absoluteFilePath(), permissions);
+        else
+        {
+            QFile file(fileInfo.absoluteFilePath());
+            file.setPermissions(permissions);
+        }
+    }
+
+}
+
+void Utils::copyWithPermissions(QFile &file, QString path, QFileDevice::Permissions permissions)
+{
+    file.copy(path);
+    QFile CO(path);
+    CO.setPermissions(permissions);
+}
+
+bool Utils::removeWithoutPermissions(QFile &file)
+{
+    file.setPermissions(QFileDevice::ReadOther | QFileDevice::WriteOther
+                      | QFileDevice::ReadGroup  | QFileDevice::WriteGroup
+                      | QFileDevice::ReadOwner  | QFileDevice::WriteOwner
+                      | QFileDevice::ReadUser   | QFileDevice::WriteUser);
+    return file.remove();
+}
+
 
 double Utils::mmToInches(double mm )  { return mm * 0.039370147; }
 
@@ -800,102 +988,6 @@ QString Utils::PrefixePlus(double Dioptr)                          // convertit 
 //    if  (Dioptr == 0.0)
 //        return "0" + QString(QLocale().decimalPoint()) + "00";
     return (Dioptr > 0.0 ? "+" : "") + QLocale().toString(Dioptr,'f',2);
-}
-
-/*! ++++ PLUS UTILISE - trop sensible aux choix de jeu de caractère et marche mal avec les blobs
- * \brief Utils::DecomposeScriptSQL(QString nomficscript)
- * Cette fonction va décomposer un script SQL en une suite d'instructions SQL utilisables par Qt
- * \param l'emplacement du fichier à traiter
- * \return une QStringList avec la liste des instructions
- * +++ ne marche pas toujours mais suffisant pour un script de sauvegarde de BDD généré par mysqldump
- *  QStringList listinstruct = DecomposeScriptSQL(QDir::homePath() + "/Documents/Rufus/Ressources/dump.sql");
-    bool e = true;
-        foreach(const QString &s, listinstruct)
-        if (!db->StandardSQL(s))
-        {
-            e = false;
-            break;
-        }
-        a = (e? 0:99);
-        if (a==0)
-        {
-            ...
-        }
- */
-QStringList Utils::DecomposeScriptSQL(QString nomficscript)
-{
-    QStringList listinstruct;
-    QFile file(nomficscript);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        listinstruct << "";
-        return QStringList();
-    }
-    QString queryStr(file.readAll());
-    file.close();
-    QRegularExpression re;
-    // On retire tous les commentaires, les tabulations, les espaces ou les retours à la ligne multiples
-    //        queryStr = queryStr.replace(QRegularExpression("(\\/\\*(.|\\n)*?\\*\\/|^--.*\\n|\\t|\\n)", QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption), "");
-    re.setPattern("(\\/\\*(.|\\n)*?\\*\\/)");
-    queryStr = queryStr.replace(re, "");
-    re.setPattern("(^;\\n)");
-    queryStr = queryStr.replace(re, "");
-    re.setPattern("(--.*\\n)");
-    queryStr = queryStr.replace(re, "\n");
-    re.setPattern("( +)");
-    queryStr = queryStr.replace(re, " ");
-    re.setPattern("((\\t)+)");
-    queryStr = queryStr.replace(re, " ");
-    re.setPattern("(^ *)");
-    queryStr = queryStr.replace(re, "");
-    re.setPattern("((\\n)+)");
-    queryStr = queryStr.replace(re, "\n");
-    //Retire les espaces en début et fin de string
-    queryStr = queryStr.trimmed();
-
-    QString matched, delimiter, Atraiter;
-    re.setPattern("^(\\s|\\n)*DELIMITER\\s*(.|\\n)*END\\s*.\\n"); //isole les créations de procédure SQL dans le script
-
-    while (queryStr.size()>0 && queryStr.contains(";"))
-    {
-        //Edit(queryStr);
-        QRegularExpressionMatch match = re.match(queryStr);
-        if (match.hasMatch())  // --> c'est une procédure à créer
-        {
-            matched     = match.capturedTexts().at(0);
-            Atraiter    = matched.trimmed();
-            //Edit(Atraiter);
-            delimiter   = Atraiter.data()[Atraiter.size()-1];
-            //Edit(delimiter);
-            re.setPatternOptions(QRegularExpression::CaseInsensitiveOption|QRegularExpression::MultilineOption);
-            re.setPattern("DELIMITER\\s*");
-            Atraiter.replace(re,"");
-            Atraiter.replace(delimiter,"");
-            re.setPattern("^ *)");
-            Atraiter.replace(re,"");
-            re.setPattern("(^(\\n)+)");
-            Atraiter.replace(re,"");
-            re.setPattern("((\\n)+)");
-            Atraiter.replace(re,"\n");
-
-            //Edit(Atraiter);
-            queryStr.replace(0,matched.size(),"");
-        }
-        else                    // -- c'est une requête SQL
-        {
-            matched = queryStr.split(";\n", Qt::SkipEmptyParts).at(0);
-            Atraiter = matched.trimmed()+ ";";
-            queryStr.replace(0,matched.size()+2,"");
-            re.setPattern("((\\n)+)");
-            queryStr = queryStr.replace(re, "\n");
-        }
-        re.setPattern("(^(\\n)*)");
-        queryStr = queryStr.replace(re, "");
-        listinstruct << Atraiter;
-    }
-    return listinstruct;
-
-    /* POUR CREER DES PROCEDURES AVEC Qt - cf fichier créer des procédures mysql avec QSt dans /assets/diagrams */
 }
 
 QString Utils::ConvertitModePaiement(QString mode)
@@ -957,22 +1049,18 @@ void Utils::CalcDateTimeValueSQL(QVariant &newvalue)
  *  \return un object contenant :
  * toString : une chaine de caractères ( ex: 2 ans 3 mois )
  * annee : l'age brut de la personne
- * mois :
+ * mois : le nombre de mois dans l'année
  * icone : l'icone à utiliser [man women, girl, boy, kid, baby]
- * formule : une valeur parmi [l'enfant, la jeune, le jeune, madame, monsieur]
+ * formule_politesse : une valeur parmi [l'enfant, la jeune, le jeune, madame, monsieur]
  *
  */
-QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance)
+QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance, QDate datedujour, QString Sexe)
 {
-    return Utils::CalculAge(datedenaissance, "", QDate::currentDate());
-}
-QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance, QDate datedujour)
-{
-    return Utils::CalculAge(datedenaissance, "", datedujour);
-}
-QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance, QString Sexe, QDate datedujour)
-{
-    QMap<QString,QVariant>  Age;
+    QMap<QString,QVariant>  Age = {{"annee", ""}, {"mois", ""}, {"toString", ""}, {"icone",""}, {"formule_politesse",""}};
+
+    if (!datedenaissance.isValid())
+        return Age;
+
     int         AnneeNaiss, MoisNaiss, JourNaiss;
     int         AnneeCurrent, MoisCurrent, JourCurrent;
     int         AgeAnnee, AgeMois;
@@ -1034,7 +1122,7 @@ QMap<QString,QVariant> Utils::CalculAge(QDate datedenaissance, QString Sexe, QDa
         if (Sexe == "F")                formule = "madame";
         if (Sexe == "M")                formule = "monsieur";
     }
-    Age["formule"] = formule;
+    Age["formule_politesse"] = formule;
 
     return Age;
 }
@@ -1284,8 +1372,8 @@ QMap<QString, QString> Utils::ReconstruitMapPortsCOM()
         QString nomgeneriqueduport = availableports.at(i).portName();
         if (nomgeneriqueduport.contains("usbserial"))
         {
-            QString lastchar = nomgeneriqueduport.at(nomgeneriqueduport.size() - 1);
-            QString firstchar = nomgeneriqueduport.split("-").at(1).right(1);
+            QString lastchar = nomgeneriqueduport.right(1);
+            QString firstchar = nomgeneriqueduport.split("-").at(1).left(1);
             /*!
           * nom des ports sous BigSur  = "usbserial-F******" + no 0,1,2 ou 3
           * on peut aussi avoir un truc du genre "usbserial-A906IXA8" avec certaines clés
@@ -1345,7 +1433,12 @@ void Utils::writeDataToFileDateTime (QByteArray data, QString name, QString path
     }
 
     QDateTime now = QDateTime::currentDateTime();
-    QFile file(path+"/"+now.toString("yyyyMMdd_HHmmss")+name);
+    writeBinaryFile(data, path+"/"+now.toString("yyyyMMdd_HHmmss")+name);
+}
+
+void Utils::writeBinaryFile (QByteArray data, QString fileName)
+{
+    QFile file(fileName);
     if (file.open(QFile::WriteOnly)) {
         file.write(data);
         file.close();

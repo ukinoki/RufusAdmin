@@ -112,7 +112,7 @@ public:
     void                    InfosConnexionSQL();                /*! les infos de connexions SQL : host, database, login, mdp */
     int                     idUserConnected() const             { return m_iduserConnected; }
 
-
+    QString                 version();                          /*! renvoie la version du serveur (MySQL, MariaDB...etc...  */
     QString                 connectToDataBase(QString basename, QString login = LOGIN_SQL, QString password = MDP_SQL);   //!> idem
 
     /*! les fonctions qui suivent permettent d'éciter les erreurs de date/heure liées au poste utilisé
@@ -191,6 +191,9 @@ public:
     void setdaysbkup(Utils::Days days);
     void setheurebkup(QTime time = QTime());
     void setdirbkup(QString adress = "");
+    void setvillesfrance(bool one = true);
+    void setcotationsfrance(bool one = true);
+    void setcomptafrance(bool one= true);
 
     /*
      * Donnees ophta patient
@@ -204,7 +207,6 @@ public:
     QueryResult             verifExistUser(QString login, QString password);        /*! verifie que le login-mdp existe dans la base */
     QueryResult             calcidUserConnected(QString login, QString password);   /*! retrouve l'id correspondant au mdp_login, modifie au besoin le mdp en sha1(mdp) */
     QList<User*>            loadUsers();                                            //! charge tous les utilisateurs Rufus référencés dans la table Utilisateurs avec des renseignements complets
-    QList<User*>            loadUsersShortListe();                                  //! charge tous les utilisateurs Rufus référencés dans la table Utilisateurs avec des renseignements succincts
     QJsonObject             loadUserData(int idUser);                               //! complète tous les renseignements concernant l'utilisateur défini par l'id sauf la liste des comptes
     QJsonObject             loadAdminData();                                        //! complète tous les renseignements concernant l'utilisateur admin
     void                    NettoieTableUsers();                                    //! Elimine les enregistrements corrompus de la table utilisateurs
@@ -310,6 +312,11 @@ public:
      * Villes
     */
     QList<Ville *>          loadVilles();                                //! charge toutes les villes et leur code postal à partir de la table villes
+    QList<Ville *>          loadAutresVilles();                          /*! charge toutes les villes et leur code postal à partir de la table AutresVlles
+                                                                           * utilisé pour les cas où la Table Villes n'est pas utiliséee
+                                                                           * et est remplacée par une liste de villes complétée au fur et à mesure des entrées */
+    bool                    EnregistreAutreVille(QString CP, QString ville, int &id);
+
 
 /*
  * PatientsEnCours r
@@ -346,8 +353,8 @@ public:
     /*
      * Mots de passe
     */
-    //Pas normal, les mots de passes doivent etre chiffrés
     QString                 getMDPAdmin();                                      //! retrouve le mdp de l'administratuer
+    void                    updateSHA1MdpAdmin(QString mdp);                    //! convertit le mdp admin en SHA1
 
     /*
      * Actes

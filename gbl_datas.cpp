@@ -34,6 +34,7 @@ Datas::Datas()
     patientsencours = new PatientsEnCours();
     postesconnectes = new PostesConnectes();
     sites           = new Sites();
+    villes          = new Villes();
 }
 
 
