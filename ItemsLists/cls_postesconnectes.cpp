@@ -82,14 +82,12 @@ PosteConnecte* PostesConnectes::admin(Item::UPDATE upd)
     initListe();
     m_admin = Q_NULLPTR;
     if (DataBase::I()->ModeAccesDataBase() != Utils::Distant)
-    {
         foreach (PosteConnecte *post, *map_postesconnectes)
             if(post->isadmin() && post->dateheurederniereconnexion().secsTo(DataBase::I()->ServerDateTime()) < 120)
             {
                 m_admin = post;
                 break;
             }
-    }
     adminset = true;
     return m_admin;
 }
@@ -98,7 +96,6 @@ PosteConnecte* PostesConnectes::currentpost()
 {
     return getByStringId(Utils::MACAdress() + " - " + QString::number(DataBase::I()->idUserConnected()));
 }
-
 
 void PostesConnectes::MAJlistePostesConnectes()
 {
@@ -154,7 +151,7 @@ PosteConnecte* PostesConnectes::CreationPosteConnecte(User* usr, int idsite)
                                " VALUES (NOW()," +
                                QString::number(usr->id()) + "," +
                                QString::number(usr->idsuperviseur()) + "," +
-                               QString::number(usr->idcomptableactes()) + "," +
+                                  QString::number(usr->idcomptableactes()) + "," +
                                QString::number(usr->idparent()) +",'" +
                                QHostInfo::localHostName().left(60) + "', '" +
                                macadress + "', '" +

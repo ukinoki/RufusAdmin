@@ -85,13 +85,12 @@ Patient* Patients::getById(int id, Item::LOADDETAILS loadDetails)
     }
     else
     {
-        pat = itpat.value();
+        pat = itpat.value();        
         if (pat == Q_NULLPTR)
         {
             pat = new Patient;
             map_patients->insert(id, pat);
-        }
-        if (loadDetails == Item::LoadDetails)
+        }       if (loadDetails == Item::LoadDetails)
         {
             QJsonObject jsonPatient = DataBase::I()->loadPatientAllData(id);
             if( jsonPatient.isEmpty() )
@@ -330,7 +329,7 @@ bool Patients::veriftelephone(Patient *pat, QWidget *parent)
 {
     bool retour = false;
     UpDialog            *dlg_telephone = new UpDialog(parent);
-    dlg_telephone->setAttribute(Qt::WA_DeleteOnClose);
+
     dlg_telephone->setWindowModality(Qt::WindowModal);
     dlg_telephone->setWindowTitle(tr("No de téléphone"));
 
@@ -343,7 +342,7 @@ bool Patients::veriftelephone(Patient *pat, QWidget *parent)
     lbltel          ->setText(tr("Telephone"));
     QLineEdit *linetel = new QLineEdit();
     linetel         ->setFixedSize(QSize(120,24));
-    linetel         ->setValidator(new QRegularExpressionValidator(Utils::rgx_telephone));
+    linetel         ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
     telLay          ->addWidget(lbltel);
     telLay          ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding,QSizePolicy::Expanding));
     telLay          ->addWidget(linetel);
@@ -355,7 +354,7 @@ bool Patients::veriftelephone(Patient *pat, QWidget *parent)
     lblport         ->setText(tr("Portable"));
     QLineEdit *lineport = new QLineEdit();
     lineport        ->setFixedSize(QSize(120,24));
-    lineport        ->setValidator(new QRegularExpressionValidator(Utils::rgx_telephone));
+    lineport        ->setValidator(new QRegExpValidator(Utils::rgx_telephone));
     portLay         ->addWidget(lblport);
     portLay         ->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding,QSizePolicy::Expanding));
     portLay         ->addWidget(lineport);
@@ -382,5 +381,6 @@ bool Patients::veriftelephone(Patient *pat, QWidget *parent)
     });
     lineport->setFocus();
     dlg_telephone->exec();
+    delete dlg_telephone;
     return retour;
 };

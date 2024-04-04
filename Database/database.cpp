@@ -103,7 +103,7 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
             dirkey = m_settings.value(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL).toString();
         else
             m_settings.setValue(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL,dirkey);
-        QDir dirtorestore(QDir::toNativeSeparators(dirkey));
+        QDir dirtorestore(dirkey);        
         if (!dirtorestore.exists())
             return ("");
         QStringList listfichiers = dirtorestore.entryList(QStringList() << "*.pem");
@@ -228,6 +228,7 @@ int DataBase::selectMaxFromTable(QString nomchamp, QString nomtable, bool &ok, Q
 bool DataBase::SupprRecordFromTable(int id, QString nomChamp, QString nomtable, QString errormsg)
 {
     QString req = "delete from " + nomtable + " where " + nomChamp + " = " + QString::number(id);
+    //qDebug() << req;
     return StandardSQL(req, errormsg);
 }
 
@@ -861,10 +862,10 @@ QJsonObject DataBase::loadUserData(int idUser)
     userData[CP_SECTEUR_USR]                        = usrdata.at(20).toInt();
     userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(21).toInt();
     userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(22).toInt();
-    userData[CP_COTATION_USR]                       = (usrdata.at(23).toInt() == 1);
+    userData[CP_COTATION_USR]                           = (usrdata.at(23).toInt() == 1);
     userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(24).toInt();
     userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(25).toDate(), usrdata.at(25).toTime()).toMSecsSinceEpoch();
-    userData[CP_ISMEDECIN_USR]                      = (usrdata.at(26).toInt() ==1);
+    userData[CP_ISMEDECIN_USR]                      = usrdata.at(26).toInt();
     userData[CP_ISOPTAM_USR]                        = (usrdata.at(27).toInt() == 1);
     userData[CP_DATECREATIONMDP_USR]                = usrdata.at(29).toDate().toString("yyyy-MM-dd");
     userData[CP_AFFICHEDOCSPUBLICS_USR]             = (usrdata.at(30).toInt() == 1);
@@ -885,8 +886,6 @@ QJsonObject DataBase::loadAdminData()
 void DataBase::NettoieTableUsers()
 {
     QString req = "delete from " TBL_UTILISATEURS " where " CP_LOGIN_USR " is null or " CP_NOM_USR " is null";
-    StandardSQL(req);
-    req = "update " TBL_UTILISATEURS " set " CP_RESPONSABLEACTES_USR " = 1 where " CP_ISMEDECIN_USR " = 1";
     StandardSQL(req);
 }
 
@@ -943,10 +942,10 @@ QList<User*> DataBase::loadUsers()
         userData[CP_SECTEUR_USR]                        = usrdata.at(20).toInt();
         userData[CP_SOIGNANTSTATUS_USR]                 = usrdata.at(21).toInt();
         userData[CP_RESPONSABLEACTES_USR]               = usrdata.at(22).toInt();
-        userData[CP_COTATION_USR]                       = (usrdata.at(23).toInt() == 1);
+        userData[CP_COTATION_USR]                           = (usrdata.at(23).toInt() == 1);
         userData[CP_IDEMPLOYEUR_USR]                    = usrdata.at(24).toInt();
         userData[CP_DATEDERNIERECONNEXION_USR]          = QDateTime(usrdata.at(25).toDate(), usrdata.at(25).toTime()).toMSecsSinceEpoch();
-        userData[CP_ISMEDECIN_USR]                      = (usrdata.at(26).toInt() == 1);
+        userData[CP_ISMEDECIN_USR]                      = usrdata.at(26).toInt();
         userData[CP_ISOPTAM_USR]                        = (usrdata.at(27).toInt() == 1);
         userData[CP_DATECREATIONMDP_USR]                = usrdata.at(29).toDate().toString("yyyy-MM-dd");
         userData[CP_AFFICHEDOCSPUBLICS_USR]             = (usrdata.at(30).toInt() == 1);
@@ -2623,18 +2622,14 @@ QList<Patient *> DataBase::loadPatientsByDDN(QDate DDN)
 */
 QString DataBase::getMDPAdmin()
 {
-    QVariantList mdpdata = getFirstRecordFromStandardSelectSQL("select " CP_MDPADMIN_PARAMSYSTEME " from " TBL_PARAMSYSTEME,ok);
+    QVariantList mdpdata = getFirstRecordFromStandardSelectSQL("select mdpadmin from " TBL_PARAMSYSTEME,ok);
     if( !ok || mdpdata.size()==0 )
-        StandardSQL("update " TBL_PARAMSYSTEME " set " CP_MDPADMIN_PARAMSYSTEME " = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
+        StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
     else if (mdpdata.at(0) == "")
-        StandardSQL("update " TBL_PARAMSYSTEME " set " CP_MDPADMIN_PARAMSYSTEME " = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
+        StandardSQL("update " TBL_PARAMSYSTEME " set mdpadmin = '" + Utils::calcSHA1(MDP_ADMINISTRATEUR) + "'");
     return (mdpdata.at(0).toString() != ""? mdpdata.at(0).toString() : Utils::calcSHA1(MDP_ADMINISTRATEUR));
 }
 
-void DataBase::updateSHA1MdpAdmin(QString mdp)
-{
-    StandardSQL("update " TBL_PARAMSYSTEME " set " CP_MDPADMIN_PARAMSYSTEME " = '" + Utils::calcSHA1(mdp) + "'");
-}
 
 /*
  * Actes

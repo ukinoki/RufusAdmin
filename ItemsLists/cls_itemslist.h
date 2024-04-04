@@ -27,8 +27,7 @@ public:
 template <typename K, typename T>
 static void clearAll(QMap<K, T*> *m_map)
 {
-    if (m_map->size() > 0)
-        qDeleteAll(*m_map);
+    qDeleteAll(*m_map);
     m_map->clear();
 }
 
@@ -70,7 +69,7 @@ void epurelist(QMap<int, T*> *m_oldmap, const QList<T*> *m_newlist)
     foreach (T *item, *m_newlist)
         m_newmap.insert(item->id(), item);
     for (auto it = m_oldmap->begin(); it != m_oldmap->end();)
-        if (m_newmap.find(it.key()) == m_newmap.constEnd())
+        if (m_newmap.find(it.key()) == m_newmap.end())
         {
             T* item = const_cast<T*>(it.value());               //  T* item = m_oldmap->take(it.key()); ne marche pas
             if (item != Q_NULLPTR)
@@ -95,9 +94,10 @@ void epurelist(QMap<QString, T*> *m_oldmap, const QList<T*> *m_newlist)
     foreach (T* item, *m_newlist)
         m_newmap.insert(item->stringid(), item);
     for (auto it = m_oldmap->begin(); it != m_oldmap->end();)
-        if (m_newmap.find(it.key()) == m_newmap.constEnd())
+        if (m_newmap.find(it.key()) == m_newmap.end())
         {
             T* item = const_cast<T*>(it.value());               // T* item = m_oldmap->take(it.key()); ne marche pass
+
             if (item != Q_NULLPTR)
                 delete item;
             it = m_oldmap->erase(it);
@@ -128,8 +128,8 @@ bool add(QMap<int, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
     bool itemadded = false;
     if (item != Q_NULLPTR)
     {
-        auto it = m_map->constFind(item->id());
-        itemadded = (it == m_map->cend());
+        auto it = m_map->find(item->id());
+        itemadded = (it == m_map->end());
         if (!itemadded)
         {
             if (it.value() != Q_NULLPTR)
@@ -141,12 +141,12 @@ bool add(QMap<int, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
                     delete item;
                     item = Q_NULLPTR;
                 }
+                else
+                    m_map->insert(item->id(), item);
             }
-            else
-                m_map->insert(item->id(), item);
         }
         else
-            m_map->insert(item->id(), item);
+        m_map->insert(item->id(), item);
     }
     return itemadded;
 }
@@ -159,7 +159,7 @@ bool add(QMap<QString, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
     if (item != Q_NULLPTR)
     {
         auto it = m_map->find(item->stringid());
-        itemadded = (it == m_map->cend());
+        itemadded = (it == m_map->end());
         if (!itemadded)
         {
             if (it.value() != Q_NULLPTR)
@@ -171,9 +171,9 @@ bool add(QMap<QString, T*> *m_map, T* item, Item::UPDATE upd = Item::NoUpdate)
                     delete item;
                     item = Q_NULLPTR;
                 }
+                else
+                    m_map->insert(item->stringid(), item);
             }
-            else
-                m_map->insert(item->stringid(), item);
         }
         else
             m_map->insert(item->stringid(), item);
@@ -195,9 +195,10 @@ static void remove(QMap<int, T*> *m_map, const T* item)
     if (item == Q_NULLPTR)
         return;
     auto it = m_map->find(item->id());
-    if (it != m_map->cend())
-        m_map->erase(it);
-    delete item;
+    if (it != m_map->end())
+        delete m_map->take(it.key());
+    if (item != Q_NULLPTR)
+        delete item;
 }
 template <typename T>
 static void remove(QMap<QString, T*> *m_map, const T* item)
@@ -205,8 +206,8 @@ static void remove(QMap<QString, T*> *m_map, const T* item)
     if (item == Q_NULLPTR)
         return;
     auto it = m_map->find(item->stringid());
-    if (it != m_map->cend())
-        m_map->erase(it);
+    if (it != m_map->end())
+        it = m_map->erase(it);
     delete item;
 }
 
