@@ -83,7 +83,11 @@ DEFINES += QAPPLICATION_CLASS=QApplication # cette instruction doit être inclus
 
 TRANSLATIONS = rufusadmin_en.ts
 
-ICON = Sunglasses.icns
+ICON = assets/Images/Sunglasses.icns
+win32 {
+RC_ICONS = assets/Images/icon.ico
+RC_FILE = assets/Images/icon.rc
+}
 
 DISTFILES += \
     assets/Licenses/License.rtf \
