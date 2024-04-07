@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("05-04-2024/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("07-04-2024/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -421,8 +421,8 @@ int RufusAdmin::SortieAppli()
     setPosteImportDocs(false);
     // on retire Admin de la table des utilisateurs connectés
     QString req = "delete from " TBL_USERSCONNECTES
-                  " where MACAdressePosteConnecte = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEUR  "'"
-                  " and idlieu = " + QString::number(Datas::I()->sites->idcurrentsite());
+                  " where " CP_MACADRESS_USRCONNECT " = '" + Utils::MACAdress() + " - " NOM_ADMINISTRATEUR  "'"
+                  " and " CP_IDLIEU_USRCONNECT " = " + QString::number(Datas::I()->sites->idcurrentsite());
     db->StandardSQL(req);
     setPosteImportDocs(false);
     if (m_utiliseTCP && TCPServer != Q_NULLPTR)
@@ -3026,28 +3026,54 @@ int RufusAdmin::ExecuteSQLScript(QStringList ListScripts)
             m_settings->setValue(Utils::getBaseFromMode(Utils::Distant) + Dossier_ClesSSL,dirkey);
         keys += " --ssl-ca=" + dirkey + "/ca-cert.pem --ssl-cert=" + dirkey + "/client-cert.pem --ssl-key=" + dirkey + "/client-key.pem";
     }
-    QString command = dirSQLExecutable() + "/mysql -u " + login + " -p" MDP_SQL " -h " + host + " -P " + QString::number(db->port()) + keys;
+    QStringList args = QStringList()
+                       << "-u" << login
+                       << "-p" MDP_SQL
+                       << "-h" << host
+                       << "-P" << QString::number(db->port());
+    QString sqlCommand = QDir::toNativeSeparators(dirSQLExecutable()+ m_executable);
+#ifndef Q_OS_WIN
+    for (int i = 0; i < args.size() ; ++i)
+        sqlCommand += " " + args.at(i);
+#endif
+
     for (int i=0; i<ListScripts.size(); i++)
         if (QFile(ListScripts.at(i)).exists())
         {
             QString path = ListScripts.at(i);
-            listpaths << path;
-        }
+            QProcess dumpProcess(parent());
+#ifdef Q_OS_WIN
+            dumpProcess.setStandardInputFile(path);
+            dumpProcess.start(sqlCommand, args);
+#else
+            /*! les commandes start ou startDetached ne fonctionnent pas sous MacOS ou Ubuntu */
+            /*! https://www.qtcentre.org/threads/23460-QProcess-and-mysql-lt-backup-sql
+             *  dumpProcess.setStandardInputFile(path);
+             *  dumpProcess.start(sqlCommand, args);                    NE MARCHE PLUS DEPUIS Qt6 sous MacOS ou Linux */
+            QString command = sqlCommand + " < " + path;
+            QString bat = "bash -c \"" + command + "\"";
+            dumpProcess.startCommand(bat);
+#endif
+            dumpProcess.waitForFinished(1000000);
 
-    QProcess dumpProcess(parent());
-    for (int i=0; i< listpaths.size(); i++)
-    {
-        QString path = listpaths.at(i);
-        dumpProcess.setStandardInputFile(path);
-        dumpProcess.start(command);
-        dumpProcess.waitForFinished(1000000000); /*! sur des systèmes lents, la création de la base prend parfois plus que les 30 secondes que sont la valeur par défaut de l'instruction waitForFinished()
-                                              * et dans ce cas le processus est interrompu avant que toute la base soit créée */
-        //qDebug() << Utils::EnumDescription(QMetaEnum::fromType<QProcess::ExitStatus>(), dumpProcess.exitCode()) << "dumpProcess.exitCode()" << dumpProcess.exitCode() << dumpProcess.errorString();
-        if (dumpProcess.exitStatus() == QProcess::NormalExit)
-            a = dumpProcess.exitCode();
-        if (a != 0)
-            i = listpaths.size();
-    }
+
+            if (dumpProcess.error() == QProcess::FailedToStart)
+            {
+                Logs::ERROR(tr("Impossible de lancer le processus de chargement de la base de données à partir du fichier \"%1\"").arg(path));
+                a = 99;
+                break;
+            }
+            if (dumpProcess.exitStatus() == QProcess::NormalExit)
+                a = dumpProcess.exitCode();
+            else
+            {
+                Logs::ERROR(tr("Le processus de chargement de la base de données à partir du fichier \"%1\" a échoué").arg(path));
+                break;
+            }
+
+            if (a != 0)
+                break;
+        }
     return a;
 }
 
@@ -3176,6 +3202,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         OKFactures = false;
     }
 
+    QString msgEchec = tr("Incident pendant la sauvegarde");
     QString msg = "";
     qintptr handledlg = 0;
     ShowMessage::I()->PriorityMessage(tr("Sauvegardede la base de données Rufus"),handledlg);
@@ -3197,19 +3224,20 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         QString Msg = (tr("Sauvegarde de la base de données\n")
                        + tr("Ce processus peut durer plusieurs minutes en fonction de la taille de la base de données"));
         UpSystemTrayIcon::I()->showMessage(tr("Messages"), Msg, Icons::icSunglasses(), 3000);
+#ifdef Q_OS_WIN
+        const QString task = QDir::toNativeSeparators(PATH_FILE_SCRIPTBACKUP);
+#else
         const QString task = "sh " + PATH_FILE_SCRIPTBACKUP;
-        const QString msgOK = tr("Base de données sauvegardée!");
-        QProcess backupProcess;
-        backupProcess.start(task);
-        backupProcess.waitForFinished(2000000000);
-        result(handledlg, this);
-        if (backupProcess.exitStatus() != QProcess::NormalExit)
-        {
-            UpSystemTrayIcon::I()->showMessage(tr("Messages"), tr("Incident pendant la sauvegarde de la base"), Icons::icSunglasses(), 3000);
-            return false;
-        }
-        QFile::remove(PATH_FILE_SCRIPTBACKUP);
+#endif
         msg += tr("Base de données sauvegardée!\n");
+        m_ostask.disconnect(SIGNAL(result(const int &)));
+        connect(&m_ostask, &OsTask::result, this, [=](int a) {
+            UpSystemTrayIcon::I()->showMessage(tr("Messages"), (a == 0? msg : msgEchec), Icons::icSunglasses(), 3000);
+            result(handledlg, this);
+            QFile::remove(PATH_FILE_SCRIPTBACKUP);
+            return true;
+        });
+        m_ostask.execute(task);
 
         /*! élimination des anciennes sauvegardes */
         QDir dir(pathdirdestination);

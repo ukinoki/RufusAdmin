@@ -80,6 +80,7 @@ along with RufusAdmin.  If not, see <http://www.gnu.org/licenses/>.
 #include "timerthread.h"
 #include "upprogressdialog.h"
 #include "cls_appareilimagerie.h"
+#include "ostask.h"
 
 
 namespace Ui {
@@ -98,6 +99,7 @@ public:
 
 private:
     Ui::RufusAdmin              *ui;
+    OsTask                      m_ostask;
     Flags                       *flags;
     bool                        m_ok;
     int                         m_flagcorrespondants;

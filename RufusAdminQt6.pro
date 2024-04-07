@@ -48,6 +48,7 @@ SOURCES += \
     flags.cpp
 
 HEADERS += \
+    ostask.h \
     rufusadmin.h \
     macros.h \
     importdocsexternesthread.h \

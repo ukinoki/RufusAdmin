@@ -809,7 +809,6 @@ QString Utils::calcSHA1(QString mdp)
         quest.setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
         if (quest.exec() == QDialog::Accepted)
         {
-            mdpval = quest.textValue();
             if (calcSHA1(quest.textValue()) == MDP)
                 return true;
             else if (quest.textValue() == MDP)
@@ -939,6 +938,11 @@ void Utils::copyWithPermissions(QFile &file, QString path, QFileDevice::Permissi
     file.copy(path);
     QFile CO(path);
     CO.setPermissions(permissions);
+}
+
+void Utils::setPermissions766(QFile &file, QFileDevice::Permissions permissions)
+{
+    file.setPermissions(permissions);
 }
 
 bool Utils::removeWithoutPermissions(QFile &file)
