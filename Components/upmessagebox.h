@@ -24,6 +24,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QAbstractTextDocumentLayout>
 #include <QApplication>
 #include <QDesktopServices>
+#include <QMovie>
 #include <QTextEdit>
 #include "macros.h"
 #include "utils.h"
@@ -32,12 +33,12 @@ class UpMessageBox : public UpDialog
 {
     Q_OBJECT
 public:
-    explicit        UpMessageBox(QWidget *parent = Q_NULLPTR);
+    explicit                            UpMessageBox(QWidget *parent = Q_NULLPTR);
     ~UpMessageBox();
     static void                         Show        (QWidget*, QString Text = "", QString InfoText = "");
-    static UpSmallButton::StyleBouton   Watch(QWidget*, QString Text = "", QString InfoText = "", Buttons Butts = UpDialog::ButtonOK, QString link = "");
-    static UpSmallButton::StyleBouton   Question    (QWidget*, QString Text = "", QString InfoText = "", Buttons Butts = UpDialog::ButtonCancel | UpDialog::ButtonOK, QStringList titresboutonslist = QStringList());
     static void                         Information (QWidget*, QString Text = "", QString InfoText = "");
+    static UpSmallButton::StyleBouton   Watch(QWidget*, QString Text = "", QString InfoText = "", Buttons Butts = UpDialog::ButtonOK, QString link = "");
+    static UpSmallButton::StyleBouton   Question(QWidget*, QString Text = "", QString InfoText = "", Buttons Butts = UpDialog::ButtonCancel | UpDialog::ButtonOK, QStringList titresboutonslist = QStringList());
     enum                                Icon   {Quest, Info, Warning, Critical, Print}; Q_ENUM(Icon)
     enum                                Movie   {QuestionGif, InfoGif, WarningGif}; Q_ENUM(Movie)
     void                                addButton(UpSmallButton *button, enum UpSmallButton::StyleBouton);
@@ -52,6 +53,7 @@ public:
     void                                setDefaultButton(QPushButton*);
 
 private:
+    static UpSmallButton::StyleBouton   ExecMsgBox(UpMessageBox*msgbox);
     UpLabel         *wdg_iconlbl, *wdg_texteditlbl, *wdg_infolbl;
     QHBoxLayout     *wdg_infolayout;
     QVBoxLayout     *wdg_textlayout;

@@ -16,7 +16,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upmessagebox.h"
-#include <QMovie>
+#include "utils.h"
 
 UpMessageBox::UpMessageBox(QWidget *parent) : UpDialog(parent)
 {
@@ -36,8 +36,8 @@ UpMessageBox::UpMessageBox(QWidget *parent) : UpDialog(parent)
     wdg_infolayout      ->setSpacing(30);
     wdg_textlayout      ->setSpacing(5);
     wdg_textlayout      ->setContentsMargins(0,0,0,0);
-    dlglayout()         ->insertLayout(0,wdg_infolayout);
-    dlglayout()         ->setSizeConstraint(QLayout::SetFixedSize);
+    dlglayout()     ->insertLayout(0,wdg_infolayout);
+    dlglayout()     ->setSizeConstraint(QLayout::SetFixedSize);
     setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setWindowModality(Qt::WindowModal);
 }
@@ -93,6 +93,12 @@ UpPushButton* UpMessageBox::clickedpushbutton() const
     return wdg_ReponsPushButton;
 }
 
+/*!
+ * \brief UpMessageBox::setIcon
+ * \param icn
+ * \param animatedIcon if true = uses animated gif else uses png or ico
+*/
+
 void UpMessageBox::setIcon(enum Icon icn, bool animatedIcon)
 {
     bool resize = true;
@@ -126,15 +132,16 @@ void UpMessageBox::setIcon(enum Icon icn, bool animatedIcon)
         break;
     case Critical:
         wdg_iconlbl     ->setPixmap(QPixmap("://cancel.png").scaled(80,80));
-        wdg_iconlbl     ->setPixmap(QPixmap("://11865.png").scaled(80,80));
         break;
-    default:
+    case Print:
+        wdg_iconlbl     ->setPixmap(QPixmap("://11865.png").scaled(80,80));
         break;
     }
     if (!resize)
         return;
     wdg_iconlbl     ->setFixedSize(80,80);
-    wdg_infolayout  ->insertWidget(0,wdg_iconlbl);}
+    wdg_infolayout  ->insertWidget(0,wdg_iconlbl);
+}
 
 void UpMessageBox::setAnimatedIcon(enum Movie movie)
 {
@@ -222,7 +229,9 @@ void UpMessageBox::Show(QWidget *parent, QString Text, QString InfoText)
 UpSmallButton::StyleBouton UpMessageBox::Watch(QWidget *parent, QString Text, QString InfoText, Buttons Butts, QString link)
 {
     UpMessageBox*msgbox     = new UpMessageBox(parent);
+
     msgbox->setIcon(Warning);
+
     msgbox  ->setText(Text);
     UpTextEdit text(InfoText.replace("\n","<br>"));
     msgbox  ->setInformativeText(text.toHtml());
@@ -246,15 +255,23 @@ UpSmallButton::StyleBouton UpMessageBox::Watch(QWidget *parent, QString Text, QS
     msgbox  ->wdg_infolbl       ->setFixedSize(Utils::CalcSize(InfoText));
     if (link != "")
     {
-        msgbox  ->wdg_infolbl             ->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-        msgbox  ->wdg_infolbl             ->setOpenExternalLinks(true);
+        msgbox  ->wdg_infolbl   ->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        msgbox  ->wdg_infolbl   ->setOpenExternalLinks(true);
         connect (msgbox->wdg_infolbl,
-                    &QLabel::linkActivated, /*! bug Qt - Impossible to open URL with linkActivated in a QMessageBox - However linkHovered works */                msgbox,
-                    [=] { QDesktopServices::openUrl(QUrl(link)); }
-                );    }
+                &QLabel::linkActivated,                 /*! bug Qt - Impossible to open URL with linkActivated in a QMessageBox - However linkHovered works */
+                msgbox,
+                [=] { QDesktopServices::openUrl(QUrl(link)); });
+    }
+
+    return ExecMsgBox(msgbox);
+}
+
+UpSmallButton::StyleBouton UpMessageBox::ExecMsgBox(UpMessageBox*msgbox)
+{
     UpSmallButton::StyleBouton repons = UpSmallButton::CANCELBUTTON;
     if (msgbox  ->exec() == QDialog::Accepted)
         repons = msgbox->clickedButton()->ButtonStyle();
+    //qDebug() << Utils::EnumDescription(QMetaEnum::fromType<UpSmallButton::StyleBouton>(), repons);
     delete msgbox;
     return repons;
 }
@@ -264,6 +281,7 @@ UpSmallButton::StyleBouton UpMessageBox::Question(QWidget *parent, QString Text,
 {
     UpMessageBox*msgbox     = new UpMessageBox(parent);
     msgbox->setIcon(Quest);
+
     msgbox  ->setText(Text);
     msgbox  ->setInformativeText(InfoText);
     msgbox  ->AjouteLayButtons(Butts);
@@ -285,12 +303,8 @@ UpSmallButton::StyleBouton UpMessageBox::Question(QWidget *parent, QString Text,
     msgbox  ->wdg_infolbl       ->setFixedSize(Utils::CalcSize(InfoText));
     msgbox  ->dlglayout()       ->setSizeConstraint(QLayout::SetFixedSize);
     msgbox  ->buttonslayout()   ->setSpacing(50);
-    UpSmallButton::StyleBouton repons = UpSmallButton::CANCELBUTTON;
-    if (msgbox  ->exec() == QDialog::Accepted)
-        repons = msgbox->clickedButton()->ButtonStyle();
-    delete msgbox;
-    //qDebug() << Utils::EnumDescription(QMetaEnum::fromType<UpSmallButton::StyleBouton>(), repons);
-    return repons;
+
+    return ExecMsgBox(msgbox);
 }
 
 void UpMessageBox::Information(QWidget *parent, QString Text, QString InfoText)

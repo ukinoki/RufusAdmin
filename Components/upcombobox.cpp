@@ -17,8 +17,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "upcombobox.h"
 
-#include "upcombobox.h"
-
 UpComboBox::UpComboBox(QWidget *parent) : QComboBox (parent)
 {
     m_valeuravant     = "";
@@ -102,7 +100,7 @@ bool UpComboBox::eventFilter(QObject *obj, QEvent *event)
                 {
                     //QString ab = lineEdit()->text();
                     setCurrentText(valeuravant());
-                    //QRegularExpressionValidator const * reg = static_cast<QRegularExpressionValidator const*>(lineEdit()->validator());
+                    //QRegExpValidator const * reg = static_cast<QRegExpValidator const*>(lineEdit()->validator());
                     //UpMessageBox::Watch(this,reg->regExp().pattern() + "\n'" + ab + "'");
                 }
             }
@@ -237,4 +235,5 @@ void UpComboBox::emitactivated(int idx)
     if (idx == m_idxavant)
         return;
      emit QComboBox::currentIndexChanged(idx);
-}
+ }
+

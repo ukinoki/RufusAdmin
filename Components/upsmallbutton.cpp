@@ -16,6 +16,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "upsmallbutton.h"
+#include "icons.h"
+#include "styles.h"
+
 
 UpSmallButton::UpSmallButton(QWidget *parent) : QPushButton(parent)
 {

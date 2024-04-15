@@ -60,7 +60,7 @@ UpToolBar::Choix UpToolBar::choix() const
 {
     return m_choix;
 }
-void UpToolBar::TBChoix(UpToolBar::Choix choix)
+void UpToolBar::TBChoix(Choix choix)
 {
     m_choix = choix;
     emit TBSignal();

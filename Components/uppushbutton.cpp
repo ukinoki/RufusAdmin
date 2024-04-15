@@ -18,6 +18,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include "uppushbutton.h"
 #include <QApplication>
 #include "icons.h"
+#include "styles.h"
 
 UpPushButton::UpPushButton(QWidget *parent) : QPushButton(parent)
 {

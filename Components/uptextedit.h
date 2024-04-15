@@ -50,15 +50,17 @@ public:
     void        settable(QString tablecorrespondant);
     QString     table() const;
     void        setText(const QString &text);
+    bool        ismodified() {return m_modified;};
+    void        setmodified(bool modified) { m_modified = modified;};
     QString     appendHtml(QString appendtext,  bool supprimeLesLignesVidesDuMilieu = true, bool rajouteunelignealafin = true);
 
     bool        acceptimagemimedatas() const;
     void        setAcceptImageMimeDatas(bool acceptimagemimedatas);
 
-    int column() const;
-    void setColumn(int column);
-    int row() const;
-    void setRow(int row);
+    int         column() const;
+    void        setColumn(int column);
+    int         row() const;
+    void        setRow(int row);
 
 private:
     bool        eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
@@ -68,6 +70,7 @@ private:
     QString     m_valeuravant, m_valeurapres, m_champ, m_table;
     QString     m_tooltipmsg;
     bool        m_acceptimagemimedatas = false;         //! Le textedit accepte de copier-coller des images
+    bool        m_modified;                             //! le contenuu a été modifié
     int         m_id = 0;
     int         m_iduser = 0;
     int         m_column = -1;

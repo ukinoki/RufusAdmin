@@ -1,7 +1,7 @@
 # FROM https://markuspeitl.github.io/my-linux-scripts/install-appimage.html
 
 START_DIR=$(pwd)
-APP_IMG_PATH=~/RufusAdmin.AppImage
+APP_IMG_PATH=~/RufusAdminQt6.AppImage
 APP_IMG_NAME=$(basename $APP_IMG_PATH)
 NEW_NAME=Rufus
 
@@ -21,10 +21,10 @@ echo "Executing: mkdir -p ~/Deploy/usr/bin"
 mkdir -p ~/Deploy/usr/bin 
 printf "\n"
 echo "Executing: cp ~/RufusAdmin/build_tools/Linux/rufusadmin.desktop ~/Deploy/usr/share/applications"
-cp ~/RufusAdmin/build_tools/Linux/rufusadmin.desktop ~/Deploy/usr/share/applications
+cp ~/RufusAdminQt6/build_tools/Linux/rufusadmin.desktop ~/Deploy/usr/share/applications
 printf "\n"
 echo "Executing: cp ~/RufusAdmin/build_tools/Linux/rufusadmin.png ~/Deploy/usr/share/icons/hicolor/256x256/apps"
-cp ~/RufusAdmin/build_tools/Linux/rufusadmin.png ~/Deploy/usr/share/icons/hicolor/256x256/apps
+cp ~/RufusAdminQt6/build_tools/Linux/rufusadmin.png ~/Deploy/usr/share/icons/hicolor/256x256/apps
 printf "\n"
 
 echo "Executing: cp ~/RufusAdminApp ~/Deploy/usr/bin"

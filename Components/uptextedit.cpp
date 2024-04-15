@@ -178,7 +178,7 @@ bool UpTextEdit::eventFilter(QObject *obj, QEvent *event)
             // Ctrl-Return ou Ctrl-Enter ou Ctrl-Tab sur un TextEdit- On va sur la tabulation suivante -------------
             if (keyEvent->modifiers() == Qt::MetaModifier)
             {
-                UpTextEdit *textnext = dynamic_cast<UpTextEdit*>(nextInFocusChain());
+                UpTextEdit *textnext = qobject_cast<UpTextEdit*>(nextInFocusChain());
                 if (textnext){
                     textnext->setFocus();
                     textnext->moveCursor(QTextCursor::End);
@@ -191,7 +191,7 @@ bool UpTextEdit::eventFilter(QObject *obj, QEvent *event)
             if (keyEvent->modifiers() == Qt::ShiftModifier)
             {
                 {
-                    UpTextEdit *textprev = dynamic_cast<UpTextEdit*>(previousInFocusChain());
+                    UpTextEdit *textprev = qobject_cast<UpTextEdit*>(previousInFocusChain());
                     if (textprev)
                     {
                         textprev->setFocus();
@@ -340,22 +340,27 @@ QString UpTextEdit::table() const
 
 void UpTextEdit::setText(const QString &text)
 {
+    QString txt = text;
     if (text.contains("<!DOCTYPE HTML PUBLIC"))
     {
-        QString txt = text;
-#ifdef Q_OS_LINUX
-        if (!text.contains(HTMLCOMMENT_LINUX))
-            txt.replace(QRegularExpression("font-size( *: *[\\d]{1,2} *)pt"),"font-size:" + QString::number(qApp->font().pointSize()) + "pt");
-#endif
-#ifdef Q_OS_MACOS
-        if (text.contains(HTMLCOMMENT))
-            txt.replace(QRegularExpression("font-size( *: *[\\d]{1,2} *)pt"),"font-size:" + QString::number(qApp->font().pointSize()) + "pt");
-#endif
-        txt.replace(QRegularExpression("font-family:'([a-zA-Z -]*)'"),"font-family:'" + qApp->font().family() + "'");
+        //! parce que de vielles versions de QT enregistraient la police avec tout un lot d'attributs et Qt6 ne comprend pas
+        Utils::epureFontFamily(txt);
+        if (!text.contains(HTMLCOMMENT))
+        {
+            QString newsize = "font-size:" + QString::number(qApp->font().pointSize()) + "pt";
+            QRegularExpression rs;
+            rs.setPattern("font-size( *: *[\\d]{1,2} *)pt");
+            QRegularExpressionMatch const match = rs.match(text);
+            if (match.hasMatch()) {
+                QString matcheds = match.captured(0);
+                txt.replace(matcheds, newsize);
+            }
+        }
         QTextEdit::setText(txt);
     }
     else
         QTextEdit::setText(text);
+    m_modified = (txt != text);
 }
 
 /*!
@@ -372,7 +377,7 @@ QString UpTextEdit::appendHtml(QString appendtext, bool supprimeLesLignesVidesDu
     texte += appendtext;
     if (rajouteunelignealafin)
         texte += HTML_FINPARAGRAPH;
-    Utils::nettoieHTML(texte, supprimeLesLignesVidesDuMilieu);
+    Utils::nettoieHTML(texte, 0, supprimeLesLignesVidesDuMilieu);
     setHtml(texte);
     return texte;
 }
