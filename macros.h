@@ -847,7 +847,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #define NOM_RUFUSFILE_INI                       "/Rufus.ini"
 #define NOM_ADMINFILE_INI                       "/RufusAdmin.ini"
-#define NOM_FILE_SCRIPTBACKUP                   "/RufusScriptBackup.sh"
 #define NOM_FILE_SCRIPT_MACOS_PLIST             "/rufus.bup.plist"
 
 #ifdef Q_OS_WIN
