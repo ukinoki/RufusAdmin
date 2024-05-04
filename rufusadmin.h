@@ -111,6 +111,7 @@ private:
     QMap<QString,QIcon>         map_icons;
     QString                     m_nouvMDP, m_ancMDP, m_confirmMDP;
     QString                     m_domaine;
+    QString                     m_dirimagerie = QString();
     QStringList                 m_listeAppareilsNonConnectes;
     QIcon                       ic_Backup, ic_Copy, ic_Erase, ic_Sunglasses, ic_SortirDossier, ic_OK, ic_Annul,
                                  ic_Euro,  ic_EuroCount,  ic_FermeAppuye,  ic_FermeRelache,  ic_Help,  ic_Null;
@@ -167,7 +168,6 @@ private:
     void                        ReconstruireListeAppareils();
     void                        MasqueAppli();
     void                        MetAJourLaConnexion();
-    void                        ModifDirImagerie();
     void                        ModifBDDVilles(Villes::TownsFrom from);
     void                        ModifMDP();
     void                        NouvAppareil();

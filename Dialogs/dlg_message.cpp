@@ -35,12 +35,32 @@ void ShowMessage::SplashMessage(QString msg, int duree)
     dlg                 ->setAttribute(Qt::WA_DeleteOnClose);
     dlg                 ->setSizeGripEnabled(false);
 
-    UpLabel *imglbl     = new UpLabel(dlg);
+    QLabel *imglbl     = new QLabel(dlg);
     imglbl              ->setPixmap(Icons::pxDetente().scaled(45,45)); //WARNING : icon scaled : pxDetente 45,45
+    imglbl              ->setFixedWidth(45);
 
-    UpTextEdit *Msgtxt  = new UpTextEdit(dlg);
+    QTextEdit *Msgtxt  = new QTextEdit(dlg);
     Msgtxt              ->setAttribute( Qt::WA_NoSystemBackground, true );
-    Msgtxt              ->setText(msg);
+    QString txt = msg;
+    if (msg.contains("<!DOCTYPE HTML PUBLIC"))
+    {
+        //! parce que de vielles versions de QT enregistraient la police avec tout un lot d'attributs et Qt6 ne comprend pas
+        epureFontFamily(txt);
+        if (!msg.contains(HTMLCOMMENT))
+        {
+            QString newsize = "font-size:" + QString::number(qApp->font().pointSize()) + "pt";
+            QRegularExpression rs;
+            rs.setPattern("font-size( *: *[\\d]{1,2} *)pt");
+            QRegularExpressionMatch const match = rs.match(msg);
+            if (match.hasMatch()) {
+                QString matcheds = match.captured(0);
+                txt.replace(matcheds, newsize);
+            }
+        }
+        Msgtxt->setText(txt);
+    }
+    else
+        Msgtxt          ->setText(msg);
     Msgtxt              ->setReadOnly(true);
     Msgtxt              ->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     Msgtxt              ->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -58,15 +78,32 @@ void ShowMessage::SplashMessage(QString msg, int duree)
     QHBoxLayout *lay    = new QHBoxLayout(dlg);
     lay                 ->addWidget(imglbl);
     lay                 ->addWidget(Msgtxt);
-    int marge           = 8;
+    int marge           = 16;
     lay                 ->setContentsMargins( marge, marge*2, marge, marge*2);
-    lay                 ->setSizeConstraint(QLayout::SetFixedSize);
     dlg                 ->setLayout(lay);
+    lay                 ->addSpacerItem(new QSpacerItem(marge,0,QSizePolicy::Fixed, QSizePolicy::Fixed));
+    dlg                 ->setFixedHeight((hauteurligne)*nlignes + marge*4);
+    dlg                 ->setFixedWidth(w + imglbl->width() + marge*4);
     dlg                 ->setWindowFlags(Qt::SplashScreen);
 
     int yy              = QGuiApplication::primaryScreen()->availableGeometry().height();
     int xx              = QGuiApplication::primaryScreen()->availableGeometry().width();
-    dlg                 ->move(xx - w - 45 - (marge*2) - lay->spacing()-15, yy - (int(hauteurligne)*nlignes) - marge*2);
+//    dlg                 ->move(xx - w - 45 - (marge*2) - lay->spacing()-15, yy - (int(hauteurligne)*nlignes) - marge*2);
+
+    // Calculate the size of dlg
+    int tx = w - 45 - (marge*2) - lay->spacing()-15;
+    int ty =(int(hauteurligne)*nlignes) - marge*2;
+
+    // Calculate the size of dlg (from lay) IF isValid()
+    QSize sz =dlg->sizeHint();
+    if( sz.isValid() )
+    {
+        tx= sz.width();
+        ty= sz.height();
+    }
+
+    dlg                 ->move(xx - tx, yy - ty);
+    dlg                 ->show();
     QTimer::singleShot(duree, dlg, &QDialog::close);
 }
 
@@ -76,15 +113,34 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     idmessage           = idprioritymessage;
     QDialog             *prioritydlg = new QDialog(parent);
     prioritydlg         ->setAttribute(Qt::WA_DeleteOnClose);
-    //prioritydlg->setModal(true);
     prioritydlg         ->setSizeGripEnabled(false);
 
-    UpLabel *imglbl     = new UpLabel(prioritydlg);
+    QLabel *imglbl     = new QLabel(prioritydlg);
     imglbl              ->setPixmap(Icons::pxDetente().scaled(45,45)); //WARNING : icon scaled : pxDetente 45,45
+    imglbl              ->setFixedWidth(45);
 
-    UpTextEdit *Msgtxt  = new UpTextEdit(prioritydlg);
+    QTextEdit *Msgtxt  = new QTextEdit(prioritydlg);
     Msgtxt              ->setAttribute( Qt::WA_NoSystemBackground, true );
-    Msgtxt              ->setText(msg);
+    QString txt = msg;
+    if (msg.contains("<!DOCTYPE HTML PUBLIC"))
+    {
+        //! parce que de vielles versions de QT enregistraient la police avec tout un lot d'attributs et Qt6 ne comprend pas
+        epureFontFamily(txt);
+        if (!msg.contains(HTMLCOMMENT))
+        {
+            QString newsize = "font-size:" + QString::number(qApp->font().pointSize()) + "pt";
+            QRegularExpression rs;
+            rs.setPattern("font-size( *: *[\\d]{1,2} *)pt");
+            QRegularExpressionMatch const match = rs.match(msg);
+            if (match.hasMatch()) {
+                QString matcheds = match.captured(0);
+                txt.replace(matcheds, newsize);
+            }
+        }
+        Msgtxt->setText(txt);
+    }
+    else
+        Msgtxt              ->setText(msg);
     Msgtxt              ->setReadOnly(true);
     Msgtxt              ->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     Msgtxt              ->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -102,11 +158,14 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     QHBoxLayout *lay    = new QHBoxLayout(prioritydlg);
     lay                 ->addWidget(imglbl);
     lay                 ->addWidget(Msgtxt);
-    int marge           = 8;
+    int marge           = 16;
     lay                 ->setContentsMargins( marge, marge*2, marge, marge*2);
-    lay                 ->setSizeConstraint(QLayout::SetFixedSize);
+    lay                 ->addSpacerItem(new QSpacerItem(marge,0,QSizePolicy::Fixed, QSizePolicy::Fixed));
     prioritydlg         ->setLayout(lay);
+    prioritydlg         ->setFixedHeight((hauteurligne)*nlignes + marge*4);
+    prioritydlg         ->setFixedWidth(w + imglbl->width() + marge*4);
     prioritydlg         ->setWindowFlags(Qt::SplashScreen);
+
 
     int yy              = QGuiApplication::primaryScreen()->availableGeometry().height();
     int xx              = QGuiApplication::primaryScreen()->availableGeometry().width();
@@ -114,7 +173,10 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
     prioritydlg         ->show();
     if (parent != Q_NULLPTR)
         parent->setEnabled(false);
-    //Utils::Pause(500);
+    int msec = 500;
+    QTime dieTime = QTime::currentTime().addMSecs(msec);
+    while (QTime::currentTime() < dieTime)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
     connect(this,   &ShowMessage::closeprioiritydlg, prioritydlg, [=](qintptr a) { if (idmessage == a) {
             if (prioritydlg->parent() != Q_NULLPTR)
                 qobject_cast<QWidget*>(prioritydlg->parent())->setEnabled(true);
@@ -123,4 +185,24 @@ void ShowMessage::PriorityMessage(QString msg, qintptr &idmessage, int duree, QW
         });
     if (duree > 0)
         QTimer::singleShot(duree, prioritydlg, &QDialog::close);
+
 }
+
+bool ShowMessage::epureFontFamily(QString &text)
+{
+    QString txt= text;
+    QRegularExpression rx;
+    rx.setPattern("font-family:'([a-zA-Z0-9 ,-]+)");
+    auto it = rx.globalMatch(text);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        QString txtaremplacer = match.captured(0);
+        if (txtaremplacer != "")
+        {
+            QString replacmt = txtaremplacer.split(",").at(0);
+            text.replace(txtaremplacer, replacmt);
+        }
+    }
+    return (txt != text);
+}
+

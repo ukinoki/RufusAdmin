@@ -705,7 +705,7 @@ void ImportDocsExternesThread::EchecImport(QString txt)
 bool ImportDocsExternesThread::DefinitDossiersImagerie()
 {
     QString Base = (m_acces==Distant? Utils::getBaseFromMode(Utils::Distant) + "/" : "");
-    m_pathdirstockageimagerie  = DataBase::I()->parametres()->dirimagerieserveur();
+    m_pathdirstockageimagerie  = DataBase::I()->dirimagerie();
     if (!QDir(m_pathdirstockageimagerie).exists() || m_pathdirstockageimagerie == "")
     {
         QString msg = tr("Le dossier de sauvegarde d'imagerie") + " <font color=\"red\"><b>" + m_pathdirstockageimagerie + "</b></font>" + tr(" n'existe pas");

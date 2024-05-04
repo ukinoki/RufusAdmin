@@ -70,6 +70,9 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "log.h"
 #include "utils.h"
+#include "upsystemtrayicon.h"
+
+class UpSystemTrayIcon;
 
 class DataBase : public QObject
 {
@@ -87,6 +90,7 @@ private:
     DonneesOphtaPatient *m_donneesophtapatient = new DonneesOphtaPatient();
 
     Utils::ModeAcces m_modeacces;
+    QString m_dirimagerie = QString();
     QString m_base;
     QString m_server;
     int m_port = 3306;
@@ -138,7 +142,7 @@ public:
     void                    unlocktables();                                                             //!> comme son nom l'indique
 
     //     REQUETES ------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    qint64                    countRecords(QString table, QString where = "");
+    qint64                  countRecords(QString table, QString where = "");
     bool                    erreurRequete(QSqlError type, QString requete, QString ErrorMessage = "");
                                                                 //!> comme son nom l'indique
     int                     selectMaxFromTable(QString nomchamp, QString nomtable, bool &ok, QString errormsg="");
@@ -174,6 +178,8 @@ public:
                                                                 * renvoie la réponse sous forme de QVariantList
                                                                 * la variable ok sert à pointer les erreurs sur requête pour les différencier des réponses vides */
     void                    VideDatabases();                    /*! vide la base de données */
+    QString                 dirimagerie();                      /*! defines dir of storage of all images and video - corresponds to dir pointed by variable secure_file_pric registered in db */
+
     /*
      * Parametres système
     */
@@ -188,7 +194,6 @@ public:
     void setadresseserveurlocal(QString  adress = "");
     void setadresseserveurdistant(QString adress = "");
     void setporttcp(int port);
-    void setdirimagerie(QString adress = "");
     void setdaysbkup(Utils::Days days);
     void setheurebkup(QTime time = QTime());
     void setdirbkup(QString adress = "");

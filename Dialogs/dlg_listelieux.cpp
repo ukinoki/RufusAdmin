@@ -25,9 +25,18 @@ dlg_listelieux::dlg_listelieux(QWidget *parent)
     AjouteLayButtons(UpDialog::ButtonClose);
     connect(CloseButton, &QPushButton::clicked, this, &QDialog::reject);
 
-    wdg_tblview = new QTableView(this);
-    wdg_tblview->setFixedWidth(240);
+    wdg_tblview = new UpTableView(this);
+    // Mise en forme de la table
+    wdg_tblview->setPalette(QPalette(Qt::white));
+    wdg_tblview->setGridStyle(Qt::NoPen);
+    wdg_tblview->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    wdg_tblview->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    wdg_tblview->setSelectionMode(QAbstractItemView::SingleSelection);
+    wdg_tblview->setSelectionBehavior(QAbstractItemView::SelectRows);
     wdg_tblview->setMouseTracking(true);
+    wdg_tblview->setContextMenuPolicy(Qt::CustomContextMenu);
+    wdg_tblview->horizontalHeader()->setVisible(true);
+
     wdg_adressuplbl = new UpLabel();
     wdg_adressuplbl->setFixedWidth(240);
     wdg_couleurpushbutt = new UpPushButton();
@@ -35,10 +44,9 @@ dlg_listelieux::dlg_listelieux(QWidget *parent)
     wdg_couleurpushbutt->setText(tr("modifier la couleur du texte"));
     if (Datas::I()->sites->sites()->size() == 0)
         Datas::I()->sites->initListe();
-    ReconstruitModel();
     wdg_buttonframe = new WidgetButtonFrame(wdg_tblview);
     wdg_buttonframe->AddButtons(WidgetButtonFrame::Plus | WidgetButtonFrame::Modifier | WidgetButtonFrame::Moins);
-    wdg_tblview->selectRow(0);
+    wdg_buttonframe->widgButtonParent()->setFixedWidth(240);
 
     QVBoxLayout *vlay   = new QVBoxLayout();
     QHBoxLayout *hlay   = new QHBoxLayout();
@@ -50,6 +58,7 @@ dlg_listelieux::dlg_listelieux(QWidget *parent)
     hlay    ->addLayout(vlay);
     dlglayout()     ->insertLayout(0,hlay);
     dlglayout()     ->setSizeConstraint(QLayout::SetFixedSize);
+    ReconstruitModel();
 
     connect(wdg_buttonframe,        &WidgetButtonFrame::choix,  this,   &dlg_listelieux::ChoixButtonFrame);
     connect(wdg_couleurpushbutt,    &QPushButton::clicked,      this,   &dlg_listelieux::ModifCouleur);
@@ -62,7 +71,7 @@ dlg_listelieux::~dlg_listelieux()
 void dlg_listelieux::AfficheDetails(QModelIndex idx, QModelIndex)
 {
     Site * sit = getSiteFromIndex(idx);
-    if (sit == Q_NULLPTR)
+    if (!sit)
     {
         wdg_buttonframe->wdg_moinsBouton->setEnabled(false);
         return;
@@ -134,6 +143,7 @@ void dlg_listelieux::CreerLieu()
     ModifLieuxDialog(Nouv);
     dlg_lieu->exec();
     delete  dlg_lieu;
+    dlg_lieu = Q_NULLPTR;
 }
 
 void dlg_listelieux::enregNouvLieu()
@@ -162,6 +172,8 @@ void dlg_listelieux::ModifCouleur()
     if (!wdg_tblview->selectionModel()->hasSelection())
         return;
     Site *sit = getSiteFromIndex(wdg_tblview->currentIndex());
+    if (!sit)
+        return;
     int row = wdg_tblview->currentIndex().row();
     QString couleurenreg = sit->couleur();
     QColor colordep = QColor("#FF" + couleurenreg);
@@ -184,6 +196,8 @@ void dlg_listelieux::ModifLieuxDialog(Mode mode)
             if (!wdg_tblview->selectionModel()->hasSelection())
                 return;
             Site *sit = getSiteFromIndex(wdg_tblview->currentIndex());
+            if (!sit)
+                return;
             QString couleurenreg = sit->couleur();
             QColor colordep = QColor("#FF" + couleurenreg);
             QColor colorfin = Utils::SelectCouleur(colordep, this);
@@ -197,7 +211,7 @@ void dlg_listelieux::ModifLieuxDialog(Mode mode)
         };
     auto nouvcouleur = [&]
         {
-            QColor colordep = QColor(0xFF, 0xFF, 0xFF);
+            QColor colordep = QColor(0xFF,0xFF,0xFF);
             QColor colorfin = Utils::SelectCouleur(colordep, this);
             if (!colorfin.isValid())
                 return;
@@ -323,15 +337,16 @@ void dlg_listelieux::ModifLieu()
     if (sit == Q_NULLPTR)
         return;
     wdg_nomlineedit    ->setText(sit->nom());
-    wdg_adress1lineedit   ->setText(sit->adresse1());
-    wdg_adress2lineedit   ->setText(sit->adresse2());
-    wdg_adress3lineedit   ->setText(sit->adresse3());
+    wdg_adress1lineedit->setText(sit->adresse1());
+    wdg_adress2lineedit->setText(sit->adresse2());
+    wdg_adress3lineedit->setText(sit->adresse3());
     wdg_CPlineedit     ->setText(sit->codepostal());
     wdg_villelineedit  ->setText(sit->ville());
     wdg_tellineedit    ->setText(sit->telephone());
     wdg_faxlineedit    ->setText(sit->fax());
     dlg_lieu->exec();
     delete  dlg_lieu;
+    dlg_lieu = Q_NULLPTR;
 }
 
 void dlg_listelieux::enregModifLieu()
@@ -339,16 +354,18 @@ void dlg_listelieux::enregModifLieu()
     if (!wdg_tblview->selectionModel()->hasSelection())
         return;
     Site *sit = getSiteFromIndex(wdg_tblview->selectionModel()->currentIndex());
+    if (!sit)
+        return;
     if (ValidationFiche())
     {
         m_listbinds[CP_NOM_SITE]          = Utils::trimcapitilize(wdg_nomlineedit->text(), true);
         m_listbinds[CP_ADRESSE1_SITE]     = Utils::trimcapitilize(wdg_adress1lineedit->text().toUpper(),true);
         m_listbinds[CP_ADRESSE2_SITE]     = Utils::trimcapitilize(wdg_adress2lineedit->text(),true);
         m_listbinds[CP_ADRESSE3_SITE]     = Utils::trimcapitilize(wdg_adress3lineedit->text(),true);
-        m_listbinds[CP_CODEPOSTAL_SITE]   = wdg_CPlineedit->text().toInt();
+        m_listbinds[CP_CODEPOSTAL_SITE]   = Utils::trim(wdg_CPlineedit->text());
         m_listbinds[CP_VILLE_SITE]        = Utils::trimcapitilize(wdg_villelineedit->text(),true);
-        m_listbinds[CP_TELEPHONE_SITE]    = wdg_tellineedit->text();
-        m_listbinds[CP_FAX_SITE]          = wdg_faxlineedit->text();
+        m_listbinds[CP_TELEPHONE_SITE]    = Utils::trim(wdg_tellineedit->text());
+        m_listbinds[CP_FAX_SITE]          = Utils::trim(wdg_faxlineedit->text());
         m_listbinds[CP_COULEUR_SITE]      = str_nouvcolor;
 
         DataBase::I()->UpdateTable(TBL_LIEUXEXERCICE, m_listbinds, " where " CP_ID_SITE " = " + QString::number(sit->id()),tr("Impossible de modifier le site"));
@@ -362,7 +379,7 @@ void dlg_listelieux::enregModifLieu()
 void dlg_listelieux::SupprLieu()
 {
     Site * sit = getSiteFromIndex(wdg_tblview->currentIndex());
-    if (sit == Q_NULLPTR)
+    if (!sit)
         return;
     QString lieu = sit->nom();
     if (UpMessageBox::Question(this,tr("Suppression d'un lieu de soins"),tr("voulez vous vraiment supprimer") + "\n" + lieu + " ?") == UpSmallButton::STARTBUTTON)
@@ -405,10 +422,17 @@ bool dlg_listelieux::ValidationFiche()
 
 void dlg_listelieux::ReconstruitModel()
 {
+    wdg_tblview->disconnect();
     wdg_tblview->selectionModel()->disconnect();
-    if (m_model)
+    if (m_model != Q_NULLPTR)
         delete m_model;
-    m_model = new QStandardItemModel(this);
+    m_model = new UpStandardItemModel();
+    QStandardItem *pitem0   = new QStandardItem(tr("Structure de soins"));
+    pitem0->setEditable(false);
+    pitem0->setTextAlignment(Qt::AlignCenter);
+    m_model->setHorizontalHeaderItem(0,pitem0);
+    m_model->setRowCount(Datas::I()->sites->sites()->size());
+    m_model->setColumnCount(1);
 
     foreach (Site* sit, *Datas::I()->sites->sites())
     {
@@ -417,34 +441,25 @@ void dlg_listelieux::ReconstruitModel()
             pitem0->setForeground(QBrush(QColor("#" + sit->couleur())));
         m_model->appendRow(QList<QStandardItem*>() << pitem0);
     }
-    m_model->sort(0);
     QItemSelectionModel *m = wdg_tblview->selectionModel(); // il faut détruire le selectionModel pour éviter des bugs d'affichage quand on réinitialise le modèle
     wdg_tblview->setModel(m_model);
-    delete m;
-
-    m_model->setHeaderData(0, Qt::Horizontal, tr("Structure de soins"));
-    wdg_tblview->setColumnWidth(0,240);       // NomLieu
-    wdg_tblview->verticalHeader()->setVisible(false);
-    wdg_tblview->setFocusPolicy(Qt::StrongFocus);
-    wdg_tblview->setGridStyle(Qt::NoPen);
-    wdg_tblview->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    wdg_tblview->setSelectionMode(QAbstractItemView::SingleSelection);
-    wdg_tblview->setSelectionBehavior(QAbstractItemView::SelectRows);
+    delete m;;
+    m_model->sort(0);
     wdg_tblview->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    QHeaderView *verticalHeader = wdg_tblview->verticalHeader();
+    verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
+    verticalHeader->setDefaultSectionSize(int(QFontMetrics(qApp->font()).height()*1.6));
+    verticalHeader->setVisible(false);
+    wdg_tblview->setColumnWidth(0,240);      // NomLieu
+    wdg_tblview->FixLargeurTotale();
+    wdg_buttonframe->widgButtonParent()->setFixedWidth(wdg_tblview->width());
 
-    wdg_tblview->setStyleSheet("QTableView {selection-color: rgba(0,0,0); selection-background-color: rgba(164, 205, 255);}");
-
-    int larg = 0;
-    for (int i=0; i < m_model->columnCount(); i++)
-        if (!wdg_tblview->isColumnHidden(i))
-            larg += wdg_tblview->columnWidth(i);
-    wdg_tblview   ->setFixedWidth(larg+2);
     int h = int(QFontMetrics(qApp->font()).height()*1.1);
     for (int i=0; i < m_model->rowCount(); i++)
         wdg_tblview->setRowHeight(i, h);
     m_idlieuserveur = -1;
     m_idlieuserveur = db->parametres()->idlieupardefaut();
-    connect(wdg_tblview->selectionModel(),   &QItemSelectionModel::currentRowChanged, this,  &dlg_listelieux::AfficheDetails);    
+    connect(wdg_tblview->selectionModel(),   &QItemSelectionModel::currentRowChanged, this,  &dlg_listelieux::AfficheDetails);
     connect(wdg_tblview,    &QAbstractItemView::entered,       this,   [=] (QModelIndex idx) {
             Site *sit = getSiteFromIndex(idx);
             if (sit)

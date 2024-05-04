@@ -21,6 +21,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSqlError>
 #include <QSqlQuery>
 
+
 DataBase* DataBase::instance = Q_NULLPTR;
 
 DataBase* DataBase::I()
@@ -36,6 +37,7 @@ void DataBase::initParametresConnexionSQL(QString Server, int Port)
 {
     m_server = Utils::calcIP(Server, false);
     m_port = Port;
+    //qDebug() << m_server << m_port;
 }
 
 void DataBase::setModeacces(const Utils::ModeAcces &modeacces)
@@ -85,7 +87,6 @@ qint64 DataBase::countRecords(QString table, QString where)
             if (row.size() >0)
                 count = qint64(row.at(0).toULongLong());
         }
-    qDebug() << req << count;
     return count;
 }
 
@@ -137,18 +138,18 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
             if (nomfich == "ca-cert.pem")
                 connectSSLoptions += "SSL_CA=" + QDir::toNativeSeparators(dirkey + "/ca-cert.pem;");
         }
+        m_db.setConnectOptions(connectSSLoptions);
+        login += "SSL";
     }
-    QString connectOptions = connectSSLoptions + "MYSQL_OPT_RECONNECT=1";
-    m_db.setConnectOptions(connectOptions);
 
-    m_db.setUserName(login + (useSSL ? "SSL" : ""));
+    m_db.setUserName(login);
     m_db.setPassword(password);
     //qDebug() << m_db.hostName() << m_db.port() << m_db.userName() << m_db.password();
     Logs::LogSQL("Serveur      - " + m_db.hostName());
     Logs::LogSQL("databaseName - " + m_db.databaseName());
     Logs::LogSQL("Login        - " + m_db.userName());
     Logs::LogSQL("port         - " + QString::number(m_db.port()));
-    Logs::LogSQL("options      - " + connectOptions);
+    Logs::LogSQL("options      - " + (useSSL? connectSSLoptions : "none"));
 
     if( m_db.open() )
         return QString();
@@ -156,6 +157,39 @@ QString DataBase::connectToDataBase(QString basename, QString login, QString pas
     QString error = m_db.lastError().text();
     Logs::ERROR(error);
     return error;
+}
+
+QString DataBase::dirimagerie()
+{
+    if (m_dirimagerie != QString())
+        return m_dirimagerie;
+    QString dirdata = QString();
+    bool ok;
+    QVariantList vardata = getFirstRecordFromStandardSelectSQL("SHOW VARIABLES LIKE \"secure_file_priv\";", ok);
+    if (ok && vardata.size()>0)
+        dirdata = vardata.at(1).toString();
+    if (dirdata==QString())
+    {
+        UpMessageBox::Watch(Q_NULLPTR, tr("Configuration du serveur défectueuse"),
+                            tr("La variable MySQL 'secure_file_priv' est positionnée à 'NULL'\n"
+                               "Vous ne pourrez pas afficher les documents d'imagerie\n"
+                               "Veuillez modifier la valeur de cette variable en la faisant pointer\n"
+                               "sur un dossier partagé entre les utilisateurs et accessiblle à MySQL"
+                               "'/Users/Shared/Rufus' (macOS) ou 'Users/Public/Rufus' (W1O/11) sur le serveur\n"
+                               "Reportez-vous au bas de la page\n"
+                               "https://www.rufusvision.org/installation-du-serveur-mysql.html\n"
+                               "pour savoir comment modifier le fichier de configuration my.cnf\n"
+                               "de MySQL sur le serveur puis redémarrez le serveur"));
+    }
+    if (dirdata == QString())
+        return dirdata ;
+    else
+    {
+        while (dirdata.endsWith("/"))
+            dirdata.remove(dirdata.size()-1,1);
+        m_dirimagerie = dirdata + NOM_DIR_RUFUS NOM_DIR_IMAGERIE;
+        return m_dirimagerie;
+    }
 }
 
 QDateTime DataBase::ServerDateTime()
@@ -434,7 +468,7 @@ void DataBase::initParametresSysteme()
     QJsonObject paramData{};
 
     QString req = "select " CP_MDPADMIN_PARAMSYSTEME ", " CP_NUMCENTRE_PARAMSYSTEME ", " CP_IDLIEUPARDEFAUT_PARAMSYSTEME ", " CP_DOCSCOMPRIMES_PARAMSYSTEME ", " CP_VERSIONBASE_PARAMSYSTEME ", "
-                  CP_SANSCOMPTA_PARAMSYSTEME ", " CP_ADRESSELOCALSERVEUR_PARAMSYSTEME ", " CP_ADRESSEDISTANTSERVEUR_PARAMSYSTEME ", " CP_DIRIMAGERIE_PARAMSYSTEME ", "
+                  CP_SANSCOMPTA_PARAMSYSTEME ", " CP_ADRESSELOCALSERVEUR_PARAMSYSTEME ", " CP_ADRESSEDISTANTSERVEUR_PARAMSYSTEME ", "
                   CP_LUNDIBKUP_PARAMSYSTEME ", " CP_MARDIBKUP_PARAMSYSTEME ", " CP_MERCREDIBKUP_PARAMSYSTEME ", " CP_JEUDIBKUP_PARAMSYSTEME ", " CP_VENDREDIBKUP_PARAMSYSTEME ", "
                   CP_SAMEDIBKUP_PARAMSYSTEME ", " CP_DIMANCHEBKUP_PARAMSYSTEME ", " CP_HEUREBKUP_PARAMSYSTEME ", " CP_DIRBKUP_PARAMSYSTEME
                   " from " TBL_PARAMSYSTEME;
@@ -449,16 +483,15 @@ void DataBase::initParametresSysteme()
     paramData[CP_SANSCOMPTA_PARAMSYSTEME]             = (paramdata.at(5).toInt() == 1);
     paramData[CP_ADRESSELOCALSERVEUR_PARAMSYSTEME]    = paramdata.at(6).toString();
     paramData[CP_ADRESSEDISTANTSERVEUR_PARAMSYSTEME]  = paramdata.at(7).toString();
-    paramData[CP_DIRIMAGERIE_PARAMSYSTEME]            = paramdata.at(8).toString();
-    paramData[CP_LUNDIBKUP_PARAMSYSTEME]              = (paramdata.at(9).toInt() == 1);
-    paramData[CP_MARDIBKUP_PARAMSYSTEME]              = (paramdata.at(10).toInt() == 1);
-    paramData[CP_MERCREDIBKUP_PARAMSYSTEME]           = (paramdata.at(11).toInt() == 1);
-    paramData[CP_JEUDIBKUP_PARAMSYSTEME]              = (paramdata.at(12).toInt() == 1);
-    paramData[CP_VENDREDIBKUP_PARAMSYSTEME]           = (paramdata.at(13).toInt() == 1);
-    paramData[CP_SAMEDIBKUP_PARAMSYSTEME]             = (paramdata.at(14).toInt() == 1);
-    paramData[CP_DIMANCHEBKUP_PARAMSYSTEME]           = (paramdata.at(15).toInt() == 1);
-    paramData[CP_HEUREBKUP_PARAMSYSTEME]              = paramdata.at(16).toTime().toString("HH:mm:ss");
-    paramData[CP_DIRBKUP_PARAMSYSTEME]                = paramdata.at(17).toString();
+    paramData[CP_LUNDIBKUP_PARAMSYSTEME]              = (paramdata.at(8).toInt() == 1);
+    paramData[CP_MARDIBKUP_PARAMSYSTEME]              = (paramdata.at(9).toInt() == 1);
+    paramData[CP_MERCREDIBKUP_PARAMSYSTEME]           = (paramdata.at(10).toInt() == 1);
+    paramData[CP_JEUDIBKUP_PARAMSYSTEME]              = (paramdata.at(11).toInt() == 1);
+    paramData[CP_VENDREDIBKUP_PARAMSYSTEME]           = (paramdata.at(12).toInt() == 1);
+    paramData[CP_SAMEDIBKUP_PARAMSYSTEME]             = (paramdata.at(13).toInt() == 1);
+    paramData[CP_DIMANCHEBKUP_PARAMSYSTEME]           = (paramdata.at(14).toInt() == 1);
+    paramData[CP_HEUREBKUP_PARAMSYSTEME]              = paramdata.at(15).toTime().toString("HH:mm:ss");
+    paramData[CP_DIRBKUP_PARAMSYSTEME]                = paramdata.at(16).toString();
     m_parametres->setData(paramData);
     if (m_parametres->versionbase()>73)
     {
@@ -545,14 +578,6 @@ void DataBase::setadresseserveurdistant(QString adress)
     QString value = (adress != ""? "'" + Utils::correctquoteSQL(adress) + "'" : "null");
     StandardSQL("update " TBL_PARAMSYSTEME " set " CP_ADRESSEDISTANTSERVEUR_PARAMSYSTEME " = " + value);
     parametres()->setadresseserveurdistant(adress);
-}
-void DataBase::setdirimagerie(QString adress)
-{
-    if (!m_db.isOpen())
-        return;
-    QString value = (adress != ""? "'" + Utils::correctquoteSQL(adress) + "'" : "null");
-    StandardSQL("update " TBL_PARAMSYSTEME " set " CP_DIRIMAGERIE_PARAMSYSTEME " = " + value);
-    parametres()->setdirimagerieserveur(adress);
 }
 void DataBase::setdaysbkup(Utils::Days days)
 {
@@ -2336,9 +2361,7 @@ bool DataBase::EnregistreAutreVille(QString CP, QString ville, int &id)
 PatientEnCours* DataBase::loadPatientEnCoursById(int idPat)
 {
     PatientEnCours *pat = new PatientEnCours;
-    QString req = "SELECT idPat, IdUser, Statut, HeureStatut,  HeureRDV,"
-                  " HeureArrivee, Motif, Message, idActeAPayer, PosteExamen,"
-                  " idUserEnCoursExam, idSalDat FROM " TBL_SALLEDATTENTE " where idPat = " + QString::number(idPat);
+    QString req = "SELECT " CP_IDPAT_SALDAT " FROM " TBL_SALLEDATTENTE " where " CP_IDPAT_SALDAT " = " + QString::number(idPat);
     QVariantList patdata = getFirstRecordFromStandardSelectSQL(req,ok);
     if( !ok || patdata.size()==0 )
     {
@@ -2353,9 +2376,9 @@ PatientEnCours* DataBase::loadPatientEnCoursById(int idPat)
 
 QJsonObject DataBase::loadPatientEnCoursDataById(int idPat)
 {
-    QString req = "SELECT idPat, IdUser, Statut, HeureStatut,  HeureRDV,"
-                  " HeureArrivee, Motif, Message, idActeAPayer, PosteExamen,"
-                  " idUserEnCoursExam, idSalDat FROM " TBL_SALLEDATTENTE " where idPat = " + QString::number(idPat);
+    QString req = "SELECT " CP_IDPAT_SALDAT ", " CP_IDUSERSUPERVISEUR_SALDAT ", " CP_STATUT_SALDAT ", " CP_HEURESTATUT_SALDAT ", " CP_HEURERDV_SALDAT ", "
+                  CP_HEUREARRIVEE_SALDAT ", " CP_MOTIF_SALDAT ", " CP_MESSAGE_SALDAT ", " CP_IDACTEAPAYER_SALDAT ", " CP_POSTEEXAMEN_SALDAT ", "
+                  CP_IDUSERENCOURSEXAM_SALDAT ", " CP_IDSALDAT_SALDAT " FROM " TBL_SALLEDATTENTE " where " CP_IDPAT_SALDAT " = " + QString::number(idPat);
     QVariantList patdata = getFirstRecordFromStandardSelectSQL(req,ok);
     if( !ok || patdata.size()==0 )
         return QJsonObject();
@@ -2369,7 +2392,7 @@ QJsonObject DataBase::loadPatientEnCoursData(QVariantList patdata)
     if( !ok || patdata.size()==0 )
         return jData;
     jData[CP_IDPAT_SALDAT]              = patdata.at(0).toInt();
-    jData[CP_IDUSER_SALDAT]             = patdata.at(1).toInt();
+    jData[CP_IDUSERSUPERVISEUR_SALDAT]  = patdata.at(1).toInt();
     jData[CP_STATUT_SALDAT]             = patdata.at(2).toString();
     jData[CP_HEURESTATUT_SALDAT]        = patdata.at(3).toTime().toString("HH:mm:ss");
     jData[CP_HEURERDV_SALDAT]           = patdata.at(4).toTime().toString("HH:mm:ss");
@@ -2386,9 +2409,9 @@ QJsonObject DataBase::loadPatientEnCoursData(QVariantList patdata)
 QList<PatientEnCours *> DataBase::loadPatientsenCoursAll()
 {
     QList<PatientEnCours*> listpat;
-    QString req = "SELECT idPat, IdUser, Statut, HeureStatut,  HeureRDV,"
-                  " HeureArrivee, Motif, Message, idActeAPayer, PosteExamen,"
-                  " idUserEnCoursExam, idSalDat FROM " TBL_SALLEDATTENTE;
+    QString req = "SELECT " CP_IDPAT_SALDAT ", " CP_IDUSERSUPERVISEUR_SALDAT ", " CP_STATUT_SALDAT ", " CP_HEURESTATUT_SALDAT ", " CP_HEURERDV_SALDAT ", "
+                  CP_HEUREARRIVEE_SALDAT ", " CP_MOTIF_SALDAT ", " CP_MESSAGE_SALDAT ", " CP_IDACTEAPAYER_SALDAT ", " CP_POSTEEXAMEN_SALDAT ", "
+                  CP_IDUSERENCOURSEXAM_SALDAT ", " CP_IDSALDAT_SALDAT " FROM " TBL_SALLEDATTENTE;
     QList<QVariantList> patlist = StandardSelectSQL(req, ok);
     if( !ok || patlist.size()==0 )
         return listpat;
@@ -2492,7 +2515,10 @@ Patient* DataBase::loadPatientById(int idPat, Patient *pat, Item::LOADDETAILS de
                             CP_IDCREATEUR_PATIENTS " FROM " TBL_PATIENTS " where " CP_IDPAT_PATIENTS " = " + QString::number(idPat);
     QVariantList patdata = getFirstRecordFromStandardSelectSQL(req,ok);
     if( !ok || patdata.size()==0 )
+    {
+        delete pat;
         return Q_NULLPTR;
+    }
     QJsonObject jData{};
     jData[CP_IDPAT_PATIENTS]        = idPat;
     jData[CP_NOM_PATIENTS]          = patdata.at(0).toString();
@@ -2692,7 +2718,10 @@ Acte* DataBase::loadActeById(int idActe)
     Acte *acte = new Acte();
     QJsonObject data = loadActeAllData(idActe);
     if (data == QJsonObject{})
+    {
+        delete acte;
         return Q_NULLPTR;
+    }
     acte->setData(data);
     return acte;
 }
@@ -3057,7 +3086,6 @@ QList<Intervention*> DataBase::loadInterventionsBySessionId(int id)             
 QList<QPair<int, int>> DataBase::loadIdInterventionsByPatientId(int id)                  //! charge toutes les Interventions d'un patient
 {
     QList<QPair<int, int>> listpair;
-    QList<int> listid = QList<int> ();
     QString req =   "SELECT " CP_ID_LIGNPRGOPERATOIRE ", " CP_IDUSER_SESSIONOPERATOIRE
                     " FROM " TBL_LIGNESPRGOPERATOIRES " prog left outer join " TBL_SESSIONSOPERATOIRES " sess "
                     " ON prog." CP_IDSESSION_LIGNPRGOPERATOIRE " = sess." CP_ID_SESSIONOPERATOIRE

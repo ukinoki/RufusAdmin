@@ -23,9 +23,12 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTableView>
 #include "database.h"
 #include "gbl_datas.h"
-#include "upstandarditem.h"
+#include "upstandarditemmodel.h"
+#include "uptableview.h"
 #include "widgetbuttonframe.h"
+#include "upsystemtrayicon.h"
 
+class UpSystemTrayIcon;
 /* sert à gérer les lieux d'exercice
  * IDENTIQUE POUR RUFUS ET RUFUSADMIN*/
 
@@ -39,7 +42,7 @@ public:
 
 private:
     DataBase                *db;
-    QTableView              *wdg_tblview;
+    UpTableView             *wdg_tblview;
     UpDialog                *dlg_lieu;
     UpLabel                 *wdg_adressuplbl;
     UpPushButton            *wdg_couleurpushbutt;

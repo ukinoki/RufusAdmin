@@ -87,6 +87,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 
     ConnexionBase();
     m_parametres            = db->parametres();
+    m_dirimagerie           = db->dirimagerie();
     if (!VerifBase())
         exit(0);
     Datas::I()->users       ->initListe();
@@ -204,7 +205,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     connect(ui->GestionMotifspushButton,        &QPushButton::clicked,              this,   &RufusAdmin::GestionMotifs);
     connect(ui->GestUserpushButton,             &QPushButton::clicked,              this,   &RufusAdmin::GestionUsers);
     connect(ui->InitMDPAdminpushButton,         &QPushButton::clicked,              this,   &RufusAdmin::ModifMDP);
-    connect(ui->StockageupPushButton,           &QPushButton::clicked,              this,   &RufusAdmin::ModifDirImagerie);
     connect(ui->NetworkStatuspushButton,        &QPushButton::clicked,              this,   [=] {Edit(m_socketStatut, 20000);});
     // MAJ Salle d'attente ----------------------------------------------------------------------------------
     connect(flags,                              &Flags::UpdSalleDAttente,           this,   [=](int a)  { m_flagsalledattente = a; } );
@@ -273,7 +273,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     ui->Exportframe         ->setVisible(db->ModeAccesDataBase() != Utils::Distant);
 
     connect (ui->StockageupLineEdit, &QLineEdit::textChanged, this, [=](QString s) {ui->StockageupLineEdit->setImmediateToolTip(s);});
-    ui->StockageupLineEdit->setText(m_parametres->dirimagerieserveur());
+    ui->StockageupLineEdit->setText(db->dirimagerie());
 
     ReconstruitListeLieuxExercice();
     Datas::I()->comptes->initListe();
@@ -1234,26 +1234,6 @@ void RufusAdmin::EnregistreAppareil()
     Remplir_Table();
 }
 
-void RufusAdmin::ModifDirImagerie()
-{
-    QString dir = ui->StockageupLineEdit->text();
-    if (dir == "" || !QDir(dir).exists())
-        dir = PATH_DIR_RUFUS;
-    QUrl url = Utils::getExistingDirectoryUrl(this, "", QUrl::fromLocalFile(dir), QStringList()<<db->parametres()->dirbkup());
-    if (url == QUrl())
-        return;
-    if (db->ModeAccesDataBase() == Utils::Poste)
-        if (!QDir(url.path()).match(PATH_DIR_RUFUS "/*", url.path()))
-        {
-            UpMessageBox::Watch(this, tr("Vous devez choisir un sous-dossier du dossier Rufus"), PATH_DIR_RUFUS);
-            return;
-        }
-    ui->StockageupLineEdit->setText(url.path());
-    if (db->ModeAccesDataBase() == Utils::Poste)
-        db->setdirimagerie(url.path());
-
-}
-
 void RufusAdmin::EnregDossierStockageApp(QString dir)
 {
     UpLineEdit *line    = dynamic_cast<UpLineEdit*>(sender());
@@ -1397,7 +1377,7 @@ void RufusAdmin::CalcExporteDocs()
 void RufusAdmin::ExporteDocs()
 {
     bool ok;
-    QString NomDirStockageImagerie  = m_parametres->dirimagerieserveur();
+    QString NomDirStockageImagerie  = db->dirimagerie();
     if (!QDir(NomDirStockageImagerie).exists() || NomDirStockageImagerie == "")
     {
         QString msg = tr("Le dossier de sauvegarde d'imagerie") + " <font color=\"red\"><b>" + NomDirStockageImagerie + "</b></font>" + tr(" n'existe pas");
@@ -1504,7 +1484,7 @@ void RufusAdmin::ExporteDocs()
                 //qDebug() << "erreur";
                 return;
             }
-            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_parametres->dirimagerieserveur()))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, db->dirimagerie()))
             {
                 db->SupprRecordFromTable(listexportjpg.at(i).at(0).toInt(), CP_ID_FACTURES, TBL_FACTURES);
                 continue;
@@ -1571,6 +1551,7 @@ void RufusAdmin::ExporteDocs()
             bapdf.append(listexportpdf.at(i).at(4).toByteArray());
 
             QBuffer buf(&bapdf);
+            buf.open(QIODevice::ReadWrite);
             QPdfDocument document;
             document.load(&buf);
             if( document.pageCount() > 0)
@@ -1761,7 +1742,7 @@ void RufusAdmin::ExporteDocs()
                 //qDebug() << "erreur";
                 return;
             }
-            if (!Utils::CompressFileJPG(CheminOKTransfrProv, m_parametres->dirimagerieserveur()))
+            if (!Utils::CompressFileJPG(CheminOKTransfrProv, db->dirimagerie()))
             {
                 db->SupprRecordFromTable(listexportjpgfact.at(i).at(0).toInt(), CP_ID_FACTURES, TBL_FACTURES);
                 continue;
@@ -1858,6 +1839,7 @@ void RufusAdmin::ExporteDocs()
             bapdf.append(listexportpdffact.at(i).at(6).toByteArray());
 
             QBuffer buf(&bapdf);
+            buf.open(QIODevice::ReadWrite);
             QPdfDocument document;
             document.load(&buf);
             if( document.pageCount() > 0)
@@ -2337,7 +2319,6 @@ void RufusAdmin::RestaureBase()
                         //! Restauration à partir du dossier sélectionné
                         ExecuteSQLScript(listnomsfilestorestore);
                         msg += tr("Base de données Rufus restaurée\n");
-                        db->setdirimagerie(NomDirStockageImagerie);
                     }
                     ShowMessage::I()->ClosePriorityMessage(handledlg);
                 }
@@ -2480,7 +2461,6 @@ void RufusAdmin::RestaureBase()
                 }
             }
         }
-        db->setdirimagerie(NomDirStockageImagerie);
         //qDebug() << msg;
         UpMessageBox::Watch(this,tr("restauration terminée"),msg);
         if (okrestorebase)
@@ -2503,7 +2483,7 @@ void RufusAdmin::RestaureBase()
 void RufusAdmin::SupprimerDocsEtFactures()
 {
     bool ok = true;
-    QString NomDirStockageImagerie = m_parametres->dirimagerieserveur();
+    QString NomDirStockageImagerie = db->dirimagerie();
 
     /* Supprimer les documents en attente de suppression*/
     QString req = "Select " CP_FILEPATH_DOCSASUPPR " from " TBL_DOCSASUPPRIMER;
@@ -3145,7 +3125,7 @@ bool RufusAdmin::ImmediateBackup(QString dirdestination, bool verifposteconnecte
     bool OKVideos   = false;
     bool OKFactures = false;
 
-    AskBupRestore(BackupOp, m_parametres->dirimagerieserveur(), dirdestination);
+    AskBupRestore(BackupOp, db->dirimagerie(), dirdestination);
     if (dlg_buprestore->exec() != QDialog::Accepted)
         return false;
     QList<UpCheckBox*> listchk = dlg_buprestore->findChildren<UpCheckBox*>();
@@ -3189,11 +3169,11 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         ShowMessage::I()->ClosePriorityMessage(handle);
         radm->ConnectTimerInactive();
     };
-    if (QDir(m_parametres->dirimagerieserveur()).exists())
+    if (QDir(db->dirimagerie()).exists())
     {
-        Utils::cleanfolder(m_parametres->dirimagerieserveur() + NOM_DIR_IMAGES);
-        Utils::cleanfolder(m_parametres->dirimagerieserveur() + NOM_DIR_FACTURES);
-        Utils::cleanfolder(m_parametres->dirimagerieserveur() + NOM_DIR_VIDEOS);
+        Utils::cleanfolder(db->dirimagerie() + NOM_DIR_IMAGES);
+        Utils::cleanfolder(db->dirimagerie() + NOM_DIR_FACTURES);
+        Utils::cleanfolder(db->dirimagerie() + NOM_DIR_VIDEOS);
     }
     else
     {
@@ -3276,7 +3256,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
         QString dirNomDest;
 
         if (OKFactures) {
-            dirNomSource = m_parametres->dirimagerieserveur() + NOM_DIR_FACTURES;
+            dirNomSource = db->dirimagerie() + NOM_DIR_FACTURES;
             dirNomDest = pathdirdestination + NOM_DIR_FACTURES;
             int t = 0;
             Utils::countFilesInDirRecursively(dirNomSource, t);
@@ -3288,7 +3268,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
             msg += tr("Factures sauvegardées\n");
         }
         if (OKImages) {
-            dirNomSource = m_parametres->dirimagerieserveur() + NOM_DIR_IMAGES;
+            dirNomSource = db->dirimagerie() + NOM_DIR_IMAGES;
             dirNomDest = pathdirdestination + NOM_DIR_IMAGES;
             int t = 0;
             Utils::countFilesInDirRecursively(dirNomSource, t);
@@ -3300,7 +3280,7 @@ bool RufusAdmin::Backup(QString pathdirdestination, bool OKBase,  bool OKImages,
             msg += tr("Fichiers imagerie sauvegardés\n");
         }
         if (OKVideos) {
-            dirNomSource = m_parametres->dirimagerieserveur() + NOM_DIR_VIDEOS;
+            dirNomSource = db->dirimagerie() + NOM_DIR_VIDEOS;
             dirNomDest = pathdirdestination + NOM_DIR_VIDEOS;
             int t = 0;
             Utils::countFilesInDirRecursively(dirNomSource, t);
@@ -3347,28 +3327,27 @@ QString RufusAdmin::dirSQLExecutable()
 */
 void RufusAdmin::setDirSQLExecutable()
 {
-    QString dirdefaultsqlexecutable = "";
+    QString dirdefaultsqlexecutable ("");
     QString dirsqlexecutable ("");
-    m_executable = db->version().contains("MariaDB")? "/mariadb": "/mysql";
-    m_dumpexecutable = "/mysqldump";
+    m_executable        = "/mysql";
+    m_dumpexecutable    = "/mysqldump";
     bool a = false;
 
 /*! 1. On recherche dans le package logiciel */
 /*! ne marche pas sous Mac Silicon pour le moment */
 #ifdef Q_OS_MACOS
-    QDir mysqldir = QDir(QCoreApplication::applicationDirPath());
-    m_dumpexecutable = db->version().contains("MariaDB")? "/mariadb-dump": "/mysqldump";
+    QDir mysqldir           = QDir(QCoreApplication::applicationDirPath());
     mysqldir.cdUp();
     dirdefaultsqlexecutable = mysqldir.absolutePath() + "/Applications";
-    a = QFile(dirdefaultsqlexecutable + m_executable).exists();
+    a                       = QFile(dirdefaultsqlexecutable + m_executable).exists();
 #endif
 
 #ifdef Q_OS_WIN
-    m_executable = db->version().contains("MariaDB")? "/mariadb.exe": "/mysql.exe";
-    m_dumpexecutable = db->version().contains("MariaDB")? "/mariadb-dump.exe": "/mysqldump.exe";
-    QDir mysqldir = QDir(QCoreApplication::applicationDirPath());
+    m_executable            = "/mysql.exe";
+    m_dumpexecutable        = "/mysqldump.exe";
+    QDir mysqldir           = QDir(QCoreApplication::applicationDirPath());
     dirdefaultsqlexecutable = mysqldir.absolutePath() + "/Applications";
-    a = QFile(dirdefaultsqlexecutable + m_executable).exists();
+    a                       = QFile(dirdefaultsqlexecutable + m_executable).exists();
 #endif
     if (a)
     {
@@ -3403,6 +3382,19 @@ void RufusAdmin::setDirSQLExecutable()
             dirsqlexecutable = programs.absolutePath() + "/"  + listmariadbdirs.at(0) + "/bin";
             a = (QFile(dirsqlexecutable + m_executable).exists());
         }
+        if (!a)
+        {
+            programs = QDir("C:/Program Files/MySQL");
+            if (programs.exists())
+            {
+                QStringList listmysqldirs = programs.entryList(QStringList() << "MySQL Server *", QDir::Dirs);
+                if (listmysqldirs.size() > 0)
+                {
+                    dirsqlexecutable = programs.absolutePath() + "/"  + listmysqldirs.at(0) + "/bin";
+                    a = (QFile(dirsqlexecutable + m_executable).exists());
+                }
+            }
+        }
     }
 #endif
 
@@ -3413,7 +3405,7 @@ void RufusAdmin::setDirSQLExecutable()
         return;
     }
 
-    /*! 3. On n'a rien trouvé - on teste la valeur enregistrée dans rufusadmin.ini */
+    /*! 3. On n'a rien trouvé - on teste la valeur enregistrée dans rufus.ini */
 
     dirsqlexecutable = m_settings->value(Param_SQLExecutable).toString();
     if (QFile(dirsqlexecutable + m_executable).exists())
@@ -3421,41 +3413,6 @@ void RufusAdmin::setDirSQLExecutable()
         m_dirSQLExecutable = dirsqlexecutable;
         return;
     }
-
-    /*! 4. On n'a rien trouvé - on interroge l'utilisateur */
-
-    UpMessageBox::Information(Q_NULLPTR,
-                              tr("le chemin des programmes mysql et mysqldump (") + dirsqlexecutable + ") n'est pas valide"),
-                              tr("Choisissez un dossier valide dans la boîte de dialogue suivante");
-    while (!a)
-    {
-
-        QString urlexecutabledir = QFileDialog::getExistingDirectory(Q_NULLPTR,
-                                                                     tr("Choisissez le dossier dans lequel se trouvent les executables mysql et mysqldump"),
-                                                                     (QDir::rootPath()));
-        QString path = urlexecutabledir + m_executable;
-        if (!QFile(path).exists())
-        {
-            if (UpMessageBox::Question(Q_NULLPTR,
-                                       tr("le chemin choisi (") + urlexecutabledir + tr(") n'est pas valide"),
-                                       tr("Voulez vous annuler?") + "\n" +tr("Si vous annulez, la fonction demandée ne pourra pas s'éxécuter!"),
-                                       UpDialog::ButtonCancel | UpDialog::ButtonOK,
-                                       QStringList() << tr("Annuler") << tr("Reprendre"))
-                != UpSmallButton::STARTBUTTON)
-            {
-                m_settings->remove(Param_SQLExecutable);
-                return;
-            }
-        }
-        else
-        {
-            dirsqlexecutable = urlexecutabledir;
-            a = true;
-        }
-    }
-    if (dirsqlexecutable != m_settings->value(Param_SQLExecutable).toString())
-        m_settings->setValue(Param_SQLExecutable, dirsqlexecutable);
-    m_dirSQLExecutable = dirsqlexecutable;
 }
 
 

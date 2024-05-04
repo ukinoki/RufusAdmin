@@ -157,9 +157,9 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
                 Utils::CalcintValueSQL(newvalue);
 
             }
-            else if (field == CP_IDUSER_SALDAT)
+            else if (field == CP_IDUSERSUPERVISEUR_SALDAT)
             {
-                patcrs->setiduser(newvalue.toInt());
+                patcrs->setidusersuperviseur(newvalue.toInt());
                 Utils::CalcintValueSQL(newvalue);
 
             }
@@ -984,7 +984,7 @@ bool ItemsList::update(Item* item, QString field, QVariant newvalue)
             }
             else if (field == CP_COTE_LIGNPRGOPERATOIRE)
             {
-                interv->setcote(Utils::ConvertCote(newvalue.toString()));
+                interv->setcote(Item::ConvertCote(newvalue.toString()));
                 Utils::CalcStringValueSQL(newvalue);
             }
             else if (field == CP_IDIOL_LIGNPRGOPERATOIRE)

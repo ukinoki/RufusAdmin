@@ -318,7 +318,6 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_SANSCOMPTA_PARAMSYSTEME                      "SansCompta"
 #define CP_ADRESSELOCALSERVEUR_PARAMSYSTEME             "AdresseServeurLocal"
 #define CP_ADRESSEDISTANTSERVEUR_PARAMSYSTEME           "AdresseServeurDistant"
-#define CP_DIRIMAGERIE_PARAMSYSTEME                     "DirImagerie"
 #define CP_LUNDIBKUP_PARAMSYSTEME                       "LundiBkup"
 #define CP_MARDIBKUP_PARAMSYSTEME                       "MardiBkup"
 #define CP_MERCREDIBKUP_PARAMSYSTEME                    "MercrediBkup"
@@ -333,7 +332,7 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define CP_COMPTA_PARAMSYSTEME                          "ComptaFrance"
                             //! Table Rufus.salledattente
 #define CP_IDPAT_SALDAT                                 "idPat"
-#define CP_IDUSER_SALDAT                                "idUser"
+#define CP_IDUSERSUPERVISEUR_SALDAT                     "idUser"
 #define CP_STATUT_SALDAT                                "Statut"
 #define CP_HEURESTATUT_SALDAT                           "HeureStatut"
 #define CP_HEURERDV_SALDAT                              "HeureRDV"
@@ -969,6 +968,22 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #define Param_Serveur                                   "/Serveur"
 #define Param_Port                                      "/Port"
 #define Param_SQLExecutable                             "Param_Poste/DirSQLExecutable"
+
+
+//! size of QTimeEdit and QDateEdit differs from W11 and macOS/Linux
+#if defined(Q_OS_LINUX)
+#define QTIMEEDITWIDTH               80
+#define QDATEEDITWIDTH               120
+#define QDATETIMEEDITHEIGHT          25
+#elif defined(Q_OS_MACOS)
+#define QTIMEEDITWIDTH               70
+#define QDATEEDITWIDTH               120
+#define QDATETIMEEDITHEIGHT          25
+#elif defined(Q_OS_WIN)
+#define QTIMEEDITWIDTH               110
+#define QDATEEDITWIDTH               120
+#define QDATETIMEEDITHEIGHT          30
+#endif
 
 
 #endif // MACROS_H

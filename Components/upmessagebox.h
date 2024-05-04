@@ -18,16 +18,14 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef UPMESSAGEBOX_H
 #define UPMESSAGEBOX_H
 
-#include "updialog.h"
-#include "uplabel.h"
-#include "uppushbutton.h"
 #include <QAbstractTextDocumentLayout>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QMovie>
 #include <QTextEdit>
-#include "macros.h"
 #include "utils.h"
+
+class Utils;
 
 class UpMessageBox : public UpDialog
 {

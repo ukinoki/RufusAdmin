@@ -23,8 +23,10 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMouseEvent>
 #include <QDropEvent>
 #include <QMimeData>
+
 #include "upmessagebox.h"
 
+class UpMessageBox;
 
 class UpTableWidget : public QTableWidget
 {

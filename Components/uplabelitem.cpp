@@ -15,18 +15,15 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "uplabel.h"
+#include "uplabelitem.h"
 
-UpLabel::UpLabel(QWidget *parent, QString txt) : QLabel(txt, parent)  //je ne sais plus pourquoi j'ai mis le parent avant le texte mais il y une raison à un moment donné du code...
+UpLabelItem::UpLabelItem(QWidget *parent, QString txt) : QLabel(txt, parent)  //je ne sais plus pourquoi j'ai mis le parent avant le texte mais il y une raison à un moment donné du code...
 {
-    m_id          = -1;
-    m_row         = -1;
-    m_tooltipmsg = "";
     installEventFilter(this);
     setContextMenuPolicy(Qt::NoContextMenu);
 }
 
-UpLabel::UpLabel(Item *item, QString txt, QWidget *parent) : QLabel(txt, parent)
+UpLabelItem::UpLabelItem(Item *item, QString txt, QWidget *parent) : QLabel(txt, parent)  //je ne sais plus pourquoi j'ai mis le parent avant le texte mais il y une raison à un moment donné du code...
 {
     m_item = item;
     m_item->setParent(this);
@@ -34,17 +31,17 @@ UpLabel::UpLabel(Item *item, QString txt, QWidget *parent) : QLabel(txt, parent)
     setContextMenuPolicy(Qt::NoContextMenu);
 }
 
-UpLabel::~UpLabel()
+UpLabelItem::~UpLabelItem()
 {
-
 }
-void UpLabel::AfficheToolTip()
+
+void UpLabelItem::AfficheToolTip()
 {
     if (m_tooltipmsg != "" && isEnabled())
         QToolTip::showText(cursor().pos(),m_tooltipmsg);
 }
 
-bool UpLabel::eventFilter(QObject *obj, QEvent *event)
+bool UpLabelItem::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::Enter)
     {
@@ -62,40 +59,40 @@ bool UpLabel::eventFilter(QObject *obj, QEvent *event)
         emit clicked(iD());
         return true;
     }
-   return QWidget::eventFilter(obj, event);
+    return QWidget::eventFilter(obj, event);
 }
 
-void UpLabel::setdatas(QMap<QString, QVariant> data)
+void UpLabelItem::setdatas(QMap<QString, QVariant> data)
 {
     m_datas = data;
 }
 
-QMap<QString, QVariant> UpLabel::datas() const
+QMap<QString, QVariant> UpLabelItem::datas() const
 {
     return m_datas;
 }
 
-void UpLabel::setiD(int idadef)
+void UpLabelItem::setiD(int idadef)
 {
     m_id = idadef;
 }
 
-int UpLabel::iD() const
+int UpLabelItem::iD() const
 {
     return m_id;
 }
 
-void UpLabel::setImmediateToolTip(QString Msg)
+void UpLabelItem::setImmediateToolTip(QString Msg)
 {
     m_tooltipmsg = Msg;
 }
 
-void UpLabel::setRow(int rowadef)
+void UpLabelItem::setRow(int rowadef)
 {
     m_row = rowadef;
 }
 
-int UpLabel::Row() const
+int UpLabelItem::Row() const
 {
     return m_row;
 }

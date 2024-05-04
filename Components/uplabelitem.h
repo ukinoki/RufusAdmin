@@ -15,23 +15,28 @@ You should have received a copy of the GNU General Public License
 along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UPLABEL_H
-#define UPLABEL_H
+#ifndef UPLABELITEM_H
+#define UPLABELITEM_H
 
 #include <QLabel>
 #include <QMouseEvent>
 #include <QToolTip>
 
 #include "cls_item.h"
+
+/*! cette classe est un doublon de la classe UpLabel qui incorpore la référence vers la classe Item.
+ *  Il est impossible d'incorporer la classe Item dans UpLabel
+ *  sans créer un problème de référence circulaire que je ne suis pas arrivé à résoudre */
+
 class Item;
 
-class UpLabel : public QLabel
+class UpLabelItem : public QLabel
 {
     Q_OBJECT
 public:
-    explicit                UpLabel(QWidget *parent = Q_NULLPTR, QString txt = QString());
-    explicit                UpLabel(Item* itm, QString txt = QString(), QWidget* parent = Q_NULLPTR);
-    ~UpLabel();
+    explicit                UpLabelItem(QWidget *parent = Q_NULLPTR, QString txt = QString());
+    explicit                UpLabelItem(Item* item = Q_NULLPTR, QString txt = QString(), QWidget *parent = Q_NULLPTR);
+    ~UpLabelItem();
     void                    setiD(int m_id);
     int                     iD() const;
     void                    setdatas(QMap<QString, QVariant> datas);
@@ -44,17 +49,17 @@ public:
     bool                    hasitem() const     { return m_item != Q_NULLPTR; }
 
 private:
-    bool                    eventFilter(QObject *obj, QEvent *event)  ;
-    int                     m_id;
-    int                     m_row;
-    QString                 m_tooltipmsg;
-    QMap<QString, QVariant> m_datas;
+    Item*                   m_item          = Q_NULLPTR;
+    int                     m_id            = -1;
+    int                     m_row           = -1;
+    QString                 m_tooltipmsg    = "";
+    QMap<QString, QVariant> m_datas         = QMap<QString, QVariant>();
     void                    AfficheToolTip();
-    Item*                   m_item;
-
+    bool                    eventFilter(QObject *obj, QEvent *event)  ;
 signals:
     void                    clicked(int a);
     void                    enter(int a);
     void                    dblclick(int a);
 };
-#endif // UPLABEL_H
+
+#endif // UPLABELITEM_H

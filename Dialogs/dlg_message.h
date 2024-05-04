@@ -20,18 +20,23 @@ along with RufusAdmin and Rufus.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDialog>
 #include <QThread>
-#include "uplabel.h"
 #include <QHBoxLayout>
 
 #include <QSystemTrayIcon>
 #include <QTimer>
 #include <QDebug>
 #include <QDialog>
+#include <QGuiApplication>
+#include <QLabel>
+#include <QRegularExpression>
 #include <QScreen>
-#include "uptextedit.h"
-#include "upsystemtrayicon.h"
+#include <QTextEdit>
+#include <QTime>
 
-/* Cette classe sert à afficher un message dans une fenêtre popo-up, sans bouton, sans bandeau de titre
+#include "icons.h"
+#include "macros.h"
+
+/* Cette classe sert à afficher un message dans une fenêtre pop-up, sans bouton, sans bandeau de titre
 Les paramètres sont :
 QString mess    = le contenu du message - on peut mettre du html
 int pause       = la durée d'affichage du message en ms (1000 par défaut)
@@ -47,6 +52,7 @@ private:
     static ShowMessage *instance;
     ShowMessage();
     void            LogMessage(QString msg);
+    bool            epureFontFamily(QString &text);     //! copied from utils.h to avoid circular reference
 
 public:
     static ShowMessage* I();
