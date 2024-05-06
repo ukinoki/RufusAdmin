@@ -23,7 +23,7 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
 {
     //! la version du programme correspond à la date de publication, suivie de "/" puis d'un sous-n° - p.e. "23-6-2017/3"
     qApp->setApplicationName("RufusAdmin");
-    qApp->setApplicationVersion("07-04-2024/1");       // doit impérativement être composé de date version / n°version);
+    qApp->setApplicationVersion("05-05-2024/1");       // doit impérativement être composé de date version / n°version);
 
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
@@ -249,7 +249,6 @@ RufusAdmin::RufusAdmin(QWidget *parent) : QMainWindow(parent), ui(new Ui::RufusA
     QHBoxLayout *Stocklay = new QHBoxLayout();
     Stocklay    ->addWidget(ui->StockageupLabel);
     Stocklay    ->addWidget(ui->StockageupLineEdit);
-    Stocklay    ->addWidget(ui->StockageupPushButton);
     Stocklay    ->addSpacerItem(new QSpacerItem(5,15,QSizePolicy::Expanding, QSizePolicy::Expanding));
     QHBoxLayout *appcentrelay = new QHBoxLayout();
     appcentrelay->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -1585,34 +1584,6 @@ void RufusAdmin::ExporteDocs()
                 continue;
             }
 
-//            Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
-//            if (!document || document->isLocked() || document == Q_NULLPTR)
-//            {
-//                UpSystemTrayIcon::I()->showMessages(tr("Messages"), listmsg, Icons::icSunglasses(), 3000);
-//                QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
-//                QFile   echectrsfer(echectrsfername);
-//                if (echectrsfer.open(QIODevice::Append))
-//                {
-//                    QTextStream out(&echectrsfer);
-//                    out << NomFileDoc << "\n" ;
-//                    echectrsfer.close();
-//                    QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
-//                    if (CD.open(QIODevice::Append))
-//                    {
-//                        QTextStream out(&CD);
-//                        out << listexportpdf.at(i).at(4).toByteArray() ;
-//                    }
-//                }
-//                QString delreq = "delete from  " TBL_DOCSEXTERNES " where " CP_ID_DOCSEXTERNES " = " + listexportpdf.at(i).at(0).toString();
-//                //qDebug() << delreq;
-//                db->StandardSQL(delreq);
-//                delete document;
-//                continue;
-//            }
-//            Poppler::PDFConverter *doctosave = document->pdfConverter();
-//            doctosave->setOutputFileName(CheminOKTransfrDoc);
-//            doctosave->convert();
-
 #if !defined(Q_OS_WIN)
             QFile CC(CheminOKTransfrDoc);
             CC.open(QIODevice::ReadWrite);
@@ -1873,35 +1844,6 @@ void RufusAdmin::ExporteDocs()
                 db->StandardSQL(delreq);
                 continue;
             }
-            //            Poppler::Document* document = Poppler::Document::loadFromData(bapdf);
-            //            if (!document || document->isLocked() || document == Q_NULLPTR)
-            //            {
-            //                QStringList listmsg;
-            //                listmsg << tr("Impossible de charger le document ") + NomFileDoc;
-            //                UpSystemTrayIcon::I()->showMessages(tr("Messages"), listmsg, Icons::icSunglasses(), 3000);
-            //                QString echectrsfername         = CheminEchecTransfrDir + "/0EchecTransferts - " + datetransfer.toString("yyyy-MM-dd") + ".txt";
-            //                QFile   echectrsfer(echectrsfername);
-            //                if (echectrsfer.open(QIODevice::Append))
-            //                {
-            //                    QTextStream out(&echectrsfer);
-            //                    out << NomFileDoc << "\n" ;
-            //                    echectrsfer.close();
-            //                    QFile CD(CheminEchecTransfrDir + "/" + NomFileDoc);
-            //                    if (CD.open(QIODevice::Append))
-            //                    {
-            //                        QTextStream out(&CD);
-            //                        out << listexportpdffact.at(i).at(6).toByteArray() ;
-            //                    }
-            //                }
-            //                QString delreq = "delete from " TBL_FACTURES " where " CP_ID_FACTURES " = " + listexportpdffact.at(i).at(0).toString();
-            //                //qDebug() << delreq;
-            //                db->StandardSQL(delreq);
-            //                delete document;
-            //                continue;
-            //            }
-            //            Poppler::PDFConverter *doctosave = document->pdfConverter();
-            //            doctosave->setOutputFileName(CheminOKTransfrDoc);
-            //            doctosave->convert();
 
             QFile CC(CheminOKTransfrDoc);
             CC.open(QIODevice::ReadWrite);
@@ -2224,26 +2166,20 @@ void RufusAdmin::RestaureBase()
                 OKFactures = true;
     }
     /*! 3 - détermination de l'emplacement de destination des fichiers d'imagerie */
-    QString NomDirStockageImagerie = PATH_DIR_IMAGERIE;
-    if (!QDir(PATH_DIR_IMAGERIE).exists())
+    if (db->dirimagerie() == QString())
     {
-        UpMessageBox::Watch(this,tr("Pas de dossier de stockage d'imagerie"),
-                            tr("Indiquez un dossier valide dans la boîte de dialogue qui suit") + "\n" +
-                            tr("Utilisez de préférence le dossier ") + PATH_DIR_IMAGERIE + " " +tr("Créez-le au besoin"));
-        if (dir == "" || !QDir(dir).exists())
-            dir = PATH_DIR_RUFUS;
-        QUrl url = Utils::getExistingDirectoryUrl(this, tr("Stocker les images dans le dossier"), QUrl::fromLocalFile(dir), QStringList()<<db->parametres()->dirbkup());
-        if (url == QUrl())
+        ConnectTimers();
+        return;
+    }
+    if (!QDir(db->dirimagerie()).exists())
+        if (!Utils::mkpath(db->dirimagerie()))
         {
             ConnectTimers();
             return;
         }
-        QDir dirstock = url.path();
-        NomDirStockageImagerie = dirstock.dirName();
-    }
 
     /*! 4 - choix des éléments à restaurer */
-    AskBupRestore(RestoreOp, dirtorestore.absolutePath(), NomDirStockageImagerie, OKini, OKImages, OKVideos, OKFactures);
+    AskBupRestore(RestoreOp, dirtorestore.absolutePath(), db->dirimagerie(), OKini, OKImages, OKVideos, OKFactures);
     if (dlg_buprestore->exec() == QDialog::Accepted)
     {
         bool okrestorebase = false;
@@ -2346,7 +2282,7 @@ void RufusAdmin::RestaureBase()
             {
                 if (chk->isChecked())
                 {
-                    QString dirdestinationimg   = NomDirStockageImagerie + NOM_DIR_IMAGES;
+                    QString dirdestinationimg   = db->dirimagerie() + NOM_DIR_IMAGES;
                     QDir DirDestImg(dirdestinationimg);
                     if (DirDestImg.exists())
                         DirDestImg.removeRecursively();
@@ -2385,7 +2321,7 @@ void RufusAdmin::RestaureBase()
             {
                 if (chk->isChecked())
                 {
-                    QString dirdestinationfact  = NomDirStockageImagerie + NOM_DIR_FACTURES;
+                    QString dirdestinationfact  = db->dirimagerie() + NOM_DIR_FACTURES;
                     QDir DirDestFact(dirdestinationfact);
                     if (DirDestFact.exists())
                         DirDestFact.removeRecursively();
@@ -2424,7 +2360,7 @@ void RufusAdmin::RestaureBase()
             {
                 if (chk->isChecked())
                 {
-                    QString dirdestinationvid   =  NomDirStockageImagerie + NOM_DIR_VIDEOS;
+                    QString dirdestinationvid   =  db->dirimagerie() + NOM_DIR_VIDEOS;
                     QDir DirDestVid(dirdestinationvid);
                     if (DirDestVid.exists())
                         DirDestVid.removeRecursively();

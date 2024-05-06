@@ -58,6 +58,7 @@ public:
     bool sanscompta() const;
     QString adresseserveurlocal() const;
     QString adresseserveurdistant() const;
+    QString dirimagerieserveur() const;
     Utils::Days daysbkup() const;
     QTime heurebkup() const;
     QString dirbkup() const;

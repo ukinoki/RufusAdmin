@@ -583,7 +583,7 @@ la base</string>
         <rect>
          <x>8</x>
          <y>251</y>
-         <width>384</width>
+         <width>241</width>
          <height>18</height>
         </rect>
        </property>
@@ -591,41 +591,13 @@ la base</string>
         <enum>Qt::NoContextMenu</enum>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Emplacement du dossier d'imagerie - &lt;span style=&quot; font-weight:600; color:#ff2600;&quot;&gt;Eviter de modifier&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="StockageupPushButton">
-       <property name="geometry">
-        <rect>
-         <x>845</x>
-         <y>251</y>
-         <width>40</width>
-         <height>25</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>40</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>40</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::NoContextMenu</enum>
-       </property>
-       <property name="text">
-        <string>...</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Emplacement du dossier d'imagerie&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="UpLineEdit" name="StockageupLineEdit">
        <property name="geometry">
         <rect>
-         <x>404</x>
+         <x>250</x>
          <y>251</y>
          <width>435</width>
          <height>25</height>
